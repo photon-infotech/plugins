@@ -34,6 +34,12 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
     
 	 <properties>
 		<siteBaseUrl>file://C:/apache-tomcat-7.0.26/webapps/ROOT/phresco-site/</siteBaseUrl>
+		<phresco-commons-version>${project.version}</phresco-commons-version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven-plugin-plugin.version>2.9</maven-plugin-plugin.version>
+        <maven.api.version>3.0.3</maven.api.version>
+        <sitePluginVersion>3.1</sitePluginVersion>
+        <jersey-version>1.9-ea07</jersey-version>
 	 </properties>
 	
     <distributionManagement>
