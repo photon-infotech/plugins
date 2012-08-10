@@ -43,6 +43,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.Commandline;
 import org.w3c.dom.Document;
@@ -60,6 +61,7 @@ import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 import com.photon.phresco.commons.BuildInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
+import com.photon.phresco.plugins.model.WP8PackageInfo;
 import com.photon.phresco.util.Utility;
 
 /**
@@ -129,8 +131,11 @@ public class WP8Package extends AbstractMojo implements PluginConstants {
 	private String zipName;
 	private Date currentDate;
 	private String sourceDirectory = "\\source";
+	private File rootDir;
 	private File[] solutionFile;
 	private String projectRootFolder;
+	private WP8PackageInfo packageInfo;
+	private File[] manifestFile;
 	
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		init();
@@ -143,6 +148,15 @@ public class WP8Package extends AbstractMojo implements PluginConstants {
 
 	private void init() throws MojoExecutionException {
 		try {
+			
+			if (StringUtils.isEmpty(environmentName)) {
+				callUsage();
+			}
+			getSolutionFile();
+			
+			// create package info class object, to read the info from Package.appxmanifest file
+			packageInfo = new WP8PackageInfo(rootDir);
+			
 			buildInfoList = new ArrayList<BuildInfo>(); // initialization
 			buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
 			if (!buildDir.exists()) {
@@ -160,12 +174,16 @@ public class WP8Package extends AbstractMojo implements PluginConstants {
 		}
 	}
 
-	private void executeExe() throws MojoExecutionException {
-		BufferedReader in = null;
+	
+	private void callUsage() throws MojoExecutionException {
+		getLog().error("Invalid usage.");
+		getLog().info("Usage of Deploy Goal");
+		getLog().info("mvn windows-phone:wp8package -DenvironmentName=\"Multivalued evnironment names\"");
+		throw new MojoExecutionException("Invalid Usage. Please see the Usage of Deploy Goal");
+	}
+	
+	private void getSolutionFile() throws MojoExecutionException {
 		try {
-			getLog().info("Building project ...");
-			
-			
 			// Get .sln file from the source folder
 			File sourceDir = new File(baseDir.getPath() + sourceDirectory);
 			solutionFile = sourceDir.listFiles(new FilenameFilter() { 
@@ -173,6 +191,21 @@ public class WP8Package extends AbstractMojo implements PluginConstants {
 					return name.endsWith(".sln");
 				}
 			});
+			
+			projectRootFolder = solutionFile[0].getName().substring(0, solutionFile[0].getName().length() - 4);
+			
+			// Get the source/<ProjectRoot> folder
+			rootDir = new File(baseDir.getPath() + sourceDirectory + WINDOWS_STR_BACKSLASH + projectRootFolder);
+		} catch (Exception e) {
+			getLog().error(e);
+			throw new MojoExecutionException(e.getMessage(), e);
+		}
+	}
+	
+	private void executeExe() throws MojoExecutionException {
+		BufferedReader in = null;
+		try {
+			getLog().info("Building project ...");
 			
 			// MSBuild MyApp.sln /t:Rebuild /p:Configuration=Release
 			StringBuilder sb = new StringBuilder();
@@ -236,8 +269,7 @@ public class WP8Package extends AbstractMojo implements PluginConstants {
 			}
 			
 			String zipFilePath = buildDir.getPath() + File.separator + zipName;
-			projectRootFolder = solutionFile[0].getName().substring(0, solutionFile[0].getName().length() - 4);
-			String packageVersion = readPackageManifestInfo();
+			String packageVersion = packageInfo.getPackageVersion();
 			System.out.println("packageVersion = " + packageVersion);
 			String tempFilePath = baseDir + sourceDirectory + WINDOWS_STR_BACKSLASH + projectRootFolder + WP_APP_PACKAGE + WINDOWS_STR_BACKSLASH + projectRootFolder + STR_UNDERSCORE + packageVersion + STR_UNDERSCORE + (platform.equalsIgnoreCase("any cpu")?"AnyCPU":platform) + (configuration.equalsIgnoreCase("debug")? STR_UNDERSCORE + configuration : "") + WP_TEST;
 			System.out.println("tempFilePath = " + tempFilePath);
@@ -249,59 +281,6 @@ public class WP8Package extends AbstractMojo implements PluginConstants {
 		}
 	}
 
-	private String readPackageManifestInfo() throws MojoExecutionException {
-		String version="1.0.0.0";
-		try {
-			
-			// Get Package.appxmanifest file from the source/<ProjectRoot> folder
-			File rootDir = new File(baseDir.getPath() + sourceDirectory + WINDOWS_STR_BACKSLASH + projectRootFolder);
-			File[] manifestFile = rootDir.listFiles(new FilenameFilter() { 
-				public boolean accept(File dir, String name) { 
-					return name.endsWith(".appxmanifest");
-				}
-			});
-			DocumentBuilderFactory factory = DocumentBuilderFactory
-					.newInstance();
-			factory.setIgnoringComments(true);
-
-			factory.setIgnoringElementContentWhitespace(true);
-			DocumentBuilder builder = null;
-
-			builder = factory.newDocumentBuilder();
-
-			Document doc = null;
-System.out.println("Manifest file path = " + rootDir.getPath() + WINDOWS_STR_BACKSLASH + manifestFile[0].getName());
-			doc = builder.parse(new InputSource(rootDir.getPath() + WINDOWS_STR_BACKSLASH + manifestFile[0].getName()));
-
-			Element root = doc.getDocumentElement();
-
-			System.out.println("ROOT: " + root.getNodeName());
-
-			NodeList childNodes = root.getChildNodes();
-			for (int i = 0; i < childNodes.getLength(); i++) {
-				if (childNodes.item(i) instanceof Element) {
-					String data = ((Element) childNodes.item(i)).getNodeName();
-					System.out.println("Node Name: " + data);
-					if (data.equalsIgnoreCase("identity")) {
-						version = ((Element) childNodes.item(i))
-								.getAttribute("Version");
-						System.out.println("Version: " + version);
-						break;
-					}
-				}
-			}
-		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			throw new MojoExecutionException(e.getMessage(), e);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			throw new MojoExecutionException(e.getMessage(), e);
-		} catch (SAXException e) {
-			// TODO Auto-generated catch block
-			throw new MojoExecutionException(e.getMessage(), e);
-		} 
-		return version;
-	}
 	private void writeBuildInfo(boolean isBuildSuccess) throws MojoExecutionException {
 		try {
 			if (buildNumber != null) {
