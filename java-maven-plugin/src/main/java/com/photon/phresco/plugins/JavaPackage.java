@@ -25,7 +25,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -36,16 +35,13 @@ import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import com.photon.phresco.plugin.commons.PluginConstants;
-import com.photon.phresco.plugin.commons.PluginUtils;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
-import org.codehaus.plexus.util.cli.CommandLineException;
-import org.codehaus.plexus.util.cli.Commandline;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -57,10 +53,11 @@ import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.framework.api.Project;
 import com.photon.phresco.framework.api.ProjectAdministrator;
 import com.photon.phresco.model.SettingsInfo;
+import com.photon.phresco.plugin.commons.PluginConstants;
+import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.util.ArchiveUtil;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 import com.photon.phresco.util.Constants;
-
 import com.photon.phresco.util.TechnologyTypes;
 import com.photon.phresco.util.Utility;
 import com.phresco.pom.util.PomProcessor;
@@ -254,7 +251,8 @@ public class JavaPackage extends AbstractMojo implements PluginConstants {
 	}
 	
 	private void executeMvnPackage() throws MojoExecutionException {
-		BufferedReader in = null;
+		BufferedReader bufferedReader = null;
+		boolean errorParam = false;
 		try {
 			getLog().info("Packaging the project...");
 			StringBuilder sb = new StringBuilder();
@@ -266,22 +264,21 @@ public class JavaPackage extends AbstractMojo implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(SKIP_TESTS);
 
-			Commandline cl = new Commandline(sb.toString());
-			Process process = cl.execute();
-			in = new BufferedReader(new InputStreamReader(
-					process.getInputStream()));
+			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 			String line = null;
-			while ((line = in.readLine()) != null) {
+			while ((line = bufferedReader.readLine()) != null) {
+				System.out.println(line); // do not use getLog() here as this line already contains the log type.
 				if (line.startsWith("[ERROR]")) {
-					System.out.println(line); //do not use getLog() here as this line already contains the log type.
-				}
+					errorParam = true;
+				}  
 			}
-		} catch (CommandLineException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
+			if (errorParam) {
+				throw new MojoExecutionException("Compilation Failure ... ");
+			}
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		} finally {
-			Utility.closeStream(in);
+			Utility.closeStream(bufferedReader);
 		}
 	}
 
@@ -383,7 +380,7 @@ public class JavaPackage extends AbstractMojo implements PluginConstants {
 				warFile.renameTo(contextWarFile);
 				FileUtils.copyFileToDirectory(contextWarFile, tempDir);
 			} else {
-				throw new MojoExecutionException("Compilation Failure...");
+				throw new MojoExecutionException(context + ".war not found in " + targetDir.getPath());
 			}
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);

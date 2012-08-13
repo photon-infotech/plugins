@@ -47,6 +47,7 @@ import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.util.ArchiveUtil;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.Utility;
 import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.model.Dependency;
 import com.phresco.pom.util.PomProcessor;
@@ -319,7 +320,7 @@ public class JavaDeploy extends AbstractMojo implements PluginConstants {
 	
 	private void deployToServer(String serverprotocol, String serverhost, String serverport,
 			String serverusername, String serverpassword, String containerId) throws MojoExecutionException {
-		BufferedReader in = null;
+		BufferedReader bufferedReader = null;
 		boolean errorParam = false;
 		try {
 			StringBuilder sb = new StringBuilder();
@@ -350,14 +351,11 @@ public class JavaDeploy extends AbstractMojo implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(SKIP_TESTS);
 			
-			Commandline cl = new Commandline(sb.toString());
-			Process process = cl.execute();
-			cl.setWorkingDirectory(baseDir);
-			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 			String line = null;
-			while ((line = in.readLine()) != null) {
+			while ((line = bufferedReader.readLine()) != null) {
+				System.out.println(line); //do not use getLog() here as this line already contains the log type.
 				if (line.startsWith("[ERROR]")) {
-					System.out.println(line); //do not use getLog() here as this line already contains the log type.
 					errorParam = true;
 				}
 			}
@@ -368,17 +366,17 @@ public class JavaDeploy extends AbstractMojo implements PluginConstants {
 						" Project is Deploying into " + serverprotocol + "://" + serverhost + ":" + serverport + "/"
 								+ context);
 			}
-		} catch (CommandLineException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
+		}  finally {
+			Utility.closeStream(bufferedReader);
 		}
 	}
 
 
 	private void deployToWeblogicServer(String serverprotocol, String serverhost, String serverport, String serverusername,
 			String serverpassword) throws MojoExecutionException {
-		BufferedReader in = null;
+		BufferedReader bufferedReader = null;
 		boolean errorParam = false;
 		try {
 			StringBuilder sb = new StringBuilder();
@@ -400,14 +398,12 @@ public class JavaDeploy extends AbstractMojo implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(SKIP_TESTS);
 			
-			Commandline cl = new Commandline(sb.toString());
-			cl.setWorkingDirectory(baseDir);
-				Process process = cl.execute();
-				in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+						
+			 bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 				String line = null;
-				while ((line = in.readLine()) != null) {
+				while ((line = bufferedReader.readLine()) != null) {
+					System.out.println(line); //do not use getLog() here as this line already contains the log type.
 					if (line.startsWith("[ERROR]")) {
-						System.out.println(line); //do not use getLog() here as this line already contains the log type.
 						errorParam = true;
 					}
 				}
@@ -418,10 +414,10 @@ public class JavaDeploy extends AbstractMojo implements PluginConstants {
 							" Project is Deploying into " + serverprotocol + "://" + serverhost + ":" + serverport + "/"
 									+ context);
 				}
-			} catch (CommandLineException e) {
-				throw new MojoExecutionException(e.getMessage(), e);
 			} catch (IOException e) {
 				throw new MojoExecutionException(e.getMessage(), e);
+			} finally {
+				Utility.closeStream(bufferedReader);
 			}
 	}
 	

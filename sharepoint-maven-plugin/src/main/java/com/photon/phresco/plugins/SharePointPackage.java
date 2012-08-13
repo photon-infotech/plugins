@@ -21,12 +21,10 @@ package com.photon.phresco.plugins;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -40,24 +38,21 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
-import org.codehaus.plexus.util.cli.CommandLineException;
-import org.codehaus.plexus.util.cli.Commandline;
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
-import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
-import com.photon.phresco.plugin.commons.PluginConstants;
-import com.photon.phresco.plugin.commons.PluginUtils;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.photon.phresco.commons.BuildInfo;
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.plugin.commons.PluginConstants;
+import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.util.ArchiveUtil;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
-
 import com.photon.phresco.util.Utility;
 
 /**
@@ -139,6 +134,8 @@ public class SharePointPackage extends AbstractMojo implements PluginConstants {
 	}
 	
 	private void unPackCabLib() throws MojoExecutionException  {
+		BufferedReader bufferedReader = null;
+		boolean errorParam = false;
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append(MVN_CMD);
@@ -146,15 +143,21 @@ public class SharePointPackage extends AbstractMojo implements PluginConstants {
 			sb.append(MVN_PHASE_CLEAN);
 			sb.append(STR_SPACE);
 			sb.append(MVN_PHASE_VALDATE);
-			Commandline cl = new Commandline(sb.toString());
-			cl.setWorkingDirectory(baseDir);
-			Process process = cl.execute();
-			BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 			String line = null;
-			while ((line = in.readLine()) != null) {
+			while ((line = bufferedReader.readLine()) != null) {
+				System.out.println(line); // do not use getLog() here as this line already contains the log type.
+				if (line.startsWith("[ERROR]")) {
+					errorParam = true;
+				}
+			}
+			if (errorParam) {
+				throw new MojoExecutionException("Download CabLib.dll Failed");
 			}
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage());
+		} finally {
+			Utility.closeStream(bufferedReader);
 		}
 	}
 
@@ -201,23 +204,25 @@ public class SharePointPackage extends AbstractMojo implements PluginConstants {
 	}
 
 	private void executeExe() throws MojoExecutionException {
-		BufferedReader in = null;
+		BufferedReader bufferedReader = null;
+		boolean errorParam = false;
 		try {
 			getLog().info("Executing ...");
-			Commandline cl = new Commandline("WSPBuilder.exe");
-			cl.setWorkingDirectory(baseDir.getPath() + sourceDirectory);
-			Process process = cl.execute();
-			in = new BufferedReader(new InputStreamReader(
-					process.getInputStream()));
+			bufferedReader = Utility.executeCommand("WSPBuilder.exe", baseDir.getPath() + sourceDirectory);
 			String line = null;
-			while ((line = in.readLine()) != null) {
+			while ((line = bufferedReader.readLine()) != null) {
+				System.out.println(line); // do not use getLog() here as this line already contains the log type.
+				if (line.startsWith("[ERROR]")) {
+					errorParam = true;
+				}
 			}
-		} catch (CommandLineException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
+			if (errorParam) {
+				throw new MojoExecutionException("Overwritten of WSPBuilder.exe.config File Failed");
+			}
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		} finally {
-			Utility.closeStream(in);
+			Utility.closeStream(bufferedReader);
 		}
 	}
 

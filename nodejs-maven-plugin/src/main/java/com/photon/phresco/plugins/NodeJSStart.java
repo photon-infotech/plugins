@@ -33,15 +33,15 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.cli.Commandline;
-import com.photon.phresco.plugin.commons.PluginConstants;
-import com.photon.phresco.plugin.commons.PluginUtils;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.framework.api.ProjectAdministrator;
 import com.photon.phresco.model.SettingsInfo;
+import com.photon.phresco.plugin.commons.PluginConstants;
+import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.Utility;
 
 /**
  * Goal which builds the Java WebApp
@@ -112,23 +112,23 @@ public class NodeJSStart extends AbstractMojo implements PluginConstants {
 	}
 
 	private void startNodeJS() throws MojoExecutionException {
-		BufferedReader br = null;
+		BufferedReader bufferedReader = null;
 		InputStreamReader isr = null;
 		FileWriter fileWriter = null;
 		try {
 			ProjectAdministrator projAdmin = PhrescoFrameworkFactory.getProjectAdministrator();
 			boolean tempConnectionAlive = false;
-			Commandline cl = new Commandline(NODE_CMD);
-			String[] args1 = { NODE_SERVER_FILE, environmentName };
-			cl.addArguments(args1);
-			cl.setWorkingDirectory(baseDir.getPath() + "/source");
-			Process proc = cl.execute();
+			StringBuilder sb = new StringBuilder();
+			sb.append(NODE_CMD);
+			sb.append(STR_SPACE);
+			sb.append(NODE_SERVER_FILE);
+			sb.append(STR_SPACE);
+			sb.append(environmentName);
+			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 			File file = new File(baseDir.getPath() + LOG_FILE_DIRECTORY);
 			if (!file.exists()) {
 				file.mkdirs();
 			}
-			isr = new InputStreamReader(proc.getInputStream());
-			br = new BufferedReader(isr);
 			fileWriter = new FileWriter(baseDir.getPath()
 					+ LOG_FILE_DIRECTORY + SERVER_LOG_FILE, false);
 			LogWriter logWriter = new LogWriter();
@@ -145,25 +145,14 @@ public class NodeJSStart extends AbstractMojo implements PluginConstants {
 			} else {
 				getLog().info("server startup failed");
 			}
-			logWriter.writeLog(br, fileWriter);
+			logWriter.writeLog(bufferedReader, fileWriter);
 		} catch (Exception e) {
 			getLog().info("server startup failed");
 			throw new MojoExecutionException(e.getMessage());
 		} finally {
-			try {
-				if (br != null) {
-					br.close();
-				}
-				if (isr != null) {
-					isr.close();
-				}
-				if (fileWriter != null) {
-					fileWriter.close();
-				}
-			} catch (IOException e) {
-				getLog().info("server startup failed");
-				throw new MojoExecutionException(e.getMessage());
-			}
+			Utility.closeStream(bufferedReader);
+			Utility.closeStream(isr);
+			Utility.closeStream(fileWriter);
 		}
 	}
 

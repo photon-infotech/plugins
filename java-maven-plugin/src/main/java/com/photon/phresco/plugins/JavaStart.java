@@ -19,6 +19,7 @@
  */
 package com.photon.phresco.plugins;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -28,7 +29,6 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.cli.Commandline;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
@@ -38,6 +38,7 @@ import com.photon.phresco.model.SettingsInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.Utility;
 import com.phresco.pom.util.PomProcessor;
 
 /**
@@ -187,6 +188,8 @@ public class JavaStart extends AbstractMojo implements PluginConstants {
 	}
 
 	private void executePhase() throws MojoExecutionException {
+		BufferedReader bufferedReader = null;
+		boolean errorParam = false;
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append(MVN_CMD);			
@@ -195,14 +198,24 @@ public class JavaStart extends AbstractMojo implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append("-Dserver.port=");
 			sb.append(serverport);			
-			Commandline cl = new Commandline(sb.toString());
-			cl.setWorkingDirectory(baseDir);
-			Process process = cl.execute();
+			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
+			String line = null;
+			while ((line = bufferedReader.readLine()) != null) {
+				System.out.println(line); // do not use getLog() here as this line already contains the log type.
+				if (line.startsWith("[ERROR]")) {
+					errorParam = true;
+				}
+			}
+			if (errorParam) {
+				throw new MojoExecutionException(" Run Against Source Failed ");
+			}
 			getLog().info("Server started successfully...");
 			getLog().info("Server running at http://localhost:" + serverport + "/" + context);
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage());
-		} 
+		} finally {
+			Utility.closeStream(bufferedReader);
+		}
 	}
 
 	private List<SettingsInfo> getSettingsInfo(String configType) throws PhrescoException {

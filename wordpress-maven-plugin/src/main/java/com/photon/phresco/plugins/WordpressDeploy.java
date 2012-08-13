@@ -22,7 +22,6 @@ package com.photon.phresco.plugins;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.List;
 
 import org.apache.maven.plugin.AbstractMojo;
@@ -30,17 +29,17 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
-import org.codehaus.plexus.util.cli.Commandline;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.framework.api.ProjectAdministrator;
 import com.photon.phresco.model.SettingsInfo;
+import com.photon.phresco.plugin.commons.PluginConstants;
+import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.util.ArchiveUtil;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 import com.photon.phresco.util.Constants;
-import com.photon.phresco.plugin.commons.PluginConstants;
-import com.photon.phresco.plugin.commons.PluginUtils;
+import com.photon.phresco.util.Utility;
 
 /**
  * Goal which deploys the Drupal project
@@ -131,21 +130,26 @@ public class WordpressDeploy extends AbstractMojo implements PluginConstants {
 	}
 
 	private void packDrupal() throws MojoExecutionException {
+		BufferedReader bufferedReader = null;
+		boolean errorParam = false;
 		try {
-			
 			//fetching drupal binary from repo
 			StringBuilder sb = new StringBuilder();
 			sb.append(MVN_CMD);
 			sb.append(STR_SPACE);
 			sb.append(MVN_PHASE_INITIALIZE);
 
-			Commandline cl = new Commandline(sb.toString());
-			Process process = cl.execute();
-			BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 			String line = null;
-			while ((line = in.readLine()) != null) {
+			while ((line = bufferedReader.readLine()) != null) {
+				System.out.println(line); // do not use getLog() here as this line already contains the log type.
+				if (line.startsWith("[ERROR]")) {
+					errorParam = true;
+				}
 			}
-			
+			if (errorParam) {
+				throw new MojoExecutionException("Drupal Binary Download Failed ");
+			}
 			File drupalBinary = null;
 			File[] listFiles = binariesDir.listFiles();
 			for (File file : listFiles) {
@@ -162,6 +166,8 @@ public class WordpressDeploy extends AbstractMojo implements PluginConstants {
 			}
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);
+		}  finally {
+			Utility.closeStream(bufferedReader);
 		}
 	}
 
