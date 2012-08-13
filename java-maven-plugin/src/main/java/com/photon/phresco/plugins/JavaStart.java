@@ -73,8 +73,12 @@ public class JavaStart extends AbstractMojo implements PluginConstants {
 	 * @parameter expression="${environmentName}" required="true"
 	 */
 	protected String environmentName;
+	
+	/**
+	 * @parameter expression="${projectCode}" required="true"
+	 */
+	protected String projectCode;
 
-	private String shutdownport;
 	private String serverport;
 	private String context;
 	
@@ -96,7 +100,7 @@ public class JavaStart extends AbstractMojo implements PluginConstants {
 					envName = projAdmin.getDefaultEnvName(baseDir.getName());
 				}
 				List<SettingsInfo> settingsInfos = projAdmin.getSettingsInfos(Constants.SETTINGS_TEMPLATE_SERVER,
-						baseDir.getName(), envName);
+						projectCode, envName);
 				for (SettingsInfo settingsInfo : settingsInfos) {
 					context = settingsInfo.getPropertyInfo(Constants.SERVER_CONTEXT).getValue();
 					break;
@@ -121,8 +125,6 @@ public class JavaStart extends AbstractMojo implements PluginConstants {
 			for (SettingsInfo serverDetails : settingsInfo) {
 				PropertyInfo port = serverDetails.getPropertyInfo(Constants.SERVER_PORT);
 				serverport = port.getValue();
-				Integer stport = Integer.valueOf(serverport) + 1;
-				shutdownport = Integer.toString(stport);
 				break;
 			}
 			adaptSourceConfig();
@@ -135,9 +137,9 @@ public class JavaStart extends AbstractMojo implements PluginConstants {
 	
 	private void storeEnvName(String envName) throws MojoExecutionException {
 		FileOutputStream fos = null;
-		File file = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + NODE_ENV_FILE);
+		File pomPath = new File(Utility.getProjectHome() + File.separator + projectCode + File.separator + DOT_PHRESCO_FOLDER + File.separator + NODE_ENV_FILE);
 		try {
-			fos = new FileOutputStream(file, false);
+			fos = new FileOutputStream(pomPath, false);
             fos.write(envName.getBytes());
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage());
@@ -198,7 +200,9 @@ public class JavaStart extends AbstractMojo implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append("-Dserver.port=");
 			sb.append(serverport);			
-			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
+			
+			File pomPath = new File(Utility.getProjectHome() + File.separator + projectCode);
+			bufferedReader = Utility.executeCommand(sb.toString(), pomPath.getPath());
 			String line = null;
 			while ((line = bufferedReader.readLine()) != null) {
 				System.out.println(line); // do not use getLog() here as this line already contains the log type.
@@ -209,6 +213,7 @@ public class JavaStart extends AbstractMojo implements PluginConstants {
 			if (errorParam) {
 				throw new MojoExecutionException(" Run Against Source Failed ");
 			}
+			
 			getLog().info("Server started successfully...");
 			getLog().info("Server running at http://localhost:" + serverport + "/" + context);
 		} catch (Exception e) {
@@ -220,6 +225,6 @@ public class JavaStart extends AbstractMojo implements PluginConstants {
 
 	private List<SettingsInfo> getSettingsInfo(String configType) throws PhrescoException {
 		ProjectAdministrator projAdmin = PhrescoFrameworkFactory.getProjectAdministrator();
-		return projAdmin.getSettingsInfos(configType, baseDir.getName(), environmentName);
+		return projAdmin.getSettingsInfos(configType, projectCode, environmentName);
 	}
 }

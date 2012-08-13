@@ -37,6 +37,7 @@ import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.util.ArchiveUtil;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 import com.photon.phresco.plugin.commons.PluginConstants;
+import com.photon.phresco.plugins.model.WP8PackageInfo;
 
 /**
  * Goal which deploys the Java WebApp to a server
@@ -79,6 +80,12 @@ public class WP8Deploy extends AbstractMojo implements PluginConstants {
 	private File buildDir;
 	private File temp;
 	
+	private String sourceDirectory = "\\source";
+	private File rootDir;
+	private File[] solutionFile;
+	private String projectRootFolder;
+	private WP8PackageInfo packageInfo;
+	private File[] manifestFile;
 	
 
 	public void execute() throws MojoExecutionException {
@@ -93,6 +100,12 @@ public class WP8Deploy extends AbstractMojo implements PluginConstants {
 			if (StringUtils.isEmpty(buildName) || StringUtils.isEmpty(environmentName)) {
 				callUsage();
 			}
+			
+			getSolutionFile();
+			
+			// create package info class object, to read the info from Package.appxmanifest file
+			packageInfo = new WP8PackageInfo(rootDir);
+			
 			buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
 			buildFile = new File(buildDir.getPath() + File.separator + buildName);
 			tempDir = new File(buildDir.getPath() + File.separator + buildFile.getName().substring(0, buildFile.getName().length() - 4));
@@ -114,6 +127,26 @@ public class WP8Deploy extends AbstractMojo implements PluginConstants {
 		throw new MojoExecutionException("Invalid Usage. Please see the Usage of Deploy Goal");
 	}
 
+	private void getSolutionFile() throws MojoExecutionException {
+		try {
+			// Get .sln file from the source folder
+			File sourceDir = new File(baseDir.getPath() + sourceDirectory);
+			solutionFile = sourceDir.listFiles(new FilenameFilter() { 
+				public boolean accept(File dir, String name) { 
+					return name.endsWith(".sln");
+				}
+			});
+			
+			projectRootFolder = solutionFile[0].getName().substring(0, solutionFile[0].getName().length() - 4);
+			
+			// Get the source/<ProjectRoot> folder
+			rootDir = new File(baseDir.getPath() + sourceDirectory + WINDOWS_STR_BACKSLASH + projectRootFolder);
+		} catch (Exception e) {
+			getLog().error(e);
+			throw new MojoExecutionException(e.getMessage(), e);
+		}
+	}
+	
 	private void extractBuild() throws MojoExecutionException {
 		try {
 			ArchiveUtil.extractArchive(buildFile.getPath(), tempDir.getPath(), ArchiveType.ZIP);
@@ -127,6 +160,10 @@ public class WP8Deploy extends AbstractMojo implements PluginConstants {
 		try {
 			getLog().info("Deploying project ...");
 			
+			if (packageAlreadyInstalled()) {
+				System.out.println("Package already installed... Uninstalling.");
+				uninstallExistingPackage();
+			}
 			// Get .ps1 file from the extracted contents
 			File[] ps1File = tempDir.listFiles(new FilenameFilter() { 
 				public boolean accept(File dir, String name) { 
@@ -155,4 +192,85 @@ public class WP8Deploy extends AbstractMojo implements PluginConstants {
 	}
 
 	
+	private boolean packageAlreadyInstalled() throws MojoExecutionException {
+		boolean isPackageInstalled = false;
+		BufferedReader in = null;
+		try {
+			String packageName = packageInfo.getPackageName();
+			
+			// PowerShell (Get-AppxPackage -Name <packageName>).count
+			StringBuilder sb = new StringBuilder();
+			sb.append(WP_POWERSHELL_PATH);
+			sb.append("(Get-AppxPackage -Name " + packageName + ").count");
+			Commandline cl = new Commandline(sb.toString());
+			cl.setWorkingDirectory(tempDir);
+			Process process = cl.execute();
+			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			String line = null;
+			String tempVar = null;
+			while ((line = in.readLine()) != null) {
+				tempVar = line;
+			}
+			if (Integer.parseInt(tempVar.trim()) > 0) {
+				isPackageInstalled = true;
+			}
+		} catch (CommandLineException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		} catch (IOException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		}
+		return isPackageInstalled;
+		
+	}
+	
+	private void uninstallExistingPackage() throws MojoExecutionException {
+		BufferedReader in = null;
+		try {
+			String packageFullName = getPackageFullName();
+			// PowerShell (Get-AppxPackage -Name <packageName>).count
+			StringBuilder sb = new StringBuilder();
+			sb.append(WP_POWERSHELL_PATH);
+			sb.append("Remove-AppxPackage " + packageFullName);
+			Commandline cl = new Commandline(sb.toString());
+			cl.setWorkingDirectory(tempDir);
+			Process process = cl.execute();
+			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			String line = null;
+			
+			while ((line = in.readLine()) != null) {				
+			}
+			
+		} catch (CommandLineException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		} catch (IOException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		}		
+	}
+	
+	private String getPackageFullName() throws MojoExecutionException {
+		String packageFullName = null;
+		BufferedReader in = null;
+		try {
+			String packageName = packageInfo.getPackageName();
+			
+			// PowerShell (Get-AppxPackage -Name <packageName>).count
+			StringBuilder sb = new StringBuilder();
+			sb.append(WP_POWERSHELL_PATH);
+			sb.append("(Get-AppxPackage -Name " + packageName + ").packagefullname");
+			Commandline cl = new Commandline(sb.toString());
+			cl.setWorkingDirectory(tempDir);
+			Process process = cl.execute();
+			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			String line = null;
+			while ((line = in.readLine()) != null) {
+				packageFullName = line;				
+			}
+			
+		} catch (CommandLineException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		} catch (IOException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		}
+		return packageFullName;		
+	}
 }

@@ -1,8 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+		
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.codehaus.jstestrunner</groupId>
 	<artifactId>jstestrunner-junit</artifactId>
-	<version>2.0.0.10001-SNAPSHOT</version>
+	<version>2.0.0.10003-SNAPSHOT</version>
 	<name>JS Test Runner for JUnit</name>
 	<description>Runs JavaScript headlessly and reports details of the test back through JUnit.</description>
 
@@ -52,46 +53,46 @@
         <dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>
-			<version>7.4.2.v20110526</version>
+			<version>${jetty-server.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-core-asl</artifactId>
-			<version>1.8.2</version>
+			<version>${jackson-core-asl.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.inject</groupId>
 			<artifactId>javax.inject</artifactId>
-			<version>1</version>
+			<version>${javax.inject.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.annotation</groupId>
 			<artifactId>jsr250-api</artifactId>
-			<version>1.0</version>
+			<version>${jsr250-api.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.6.1</version>
+			<version>${slf4j-api.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-jcl</artifactId>
-			<version>1.6.1</version>
+			<version>${slf4j-jcl.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
-			<version>2.5</version>
+			<version>${servlet-api.version}</version>
 		</dependency>
 
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
-			<version>1.8.5</version>
+			<version>${mockito-all.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -109,7 +110,7 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
+				<version>${maven-compiler-plugin.version}</version>
 				<configuration>
 					<source>1.5</source>
 					<target>1.5</target>
@@ -118,7 +119,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>jslint-maven-plugin</artifactId>
-				<version>1.0.1</version>
+				<version>${jslint-maven-plugin.version}</version>
 				<executions>
 					<execution>
 						<phase>process-resources</phase>
@@ -131,7 +132,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.9</version>
+				<version>${maven-surefire-plugin.version}</version>
 				<configuration>
 					<systemPropertyVariables>
 						<org.codehaus.jstestrunner.commandPattern>${org.codehaus.jstestrunner.commandPattern}</org.codehaus.jstestrunner.commandPattern>
@@ -157,12 +158,12 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
-				<version>3.0</version>
+				<version>${maven-site-plugin.version}</version>
 				<dependencies>
 					<dependency>
 						<groupId>org.apache.maven.doxia</groupId>
 						<artifactId>doxia-module-confluence</artifactId>
-						<version>1.2</version>
+						<version>${doxia-module-confluence.version}</version>
 					</dependency>
 				</dependencies>
 				<configuration>
@@ -171,22 +172,22 @@
 						<plugin>
 							<groupId>org.codehaus.mojo</groupId>
 							<artifactId>findbugs-maven-plugin</artifactId>
-							<version>2.3.1</version>
+							<version>${findbugs-maven-plugin.version}</version>
 						</plugin>
 						<plugin>
 							<groupId>org.codehaus.mojo</groupId>
 							<artifactId>cobertura-maven-plugin</artifactId>
-							<version>2.4</version>
+							<version>${cobertura-maven-plugin.version}</version>
 						</plugin>
 						<plugin>
 							<groupId>org.apache.maven.plugins</groupId>
 							<artifactId>maven-javadoc-plugin</artifactId>
-							<version>2.7</version>
+							<version>${maven-javadoc-plugin.version}</version>
 						</plugin>
 						<plugin>
 							<groupId>org.apache.maven.plugins</groupId>
 							<artifactId>maven-project-info-reports-plugin</artifactId>
-							<version>2.2</version>
+							<version>${maven-project-info-reports-plugin.version}</version>
 							<configuration>
 								<dependencyLocationsEnabled>false</dependencyLocationsEnabled>
 							</configuration>
@@ -198,7 +199,7 @@
             <plugin>
                 <groupId>org.apache.geronimo.genesis.plugins</groupId>
                 <artifactId>tools-maven-plugin</artifactId>
-                <version>1.1</version>
+                <version>${tools-maven-plugin.version}</version>
                 <executions>
                     <execution>
                         <id>install-legal-files</id>
@@ -216,11 +217,32 @@
 			<extension> 
 				<groupId>org.apache.maven.wagon</groupId>
 				<artifactId>wagon-webdav</artifactId>
-				<version>1.0-beta-2</version> 
+				<version>${wagon-webdav.version}</version> 
 			</extension> 
 		</extensions> 
 		
 	</build>
-                 
+                
+		<properties>
+			<jetty-server.version>7.4.2.v20110526</jetty-server.version>
+			<jackson-core-asl.version>1.8.2</jackson-core-asl.version>
+			<javax.inject.version>1</javax.inject.version>
+			<jsr250-api.version>1.0</jsr250-api.version>
+			<slf4j-api.version>1.6.1</slf4j-api.version>
+			<slf4j-jcl.version>1.6.1</slf4j-jcl.version>
+			<servlet-api.version>2.5</servlet-api.version>
+			<mockito-all.version>1.8.5</mockito-all.version>
+			<maven-compiler-plugin.version>2.3.2</maven-compiler-plugin.version>
+			<jslint-maven-plugin.version>1.0.1</jslint-maven-plugin.version>
+			<maven-surefire-plugin.version>2.9</maven-surefire-plugin.version>
+			<maven-site-plugin.version>3.0</maven-site-plugin.version>
+			<doxia-module-confluence.version>1.2</doxia-module-confluence.version>
+			<findbugs-maven-plugin.version>2.3.1</findbugs-maven-plugin.version>
+			<cobertura-maven-plugin.version>2.4</cobertura-maven-plugin.version>
+			<maven-javadoc-plugin.version>2.7</maven-javadoc-plugin.version>
+			<maven-project-info-reports-plugin.version>2.2</maven-project-info-reports-plugin.version>
+			<tools-maven-plugin.version>1.1</tools-maven-plugin.version>
+			<wagon-webdav.version>1.0-beta-2</wagon-webdav.version>
+		</properties>
    
 </project>

@@ -22,22 +22,19 @@ package com.photon.phresco.plugins;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.List;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.cli.CommandLineException;
-import org.codehaus.plexus.util.cli.Commandline;
-import com.photon.phresco.plugin.commons.PluginConstants;
-import com.photon.phresco.plugin.commons.PluginUtils;
-import com.photon.phresco.util.Constants;
-import com.photon.phresco.exception.PhrescoException;
+
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.framework.api.ProjectAdministrator;
 import com.photon.phresco.model.SettingsInfo;
+import com.photon.phresco.plugin.commons.PluginConstants;
+import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.Utility;
 
 /**
  * Goal which builds the Java WebApp
@@ -67,6 +64,11 @@ public class JavaStop extends AbstractMojo implements PluginConstants {
 	 * @parameter expression="${environmentName}" required="true"
 	 */
 	protected String environmentName;
+	
+	/**
+	 * @parameter expression="${projectCode}" required="true"
+	 */
+	protected String projectCode;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
@@ -90,34 +92,30 @@ public class JavaStop extends AbstractMojo implements PluginConstants {
 	}
 
 	private void stopJavaServerInWindows(String command) throws MojoExecutionException {
+		BufferedReader bufferedReader = null;
 		try {
 			String pid = "";
-			BufferedReader in = null;
-			Commandline cl = new Commandline(command);
-			Process process = cl.execute(); 
-			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			bufferedReader = Utility.executeCommand(command, baseDir.getPath());
 			String line = null;
-			while ((line = in.readLine()) != null) {
+			while ((line = bufferedReader.readLine()) != null) {
 				pid = line.substring(line.length() - 4, line.length());
 			}
 			Runtime.getRuntime().exec("cmd /X /C taskkill /F /PID " + pid);			
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage());
-		} catch (CommandLineException e) {
-			throw new MojoExecutionException(e.getMessage());
+		} finally {
+			Utility.closeStream(bufferedReader);
 		}
 	}
 
 	private void stopJavaServer(String command) throws MojoExecutionException {
+		BufferedReader bufferedReader = null;
 		try {
 			String pid = "";
-			BufferedReader in = null;
-			Commandline cl = new Commandline(command);
-			Process process = cl.execute();
-			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			bufferedReader = Utility.executeCommand(command, baseDir.getPath());
 			String line = null;
 			int count = 1;
-			while ((line = in.readLine()) != null) {
+			while ((line = bufferedReader.readLine()) != null) {
 				if (count == 2) {
 					pid = line.trim();
 				}
@@ -126,8 +124,8 @@ public class JavaStop extends AbstractMojo implements PluginConstants {
 			Runtime.getRuntime().exec(JAVA_UNIX_PROCESS_KILL_CMD + pid);
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage());
-		} catch (CommandLineException e) {
-			throw new MojoExecutionException(e.getMessage());
+		} finally {
+			Utility.closeStream(bufferedReader);
 		}
 	}
 
@@ -135,8 +133,7 @@ public class JavaStop extends AbstractMojo implements PluginConstants {
 		String serverPort = "";
 		try {
 			ProjectAdministrator projAdmin = PhrescoFrameworkFactory.getProjectAdministrator();
-			List<SettingsInfo> settingsInfos = projAdmin.getSettingsInfos(Constants.SETTINGS_TEMPLATE_SERVER, baseDir
-					.getName(), environmentName);
+			List<SettingsInfo> settingsInfos = projAdmin.getSettingsInfos(Constants.SETTINGS_TEMPLATE_SERVER, projectCode, environmentName);
 			for (SettingsInfo settingsInfo : settingsInfos) {
 				serverPort = settingsInfo.getPropertyInfo(Constants.SERVER_PORT).getValue();
 				break;
