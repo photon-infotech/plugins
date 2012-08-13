@@ -83,7 +83,7 @@
             <plugin>
                 <groupId>org.apache.geronimo.genesis.plugins</groupId>
                 <artifactId>tools-maven-plugin</artifactId>
-                <version>1.1</version>
+                <version>${tools-maven-plugin.version}</version>
                 <executions>
                     <execution>
                         <id>install-legal-files</id>
@@ -97,4 +97,8 @@
         </plugins>
         
 	</build>
+	<properties>
+		<siteBaseUrl>file://C:/apache-tomcat-7.0.26/webapps/ROOT/phresco-site/</siteBaseUrl>
+		<tools-maven-plugin.version>1.1</tools-maven-plugin.version>
+	</properties>
 </project>

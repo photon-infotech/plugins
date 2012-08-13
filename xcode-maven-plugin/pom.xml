@@ -37,37 +37,37 @@
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-artifact</artifactId>
-            <version>2.0.1</version>
+            <version>${maven-artifact.version}</version>
         </dependency>
         
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-artifact-manager</artifactId>
-            <version>2.0.1</version>
+            <version>${maven-artifact-manager.version}</version>
         </dependency>
         
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-model</artifactId>
-            <version>2.0.1</version>
+            <version>${maven-model.version}</version>
         </dependency>
         
         <dependency>
             <groupId>org.codehaus.plexus</groupId>
             <artifactId>plexus-utils</artifactId>
-            <version>3.0</version>
+            <version>${plexus-utils.version}</version>
         </dependency>
         
         <dependency>
             <groupId>org.apache.maven.wagon</groupId>
             <artifactId>wagon-provider-api</artifactId>
-            <version>1.0-alpha-5</version>
+            <version>${wagon-provider-api.version}</version>
         </dependency>
         
         <dependency>
             <groupId>dom4j</groupId>
             <artifactId>dom4j</artifactId>
-            <version>1.6.1</version>
+            <version>${dom4j.version}</version>
         </dependency>
         
         <dependency>
@@ -80,7 +80,7 @@
         <dependency>
             <groupId>jmock</groupId>
             <artifactId>jmock</artifactId>
-            <version>1.0.1</version>
+            <version>${jmock.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -99,7 +99,7 @@
         <dependency>
             <groupId>commons-configuration</groupId>
             <artifactId>commons-configuration</artifactId>
-            <version>1.7</version>
+            <version>${commons-configuration.version}</version>
         </dependency>
         
         <dependency>
@@ -111,7 +111,7 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20090211</version>
+            <version>${json.version}</version>
         </dependency>
     </dependencies>
 
@@ -130,7 +130,7 @@
             <plugin>
                 <groupId>org.apache.geronimo.genesis.plugins</groupId>
                 <artifactId>tools-maven-plugin</artifactId>
-                <version>1.1</version>
+                <version>${tools-maven-plugin.version}</version>
                 <executions>
                     <execution>
                         <id>install-legal-files</id>

@@ -51,7 +51,7 @@
     <dependency>
         <groupId>org.apache.maven</groupId>
           <artifactId>maven-plugin-api</artifactId>
-          <version>2.0</version>
+          <version>${maven-plugin-api.version}</version>
     </dependency>
     
     <dependency>
@@ -64,37 +64,37 @@
     <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-utils</artifactId>
-        <version>3.0</version>            
+        <version>${plexus-utils.version}</version>            
     </dependency>
     
     <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-project</artifactId>
-        <version>2.2.1</version>
+        <version>${maven-project.version}</version>
     </dependency>
     
     <dependency>
         <groupId>mysql</groupId>
         <artifactId>mysql-connector-java</artifactId>
-        <version>5.1.13</version>
+        <version>${mysql-connector-java.version}</version>
     </dependency>
 	
 	<dependency>
 		<groupId>com.microsoft.sqlserver.jdbc.sqlserverdriver</groupId>
 		<artifactId>sqlserverdriver</artifactId>
-		<version>4.0</version>
+		<version>${sqlserverdriver.version}</version>
 	</dependency>
 	
 	<dependency>
 		<groupId>oracle.jdbc.oracledriver</groupId>
 		<artifactId>oracledriver</artifactId>
-		<version>10.2.0.4.0</version>
+		<version>${oracledriver.version}</version>
 	</dependency>
 	
 	<dependency>
 		<groupId>com.ibm.db2.jcc.db2Driver</groupId>
 		<artifactId>db2Driver</artifactId>
-		<version>1.4.2</version>
+		<version>${db2Driver.version}</version>
 	</dependency>
 	
   </dependencies>
@@ -104,7 +104,7 @@
             <plugin>
                 <groupId>org.apache.geronimo.genesis.plugins</groupId>
                 <artifactId>tools-maven-plugin</artifactId>
-                <version>1.1</version>
+                <version>${tools-maven-plugin.version}</version>
                 <executions>
                     <execution>
                         <id>install-legal-files</id>
