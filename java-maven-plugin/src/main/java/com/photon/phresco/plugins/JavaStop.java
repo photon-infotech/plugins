@@ -31,13 +31,12 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.Commandline;
-import com.photon.phresco.plugin.commons.PluginConstants;
-import com.photon.phresco.plugin.commons.PluginUtils;
-import com.photon.phresco.util.Constants;
-import com.photon.phresco.exception.PhrescoException;
+
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.framework.api.ProjectAdministrator;
 import com.photon.phresco.model.SettingsInfo;
+import com.photon.phresco.plugin.commons.PluginConstants;
+import com.photon.phresco.util.Constants;
 
 /**
  * Goal which builds the Java WebApp
@@ -67,6 +66,11 @@ public class JavaStop extends AbstractMojo implements PluginConstants {
 	 * @parameter expression="${environmentName}" required="true"
 	 */
 	protected String environmentName;
+	
+	/**
+	 * @parameter expression="${projectCode}" required="true"
+	 */
+	protected String projectCode;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
@@ -135,8 +139,7 @@ public class JavaStop extends AbstractMojo implements PluginConstants {
 		String serverPort = "";
 		try {
 			ProjectAdministrator projAdmin = PhrescoFrameworkFactory.getProjectAdministrator();
-			List<SettingsInfo> settingsInfos = projAdmin.getSettingsInfos(Constants.SETTINGS_TEMPLATE_SERVER, baseDir
-					.getName(), environmentName);
+			List<SettingsInfo> settingsInfos = projAdmin.getSettingsInfos(Constants.SETTINGS_TEMPLATE_SERVER, projectCode, environmentName);
 			for (SettingsInfo settingsInfo : settingsInfos) {
 				serverPort = settingsInfo.getPropertyInfo(Constants.SERVER_PORT).getValue();
 				break;
