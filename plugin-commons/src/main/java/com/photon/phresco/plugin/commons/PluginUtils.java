@@ -75,11 +75,12 @@ public class PluginUtils {
 
 	public void executeUtil(String environmentType, String basedir, File sourceConfigXML) {
 		try {
-			File phrescoConfigXML = new File(Utility.getProjectHome() + basedir + File.separator + 
-					PluginConstants.DOT_PHRESCO_FOLDER + File.separator + PluginConstants.CONFIG_FILE);
+			File currentDirectory = new File(".");
+			File configXML = new File(currentDirectory + File.separator + 
+			PluginConstants.DOT_PHRESCO_FOLDER + File.separator + PluginConstants.CONFIG_FILE);
 			File settingsXML = new File(Utility.getProjectHome() + PluginConstants.SETTINGS_FILE);
 			
-			ConfigReader reader = new ConfigReader(phrescoConfigXML);
+			ConfigReader reader = new ConfigReader(configXML);
 			ConfigWriter writer = new ConfigWriter(reader, true);
 			writer.saveXml(sourceConfigXML, environmentType);
 			if (settingsXML.exists()) {
