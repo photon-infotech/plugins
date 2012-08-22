@@ -1,3 +1,5 @@
+package com.photon.phresco.plugins;
+
 /*
  * ###
  * java-maven-plugin Maven Mojo
@@ -17,13 +19,11 @@
  * limitations under the License.
  * ###
  */
-package com.photon.phresco.plugins;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,8 +35,6 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
-import org.codehaus.plexus.util.cli.CommandLineException;
-import org.codehaus.plexus.util.cli.Commandline;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
@@ -53,7 +51,6 @@ import com.phresco.pom.model.Dependency;
 import com.phresco.pom.util.PomProcessor;
 
 /**
- * Goal which deploys the Java WebApp to a server
  * 
  * @goal deploy
  * 
@@ -91,6 +88,11 @@ public class JavaDeploy extends AbstractMojo implements PluginConstants {
 	 * @parameter expression="${importSql}" required="true"
 	 */
 	protected boolean importSql;
+	
+	/**
+	 * @parameter expression="${projectCode}" required="true"
+	 */
+	protected String projectCode;
 
 	private File buildFile;
 	private File tempDir;
@@ -152,10 +154,10 @@ public class JavaDeploy extends AbstractMojo implements PluginConstants {
 				ProjectAdministrator projAdmin = PhrescoFrameworkFactory.getProjectAdministrator();
 				String envName = environmentName;
 				if (environmentName.indexOf(',') > -1) { // multi-value
-					envName = projAdmin.getDefaultEnvName(baseDir.getName());
+					envName = projAdmin.getDefaultEnvName(projectCode);
 				}
 				List<SettingsInfo> settingsInfos = projAdmin.getSettingsInfos(Constants.SETTINGS_TEMPLATE_SERVER,
-						baseDir.getName(), envName);
+						projectCode, envName);
 				for (SettingsInfo settingsInfo : settingsInfos) {
 					context = settingsInfo.getPropertyInfo(Constants.SERVER_CONTEXT).getValue();
 					break;

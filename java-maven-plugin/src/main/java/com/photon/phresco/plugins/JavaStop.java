@@ -21,19 +21,17 @@ package com.photon.phresco.plugins;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.util.List;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 
-import com.photon.phresco.framework.PhrescoFrameworkFactory;
-import com.photon.phresco.framework.api.ProjectAdministrator;
-import com.photon.phresco.model.SettingsInfo;
+import com.google.gson.Gson;
+import com.photon.phresco.commons.configurationInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
-import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
 
 /**
@@ -130,17 +128,17 @@ public class JavaStop extends AbstractMojo implements PluginConstants {
 	}
 
 	public String findPortNumber() throws MojoExecutionException {
-		String serverPort = "";
+		configurationInfo info = new configurationInfo();
 		try {
-			ProjectAdministrator projAdmin = PhrescoFrameworkFactory.getProjectAdministrator();
-			List<SettingsInfo> settingsInfos = projAdmin.getSettingsInfos(Constants.SETTINGS_TEMPLATE_SERVER, projectCode, environmentName);
-			for (SettingsInfo settingsInfo : settingsInfos) {
-				serverPort = settingsInfo.getPropertyInfo(Constants.SERVER_PORT).getValue();
-				break;
-			}
+			File pomPath = new File(Utility.getProjectHome() + File.separator + projectCode + File.separator + DOT_PHRESCO_FOLDER 
+					+ File.separator + NODE_ENV_FILE);
+			BufferedReader reader = new BufferedReader(new FileReader(pomPath));
+			Gson gson  = new Gson();
+			info = gson.fromJson(reader, configurationInfo.class);
+			return info.getServerPort();
+			
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage());
 		}
-		return serverPort;
 	}
 }

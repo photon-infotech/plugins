@@ -39,6 +39,7 @@ public interface PluginConstants {
      String FORWARD_SLASH               = "/";
      String CONFIG_FILE					= "phresco-env-config.xml";
      String SETTINGS_FILE				= "settings.xml";
+     String BASH 						= "bash";
 	
 	//Constants for Maven commands
      String MVN_CMD 					= "mvn";
