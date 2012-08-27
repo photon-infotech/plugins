@@ -30,7 +30,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 
 import com.google.gson.Gson;
-import com.photon.phresco.plugin.commons.ConfigurationInfo;
+import com.photon.phresco.configuration.ConfigurationInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.util.Utility;
 
