@@ -30,11 +30,11 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 
 import com.google.gson.Gson;
-import com.photon.phresco.commons.configurationInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.framework.api.ProjectAdministrator;
 import com.photon.phresco.model.SettingsInfo;
+import com.photon.phresco.plugin.commons.ConfigurationInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.util.Constants;
@@ -125,7 +125,7 @@ public class JavaStart extends AbstractMojo implements PluginConstants {
 	}
 	
 	private void storeEnvName() throws MojoExecutionException {
-		configurationInfo info = new configurationInfo();
+		ConfigurationInfo info = new ConfigurationInfo();
 		info.setContext(context);
 		info.setEnvironmentName(environmentName);
 		info.setModuleName(projectModule);
