@@ -318,9 +318,24 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 					
 					String endTime = config.getRoot().getChild(2).getValue().toString();
 					
+					List<ConfigurationNode> children = (List<ConfigurationNode>) config.getRoot().getChildren();
+					String errorTextNodes = XMLConstants.DICT_START;
+					for (ConfigurationNode child : children) {
+						errorTextNodes = errorTextNodes + XMLConstants.KEY_START + child.getName() + XMLConstants.KEY_END;
+						errorTextNodes = errorTextNodes + XMLConstants.STRING_START + child.getValue() + XMLConstants.STRING_END;
+					}
+					errorTextNodes = errorTextNodes + XMLConstants.DICT_END;
+					
+					getLog().info("error node " + errorTextNodes);
+					
 					long differ = getTimeDiff(startTime, endTime);
 					startTime = endTime;
 					child1.setAttribute(XMLConstants.TIME, differ+"");
+					//adding error element
+					Element errorElem = doc.createElement(XMLConstants.FAILURE);
+					errorElem.setAttribute(XMLConstants.TYPE, "Exception");
+					errorElem.setTextContent(errorTextNodes);
+					child1.appendChild(errorElem);
 					testSuite.appendChild(child1);
 				}
 
