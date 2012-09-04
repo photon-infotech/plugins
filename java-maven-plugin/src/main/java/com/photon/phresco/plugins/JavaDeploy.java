@@ -242,8 +242,8 @@ public class JavaDeploy extends AbstractMojo implements PluginConstants {
 			addCargoDependency(version);
 			containerId = serverVersionMap.get("jboss-" + version);
 			deployToServer(serverprotocol, serverhost, serverport, serverusername, serverpassword, containerId);
-		} else if (servertype.contains(TYPE_WEBLOGIC) && (version.equals("12c(12.1.1)"))) {
-			deployToWeblogicServer(serverprotocol, serverhost, serverport, serverusername, serverpassword);
+		} else if (servertype.contains(TYPE_WEBLOGIC) && ((version.equals(Constants.WEBLOGIC_12c)) || (version.equals(Constants.WEBLOGIC_11gR1)))) {
+			deployToWeblogicServer(serverprotocol, serverhost, serverport, serverusername, serverpassword, version);
 		} 
 	}
 
@@ -377,14 +377,20 @@ public class JavaDeploy extends AbstractMojo implements PluginConstants {
 
 
 	private void deployToWeblogicServer(String serverprotocol, String serverhost, String serverport, String serverusername,
-			String serverpassword) throws MojoExecutionException {
+			String serverpassword, String version) throws MojoExecutionException {
 		BufferedReader bufferedReader = null;
 		boolean errorParam = false;
 		try {
+			String webLogicVersion = "";
+			if (version.equals(Constants.WEBLOGIC_12c)) {
+				webLogicVersion = Constants.WEBLOGIC_12c_PLUGIN_VERSION;
+			} else if (version.equals(Constants.WEBLOGIC_11gR1)) {
+				webLogicVersion = Constants.WEBLOGIC_11gr1c_PLUGIN_VERSION;
+			} 
 			StringBuilder sb = new StringBuilder();
 			sb.append(MVN_CMD);
 			sb.append(STR_SPACE);
-			sb.append(WEBLOGIC_GOAL);
+			sb.append(WEBLOGIC_GOAL + webLogicVersion + WEBLOGIC_REDEPLOY);
 			sb.append(STR_SPACE);
 			sb.append(SERVER_HOST);
 			sb.append(serverhost);

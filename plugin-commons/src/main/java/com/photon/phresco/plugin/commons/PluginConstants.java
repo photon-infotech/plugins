@@ -96,7 +96,8 @@ public interface PluginConstants {
 	 String JAR_PLUGIN_GROUPID			="org.apache.maven.plugins";
 	 String JAR_PLUGIN_ARTIFACT_ID		= "maven-jar-plugin";
 	 String TOMCAT_GOAL					= "org.codehaus.mojo:tomcat-maven-plugin:1.1:redeploy";
-	 String WEBLOGIC_GOAL				= "com.oracle.weblogic:weblogic-maven-plugin:12.1.1.0:redeploy";
+	 String WEBLOGIC_GOAL 				= "com.oracle.weblogic:weblogic-maven-plugin:";
+	 String WEBLOGIC_REDEPLOY 			= ":redeploy";
 	 String JBOSS_GOAL					= "cargo:redeploy";
 	 //String T7_START_GOAL				= "t7:run-forked";
 	 //String T7_STOP_GOAL				= "t7:stop-forked";
