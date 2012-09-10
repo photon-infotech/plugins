@@ -153,7 +153,7 @@ public class JavaDeploy extends AbstractMojo implements PluginConstants {
 		try {
 				ProjectAdministrator projAdmin = PhrescoFrameworkFactory.getProjectAdministrator();
 				String envName = environmentName;
-				if (environmentName.indexOf(',') > -1) { // multi-value
+				if (environmentName.indexOf(',') > -1) {
 					envName = projAdmin.getDefaultEnvName(projectCode);
 				}
 				List<SettingsInfo> settingsInfos = projAdmin.getSettingsInfos(Constants.SETTINGS_TEMPLATE_SERVER,
