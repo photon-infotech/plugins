@@ -244,8 +244,8 @@ public class AppDeploy extends AbstractMojo implements PluginConstants {
 	private void deployAppWithWaxSim() {
 		getLog().info("deployAppWithWaxSim method ");
 		try {
-			getLog().info("waxsim_home... " + System.getenv("waxsim_home"));
-			String waxsim_home = System.getenv("waxsim_home");
+			getLog().info("WAXSIM_HOME... " + System.getenv(WAXSIM_HOME));
+			String waxsim_home = System.getenv(WAXSIM_HOME);
 			if(StringUtils.isEmpty(waxsim_home)) {
 				throw new MojoExecutionException("waxsim_home is not found!");
 			}
@@ -254,7 +254,7 @@ public class AppDeploy extends AbstractMojo implements PluginConstants {
 				public void run() {
 
 					List<String> command = new ArrayList<String>();
-					command.add(System.getenv("waxsim_home"));
+					command.add(System.getenv(WAXSIM_HOME));
 					command.add("-s");
 					getLog().info("simVersion " + simVersion);
 					command.add(simVersion);
