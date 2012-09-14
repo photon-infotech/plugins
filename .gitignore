@@ -1,1 +1,11 @@
 target/
+
+javascript-maven-plugin/.classpath
+
+javascript-maven-plugin/.project
+
+*.prefs
+
+js-import-maven-plugin/.classpath
+
+js-import-maven-plugin/.project
