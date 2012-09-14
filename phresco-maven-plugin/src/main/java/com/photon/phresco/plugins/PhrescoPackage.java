@@ -18,17 +18,19 @@ package com.photon.phresco.plugins;
 
 import java.io.File;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.logging.Log;
 
-import com.photon.phresco.plugins.api.PluginConstants;
+import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.plugins.api.PhrescoPlugin;
+import com.photon.phresco.plugins.impl.PHPPlugin;
 
 /**
  * Phresco Maven Plugin for executing package command of the plugins
  * @goal package
  */
-public class PhrescoPackage extends AbstractMojo implements PluginConstants {
+public class PhrescoPackage extends PhrescoAbstractMojo {
     
     /**
      * File pointing to the Meta Info
@@ -43,12 +45,20 @@ public class PhrescoPackage extends AbstractMojo implements PluginConstants {
     private File selectedInfoFile = new File(PHRESCO_PLUGIN_SELECTED_INFO_XML);
     
     public void execute() throws MojoExecutionException, MojoFailureException {
-        System.out.println("Form Phreso Plugin");
-        System.out.println("Hello Phresco");
+        getLog().info("Form Phresco Plugin");
+        getLog().info("Hello Phresco");
+        
         //Read the selected info file
         //Convert it into Java Bean Objects using JAXB
         //Find the implementation class based on the technology
         //execute package method
-    }
 
+        try {
+            PhrescoPlugin plugin = getPlugin(com.photon.phresco.plugins.impl.PHPPlugin.class.getName());
+            plugin.pack();
+        } catch (PhrescoException e) {
+            throw new MojoExecutionException(e.getMessage(), e);
+        }
+    }
+    
 }
