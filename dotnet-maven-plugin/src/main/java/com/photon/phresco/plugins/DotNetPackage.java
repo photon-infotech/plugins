@@ -44,18 +44,11 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.photon.phresco.commons.BuildInfo;
 import com.photon.phresco.exception.PhrescoException;
-import com.photon.phresco.framework.PhrescoFrameworkFactory;
-import com.photon.phresco.framework.api.Project;
-import com.photon.phresco.framework.api.ProjectAdministrator;
-import com.photon.phresco.model.SettingsInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.util.ArchiveUtil;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
-import com.photon.phresco.util.Constants;
-import com.photon.phresco.util.TechnologyTypes;
 import com.photon.phresco.util.Utility;
-import com.phresco.pom.util.PomProcessor;
 
 /**
  * Goal which builds the DotNET WebApp 
@@ -110,9 +103,9 @@ public class DotnetPackage extends AbstractMojo implements PluginConstants {
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		getLog().info("Plugin Development is in Progress ...");
-//		init();
-//		boolean buildStatus = build();
-//		writeBuildInfo(buildStatus);
+		init();
+		boolean buildStatus = build();
+		writeBuildInfo(buildStatus);
 	}
 
 	private void init() throws MojoExecutionException {
