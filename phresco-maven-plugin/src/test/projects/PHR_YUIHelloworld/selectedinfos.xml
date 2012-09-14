@@ -1,0 +1,62 @@
+<selectedInfos>
+<selectedInfo operationName="package">
+<property name="" value=""/>
+<property name="" value=""/>
+</selectedInfo>
+
+<selectedInfo operationName="deploy">
+	<property name="" value=""/>
+	<property name="" value=""/>
+</selectedInfo>
+
+</selectedInfos>
+
+<mojos>
+    <mojo>
+      <goal>deploy</goal>
+      <implementation>com.photon.phresco.plugins.DrupalDeploy</implementation>
+      <language>java</language>
+	  <configuration>
+		
+		<android.sdk.version name="SDK Version" type="String">
+			<possibleValues>
+				<value>2.3.1</value>
+				<value>4.0.2</value>
+			</possibleValues>
+		</android.version>
+		
+		<android.sdk.version>4.0.2</android.sdk.version>
+		
+        <baseDir implementation="java.io.File">test/java</baseDir>
+        <buildNumber implementation="java.lang.String">${buildNumber}</buildNumber>
+        <environmentName implementation="java.lang.String">${environmentName}</environmentName>
+        <importSql implementation="boolean">${importSql}</importSql>
+        <project implementation="org.apache.maven.project.MavenProject">${project}</project>
+      </configuration>
+    </mojo>
+</mojos>
+
+<!-- META-DATA Section -->
+<mojos>
+    <mojo>
+      <goal>deploy</goal>
+      <implementation>com.photon.phresco.plugins.DrupalDeploy</implementation>
+      <language>java</language>
+	  <configuration>
+		<parameters>
+			<parameter>
+				<key>android.sdk.version</key>
+				<name>SDK Version</name>
+				<type>File</type>
+				<required>false</required>
+				<editable>false</editable>
+				<possibleValues>
+					<value>2.3.1</value>
+					<value>4.0.2</value>
+				</possibleValues>
+				<value>4.0.2</value>
+			</parameter>
+	  	</parameters>
+      </configuration>
+    </mojo>
+</mojos>

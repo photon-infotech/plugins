@@ -4,12 +4,13 @@ import java.io.File;
 import java.io.IOException;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
+import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugins.model.Mojos;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 
 public class MojoProcessor {
 
@@ -17,29 +18,36 @@ public class MojoProcessor {
 	
 	private File file;
 	
-	public MojoProcessor(File infoFile) throws JAXBException, IOException {
-		if(infoFile.exists()){
-			JAXBContext jaxbContext = JAXBContext.newInstance(Mojos.class);
-			Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-			mojos = (Mojos) jaxbUnmarshaller.unmarshal(infoFile);
-		} else {
-			infoFile.createNewFile();
-			mojos = new Mojos();
-		}
-		file = infoFile;
+	public MojoProcessor(File infoFile) throws PhrescoException {
+        try {
+    		if(infoFile.exists()){
+    			JAXBContext jaxbContext = JAXBContext.newInstance(Mojos.class);
+    			Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+    			mojos = (Mojos) jaxbUnmarshaller.unmarshal(infoFile);
+    		} else {
+    			infoFile.createNewFile();
+    			mojos = new Mojos();
+    		}
+    		file = infoFile;
+        } catch (JAXBException e) {
+            throw new PhrescoException(e);
+        } catch (IOException e) {
+            throw new PhrescoException(e);
+        }
 	}
-	public void getMojoGoal() {
-		System.out.println("Goal====> " + mojos.getMojo().getGoal());
-		System.out.println("implementation=====> " + mojos.getMojo().getImplementation());
-		System.out.println("Language========> " + mojos.getMojo().getLanguage());
-		System.out.println("Name=========> " + mojos.getMojo().getConfiguration().getParameters().getParameter().getName());
-		System.out.println("Key====> " + mojos.getMojo().getConfiguration().getParameters().getParameter().getKey());
-		System.out.println("Type=======> " + mojos.getMojo().getConfiguration().getParameters().getParameter().getType());
+	
+	public Configuration getConfiguration() {
+	    return mojos.getMojo().getConfiguration();
 	}
-	public void save() throws JAXBException {
-		JAXBContext jaxbContext = JAXBContext.newInstance(Mojos.class);
-		Marshaller marshal = jaxbContext.createMarshaller();
-		marshal.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-		marshal.marshal(mojos, file);
+	
+	public void save() throws PhrescoException {
+        try {
+    		JAXBContext jaxbContext = JAXBContext.newInstance(Mojos.class);
+    		Marshaller marshal = jaxbContext.createMarshaller();
+    		marshal.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+    		marshal.marshal(mojos, file);
+        } catch (JAXBException e) {
+            throw new PhrescoException(e);
+        }
 	}
 }

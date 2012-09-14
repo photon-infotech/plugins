@@ -25,12 +25,20 @@ import org.apache.maven.plugin.logging.Log;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.impl.PHPPlugin;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+import com.photon.phresco.plugins.util.MojoProcessor;
 
 /**
  * Phresco Maven Plugin for executing package command of the plugins
  * @goal package
  */
 public class PhrescoPackage extends PhrescoAbstractMojo {
+    
+    /**
+     * @parameter expression="${project.basedir}" required="true"
+     * @readonly
+     */
+    protected File baseDir;
     
     /**
      * File pointing to the Meta Info
@@ -47,18 +55,21 @@ public class PhrescoPackage extends PhrescoAbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().info("Form Phresco Plugin");
         getLog().info("Hello Phresco");
-        
+        getLog().info(baseDir.getPath());
         //Read the selected info file
         //Convert it into Java Bean Objects using JAXB
         //Find the implementation class based on the technology
         //execute package method
-
         try {
             PhrescoPlugin plugin = getPlugin(com.photon.phresco.plugins.impl.PHPPlugin.class.getName());
-            plugin.pack();
+            plugin.pack(getConfiguration());
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
     }
     
+    private Configuration getConfiguration() throws PhrescoException {
+        MojoProcessor processor = new MojoProcessor(new File(baseDir, PHRESCO_PLUGIN_SELECTED_INFO_XML));
+        return processor.getConfiguration();
+    }
 }
