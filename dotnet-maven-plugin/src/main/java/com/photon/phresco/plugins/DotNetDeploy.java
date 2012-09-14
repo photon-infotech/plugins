@@ -69,11 +69,13 @@ public class DotNetDeploy extends AbstractMojo implements PluginConstants {
 	 */
 	protected File baseDir;
 
-	/**
-	 * @parameter expression="${buildNumber}" required="true"
-	 */
-	protected String buildNumber;
 
+	/**
+	 * Build file name to deploy
+	 * 
+	 * @parameter expression="${buildName}" required="true"
+	 */
+	protected String buildName;
 	/**
 	 * @parameter expression="${environmentName}" required="true"
 	 */
@@ -90,23 +92,19 @@ public class DotNetDeploy extends AbstractMojo implements PluginConstants {
 
 	public void execute() throws MojoExecutionException {
 		init();
+		extractBuild();
 		sampleListSites();
 	}
 
 	private void init() throws MojoExecutionException {
 		try {
-			if (StringUtils.isEmpty(buildNumber) || StringUtils.isEmpty(environmentName)) {
+			if (StringUtils.isEmpty(buildName) || StringUtils.isEmpty(environmentName)) {
 				callUsage();
 			}
-
-//			PluginUtils pu = new PluginUtils();
-//			BuildInfo buildInfo = pu.getBuildInfo(Integer.parseInt(buildNumber));
-//			getLog().info("Build Name " + buildInfo);
-//
-//			buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
-//			targetDir = new File(project.getBuild().getDirectory());
-//			buildFile = new File(buildDir.getPath() + File.separator + buildInfo.getBuildName());
-//			getLog().info("buildFile path " + buildFile.getPath());
+			buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
+			targetDir = new File(project.getBuild().getDirectory());
+			buildFile = new File(buildDir.getPath() + File.separator + buildName);
+			getLog().info("buildFile path " + buildFile.getPath());
 
 			List<SettingsInfo> settingsInfos = getSettingsInfo(Constants.SETTINGS_TEMPLATE_SERVER);
 			for (SettingsInfo serverDetails : settingsInfos) {
@@ -128,7 +126,7 @@ public class DotNetDeploy extends AbstractMojo implements PluginConstants {
 		getLog().error("Invalid usage.");
 		getLog().info("Usage of Deploy Goal");
 		getLog().info(
-				"mvn drupal:deploy -DbuildNumber=\"Number of the build\""
+				"mvn dotnet:deploy -DbuildNumber=\"Number of the build\""
 						+ " -DenvironmentName=\"Multivalued evnironment names\"");
 		throw new MojoExecutionException("Invalid Usage. Please see the Usage of Deploy Goal");
 	}
@@ -180,6 +178,14 @@ public class DotNetDeploy extends AbstractMojo implements PluginConstants {
 			throw new MojoExecutionException(e.getMessage(), e);
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
+		}
+	}
+	
+	private void extractBuild() throws MojoExecutionException {
+		try {
+			ArchiveUtil.extractArchive(buildFile.getPath(), targetDir.getPath(), ArchiveType.ZIP);
+		} catch (PhrescoException e) {
+			throw new MojoExecutionException(e.getErrorMessage(), e);
 		}
 	}
 
