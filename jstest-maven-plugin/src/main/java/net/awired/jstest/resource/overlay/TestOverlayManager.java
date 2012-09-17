@@ -212,8 +212,6 @@ public class TestOverlayManager {
      */
     private List getOverlaysAsArtifacts() {
         ScopeArtifactFilter filter = new ScopeArtifactFilter(Artifact.SCOPE_TEST);
-        System.out.println("project name === " + project.getArtifactId());
-        System.out.println("project afts === " + project.getArtifacts());
         final Set artifacts = project.getArtifacts();
         final Iterator it = artifacts.iterator();
 

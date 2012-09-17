@@ -2,34 +2,38 @@
 <mojos>
     <mojo>
       <goal>deploy</goal>
-      <implementation>com.photon.phresco.plugins.DrupalDeploy</implementation>
+      <description>Goal which deploys the PHP project</description>
+      <requiresDirectInvocation>false</requiresDirectInvocation>
+      <requiresProject>true</requiresProject>
+      <requiresReports>false</requiresReports>
+      <aggregator>false</aggregator>
+      <requiresOnline>false</requiresOnline>
+      <inheritedByDefault>true</inheritedByDefault>
+      <implementation>com.photon.phresco.plugins.PhpDeploy</implementation>
       <language>java</language>
-      <configuration>
-        <parameters>
-            <parameter>
-                <key>android.sdk.version</key>
-                <name>SDK Version</name>
-                <type>File</type>
-                <required>false</required>
-                <editable>false</editable>
-                <possibleValues>
-                    <value>2.3.1</value>
-                    <value>4.0.2</value>
-                </possibleValues>
-                <value>4.0.2</value>
-            </parameter>
-			<parameter>
-                <key>php.version</key>
-                <name>SDK Version</name>
-                <type>File</type>
-                <required>false</required>
-                <editable>false</editable>
-                <possibleValues>
-                    <value>2.3.1</value>
-                    <value>4.0.2</value>
-                </possibleValues>
-                <value>7.10</value>
-            </parameter>
+      <instantiationStrategy>per-lookup</instantiationStrategy>
+      <executionStrategy>once-per-session</executionStrategy>
+      <threadSafe>false</threadSafe>
+	  <configuration>
+      <parameters>
+        <parameter>
+          <name>buildNumber</name>
+          <type>java.lang.String</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+		  <key>buildNumber</key>
+		  <value>first</value>
+        </parameter>
+        <parameter>
+          <name>environmentName</name>
+          <type>java.lang.String</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+		  <key>environmentName</key>
+		  <value>Production</value>
+        </parameter>
           </parameters>
       </configuration>
     </mojo>

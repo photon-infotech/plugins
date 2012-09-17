@@ -6,12 +6,14 @@ import net.awired.jstest.runner.impl.AlmondRunner;
 import net.awired.jstest.runner.impl.CurlRunner;
 import net.awired.jstest.runner.impl.DefaultRunner;
 import net.awired.jstest.runner.impl.RequireJsRunner;
+import net.awired.jstest.runner.impl.UseYUIRunner;
 
 public enum RunnerType {
     DEFAULT(DefaultRunner.class, "/runnerTemplate/defaultRunner.tpl"), //
     REQUIREJS(RequireJsRunner.class, "/runnerTemplate/requireJsRunner.tpl", "require.js"), //
     ALMOND(AlmondRunner.class, "/runnerTemplate/almondRunner.tpl", "almond.js"), //
     CURL(CurlRunner.class, "/runnerTemplate/curlRunner.tpl", "curl.js"), //
+    USEYUI(UseYUIRunner.class, "/runnerTemplate/useYUIRunner.tpl", "require.js"), //
     ;
 
     private String template;

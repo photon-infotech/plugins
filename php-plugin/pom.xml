@@ -1,25 +1,29 @@
-<?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <artifactId>phresco-plugins-root</artifactId>
-    <groupId>com.photon.phresco.plugins</groupId>
-    <version>2.0.0.14001-SNAPSHOT</version>
-	<relativePath>../</relativePath>
+	
+	<parent>
+		<artifactId>phresco-plugins-root</artifactId>
+		<groupId>com.photon.phresco.plugins</groupId>
+		<version>2.0.0.14001-SNAPSHOT</version>
+		<relativePath>../</relativePath>
   </parent>
+  
   <groupId>com.photon.phresco.plugins</groupId>
-  <artifactId>phresco-maven-plugin</artifactId>
+  <artifactId>php-plugin</artifactId>
   <version>2.0.0.14001-SNAPSHOT</version>
-  <packaging>maven-plugin</packaging>
-  <name>Phresco Maven Plugin</name>
-  <url>http://phresco.com</url>
-  <organization>
-  	<name>Photon Infotech</name>
-  	<url>http://phresco.com</url>
-  </organization>
+  <packaging>jar</packaging>
+
+  <name>php-plugin</name>
+  <url>http://maven.apache.org</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
   <dependencies>
-    <dependency>
+  	
+  	 <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-plugin-api</artifactId>
       <version>2.0</version>
@@ -73,33 +77,5 @@
         <version>${maven-project.version}</version>
     </dependency>
     
-    <dependency>
-        <groupId>mysql</groupId>
-        <artifactId>mysql-connector-java</artifactId>
-        <version>${mysql-connector-java.version}</version>
-    </dependency>
-	
-	<dependency>
-		<groupId>com.microsoft.sqlserver.jdbc.sqlserverdriver</groupId>
-		<artifactId>sqlserverdriver</artifactId>
-		<version>${sqlserverdriver.version}</version>
-	</dependency>
-	
-	<dependency>
-		<groupId>oracle.jdbc.oracledriver</groupId>
-		<artifactId>oracledriver</artifactId>
-		<version>${oracledriver.version}</version>
-	</dependency>
-	
-	<dependency>
-		<groupId>com.ibm.db2.jcc.db2Driver</groupId>
-		<artifactId>db2Driver</artifactId>
-		<version>${db2Driver.version}</version>
-	</dependency>
-    <dependency>
-		<groupId>com.photon.phresco.plugins</groupId>
-		<artifactId>php-plugin</artifactId>
-		<version>${phresco-commons-version}</version>
-	</dependency>
   </dependencies>
 </project>

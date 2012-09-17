@@ -35,8 +35,15 @@ public class OverlayExtractor {
             final List<Overlay> resolvedOverlays = overlayManager.getOverlays();
             for (Overlay overlay2 : resolvedOverlays) {
                 if (!overlay2.isCurrentProject()) {
-                    unpackOverlay(rootDirectory, overlay2);
-                }
+                	if ("js".equals(overlay2.getArtifact().getType())) {
+                    	File jsOverlayOutput = generateJsOverlayOutput(rootDirectory, overlay2);
+                    	jsOverlayOutput.mkdirs();
+                    	copyJsOverlay(overlay2.getArtifact().getFile(), jsOverlayOutput);
+                    } else {
+                    	unpackOverlay(rootDirectory, overlay2);
+                    }
+                }  
+                
             }
         } catch (Exception e) {
             throw new RuntimeException("Cannot process overlay projects", e);
@@ -52,8 +59,6 @@ public class OverlayExtractor {
             File file = overlay.getArtifact().getFile();
             if (!file.isFile()) {
                 copyDirectoryArtifact(file, overlayOutput);
-            } else if ("js".equals(overlay.getArtifact().getType())) {
-            	copyJsOverlay(file, overlayOutput);
             } else {
                 unpackArchiveArtifact(file, overlayOutput);
             }
@@ -64,14 +69,26 @@ public class OverlayExtractor {
 
 	private void copyJsOverlay(File file, File overlayOutput) {
 		try {
-			System.out.println("file available... " + file.canRead());
-			System.out.println("overlayOutput available... " + overlayOutput.canWrite());
 			FileUtils.copyFileToDirectory(file, overlayOutput);
 		} catch (IOException e) {
 			 log.warn("cannot copy js overlay, its not found : " + file);
 		}
 	}
-
+	
+	private File generateJsOverlayOutput(File rootDirectory, Overlay overlay) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(overlay.getGroupId().replaceAll("\\.", "/"));
+		sb.append(File.separator);
+		sb.append( overlay.getArtifactId());
+		sb.append(File.separator);
+		sb.append(overlay.getArtifact().getVersion());
+        /*String subdir = convertPackageToPath(overlay.getGroupId()) + File.separator + overlay.getArtifactId() + File.separator + overlay.getArtifact().getVersion();
+        if (overlay.getClassifier() != null) {
+            subdir += "-" + overlay.getClassifier();
+        }*/
+        return new File(rootDirectory, sb.toString());
+    }
+	
     private File generateOverlayOutput(File rootDirectory, Overlay overlay) {
         String subdir = overlay.getGroupId() + File.separator + overlay.getArtifactId();
         if (overlay.getClassifier() != null) {

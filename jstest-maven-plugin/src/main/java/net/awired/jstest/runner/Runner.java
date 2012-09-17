@@ -53,9 +53,6 @@ public abstract class Runner {
 
         replaceCommonTemplateVars(template, browserId, emulator, runId);
         replaceTemplateVars(template);
-        System.out.println("=========================== ");
-        System.out.println(template.toString());
-        System.out.println("=========================== ");
         return template.toString();
     }
 

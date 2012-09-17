@@ -265,7 +265,7 @@ public class PluginUtils {
 		try {
 			String fileToString = FileUtils.fileRead(configFile);
 			String content = Base64.encodeBase64String(fileToString.getBytes());
-			FileUtils.fileWrite(configFile, content);
+//			FileUtils.fileWrite(configFile, content);
 		} catch (IOException e) {
 			throw new PhrescoException(e);
 		}
