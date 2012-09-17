@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mojos>
+    <mojo>
+      <goal>deploy</goal>
+      <implementation>com.photon.phresco.plugins.DrupalDeploy</implementation>
+      <language>java</language>
+      <configuration>
+        <parameters>
+            <parameter>
+                <key>android.sdk.version</key>
+                <name>SDK Version</name>
+                <type>File</type>
+                <required>false</required>
+                <editable>false</editable>
+                <possibleValues>
+                    <value>2.3.1</value>
+                    <value>4.0.2</value>
+                </possibleValues>
+                <value>4.0.2</value>
+            </parameter>
+			<parameter>
+                <key>php.version</key>
+                <name>SDK Version</name>
+                <type>File</type>
+                <required>false</required>
+                <editable>false</editable>
+                <possibleValues>
+                    <value>2.3.1</value>
+                    <value>4.0.2</value>
+                </possibleValues>
+                <value>7.10</value>
+            </parameter>
+          </parameters>
+      </configuration>
+    </mojo>
+</mojos>

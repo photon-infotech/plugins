@@ -1,0 +1,24 @@
+package com.photon.phresco.plugins.api;
+
+import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+
+public interface PhrescoPlugin {
+    
+    void validate() throws PhrescoException;
+    
+    void pack(Configuration configuration) throws PhrescoException;
+    
+    void deploy() throws PhrescoException;
+    
+    void runAgainstSource() throws PhrescoException;
+    
+    void runUnitTest() throws PhrescoException;
+    
+    void runFunctionalTest() throws PhrescoException;
+    
+    void runPerformanceTest() throws PhrescoException;
+    
+    void runLoadTest() throws PhrescoException;
+    
+}
