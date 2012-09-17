@@ -20,11 +20,11 @@ import java.io.File;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
-import com.photon.phresco.plugins.impl.PHPPlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoProcessor;
 
@@ -33,6 +33,16 @@ import com.photon.phresco.plugins.util.MojoProcessor;
  * @goal package
  */
 public class PhrescoPackage extends PhrescoAbstractMojo {
+    
+    
+    /**
+     * The Maven project.
+     * 
+     * @parameter expression="${project}"
+     * @required
+     * @readonly
+     */
+    protected MavenProject project;
     
     /**
      * @parameter expression="${project.basedir}" required="true"
@@ -62,7 +72,7 @@ public class PhrescoPackage extends PhrescoAbstractMojo {
         //execute package method
         try {
             PhrescoPlugin plugin = getPlugin(com.photon.phresco.plugins.impl.PHPPlugin.class.getName());
-            plugin.pack(getConfiguration());
+            plugin.pack(getConfiguration(), getMavenProjectInfo());
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
@@ -71,5 +81,12 @@ public class PhrescoPackage extends PhrescoAbstractMojo {
     private Configuration getConfiguration() throws PhrescoException {
         MojoProcessor processor = new MojoProcessor(new File(baseDir, PHRESCO_PLUGIN_SELECTED_INFO_XML));
         return processor.getConfiguration();
+    }
+    
+    private MavenProjectInfo getMavenProjectInfo() {
+        MavenProjectInfo mavenProjectInfo = new MavenProjectInfo();
+        mavenProjectInfo.setBaseDir(baseDir);
+        mavenProjectInfo.setProject(project);
+        return mavenProjectInfo;
     }
 }
