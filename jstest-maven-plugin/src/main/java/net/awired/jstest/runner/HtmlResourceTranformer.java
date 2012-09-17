@@ -8,8 +8,12 @@ public class HtmlResourceTranformer {
     public String buildTagsFromResources(Map<String, File> resources) {
         StringBuilder res = new StringBuilder();
         for (String key : resources.keySet()) {
-        	System.out.println("Name ===== " + key);
-            appendTag(res, key);
+        	if (!key.startsWith("/src/yui") && !key.endsWith("/UseYUI.js")) {
+        		appendTag(res, key);
+        	}
+        	if (key.endsWith("/yui-min.js")){
+        		appendTag(res, key);
+        	}
         }
         return res.toString();
     }

@@ -7,6 +7,8 @@ import net.awired.jstest.resource.ResourceDirectory;
 import net.awired.jstest.resource.ResourceResolver;
 import net.awired.jstest.runner.RunnerType;
 import net.awired.jstest.runner.TestType;
+
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
@@ -161,7 +163,7 @@ public abstract class JsTestConfiguration extends AbstractMojo {
      * @parameter default-value="${project}"
      */
     private MavenProject mavenProject;
-
+    
     //////////////////////////////////////////////////////////
 
     public boolean isIgnoreFailure() {

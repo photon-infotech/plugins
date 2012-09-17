@@ -34,19 +34,14 @@ public class ResourceResolver {
         this.sourceOverlays = overlays;
         this.preloadOverlayDirs = preloadOverlayDirs;
 
-        System.out.println("overlay ================= ");
         for (ResourceDirectory overlay : overlays) {
-        	System.out.println("overlay dir ====== " + overlay.getDirectory());
             registerResourcesToMap(SRC_RESOURCE_PREFIX, directoryScanner.scan(overlay), overlay.getDirectory(), true);
         }
-        System.out.println("overlayPreload ================= ");
         for (ResourceDirectory overlayPreload : preloadOverlayDirs) {
             registerResourcesToMap(SRC_RESOURCE_PREFIX, directoryScanner.scan(overlayPreload),
                     overlayPreload.getDirectory(), false);
         }
-        System.out.println("test ================= ");
         registerResourcesToMap(TEST_RESOURCE_PREFIX, directoryScanner.scan(test), test.getDirectory(), true);
-        System.out.println("src ================= ");
         registerResourcesToMap(SRC_RESOURCE_PREFIX, directoryScanner.scan(source), source.getDirectory(), true);
 
         if (log.isDebugEnabled()) {
@@ -60,7 +55,6 @@ public class ResourceResolver {
     private void registerResourcesToMap(String prefix, List<String> founds, File path, boolean logOnConflict) {
         for (String found : founds) {
             File fullPath = new File(path, found);
-            System.out.println("file path === " + fullPath.toString());
             File alreadyRegistered = resources.get(found);
             if (alreadyRegistered != null) {
                 log.warn("Resource conflics for : " + found + ". Found in " + alreadyRegistered + " and in "

@@ -2,7 +2,6 @@ package net.awired.jstest.mojo.inherite;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -10,7 +9,6 @@ import java.util.Set;
 import net.awired.jstest.common.StringStacktrace;
 import net.awired.jstest.resource.ResourceDirectory;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -44,23 +42,18 @@ public abstract class AbstractJsTestMojo extends JsTestConfiguration {
         File overlayDirectory = getOverlayDirectory();
         File[] groupIdDirs = overlayDirectory.listFiles();
         
-        System.out.println("************************* buildOverlaysResourceDirectories ************************ " + getMavenProject().getArtifacts());
-        System.out.println("project name === " + getMavenProject().getArtifactId());
-        System.out.println("project de === " + getMavenProject().getDependencyArtifacts());
         File[] allDirs = null;
         if (groupIdDirs != null) {
             for (File groupIdDir : groupIdDirs) {
                 File[] artifactIdDirs = groupIdDir.listFiles();
                 allDirs = concat(allDirs, artifactIdDirs);
                 /*for (File resource : artifactIdDirs) {
-                	System.out.println("resource === " + resource);
                     overlays.add(new ResourceDirectory(resource, ResourceDirectory.DEFAULT_INCLUDES,
                             ResourceDirectory.DEFAULT_EXCLUDES));
                 }*/
             }
-            overlays.addAll(arrangeAsDependency(allDirs));
+            overlays.addAll(arrangeAsDependency(overlayDirectory, allDirs));
         }
-        System.out.println("************************* buildOverlaysResourceDirectories ************************" + overlays);
         return overlays;
     }
     
@@ -76,17 +69,23 @@ public abstract class AbstractJsTestMojo extends JsTestConfiguration {
 
 
     
-    private List<ResourceDirectory> arrangeAsDependency(File[] artifactIdDirs) {
+    private List<ResourceDirectory> arrangeAsDependency(File overlayDirectory, File[] artifactIdDirs) {
     	Set dependencyArtifacts = getMavenProject().getDependencyArtifacts();
     	final Iterator it = dependencyArtifacts.iterator();
 
         final List<ResourceDirectory> result = new ArrayList<ResourceDirectory>();
         while (it.hasNext()) {
-            Artifact artifact = (Artifact) it.next();
-            ResourceDirectory resourceDirectory = getDependencyAsResource(artifact, artifactIdDirs);
-            System.out.println("######### resourceDirectory " + resourceDirectory);
+        	ResourceDirectory resourceDirectory = null;
+        	Artifact artifact = (Artifact) it.next();
+            if ("js".equals(artifact.getType())) {
+            	File resource = getJsArtifactAsResource(overlayDirectory, artifact);
+            	resourceDirectory = new ResourceDirectory(resource, ResourceDirectory.DEFAULT_INCLUDES,
+                        ResourceDirectory.DEFAULT_EXCLUDES);
+            } else {
+            	resourceDirectory = getArtifactAsResource(artifact, artifactIdDirs);
+            }
+            
             if (resourceDirectory != null) {
-            	System.out.println("!!!!!!!! added " +  resourceDirectory.getDirectory());
             	result.add(resourceDirectory);
             }
         }
@@ -94,12 +93,24 @@ public abstract class AbstractJsTestMojo extends JsTestConfiguration {
 		return result;
     }
     
-    private ResourceDirectory getDependencyAsResource(Artifact artifact, File[] artifactIdDirs) {
+    private File getJsArtifactAsResource(File overlayDirectory, Artifact artifact) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(artifact.getGroupId().replaceAll("\\.", "/"));
+		sb.append(File.separator);
+		sb.append(artifact.getArtifactId());
+		sb.append(File.separator);
+		sb.append(artifact.getVersion());
+        /*String subdir = convertPackageToPath(overlay.getGroupId()) + File.separator + overlay.getArtifactId() + File.separator + overlay.getArtifact().getVersion();
+        if (overlay.getClassifier() != null) {
+            subdir += "-" + overlay.getClassifier();
+        }*/
+        return new File(overlayDirectory, sb.toString());
+    }
+    
+    private ResourceDirectory getArtifactAsResource(Artifact artifact, File[] artifactIdDirs) {
     	String fileName = artifact.getArtifactId() ; //+ "-" + artifact.getVersion() + ".js";
     	for (File resource : artifactIdDirs) {
-    		System.out.println("rsrc = " + resource.getName() + " fileName = " + fileName);
     		if (resource.getName().equals(fileName)) {
-    			System.out.println("resource ... " + resource);
     			return new ResourceDirectory(resource, ResourceDirectory.DEFAULT_INCLUDES,
                         ResourceDirectory.DEFAULT_EXCLUDES);
     		}

@@ -22,13 +22,11 @@ public class ResourceDirectoryScanner {
     }
 
     private List<String> performScan(File directory, String include, List<String> excludes) {
-    	System.out.println("$$$$$$$$$$$$$$$$$$$ directory ====  " + directory);
         directoryScanner.setBasedir(directory);
         directoryScanner.setIncludes(new String[] { include });
         directoryScanner.setExcludes(excludes.toArray(new String[] {}));
         directoryScanner.addDefaultExcludes();
         directoryScanner.scan();
-        System.out.println("$$$$$$$$$$$$$$$$$$$ directoryScanner.getIncludedFiles() ====  " + directoryScanner.getIncludedFiles());
         ArrayList<String> result = new ArrayList<String>(asList(directoryScanner.getIncludedFiles()));
         Collections.sort(result);
         return result;
