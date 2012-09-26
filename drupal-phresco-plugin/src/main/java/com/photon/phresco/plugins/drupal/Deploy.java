@@ -14,7 +14,7 @@ import org.codehaus.plexus.util.StringUtils;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.framework.api.ProjectAdministrator;
-import com.photon.phresco.model.SettingsInfo;
+import com.photon.phresco.framework.model.SettingsInfo;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
@@ -32,7 +32,6 @@ public class Deploy implements PluginConstants {
 	private String environmentName;
 	private boolean importSql;
 	private File binariesDir;
-	private File buildDir;
 	private File buildFile;
 	private File tempDir;
 	private Log log;
@@ -41,8 +40,9 @@ public class Deploy implements PluginConstants {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
-        environmentName = configs.get("environmentName");
-        buildName = configs.get("buildName");
+        environmentName = configs.get(ENVIRONMENT_NAME);
+        buildName = configs.get(BUILD_NAME);
+        
 		try {
 			init();
 			createDb();
@@ -60,7 +60,7 @@ public class Deploy implements PluginConstants {
 			if (StringUtils.isEmpty(buildName) || StringUtils.isEmpty(environmentName)) {
 				callUsage();
 			}
-			buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
+			File buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
 			buildFile = new File(buildDir.getPath() + File.separator + buildName);
 			binariesDir = new File(baseDir.getPath() + BINARIES_DIR);
 			
@@ -73,7 +73,7 @@ public class Deploy implements PluginConstants {
 			tempDir = new File(buildDir.getPath() + TEMP_DIR + File.separator + context);
 			tempDir.mkdirs();
 		} catch (Exception e) {
-			log.error(e);
+			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
@@ -119,7 +119,6 @@ public class Deploy implements PluginConstants {
 			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 			String line = null;
 			while ((line = bufferedReader.readLine()) != null) {
-				System.out.println(line); // do not use log here as this line already contains the log type.
 				if (line.startsWith("[ERROR]")) {
 					errorParam = true;
 				}
@@ -174,7 +173,7 @@ public class Deploy implements PluginConstants {
 			FileUtils.copyDirectoryStructure(tempDir.getParentFile(), deployDir);
 			log.info("Project is deployed successfully");
 		} catch (Exception e) {
-			log.error(e);
+			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}

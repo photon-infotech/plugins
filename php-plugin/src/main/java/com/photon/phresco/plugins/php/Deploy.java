@@ -13,7 +13,7 @@ import org.codehaus.plexus.util.StringUtils;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.framework.api.ProjectAdministrator;
-import com.photon.phresco.model.SettingsInfo;
+import com.photon.phresco.framework.model.SettingsInfo;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
@@ -23,11 +23,12 @@ import com.photon.phresco.util.ArchiveUtil;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 
-public class PhpDeploy implements PluginConstants {
+public class Deploy implements PluginConstants {
 	
 	private File baseDir;
 	private String buildName;
 	private String environmentName;
+	private String projectCode;
 	private boolean importSql;
 	private File buildDir;
 	private File buildFile;
@@ -38,9 +39,10 @@ public class PhpDeploy implements PluginConstants {
     	this.log = log;
     	baseDir = mavenProjectInfo.getBaseDir();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
-        environmentName = configs.get("environmentName");
-        buildName = configs.get("buildName");
-    	try {
+        environmentName = configs.get(ENVIRONMENT_NAME);
+        buildName = configs.get(BUILD_NAME);
+        projectCode = mavenProjectInfo.getProjectCode();
+    	try { 
 			init();
 			createDb();
 			extractBuild();
@@ -58,7 +60,7 @@ public class PhpDeploy implements PluginConstants {
 			buildDir = new File(baseDir.getPath() + PluginConstants.BUILD_DIRECTORY);
 			buildFile = new File(buildDir.getPath() + File.separator + buildName);
 		} catch (Exception e) {
-			log.error(e);
+			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
@@ -122,7 +124,7 @@ public class PhpDeploy implements PluginConstants {
 			FileUtils.copyDirectoryStructure(tempDir.getParentFile(), deployDir);
 			log.info("Project is deployed successfully");
 		} catch (Exception e) {
-			log.error(e);
+			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}

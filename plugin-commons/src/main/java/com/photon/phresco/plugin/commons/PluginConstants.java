@@ -192,7 +192,7 @@ public interface PluginConstants {
 	 String WP_ADD_APPX_PACKAGE 		= "Add-AppxPackage ";
 	 String WP_GET_APPX_PACKAGE 		= "Get-AppxPackage ";
 	 String WP_REMOVE_APPX_PACKAGE 		= "Remove-AppxPackage ";
-     
+	 String WP8_PLATFORM 				= "wp8";
 	 // Variables related to Windows 7 build process
 	 String WP7_BIN_FOLDER				= "\\bin";
 	 String WP7_RELEASE_FOLDER			= "\\release";
@@ -206,5 +206,17 @@ public interface PluginConstants {
 	 
 	 //Xcode plugin constants
 	 String WAXSIM_HOME 				= "WAXSIM_HOME";
-
+	 
+	 //Constants for dynamic parameter
+	 String BUILD_NAME 					= "buildName";
+	 String ENVIRONMENT_NAME 			= "environmentName";
+	 String WINDOWS_PLATFORM_TYPE		= "type";
+	 String CONFIG 						= "config";
+	 String PLATFORM 					= "platform";
+	 String DOT_ZIP 					= ".zip";
+	 String USER_BUILD_NUMBER 			= "userBuildNumber";
+	 
+	 //Constants for Time Formatter
+	 String TIME_STAMP_FOR_BUILD_NAME 	= "dd-MMM-yyyy-HH-mm-ss";
+	 String TIME_STAMP_FOR_DISPLAY 		= "dd/MMM/yyyy HH:mm:ss";
 }

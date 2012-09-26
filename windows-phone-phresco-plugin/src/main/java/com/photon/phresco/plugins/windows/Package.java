@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
@@ -49,13 +48,13 @@ import org.jdom.input.SAXBuilder;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.photon.phresco.commons.BuildInfo;
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.framework.model.BuildInfo;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
-import com.photon.phresco.plugins.model.WP8PackageInfo;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+import com.photon.phresco.plugins.model.WP8PackageInfo;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.ArchiveUtil;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
@@ -93,14 +92,16 @@ public class Package implements PluginConstants {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
-        environmentName = configs.get("environmentName");
-        buildName = configs.get("buildName");
-        platform = configs.get("platform");
-        config = configs.get("config");
-        type = configs.get("type");
+        environmentName = configs.get(ENVIRONMENT_NAME);
+        buildName = configs.get(BUILD_NAME);
+        buildNumber = configs.get(USER_BUILD_NUMBER);
+        platform = configs.get(PLATFORM);
+        config = configs.get(CONFIG);
+        type = configs.get(WINDOWS_PLATFORM_TYPE);
+        
 		try {
 			init();
-			if(type.equalsIgnoreCase("wp8")) {
+			if(type.equalsIgnoreCase(WP8_PLATFORM)) {
 				try {
 					generateWP8Package();
 				} catch (PhrescoException e) {				
@@ -126,7 +127,7 @@ public class Package implements PluginConstants {
 			
 			getSolutionFile();
 			
-			if(type.equalsIgnoreCase("wp8")) {
+			if(type.equalsIgnoreCase(WP8_PLATFORM)) {
 				getProjectRoot();
 				getCSProjectFile();
 				packageInfo = new WP8PackageInfo(rootDir);
@@ -142,7 +143,7 @@ public class Package implements PluginConstants {
 			nextBuildNo = generateNextBuildNo();
 			currentDate = Calendar.getInstance().getTime();
 		} catch (Exception e) {
-			log.error(e);
+			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
@@ -165,7 +166,7 @@ public class Package implements PluginConstants {
 				}
 			});			
 		} catch (Exception e) {
-			log.error(e);
+			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
@@ -181,7 +182,7 @@ public class Package implements PluginConstants {
 				}
 			});			
 		} catch (Exception e) {
-			log.error(e);
+			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
@@ -191,7 +192,7 @@ public class Package implements PluginConstants {
 			// Get the source/<ProjectRoot> folder
 			rootDir = new File(baseDir.getPath() + sourceDirectory + File.separator + WP_PROJECT_ROOT);
 		} catch (Exception e) {
-			log.error(e);
+			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
@@ -220,8 +221,7 @@ public class Package implements PluginConstants {
 			cl.setWorkingDirectory(baseDir.getPath() + sourceDirectory);
 			Process process = cl.execute();
 			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			String line = null;
-			while ((line = in.readLine()) != null) {
+			while ((in.readLine()) != null) {
 			}
 		} catch (CommandLineException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
@@ -261,8 +261,7 @@ public class Package implements PluginConstants {
 			cl.setWorkingDirectory(baseDir.getPath() + sourceDirectory);
 			Process process = cl.execute();
 			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			String line = null;
-			while ((line = in.readLine()) != null) {
+			while ((in.readLine()) != null) {
 			}
 		} catch (CommandLineException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
@@ -310,7 +309,6 @@ public class Package implements PluginConstants {
 				packageInfo.incrementPackageVersionNo();
 			}
 		} catch (Exception e) {
-			System.out.println("EXXXXCEPTION: == "  +e.getMessage());
 		}
 	}
 	
@@ -320,7 +318,7 @@ public class Package implements PluginConstants {
 			createPackage();
 		} catch (Exception e) {
 			isBuildSuccess = false;
-			log.error(e);
+			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 		return isBuildSuccess;
@@ -329,18 +327,18 @@ public class Package implements PluginConstants {
 	private void createPackage() throws MojoExecutionException {
 		try {
 			if (buildName != null) {
-				zipName = buildName + ".zip";
+				zipName = buildName + DOT_ZIP;
 			} else {
 				if (buildNumber != null) {
 					zipName = projectName + STR_UNDERSCORE + buildNumber + STR_UNDERSCORE + getTimeStampForBuildName(currentDate)
-							+ ".zip";
+							+ DOT_ZIP;
 				} else {
 					zipName = projectName + STR_UNDERSCORE + nextBuildNo + STR_UNDERSCORE + getTimeStampForBuildName(currentDate)
-							+ ".zip";
+							+ DOT_ZIP;
 				}
 			}
 			String zipFilePath = buildDir.getPath() + File.separator + zipName;
-			if(type.equalsIgnoreCase("wp8")) {
+			if(type.equalsIgnoreCase(WP8_PLATFORM)) {
 				String packageVersion = packageInfo.getPackageVersion();
 				String tempFilePath = rootDir.getPath() + WP_APP_PACKAGE + File.separator + WP_PROJECT_ROOT + STR_UNDERSCORE + packageVersion + STR_UNDERSCORE + (platform.equalsIgnoreCase("any cpu")?"AnyCPU":platform) + (config.equalsIgnoreCase("debug")? STR_UNDERSCORE + config : "") + WP_TEST;
 				tempDir = new File(tempFilePath);
@@ -388,19 +386,17 @@ public class Package implements PluginConstants {
 	}
 
 	private String getTimeStampForDisplay(Date currentDate) {
-		SimpleDateFormat formatter = new SimpleDateFormat("dd/MMM/yyyy HH:mm:ss");
-		String timeStamp = formatter.format(currentDate.getTime());
-		return timeStamp;
+		SimpleDateFormat formatter = new SimpleDateFormat(TIME_STAMP_FOR_DISPLAY);
+		return formatter.format(currentDate.getTime());
 	}
 
 	private String getTimeStampForBuildName(Date currentDate) {
-		SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy-HH-mm-ss");
-		String timeStamp = formatter.format(currentDate.getTime());
-		return timeStamp;
+		SimpleDateFormat formatter = new SimpleDateFormat(TIME_STAMP_FOR_BUILD_NAME);
+		return formatter.format(currentDate.getTime());
 	}
 
 	private int generateNextBuildNo() throws IOException {
-		int nextBuildNo = 1;
+	    nextBuildNo = 1;
 		if (!buildInfoFile.exists()) {
 			return nextBuildNo;
 		}

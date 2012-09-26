@@ -1,4 +1,4 @@
-package com.photon.phreco.plugins.javaplugins;
+package com.photon.phresco.plugins.java;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,7 +19,7 @@ import org.codehaus.plexus.util.StringUtils;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.framework.api.ProjectAdministrator;
-import com.photon.phresco.model.SettingsInfo;
+import com.photon.phresco.framework.model.SettingsInfo;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
@@ -33,8 +33,10 @@ import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.model.Dependency;
 import com.phresco.pom.util.PomProcessor;
 
-public class JavaDeploy implements PluginConstants {
+public class Deploy implements PluginConstants {
 	
+	private static final String CARGO_MAVEN2_PLUGIN = "cargo-maven2-plugin";
+	private static final String CODEHAUS_CARGO_PLUGIN = "org.codehaus.cargo";
 	private MavenProject project;
 	private File baseDir;
 	private String buildName;
@@ -43,7 +45,6 @@ public class JavaDeploy implements PluginConstants {
 	private String projectCode;
 	private File buildFile;
 	private File tempDir;
-	private File buildDir;
 	private String context;
 	private Map<String, String> serverVersionMap = new HashMap<String, String>();
 	private Log log;
@@ -54,8 +55,9 @@ public class JavaDeploy implements PluginConstants {
 		project = mavenProjectInfo.getProject();
 		projectCode = mavenProjectInfo.getProjectCode();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
-        environmentName = configs.get("environmentName");
-        buildName = configs.get("buildName");
+        environmentName = configs.get(ENVIRONMENT_NAME);
+        buildName = configs.get(BUILD_NAME);
+        
 		try {
 			init();
 			initMap();
@@ -75,12 +77,12 @@ public class JavaDeploy implements PluginConstants {
 			if (StringUtils.isEmpty(buildName) || StringUtils.isEmpty(environmentName)) {
 				callUsage();
 			}
-			buildDir = new File(baseDir.getPath() + PluginConstants.BUILD_DIRECTORY);// build dir
+			File buildDir = new File(baseDir.getPath() + PluginConstants.BUILD_DIRECTORY);// build dir
 			buildFile = new File(buildDir.getPath() + File.separator + buildName);// filename
 			tempDir = new File(buildDir.getPath() + TEMP_DIR);// temp dir
 			tempDir.mkdirs();
 		} catch (Exception e) {
-			log.error(e);
+			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
@@ -210,7 +212,7 @@ public class JavaDeploy implements PluginConstants {
 	private void addCargoDependency(String version) throws PhrescoException {
 		try {
 			PomProcessor processor = new PomProcessor(project.getFile());
-			processor.deletePluginDependency("org.codehaus.cargo", "cargo-maven2-plugin");
+			processor.deletePluginDependency(CODEHAUS_CARGO_PLUGIN, CARGO_MAVEN2_PLUGIN);
 			
 			//For Jboss4 dependency is not needed
 			if (version.startsWith("5.") || version.startsWith("6.")) {
@@ -231,7 +233,7 @@ public class JavaDeploy implements PluginConstants {
 		dependency.setArtifactId("jboss-as-controller-client");
 		dependency.setVersion("7.0.2.Final");
 		
-		processor.addPluginDependency("org.codehaus.cargo", "cargo-maven2-plugin", dependency);	
+		processor.addPluginDependency(CODEHAUS_CARGO_PLUGIN, CARGO_MAVEN2_PLUGIN, dependency);	
 	}
 
 	private void addJBoss5xDependency(PomProcessor processor) throws PhrescoPomException {
@@ -240,7 +242,7 @@ public class JavaDeploy implements PluginConstants {
 		dependency.setArtifactId("jboss-profileservice-spi");
 		dependency.setVersion("5.1.0.GA");
 
-		processor.addPluginDependency("org.codehaus.cargo", "cargo-maven2-plugin", dependency);
+		processor.addPluginDependency(CODEHAUS_CARGO_PLUGIN, CARGO_MAVEN2_PLUGIN, dependency);
 		
 		Dependency dependency2 = new Dependency();
 		dependency2.setGroupId("org.jboss.jbossas");
@@ -248,13 +250,13 @@ public class JavaDeploy implements PluginConstants {
 		dependency2.setVersion("5.1.0.GA");
 		dependency2.setType("pom");
 
-		processor.addPluginDependency("org.codehaus.cargo", "cargo-maven2-plugin", dependency2);
+		processor.addPluginDependency(CODEHAUS_CARGO_PLUGIN, CARGO_MAVEN2_PLUGIN, dependency2);
 	}
 
 	private void removeCargoDependency() throws PhrescoException {
 		try {
 			PomProcessor processor = new PomProcessor(project.getFile());
-			processor.deletePluginDependency("org.codehaus.cargo", "cargo-maven2-plugin");
+			processor.deletePluginDependency(CODEHAUS_CARGO_PLUGIN, CARGO_MAVEN2_PLUGIN);
 			processor.save();
 		} catch (JAXBException e) {
 			throw new PhrescoException(e);
@@ -316,7 +318,6 @@ public class JavaDeploy implements PluginConstants {
 			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 			String line = null;
 			while ((line = bufferedReader.readLine()) != null) {
-				System.out.println(line); //do not use log here as this line already contains the log type.
 				if (line.startsWith("[ERROR]")) {
 					errorParam = true;
 				}
@@ -370,7 +371,6 @@ public class JavaDeploy implements PluginConstants {
 			 bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 				String line = null;
 				while ((line = bufferedReader.readLine()) != null) {
-					System.out.println(line); //do not use log here as this line already contains the log type.
 					if (line.startsWith("[ERROR]")) {
 						errorParam = true;
 					}
@@ -405,7 +405,7 @@ public class JavaDeploy implements PluginConstants {
 			FileUtils.copyDirectoryStructure(tempDir.getAbsoluteFile(), deployDir);
 			log.info("Project is deployed successfully");
 		} catch (Exception e) {
-			log.error(e);
+			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
@@ -428,26 +428,26 @@ public class JavaDeploy implements PluginConstants {
         }
     }
 	
-	private void deploy() throws MojoExecutionException {
-		String deployLocation = "";
-		try {
-			List<SettingsInfo> settingsInfos = getSettingsInfo(Constants.SETTINGS_TEMPLATE_SERVER);
-			for (SettingsInfo serverDetails : settingsInfos) {
-				deployLocation = serverDetails.getPropertyInfo(Constants.SERVER_DEPLOY_DIR).getValue();
-				break;
-			}		
-			File deployDir = new File(deployLocation);
-				if (!deployDir.exists()) {
-				throw new MojoExecutionException(" Deploy Directory" + deployLocation + " Does Not Exists ");
-			}
-			log.info("Project is deploying into " + deployLocation);
-			FileUtils.copyDirectoryStructure(tempDir.getAbsoluteFile(), deployDir);
-			log.info("Project is deployed successfully");
-		} catch (Exception e) {
-			log.error(e);
-			throw new MojoExecutionException(e.getMessage(), e);
-		}
-	}
+//	private void deploy() throws MojoExecutionException {
+//		String deployLocation = "";
+//		try {
+//			List<SettingsInfo> settingsInfos = getSettingsInfo(Constants.SETTINGS_TEMPLATE_SERVER);
+//			for (SettingsInfo serverDetails : settingsInfos) {
+//				deployLocation = serverDetails.getPropertyInfo(Constants.SERVER_DEPLOY_DIR).getValue();
+//				break;
+//			}		
+//			File deployDir = new File(deployLocation);
+//				if (!deployDir.exists()) {
+//				throw new MojoExecutionException(" Deploy Directory" + deployLocation + " Does Not Exists ");
+//			}
+//			log.info("Project is deploying into " + deployLocation);
+//			FileUtils.copyDirectoryStructure(tempDir.getAbsoluteFile(), deployDir);
+//			log.info("Project is deployed successfully");
+//		} catch (Exception e) {
+//			log.error(e);
+//			throw new MojoExecutionException(e.getMessage(), e);
+//		}
+//	}
 	
 	private List<SettingsInfo> getSettingsInfo(String configType) throws PhrescoException {
 		ProjectAdministrator projAdmin = PhrescoFrameworkFactory.getProjectAdministrator();

@@ -21,7 +21,7 @@ import org.apache.maven.project.MavenProject;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.photon.phresco.commons.BuildInfo;
+import com.photon.phresco.framework.model.BuildInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
@@ -55,7 +55,10 @@ public class Package implements PluginConstants {
 		baseDir = mavenProjectInfo.getBaseDir();
         project = mavenProjectInfo.getProject();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
-        environmentName = configs.get("environmentName");
+        environmentName = configs.get(ENVIRONMENT_NAME);
+        buildName = configs.get(BUILD_NAME);
+        buildNumber = configs.get(USER_BUILD_NUMBER);
+        
 		try {
 			init();
 			boolean buildStatus = build();
@@ -78,7 +81,7 @@ public class Package implements PluginConstants {
 			nextBuildNo = generateNextBuildNo();
 			currentDate = Calendar.getInstance().getTime();
 		} catch (Exception e) {
-			log.error(e);
+			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
@@ -99,7 +102,7 @@ public class Package implements PluginConstants {
 
 		} catch (IOException e) {
 			isBuildSuccess = false;
-			log.error(e);
+			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 		return isBuildSuccess;
@@ -172,18 +175,16 @@ public class Package implements PluginConstants {
 
 	private String getTimeStampForDisplay(Date currentDate) {
 		SimpleDateFormat formatter = new SimpleDateFormat("dd/MMM/yyyy HH:mm:ss");
-		String timeStamp = formatter.format(currentDate.getTime());
-		return timeStamp;
+		return formatter.format(currentDate.getTime());
 	}
 
 	private String getTimeStampForBuildName(Date currentDate) {
 		SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy-HH-mm-ss");
-		String timeStamp = formatter.format(currentDate.getTime());
-		return timeStamp;
+		return formatter.format(currentDate.getTime());
 	}
 
 	private int generateNextBuildNo() throws IOException {
-		int nextBuildNo = 1;
+		nextBuildNo = 1;
 		if (!buildInfoFile.exists()) {
 			return nextBuildNo;
 		}

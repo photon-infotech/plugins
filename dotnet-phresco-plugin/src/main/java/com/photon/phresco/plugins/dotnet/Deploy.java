@@ -17,7 +17,7 @@ import org.codehaus.plexus.util.cli.Commandline;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.framework.api.ProjectAdministrator;
-import com.photon.phresco.model.SettingsInfo;
+import com.photon.phresco.framework.model.SettingsInfo;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
@@ -50,8 +50,8 @@ public class Deploy implements PluginConstants {
 		project = mavenProjectInfo.getProject();
 		projectCode = mavenProjectInfo.getProjectCode();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
-        environmentName = configs.get("environmentName");
-        buildName = configs.get("buildName");
+        environmentName = configs.get(ENVIRONMENT_NAME);
+        buildName = configs.get(BUILD_NAME);
         
         try {
 			init();

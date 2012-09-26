@@ -35,7 +35,9 @@ import com.photon.phresco.plugins.util.MojoProcessor;
 public class PhrescoPackage extends PhrescoAbstractMojo {
     
     
-    /**
+    private static final String PACKAGE = "package";
+
+	/**
      * The Maven project.
      * 
      * @parameter expression="${project}"
@@ -67,8 +69,8 @@ public class PhrescoPackage extends PhrescoAbstractMojo {
     }
     
     private Configuration getConfiguration() throws PhrescoException {
-        MojoProcessor processor = new MojoProcessor(new File(baseDir, PHRESCO_PLUGIN_SELECTED_INFO_XML));
-        return processor.getConfiguration("package");
+        MojoProcessor processor = new MojoProcessor(new File(baseDir, PHRESCO_PLUGIN_INFO_XML));
+        return processor.getConfiguration(PACKAGE);
     }
     
     private MavenProjectInfo getMavenProjectInfo() {
@@ -78,7 +80,7 @@ public class PhrescoPackage extends PhrescoAbstractMojo {
         return mavenProjectInfo;
     }
     private String getPluginName() throws PhrescoException {
-    	MojoProcessor processor = new MojoProcessor(new File(baseDir, PHRESCO_PLUGIN_SELECTED_INFO_XML));
-    	return processor.getImplementationClassName("package");
+    	MojoProcessor processor = new MojoProcessor(new File(baseDir, PHRESCO_PLUGIN_INFO_XML));
+    	return processor.getImplementationClassName(PACKAGE);
     }
 }

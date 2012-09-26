@@ -42,8 +42,6 @@ public class WP8PackageInfo implements PluginConstants {
 		try {
 			rootElement = this.getRootElementFromAppxManifestFile();
 		} catch (MojoExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		return manifestFile[0];
 	}
@@ -58,8 +56,6 @@ public class WP8PackageInfo implements PluginConstants {
 			// TODO Auto-generated catch block
 			throw new MojoExecutionException(e.getMessage(), e);
 		} catch (JDOMException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		return root;
 	}
@@ -70,8 +66,6 @@ public class WP8PackageInfo implements PluginConstants {
 			elementIdentifier(rootElement, "Identity" ,ns);
 			saveFile(manifestFile[0], doc);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		
 	}
@@ -130,7 +124,6 @@ public class WP8PackageInfo implements PluginConstants {
 			String packageVersion = this.getPackageVersion();
 			versionNo = this.getNextPackageVersion(packageVersion);
 		} catch (DOMException e) {
-			e.printStackTrace();
 		} 
 		return versionNo;
 	}

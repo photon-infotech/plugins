@@ -14,7 +14,7 @@ import org.codehaus.plexus.util.StringUtils;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.framework.api.ProjectAdministrator;
-import com.photon.phresco.model.SettingsInfo;
+import com.photon.phresco.framework.model.SettingsInfo;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
@@ -26,13 +26,13 @@ import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 
 public class Deploy implements PluginConstants {
 	
+	private static final String DOT_WSP = ".wsp";
 	private File baseDir;
 	private String buildName;
 	private String environmentName;
 
 	private File buildFile;
 	private File tempDir;
-	private File buildDir;
 	private File temp;
 	private File build;
 	private Log log;
@@ -41,8 +41,9 @@ public class Deploy implements PluginConstants {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
-        environmentName = configs.get("environmentName");
-        buildName = configs.get("buildName");
+        environmentName = configs.get(ENVIRONMENT_NAME);
+        buildName = configs.get(BUILD_NAME);
+        
 		try {
 			init();
 			extractBuild();
@@ -58,14 +59,14 @@ public class Deploy implements PluginConstants {
 			if (StringUtils.isEmpty(buildName) || StringUtils.isEmpty(environmentName)) {
 				callUsage();
 			}
-			buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
+			File buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
 			build = new File(baseDir.getPath() + "\\source" + "\\");
 			buildFile = new File(buildDir.getPath() + File.separator + buildName);
 			tempDir = new File(buildDir.getPath() + TEMP_DIR);
 			tempDir.mkdirs();
-			temp = new File(tempDir.getPath() + "\\" + baseDir.getName() + ".wsp");
+			temp = new File(tempDir.getPath() + "\\" + baseDir.getName() + DOT_WSP);
 		} catch (Exception e) {
-			log.error(e);
+			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
@@ -150,7 +151,6 @@ public class Deploy implements PluginConstants {
 			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 			String line = null;
 			while ((line = bufferedReader.readLine()) != null) {
-				System.out.println(line); // do not use log here as this line already contains the log type.
 				if (line.startsWith("[ERROR]")) {
 					errorParam = true;
 				}
@@ -180,14 +180,13 @@ public class Deploy implements PluginConstants {
 			sb.append(SHAREPOINT_STR_FILENAME);
 			sb.append(STR_SPACE);
 			sb.append(SHAREPOINT_STR_DOUBLEQUOTES + baseDir.getPath() + "\\source" + "\\"
-					+ ProjectCode + ".wsp" + SHAREPOINT_STR_DOUBLEQUOTES);
+					+ ProjectCode + DOT_WSP + SHAREPOINT_STR_DOUBLEQUOTES);
 			File file = new File(baseDir.getPath() + "\\source" + "\\"
-					+ ProjectCode + ".wsp");
+					+ ProjectCode + DOT_WSP);
 			if (file.exists()) {
 				bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 				String line = null;
 				while ((line = bufferedReader.readLine()) != null) {
-					System.out.println(line); // do not use log here as this line already contains the log type.
 					if (line.startsWith("[ERROR]")) {
 						errorParam = true;
 					}
@@ -220,7 +219,7 @@ public class Deploy implements PluginConstants {
 			sb.append(SHAREPOINT_STR_HYPEN);
 			sb.append(SHAREPOINT_STR_NAME);
 			sb.append(STR_SPACE);
-			sb.append(projectCode + ".wsp");
+			sb.append(projectCode + DOT_WSP);
 			sb.append(STR_SPACE);
 			sb.append(SHAREPOINT_STR_HYPEN);
 			sb.append(SHAREPOINT_STR_URL);
@@ -242,7 +241,6 @@ public class Deploy implements PluginConstants {
 			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 			String line = null;
 			while ((line = bufferedReader.readLine()) != null) {
-				System.out.println(line); // do not use log here as this line already contains the log type.
 				if (line.startsWith("[ERROR]")) {
 					errorParam = true;
 				}

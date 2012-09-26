@@ -20,10 +20,7 @@
 package com.photon.phresco.plugins.windows;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -39,20 +36,18 @@ import org.codehaus.plexus.util.cli.Commandline;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
-import com.photon.phresco.plugins.model.WP8PackageInfo;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+import com.photon.phresco.plugins.model.WP8PackageInfo;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.ArchiveUtil;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 
 public class Deploy implements PluginConstants {
 
-	protected MavenProject project;
-	protected File baseDir;
-	protected String buildNumber;
-	protected String environmentName;
-	protected String target;
-	protected String type;
+	private File baseDir;
+	private String environmentName;
+	private String target;
+	private String type;
 	
 	private String sourceDirectory = "\\source";
 	private File buildFile;
@@ -69,14 +64,14 @@ public class Deploy implements PluginConstants {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
-        environmentName = configs.get("environmentName");
-        buildName = configs.get("buildName");
-        type = configs.get("type");
+        environmentName = configs.get(ENVIRONMENT_NAME);
+        buildName = configs.get(BUILD_NAME);
+        type = configs.get(WINDOWS_PLATFORM_TYPE);
         
 		try {
 			init();
 			extractBuild();
-			if (type.equalsIgnoreCase("wp8")) {
+			if (type.equalsIgnoreCase(WP8_PLATFORM)) {
 				deployWp8Package();
 			} else {
 				deployWp7Package();
@@ -93,7 +88,7 @@ public class Deploy implements PluginConstants {
 			if (StringUtils.isEmpty(buildName) || StringUtils.isEmpty(environmentName) || StringUtils.isEmpty(type)) {
 				callUsage();
 			}
-			if(type.equalsIgnoreCase("wp8")) {
+			if(type.equalsIgnoreCase(WP8_PLATFORM)) {
 				getSolutionFile();
 				packageInfo = new WP8PackageInfo(rootDir);
 			}
@@ -104,7 +99,7 @@ public class Deploy implements PluginConstants {
 			tempDir.mkdirs();
 			temp = new File(tempDir.getPath());	
 		} catch (Exception e) {
-			log.error(e);
+			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
@@ -134,7 +129,7 @@ public class Deploy implements PluginConstants {
 			// Get the source/<ProjectRoot> folder
 			rootDir = new File(baseDir.getPath() + sourceDirectory + File.separator + WP_PROJECT_ROOT);
 		} catch (Exception e) {
-			log.error(e);
+			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
@@ -180,8 +175,7 @@ public class Deploy implements PluginConstants {
 			cl.setWorkingDirectory(tempDir);
 			Process process = cl.execute();
 			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			String line = null;
-			while ((line = in.readLine()) != null) {
+			while ((in.readLine()) != null) {
 			}
 		} catch (CommandLineException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
@@ -242,8 +236,7 @@ public class Deploy implements PluginConstants {
 			cl.setWorkingDirectory(tempDir);
 			Process process = cl.execute();
 			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			String line = null;
-			while ((line = in.readLine()) != null) {
+			while ((in.readLine()) != null) {
 			}
 		} catch (CommandLineException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
@@ -300,9 +293,7 @@ public class Deploy implements PluginConstants {
 			cl.setWorkingDirectory(tempDir);
 			Process process = cl.execute();
 			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			String line = null;
-			
-			while ((line = in.readLine()) != null) {				
+			while ((in.readLine()) != null) {				
 			}
 			
 		} catch (CommandLineException e) {

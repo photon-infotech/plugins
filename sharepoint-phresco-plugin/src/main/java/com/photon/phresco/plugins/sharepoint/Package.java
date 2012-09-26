@@ -27,7 +27,7 @@ import org.jdom.output.XMLOutputter;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.photon.phresco.commons.BuildInfo;
+import com.photon.phresco.framework.model.BuildInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
@@ -61,7 +61,9 @@ public class Package implements PluginConstants {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
-        environmentName = configs.get("environmentName");
+        environmentName = configs.get(ENVIRONMENT_NAME);
+        buildName = configs.get(BUILD_NAME);
+        buildNumber = configs.get(USER_BUILD_NUMBER);
         
         try {
 			init();
@@ -70,7 +72,7 @@ public class Package implements PluginConstants {
 			writeBuildInfo(buildStatus);
 			cleanUp();
 		} catch (MojoExecutionException e) {
-			throw new PhrescoException();
+			throw new PhrescoException(e);
 		}
 		
 		
@@ -90,12 +92,12 @@ public class Package implements PluginConstants {
 			nextBuildNo = generateNextBuildNo();
 			currentDate = Calendar.getInstance().getTime();
 		} catch (Exception e) {
-			log.error(e);
+			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
 	
-	private void unPackCabLib() throws MojoExecutionException  {
+	private void unPackCabLib() throws PhrescoException  {
 		BufferedReader bufferedReader = null;
 		boolean errorParam = false;
 		try {
@@ -108,7 +110,6 @@ public class Package implements PluginConstants {
 			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 			String line = null;
 			while ((line = bufferedReader.readLine()) != null) {
-				System.out.println(line); // do not use log here as this line already contains the log type.
 				if (line.startsWith("[ERROR]")) {
 					errorParam = true;
 				}
@@ -117,13 +118,13 @@ public class Package implements PluginConstants {
 				throw new MojoExecutionException("Download CabLib.dll Failed");
 			}
 		} catch (Exception e) {
-			throw new MojoExecutionException(e.getMessage());
+			throw new PhrescoException(e);
 		} finally {
 			Utility.closeStream(bufferedReader);
 		}
 	}
 
-	private void replaceValue() throws MojoExecutionException {
+	private void replaceValue() throws PhrescoException {
 		SAXBuilder builder = new SAXBuilder();
 		try {
 			File xmlFile = new File(baseDir.getPath() + sourceDirectory + SHAREPOINT_WSP_CONFIG_FILE);
@@ -149,7 +150,7 @@ public class Package implements PluginConstants {
 				saveFile(xmlFile, doc);
 			}
 		} catch (Exception e) {
-			throw new MojoExecutionException(e.getMessage());
+			throw new PhrescoException(e);
 		} 
 	}
 	
@@ -173,7 +174,6 @@ public class Package implements PluginConstants {
 			bufferedReader = Utility.executeCommand("WSPBuilder.exe", baseDir.getPath() + sourceDirectory);
 			String line = null;
 			while ((line = bufferedReader.readLine()) != null) {
-				System.out.println(line); // do not use log here as this line already contains the log type.
 				if (line.startsWith("[ERROR]")) {
 					errorParam = true;
 				}
@@ -196,7 +196,7 @@ public class Package implements PluginConstants {
 			createPackage();
 		} catch (Exception e) {
 			isBuildSuccess = false;
-			log.error(e);
+			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 		return isBuildSuccess;
@@ -206,14 +206,14 @@ public class Package implements PluginConstants {
 		try {
 			String context = baseDir.getName();
 			if (buildName != null) {
-				zipName = buildName + ".zip";
+				zipName = buildName + DOT_ZIP;
 			} else {
 				if (buildNumber != null) {
 					zipName = PROJECT_CODE + buildNumber + STR_UNDERSCORE + getTimeStampForBuildName(currentDate)
-							+ ".zip";
+							+ DOT_ZIP;
 				} else {
 					zipName = PROJECT_CODE + nextBuildNo + STR_UNDERSCORE + getTimeStampForBuildName(currentDate)
-							+ ".zip";
+							+ DOT_ZIP;
 				}
 			}
 			String zipFilePath = buildDir.getPath() + File.separator + zipName;
@@ -277,19 +277,17 @@ public class Package implements PluginConstants {
 	}
 
 	private String getTimeStampForDisplay(Date currentDate) {
-		SimpleDateFormat formatter = new SimpleDateFormat("dd/MMM/yyyy HH:mm:ss");
-		String timeStamp = formatter.format(currentDate.getTime());
-		return timeStamp;
+		SimpleDateFormat formatter = new SimpleDateFormat(TIME_STAMP_FOR_DISPLAY);
+		return formatter.format(currentDate.getTime());
 	}
 
 	private String getTimeStampForBuildName(Date currentDate) {
-		SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy-HH-mm-ss");
-		String timeStamp = formatter.format(currentDate.getTime());
-		return timeStamp;
+		SimpleDateFormat formatter = new SimpleDateFormat(TIME_STAMP_FOR_BUILD_NAME);
+		return formatter.format(currentDate.getTime());
 	}
 
 	private int generateNextBuildNo() throws IOException {
-		int nextBuildNo = 1;
+		nextBuildNo = 1;
 		if (!buildInfoFile.exists()) {
 			return nextBuildNo;
 		}

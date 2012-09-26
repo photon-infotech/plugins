@@ -1,4 +1,4 @@
-package com.photon.phreco.plugins.javaplugins;
+package com.photon.phresco.plugins.java;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -28,12 +28,12 @@ import org.w3c.dom.Element;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.photon.phresco.commons.BuildInfo;
+import com.photon.phresco.framework.model.BuildInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.framework.api.Project;
 import com.photon.phresco.framework.api.ProjectAdministrator;
-import com.photon.phresco.model.SettingsInfo;
+import com.photon.phresco.framework.model.SettingsInfo;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
@@ -46,7 +46,7 @@ import com.photon.phresco.util.TechnologyTypes;
 import com.photon.phresco.util.Utility;
 import com.phresco.pom.util.PomProcessor;
 
-public class JavaPackage implements PluginConstants{
+public class Package implements PluginConstants{
 	
 	private MavenProject project;
 	private File baseDir;
@@ -73,7 +73,9 @@ public class JavaPackage implements PluginConstants{
 		baseDir = mavenProjectInfo.getBaseDir();
         project = mavenProjectInfo.getProject();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
-        environmentName = configs.get("environmentName");
+        environmentName = configs.get(ENVIRONMENT_NAME);
+        buildName = configs.get(BUILD_NAME);
+        buildNumber = configs.get(USER_BUILD_NUMBER);
         
 		try {
 			init();
@@ -110,7 +112,7 @@ public class JavaPackage implements PluginConstants{
 			nextBuildNo = generateNextBuildNo();
 			currentDate = Calendar.getInstance().getTime();
 		} catch (Exception e) {
-			log.error(e);
+			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
@@ -137,14 +139,14 @@ public class JavaPackage implements PluginConstants{
 		try {
 			ProjectAdministrator projAdmin = PhrescoFrameworkFactory.getProjectAdministrator();
 			Project currentProject = projAdmin.getProjectByWorkspace(baseDir);
-			String techId = currentProject.getProjectInfo().getTechnology().getId();
+			String techId = currentProject.getApplicationInfo().getTechInfo().getVersion();
 			if (!techId.equals(TechnologyTypes.JAVA_STANDALONE)) {
 				String envName = environmentName;
 				if (environmentName.indexOf(',') > -1) { // multi-value
 					envName = projAdmin.getDefaultEnvName(baseDir.getName());
 				}
 				List<SettingsInfo> settingsInfos = projAdmin.getSettingsInfos(Constants.SETTINGS_TEMPLATE_SERVER,
-						currentProject.getProjectInfo().getCode(), envName);
+						currentProject.getApplicationInfo().getCode(), envName);
 				for (SettingsInfo settingsInfo : settingsInfos) {
 					context = settingsInfo.getPropertyInfo(Constants.SERVER_CONTEXT).getValue();
 					break;
@@ -216,7 +218,6 @@ public class JavaPackage implements PluginConstants{
 			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 			String line = null;
 			while ((line = bufferedReader.readLine()) != null) {
-				System.out.println(line); // do not use log here as this line already contains the log type.
 				if (line.startsWith("[ERROR]")) {
 					errorParam = true;
 				}  
@@ -238,7 +239,7 @@ public class JavaPackage implements PluginConstants{
 			createPackage();
 		} catch (Exception e) {
 			isBuildSuccess = false;
-			log.error(e);
+			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 		return isBuildSuccess;
@@ -281,23 +282,22 @@ public class JavaPackage implements PluginConstants{
 	private void createPackage() throws MojoExecutionException, IOException {
 		try {
 			if (buildName != null) {
-				zipName = buildName + ".zip";
+				zipName = buildName + DOT_ZIP;
 			} else {
 				if (buildNumber != null) {
 					zipName = PROJECT_CODE + buildNumber + STR_UNDERSCORE + getTimeStampForBuildName(currentDate)
-							+ ".zip";
+							+ DOT_ZIP;
 				} else {
 					zipName = PROJECT_CODE + nextBuildNo + STR_UNDERSCORE + getTimeStampForBuildName(currentDate)
-							+ ".zip";
+							+ DOT_ZIP;
 				}
 			}
 			String zipFilePath = buildDir.getPath() + File.separator + zipName;
 			String zipNameWithoutExt = zipName.substring(0, zipName.lastIndexOf('.'));
 			ProjectAdministrator projectAdministrator = PhrescoFrameworkFactory.getProjectAdministrator();
 			Project currentProject = projectAdministrator.getProjectByWorkspace(baseDir);
-			String techId = currentProject.getProjectInfo().getTechnology().getId();
+			String techId = currentProject.getApplicationInfo().getTechInfo().getVersion();
 			if (techId.equals(TechnologyTypes.JAVA_STANDALONE)) {
-
 				copyJarToPackage(zipNameWithoutExt);
 			} else {
 				copyWarToPackage(zipNameWithoutExt, context);
@@ -373,19 +373,17 @@ public class JavaPackage implements PluginConstants{
 	}
 
 	private String getTimeStampForDisplay(Date currentDate) {
-		SimpleDateFormat formatter = new SimpleDateFormat("dd/MMM/yyyy HH:mm:ss");
-		String timeStamp = formatter.format(currentDate.getTime());
-		return timeStamp;
+		SimpleDateFormat formatter = new SimpleDateFormat(TIME_STAMP_FOR_DISPLAY);
+		return formatter.format(currentDate.getTime());
 	}
 
 	private String getTimeStampForBuildName(Date currentDate) {
-		SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy-HH-mm-ss");
-		String timeStamp = formatter.format(currentDate.getTime());
-		return timeStamp;
+		SimpleDateFormat formatter = new SimpleDateFormat(TIME_STAMP_FOR_BUILD_NAME);
+		return formatter.format(currentDate.getTime());
 	}
 
 	private int generateNextBuildNo() throws IOException {
-		int nextBuildNo = 1;
+		nextBuildNo = 1;
 		if (!buildInfoFile.exists()) {
 			return nextBuildNo;
 		}

@@ -66,7 +66,7 @@ import com.google.gson.reflect.TypeToken;
 import com.photon.phresco.configuration.ConfigReader;
 import com.photon.phresco.configuration.ConfigWriter;
 import com.photon.phresco.exception.PhrescoException;
-import com.photon.phresco.model.SettingsInfo;
+import com.photon.phresco.framework.model.SettingsInfo;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
 

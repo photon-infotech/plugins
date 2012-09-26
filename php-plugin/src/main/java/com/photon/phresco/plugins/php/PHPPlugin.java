@@ -14,12 +14,12 @@ public class PHPPlugin extends PhrescoAbstractPlugin {
 	}
 
     public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-    	PhpPackage pack = new PhpPackage();
+    	Package pack = new Package();
         pack.pack(configuration, mavenProjectInfo, getLog());
     }
 
     public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-        PhpDeploy deploy = new PhpDeploy();
+        Deploy deploy = new Deploy();
         deploy.deploy(configuration, mavenProjectInfo, getLog());
     }
 }

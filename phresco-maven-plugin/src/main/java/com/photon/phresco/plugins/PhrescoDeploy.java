@@ -21,7 +21,9 @@ import com.photon.phresco.plugins.util.MojoProcessor;
 public class PhrescoDeploy extends PhrescoAbstractMojo {
 	
 	
-	 /**
+	 private static final String DEPLOY = "deploy";
+
+	/**
      * @parameter expression="${project.basedir}" required="true"
      * @readonly
      */
@@ -58,8 +60,8 @@ public class PhrescoDeploy extends PhrescoAbstractMojo {
     }
 	
 	private Configuration getConfiguration() throws PhrescoException {
-        MojoProcessor processor = new MojoProcessor(new File(baseDir, PHRESCO_PLUGIN_SELECTED_INFO_XML));
-        return processor.getConfiguration("deploy");
+        MojoProcessor processor = new MojoProcessor(new File(baseDir, PHRESCO_PLUGIN_INFO_XML));
+        return processor.getConfiguration(DEPLOY);
     }
     
     private MavenProjectInfo getMavenProjectInfo() {
@@ -71,8 +73,8 @@ public class PhrescoDeploy extends PhrescoAbstractMojo {
     }
     
     private String getPluginName() throws PhrescoException {
-    	MojoProcessor processor = new MojoProcessor(new File(baseDir, PHRESCO_PLUGIN_SELECTED_INFO_XML));
-    	return processor.getImplementationClassName("deploy");
+    	MojoProcessor processor = new MojoProcessor(new File(baseDir, PHRESCO_PLUGIN_INFO_XML));
+    	return processor.getImplementationClassName(DEPLOY);
     }
 
 }
