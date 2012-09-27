@@ -34,7 +34,6 @@ import com.photon.phresco.plugins.util.MojoProcessor;
  */
 public class PhrescoPackage extends PhrescoAbstractMojo {
     
-    
     private static final String PACKAGE = "package";
 
 	/**

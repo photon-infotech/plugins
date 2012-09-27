@@ -2,14 +2,9 @@ package com.photon.phresco.plugins.java;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.lang.reflect.Type;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -26,9 +21,6 @@ import org.codehaus.plexus.util.FileUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.photon.phresco.framework.model.BuildInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.framework.api.Project;
@@ -39,6 +31,7 @@ import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoUtil;
+import com.photon.phresco.plugins.util.PluginsUtil;
 import com.photon.phresco.util.ArchiveUtil;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 import com.photon.phresco.util.Constants;
@@ -61,12 +54,12 @@ public class Package implements PluginConstants{
 	private File buildDir;
 	private File buildInfoFile;
 	private File tempDir;
-	private List<BuildInfo> buildInfoList;
 	private int nextBuildNo;
 	private String zipName;
 	private Date currentDate;
 	private String context;
 	private Log log;
+	private PluginsUtil util;
 	
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -76,8 +69,9 @@ public class Package implements PluginConstants{
         environmentName = configs.get(ENVIRONMENT_NAME);
         buildName = configs.get(BUILD_NAME);
         buildNumber = configs.get(USER_BUILD_NUMBER);
+        util = new PluginsUtil();
         
-		try {
+		try { 
 			init();
 			if (environmentName != null) {
 				updateFinalName();
@@ -90,12 +84,10 @@ public class Package implements PluginConstants{
 		} catch (MojoExecutionException e) {
 			throw new PhrescoException(e);
 		}	
-		
 	}
 	
 	private void init() throws MojoExecutionException {
 		try {
-			buildInfoList = new ArrayList<BuildInfo>(); // initialization
 			buildDir = new File(baseDir.getPath() + PluginConstants.BUILD_DIRECTORY);
 			targetDir = new File(project.getBuild().getDirectory());
 			baseDir = getProjectRoot(baseDir);
@@ -109,7 +101,7 @@ public class Package implements PluginConstants{
 				buildInfoDir.mkdirs();
 				log.info("Build directory created..." + buildDir.getPath());
 			}
-			nextBuildNo = generateNextBuildNo();
+			nextBuildNo = util.generateNextBuildNo(buildInfoFile);
 			currentDate = Calendar.getInstance().getTime();
 		} catch (Exception e) {
 			log.error(e.getMessage());
@@ -281,17 +273,7 @@ public class Package implements PluginConstants{
 
 	private void createPackage() throws MojoExecutionException, IOException {
 		try {
-			if (buildName != null) {
-				zipName = buildName + DOT_ZIP;
-			} else {
-				if (buildNumber != null) {
-					zipName = PROJECT_CODE + buildNumber + STR_UNDERSCORE + getTimeStampForBuildName(currentDate)
-							+ DOT_ZIP;
-				} else {
-					zipName = PROJECT_CODE + nextBuildNo + STR_UNDERSCORE + getTimeStampForBuildName(currentDate)
-							+ DOT_ZIP;
-				}
-			}
+			zipName = util.createPackage(buildName, buildNumber, nextBuildNo, currentDate);
 			String zipFilePath = buildDir.getPath() + File.separator + zipName;
 			String zipNameWithoutExt = zipName.substring(0, zipName.lastIndexOf('.'));
 			ProjectAdministrator projectAdministrator = PhrescoFrameworkFactory.getProjectAdministrator();
@@ -337,78 +319,7 @@ public class Package implements PluginConstants{
 	}
 
 	private void writeBuildInfo(boolean isBuildSuccess) throws MojoExecutionException {
-		try {
-			if (buildNumber != null) {
-				buildNo = Integer.parseInt(buildNumber);
-			}
-			PluginUtils pu = new PluginUtils();
-			BuildInfo buildInfo = new BuildInfo();
-			List<String> envList = pu.csvToList(environmentName);
-			if (buildNo > 0) {
-				buildInfo.setBuildNo(buildNo);
-			} else {
-				buildInfo.setBuildNo(nextBuildNo);
-			}
-			buildInfo.setTimeStamp(getTimeStampForDisplay(currentDate));
-			if (isBuildSuccess) {
-				buildInfo.setBuildStatus(SUCCESS);
-			} else {
-				buildInfo.setBuildStatus(FAILURE);
-			}
-			buildInfo.setBuildName(zipName);
-			buildInfo.setContext(context);
-			buildInfo.setEnvironments(envList);
-			if (StringUtils.isNotEmpty(moduleName)) {
-				buildInfo.setModuleName(moduleName);
-			}
-			buildInfoList.add(buildInfo);
-			Gson gson = new Gson();
-			FileWriter writer = new FileWriter(buildInfoFile);
-			gson.toJson(buildInfoList, writer);
-
-			writer.close();
-		} catch (IOException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
-		}
-	}
-
-	private String getTimeStampForDisplay(Date currentDate) {
-		SimpleDateFormat formatter = new SimpleDateFormat(TIME_STAMP_FOR_DISPLAY);
-		return formatter.format(currentDate.getTime());
-	}
-
-	private String getTimeStampForBuildName(Date currentDate) {
-		SimpleDateFormat formatter = new SimpleDateFormat(TIME_STAMP_FOR_BUILD_NAME);
-		return formatter.format(currentDate.getTime());
-	}
-
-	private int generateNextBuildNo() throws IOException {
-		nextBuildNo = 1;
-		if (!buildInfoFile.exists()) {
-			return nextBuildNo;
-		}
-
-		BufferedReader read = new BufferedReader(new FileReader(buildInfoFile));
-		String content = read.readLine();
-		Gson gson = new Gson();
-		Type listType = new TypeToken<List<BuildInfo>>() {
-		}.getType();
-		buildInfoList = (List<BuildInfo>) gson.fromJson(content, listType);
-		if (buildInfoList == null || buildInfoList.size() == 0) {
-			return nextBuildNo;
-		}
-		int buildArray[] = new int[buildInfoList.size()];
-		int count = 0;
-		for (BuildInfo buildInfo : buildInfoList) {
-			buildArray[count] = buildInfo.getBuildNo();
-			count++;
-		}
-		// sort to the array to find the max build no
-		Arrays.sort(buildArray);
-
-		// increment 1 to the max in the build list
-		nextBuildNo = buildArray[buildArray.length - 1] + 1;
-		return nextBuildNo;
+		util.writeBuildInfo(isBuildSuccess, buildName, buildNumber, nextBuildNo, environmentName, buildNo, currentDate, buildInfoFile);
 	}
 
 	private void cleanUp() throws MojoExecutionException {
