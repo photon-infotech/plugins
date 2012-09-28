@@ -219,4 +219,7 @@ public interface PluginConstants {
 	 //Constants for Time Formatter
 	 String TIME_STAMP_FOR_BUILD_NAME 	= "dd-MMM-yyyy-HH-mm-ss";
 	 String TIME_STAMP_FOR_DISPLAY 		= "dd/MMM/yyyy HH:mm:ss";
+	 
+	 //Constants for CodeValidator
+	 String SONAR_COMMAND				= "mvn sonar:sonar";
 }
