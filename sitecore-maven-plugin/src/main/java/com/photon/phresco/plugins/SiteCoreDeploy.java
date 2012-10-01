@@ -1,6 +1,6 @@
 /*
  * ###
- * dotnet-maven-plugin Maven Mojo
+ * sitecore-maven-plugin Maven Mojo
  * 
  * Copyright (C) 1999 - 2012 Photon Infotech Inc.
  * 
@@ -22,8 +22,13 @@ package com.photon.phresco.plugins;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.List;
 
 import org.apache.maven.plugin.AbstractMojo;
@@ -36,19 +41,21 @@ import org.codehaus.plexus.util.cli.Commandline;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.framework.api.ProjectAdministrator;
+import com.photon.phresco.model.BuildInfo;
 import com.photon.phresco.model.SettingsInfo;
-import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.util.ArchiveUtil;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.PluginConstants;
+import com.photon.phresco.util.PluginUtils;
 
 /**
- * Goal which deploys the DotNet webapp project
+ * Goal which deploys the Sitecore webapp project
  * 
  * @goal deploy
  * 
  */
-public class DotNetDeploy extends AbstractMojo implements PluginConstants {
+public class SiteCoreDeploy extends AbstractMojo implements PluginConstants {
 
 	/**
 	 * The Maven project.
@@ -65,13 +72,11 @@ public class DotNetDeploy extends AbstractMojo implements PluginConstants {
 	 */
 	protected File baseDir;
 
-
 	/**
-	 * Build file name to deploy
-	 * 
-	 * @parameter expression="${buildName}" required="true"
+	 * @parameter expression="${buildNumber}" required="true"
 	 */
-	protected String buildName;
+	protected String buildNumber;
+
 	/**
 	 * @parameter expression="${environmentName}" required="true"
 	 */
@@ -89,17 +94,23 @@ public class DotNetDeploy extends AbstractMojo implements PluginConstants {
 	public void execute() throws MojoExecutionException {
 		init();
 		extractBuild();
+		copyBinContent();
 		listSites();
 	}
 
 	private void init() throws MojoExecutionException {
 		try {
-			if (StringUtils.isEmpty(buildName) || StringUtils.isEmpty(environmentName)) {
+			if (StringUtils.isEmpty(buildNumber) || StringUtils.isEmpty(environmentName)) {
 				callUsage();
 			}
+
+			PluginUtils pu = new PluginUtils();
+			BuildInfo buildInfo = pu.getBuildInfo(Integer.parseInt(buildNumber));
+			getLog().info("Build Name " + buildInfo);
+
 			buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
 			targetDir = new File(project.getBuild().getDirectory());
-			buildFile = new File(buildDir.getPath() + File.separator + buildName);
+			buildFile = new File(buildDir.getPath() + File.separator + buildInfo.getBuildName());
 			getLog().info("buildFile path " + buildFile.getPath());
 
 			List<SettingsInfo> settingsInfos = getSettingsInfo(Constants.SETTINGS_TEMPLATE_SERVER);
@@ -108,7 +119,7 @@ public class DotNetDeploy extends AbstractMojo implements PluginConstants {
 				siteName = serverDetails.getPropertyInfo(Constants.SITE_NAME).getValue();
 				serverport = serverDetails.getPropertyInfo(Constants.SERVER_PORT).getValue();
 				serverprotocol = serverDetails.getPropertyInfo(Constants.SERVER_PROTOCOL).getValue();
-				deploylocation = serverDetails.getPropertyInfo(Constants.SERVER_DEPLOY_DIR).getValue();
+				deploylocation = serverDetails.getPropertyInfo(Constants.SITECORE_INST_PATH).getValue();
 
 				break;
 			}
@@ -125,6 +136,44 @@ public class DotNetDeploy extends AbstractMojo implements PluginConstants {
 				"mvn dotnet:deploy -DbuildNumber=\"Number of the build\""
 						+ " -DenvironmentName=\"Multivalued evnironment names\"");
 		throw new MojoExecutionException("Invalid Usage. Please see the Usage of Deploy Goal");
+	}
+
+	private void copyBinContent() throws MojoExecutionException {
+		File outputDir = new File(deploylocation + "/Website/bin") ;
+		File inputDir = new File(targetDir + "/bin");
+		copyDirectory(inputDir, outputDir);
+	}
+
+	private void copyDirectory(File sourceLocation, File targetLocation) throws MojoExecutionException {
+		try {
+			//TODO use this FileUtils.copyDirectory(srcDir, destDir); instead of below code
+			if (sourceLocation.isDirectory()) {
+				if (!targetLocation.exists()) {
+					targetLocation.mkdir();
+				}
+
+				String[] children = sourceLocation.list();
+				for (int i = 0; i < children.length; i++) {
+					copyDirectory(new File(sourceLocation, children[i]), new File(targetLocation, children[i]));
+				}
+			} else {
+				InputStream in = new FileInputStream(sourceLocation);
+				OutputStream out = new FileOutputStream(targetLocation);
+
+				// Copy the bits from instream to outstreams
+				byte[] buf = new byte[1024];
+				int len;
+				while ((len = in.read(buf)) > 0) {
+					out.write(buf, 0, len);
+				}
+				in.close();
+				out.close();
+			}
+		} catch (FileNotFoundException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		} catch (IOException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		}
 	}
 
 	private void listSites() throws MojoExecutionException {
@@ -176,14 +225,6 @@ public class DotNetDeploy extends AbstractMojo implements PluginConstants {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
-	
-	private void extractBuild() throws MojoExecutionException {
-		try {
-			ArchiveUtil.extractArchive(buildFile.getPath(), targetDir.getPath(), ArchiveType.ZIP);
-		} catch (PhrescoException e) {
-			throw new MojoExecutionException(e.getErrorMessage(), e);
-		}
-	}
 
 	private void executeAddSite() throws MojoExecutionException {
 		BufferedReader in = null;
@@ -212,6 +253,14 @@ public class DotNetDeploy extends AbstractMojo implements PluginConstants {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
+	
+	private void extractBuild() throws MojoExecutionException {
+		try {
+			ArchiveUtil.extractArchive(buildFile.getPath(), targetDir.getPath(), ArchiveType.ZIP);
+		} catch (PhrescoException e) {
+			throw new MojoExecutionException(e.getErrorMessage(), e);
+		}
+	}
 
 	private void executeAddApp() throws MojoExecutionException {
 		BufferedReader in = null;
@@ -223,7 +272,7 @@ public class DotNetDeploy extends AbstractMojo implements PluginConstants {
 			sb.append("/path:/" + applicationName);
 			sb.append(STR_SPACE);
 			sb.append("/physicalPath:");
-			sb.append("\"" + targetDir.getPath() + "\"");
+			sb.append("\"" + deploylocation + "/Website" + "\"");
 			Commandline cl = new Commandline(sb.toString());
 			cl.setWorkingDirectory("C:/Windows/System32/inetsrv");
 			Process process = cl.execute();

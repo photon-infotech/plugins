@@ -1,6 +1,6 @@
 /*
  * ###
- * sharepoint-maven-plugin Maven Mojo
+ * sitecore-maven-plugin Maven Mojo
  * 
  * Copyright (C) 1999 - 2012 Photon Infotech Inc.
  * 
@@ -34,31 +34,51 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.Commandline;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.photon.phresco.commons.BuildInfo;
 import com.photon.phresco.exception.PhrescoException;
-import com.photon.phresco.plugin.commons.PluginConstants;
-import com.photon.phresco.plugin.commons.PluginUtils;
+import com.photon.phresco.framework.PhrescoFrameworkFactory;
+import com.photon.phresco.framework.api.ProjectAdministrator;
+import com.photon.phresco.model.BuildInfo;
+import com.photon.phresco.model.SettingsInfo;
 import com.photon.phresco.util.ArchiveUtil;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
+import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.PluginConstants;
+import com.photon.phresco.util.PluginUtils;
 import com.photon.phresco.util.Utility;
 
 /**
- * Goal which builds the DotNET WebApp 
+ * Goal which builds the SiteCore WebApp 
+ * 
+ * @execute goal="clean"
  * 
  * @goal package
  * 
  */
 
-public class DotNetPackage extends AbstractMojo implements PluginConstants {
+public class SiteCorePackage extends AbstractMojo implements PluginConstants {
 
 	/**
 	 * The Maven project.
@@ -75,7 +95,6 @@ public class DotNetPackage extends AbstractMojo implements PluginConstants {
 	 */
 	protected File baseDir;
 	
-
 	/**
 	 * @parameter expression="${environmentName}" required="true"
 	 */
@@ -91,10 +110,9 @@ public class DotNetPackage extends AbstractMojo implements PluginConstants {
 	 */
 	protected String buildNumber;
 
-	protected int buildNo;
-	
 	private File buildDir;
 	private File targetDir;
+	protected int buildNo;
 	private File srcDir;
 	private File buildInfoFile;
 	private List<BuildInfo> buildInfoList;
@@ -103,8 +121,8 @@ public class DotNetPackage extends AbstractMojo implements PluginConstants {
 	private Date currentDate;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		getLog().info("Plugin Development is in Progress ...");
 		init();
+		addRootPathToCsFile();
 		boolean buildStatus = build();
 		writeBuildInfo(buildStatus);
 	}
@@ -112,7 +130,6 @@ public class DotNetPackage extends AbstractMojo implements PluginConstants {
 	private void init() throws MojoExecutionException {
 		try {
 			
-			buildDir = new File(baseDir.getPath() + PluginConstants.BUILD_DIRECTORY);
 			buildInfoList = new ArrayList<BuildInfo>(); // initialization
 			srcDir = new File(baseDir.getPath() + File.separator + "source/src");
 			buildDir = new File(baseDir.getPath() + PluginConstants.BUILD_DIRECTORY);
@@ -129,6 +146,55 @@ public class DotNetPackage extends AbstractMojo implements PluginConstants {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
+
+	private void addRootPathToCsFile() throws MojoExecutionException {
+		try {
+			String deploylocation = null;
+			String siteName = null;
+			ProjectAdministrator projAdmin = PhrescoFrameworkFactory.getProjectAdministrator();
+			List<SettingsInfo> settingsInfos = projAdmin.getSettingsInfos(Constants.SETTINGS_TEMPLATE_SERVER, baseDir
+					.getName(), environmentName);
+			for (SettingsInfo serverDetails : settingsInfos) {
+				siteName = serverDetails.getPropertyInfo(Constants.SITE_NAME).getValue();
+				deploylocation = serverDetails.getPropertyInfo(Constants.SERVER_DEPLOY_DIR).getValue();
+				break;
+			}
+			File siteConfigFile = new File(baseDir.getPath() + "/source/src/App_Config/Include/SiteDefinition.config");
+			if (!siteConfigFile.exists()) {
+				return;
+			}
+			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+			docFactory.setNamespaceAware(false);
+			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+			Document doc = docBuilder.parse(siteConfigFile);
+			NodeList environmentList = doc.getElementsByTagName("site");
+			for (int i = 0; i < environmentList.getLength(); i++) {
+				Element environment = (Element) environmentList.item(i);
+				environment.setAttribute("name", siteName);
+				environment.setAttribute("rootPath", deploylocation);
+
+				// write the content into xml file
+				TransformerFactory transformerFactory = TransformerFactory.newInstance();
+				Transformer transformer = transformerFactory.newTransformer();
+				DOMSource source = new DOMSource(doc);
+				StreamResult result = new StreamResult(siteConfigFile.toURI().getPath());
+				transformer.transform(source, result);
+			}
+		} catch (DOMException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		} catch (ParserConfigurationException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		} catch (SAXException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		} catch (IOException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		}  catch (TransformerException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		} catch (PhrescoException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		}
+	}
+
 	
 	private boolean build() throws MojoExecutionException {
 		boolean isBuildSuccess = true;
@@ -142,7 +208,7 @@ public class DotNetPackage extends AbstractMojo implements PluginConstants {
 		}
 		return isBuildSuccess;
 	}
-
+	
 	private void executeMSBuildCmd() throws MojoExecutionException {
 		BufferedReader in = null;
 		try {
@@ -169,6 +235,7 @@ public class DotNetPackage extends AbstractMojo implements PluginConstants {
 			Utility.closeStream(in);
 		}
 	}
+
 	private void executeASPCompilerCmd()throws MojoExecutionException {
 		BufferedReader in = null;
 		try {
@@ -180,7 +247,7 @@ public class DotNetPackage extends AbstractMojo implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append("\"" + targetDir.getPath() + "\"");
 			Commandline cl = new Commandline(sb.toString());
-			cl.setWorkingDirectory(baseDir.getPath() + "/source/src");
+			cl.setWorkingDirectory(srcDir.getPath());
 			Process process = cl.execute();
 			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
 			String line = null;
@@ -195,6 +262,7 @@ public class DotNetPackage extends AbstractMojo implements PluginConstants {
 			Utility.closeStream(in);
 		}
 	}
+
 	private void createPackage() throws MojoExecutionException {
 		try {
 			if (buildName != null) {
@@ -288,6 +356,7 @@ public class DotNetPackage extends AbstractMojo implements PluginConstants {
 		return nextBuildNo;
 	}
 }
+
 class CSFileNameFilter implements FilenameFilter {
 
 	public boolean accept(File dir, String name) {
