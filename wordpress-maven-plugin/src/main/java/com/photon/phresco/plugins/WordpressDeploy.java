@@ -36,6 +36,7 @@ import com.photon.phresco.framework.api.ProjectAdministrator;
 import com.photon.phresco.model.SettingsInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
+import com.photon.phresco.plugin.commons.DatabaseUtil;
 import com.photon.phresco.util.ArchiveUtil;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 import com.photon.phresco.util.Constants;
@@ -193,7 +194,7 @@ public class WordpressDeploy extends AbstractMojo implements PluginConstants {
 
 	private void createDb() throws MojoExecutionException {
 		try {
-			PluginUtils utils = new PluginUtils();
+			DatabaseUtil utils = new DatabaseUtil();
 			if (importSql) {
 				List<SettingsInfo> settingsInfos = getSettingsInfo(Constants.SETTINGS_TEMPLATE_DB);
 				for (SettingsInfo databaseDetails : settingsInfos) {
