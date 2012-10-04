@@ -222,4 +222,14 @@ public interface PluginConstants {
 	 
 	 //Constants for CodeValidator
 	 String SONAR_COMMAND				= "mvn sonar:sonar";
+	 
+	// BlackBerry maven plugin constants
+	// Author: Viral
+	// Date: Sept 24, 2012
+	String BB_BBWP_HOME = "bbwp ";
+	String BB_JAVA_LOADER_HOME = "javaloader ";
+	String BB_USB = "-usb";
+	String BB_LOAD = "load";
+	String BB_STANDARD_INSTALL = "StandardInstall";
+	String BB_OTA_INSTALL = "OTAInstall";
 }
