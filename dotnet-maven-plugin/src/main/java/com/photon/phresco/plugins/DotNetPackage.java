@@ -43,7 +43,7 @@ import org.codehaus.plexus.util.cli.Commandline;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.photon.phresco.commons.BuildInfo;
+import com.photon.phresco.framework.model.BuildInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;

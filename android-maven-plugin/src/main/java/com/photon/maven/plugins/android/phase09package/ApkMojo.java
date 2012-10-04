@@ -73,7 +73,7 @@ import com.photon.maven.plugins.android.ExecutionException;
 import com.photon.maven.plugins.android.common.NativeHelper;
 import com.photon.maven.plugins.android.configuration.Sign;
 import com.photon.maven.plugins.android.phase09package.ApkBuilder;
-import com.photon.phresco.commons.BuildInfo;
+import com.photon.phresco.framework.model.BuildInfo;
 import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.exception.PhrescoException;
 

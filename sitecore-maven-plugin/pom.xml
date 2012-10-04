@@ -48,6 +48,12 @@
     </dependency>
     
     <dependency>
+         <groupId>com.photon.phresco</groupId>
+ 		<artifactId>plugin-commons</artifactId>
+         <version>${phresco-commons-version}</version>
+     </dependency>
+    
+    <dependency>
           <groupId>junit</groupId>
           <artifactId>junit</artifactId>
           <version>3.8.1</version>

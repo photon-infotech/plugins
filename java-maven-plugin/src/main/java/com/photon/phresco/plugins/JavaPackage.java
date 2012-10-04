@@ -47,12 +47,12 @@ import org.w3c.dom.Element;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.photon.phresco.commons.BuildInfo;
+import com.photon.phresco.framework.model.BuildInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.framework.api.Project;
 import com.photon.phresco.framework.api.ProjectAdministrator;
-import com.photon.phresco.model.SettingsInfo;
+import com.photon.phresco.framework.model.SettingsInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.util.ArchiveUtil;
@@ -188,14 +188,14 @@ public class JavaPackage extends AbstractMojo implements PluginConstants {
 		try {
 			ProjectAdministrator projAdmin = PhrescoFrameworkFactory.getProjectAdministrator();
 			Project currentProject = projAdmin.getProjectByWorkspace(baseDir);
-			String techId = currentProject.getProjectInfo().getTechnology().getId();
+			String techId = currentProject.getApplicationInfo().getTechInfo().getVersion();
 			if (!techId.equals(TechnologyTypes.JAVA_STANDALONE)) {
 				String envName = environmentName;
 				if (environmentName.indexOf(',') > -1) { // multi-value
 					envName = projAdmin.getDefaultEnvName(baseDir.getName());
 				}
 				List<SettingsInfo> settingsInfos = projAdmin.getSettingsInfos(Constants.SETTINGS_TEMPLATE_SERVER,
-						currentProject.getProjectInfo().getCode(), envName);
+						currentProject.getApplicationInfo().getTechInfo().getVersion(), envName);
 				for (SettingsInfo settingsInfo : settingsInfos) {
 					context = settingsInfo.getPropertyInfo(Constants.SERVER_CONTEXT).getValue();
 					break;
@@ -327,7 +327,7 @@ public class JavaPackage extends AbstractMojo implements PluginConstants {
 			String zipNameWithoutExt = zipName.substring(0, zipName.lastIndexOf('.'));
 			ProjectAdministrator projectAdministrator = PhrescoFrameworkFactory.getProjectAdministrator();
 			Project currentProject = projectAdministrator.getProjectByWorkspace(baseDir);
-			String techId = currentProject.getProjectInfo().getTechnology().getId();
+			String techId = currentProject.getApplicationInfo().getTechInfo().getVersion();
 			if (techId.equals(TechnologyTypes.JAVA_STANDALONE)) {
 
 				copyJarToPackage(zipNameWithoutExt);
