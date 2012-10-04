@@ -153,8 +153,6 @@ public class WPPackage extends AbstractMojo implements PluginConstants {
 		writeBuildInfo(buildStatus);
 		cleanUp();
 	}
-
-
 	private void init() throws MojoExecutionException {
 		try {
 			if (StringUtils.isEmpty(environmentName) || StringUtils.isEmpty(type)) {
