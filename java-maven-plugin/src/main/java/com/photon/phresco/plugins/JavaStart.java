@@ -37,6 +37,7 @@ import com.photon.phresco.framework.api.ProjectAdministrator;
 import com.photon.phresco.model.SettingsInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
+import com.photon.phresco.plugin.commons.DatabaseUtil;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
 import com.phresco.pom.util.PomProcessor;
@@ -152,7 +153,7 @@ public class JavaStart extends AbstractMojo implements PluginConstants {
 	}
 	
 	private void createDb() throws MojoExecutionException {
-		PluginUtils util = new PluginUtils();
+		DatabaseUtil util = new DatabaseUtil();
 		try {
 			if (importSql) {
 				List<SettingsInfo> settingsInfos = getSettingsInfo(Constants.SETTINGS_TEMPLATE_DB);

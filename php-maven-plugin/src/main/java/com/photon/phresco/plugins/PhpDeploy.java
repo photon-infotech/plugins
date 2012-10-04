@@ -30,7 +30,7 @@ import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
-
+import com.photon.phresco.plugin.commons.DatabaseUtil;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.framework.api.ProjectAdministrator;
@@ -117,7 +117,7 @@ public class PhpDeploy extends AbstractMojo implements PluginConstants {
 	}
 
 	private void createDb() throws MojoExecutionException {
-		PluginUtils util = new PluginUtils();
+		DatabaseUtil util = new DatabaseUtil();
 		try {
 			if (importSql) {
 				List<SettingsInfo> settingsInfos = getSettingsInfo(Constants.SETTINGS_TEMPLATE_DB);
