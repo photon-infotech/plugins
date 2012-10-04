@@ -34,8 +34,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.Map.Entry;
+import java.util.Scanner;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
@@ -48,7 +48,9 @@ import com.mongodb.DBObject;
 import com.mongodb.DefaultDBDecoder;
 import com.mongodb.Mongo;
 import com.photon.phresco.exception.PhrescoException;
-import com.photon.phresco.model.SettingsInfo;
+import com.photon.phresco.framework.model.SettingsInfo;
+import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.Utility;
 
 public class DatabaseUtil {
 
