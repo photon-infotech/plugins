@@ -38,7 +38,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 public class CodeValidation extends AbstractXcodeMojo{
 
 	private static final String SOURCE_BUILD = "/source/build";
-	private static final String MAKE_DIR_LOC = "do_not_checkin/static-analysis-report/make";
+	private static String MAKE_DIR_LOC = "do_not_checkin/static-analysis-report/";
 	private static final String DO_NOT_CHECKIN = "/do_not_checkin";
 	private static final String TARGET = "/target";
 	private static final String report = "static-analysis-report";
@@ -78,9 +78,15 @@ public class CodeValidation extends AbstractXcodeMojo{
 	private File buildDirectory;
 	
 	int exitValue = 0; 
-	
+	File reportingDir =  null;
 	public void execute() throws MojoExecutionException {		
 		try {
+			// For each target , we are creating separate folder
+			MAKE_DIR_LOC = MAKE_DIR_LOC + scheme + File.separator + "make";
+			getLog().info("make dir location ..." + MAKE_DIR_LOC);
+			
+			reportingDir = new File(baseDir, DO_NOT_CHECKIN + File.separator + report + File.separator + scheme);
+			getLog().info("reportingDir location ..." + reportingDir.getAbsolutePath());
 			
 			//delete target folder, which is inside do_not_checkin folder
 			File donotCheckinTargetDir = new File(baseDir, DO_NOT_CHECKIN + TARGET);
@@ -91,10 +97,9 @@ public class CodeValidation extends AbstractXcodeMojo{
 			}
 			
 			getLog().info("Do not check in report dir creation ...");
-			File reportDir = new File(baseDir + DO_NOT_CHECKIN, report);
-			if (!reportDir.exists()) {
+			if (!reportingDir.exists()) {
 				getLog().info("Do not check in report dir created ...");
-				reportDir.mkdirs();
+				reportingDir.mkdirs();
 			}
 			
 			ProcessBuilder pb = new ProcessBuilder(check);
@@ -107,7 +112,7 @@ public class CodeValidation extends AbstractXcodeMojo{
 			//specify the folder here to generate it... do not start with /
 			commands.add(MAKE_DIR_LOC);
 			commands.add("xcodebuild");
-			commands.add("-scheme");
+			commands.add("-target");
 			commands.add(scheme);
 			commands.add("-project");
 			commands.add(xcodeProject);
@@ -135,10 +140,10 @@ public class CodeValidation extends AbstractXcodeMojo{
 			exitValue = child.exitValue();
 			getLog().info("Exit Value: " + exitValue);
 
-			getLog().info("Cleaning dir started!!! ");
-			if (reportDir.exists()) {
+			getLog().info("Cleaning existing files from dir to place newly generated files !!! ");
+			if (reportingDir.exists()) {
 				//clean all the file inside folder
-				deleteFilesAlone(reportDir);
+				deleteFilesAlone(reportingDir);
 			}
 			
 			if (exitValue != 0) {
@@ -170,17 +175,16 @@ public class CodeValidation extends AbstractXcodeMojo{
 		// when there is no file inside make dir, it returns null
 		if (outputFile == null && reportExitValue == 0) { // when report is not generated and code is zero for no violance project
 			getLog().info("No issues found");
-			generateNoViolationHtml(new File(baseDir + DO_NOT_CHECKIN, report));
+			generateNoViolationHtml(reportingDir);
 		} else if (outputFile == null && reportExitValue != 0) { // when report is not generated and code is not zero, certificate file like issue occurs
 			throw new MojoExecutionException("Report not generated");
 		} else if (outputFile != null) { // when the report is generated, code value may be 0(phresco) or 65(walgreens).. Report is having issues
 			try {
-				File reportDir = new File(baseDir + DO_NOT_CHECKIN, report);
 				if (outputFile.exists()) {
 					File[] listFiles = outputFile.listFiles();
 					getLog().info("No of Files to be copied " + listFiles.length);
 				}
-				FileUtils.copyDirectory(outputFile, reportDir);
+				FileUtils.copyDirectory(outputFile, reportingDir);
 				FileUtils.deleteDirectory(makeReportDir); //delete make dir
 			} catch (IOException e) {
 				throw new MojoExecutionException("Error in writing output..." + e.getLocalizedMessage());
