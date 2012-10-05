@@ -115,5 +115,11 @@
 	  <version>${phresco-commons-version}</version>
   </dependency>
   
+  <dependency>
+	  <groupId>com.photon.phresco.plugins</groupId>
+	  <artifactId>xcode-phresco-plugin</artifactId>
+	  <version>${phresco-commons-version}</version>
+  </dependency>
+  
   </dependencies>
 </project>
