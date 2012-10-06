@@ -121,5 +121,11 @@
 	  <version>${phresco-commons-version}</version>
   </dependency>
   
+  <dependency>
+	  <groupId>com.photon.phresco.plugins</groupId>
+	  <artifactId>android-phresco-plugin</artifactId>
+	  <version>${phresco-commons-version}</version>
+  </dependency>
+  
   </dependencies>
 </project>
