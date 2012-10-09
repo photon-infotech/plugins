@@ -59,6 +59,10 @@ import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.WP8PackageInfo;
 import com.photon.phresco.util.Utility;
 
+import com.photon.phresco.framework.PhrescoFrameworkFactory;
+import com.photon.phresco.framework.api.Project;
+import com.photon.phresco.framework.api.ProjectAdministrator;
+
 /**
  * Goal which generated the installable file for Windows Phone 7
  * 
@@ -106,7 +110,6 @@ public class WPPackage extends AbstractMojo implements PluginConstants {
 	
 	/**
 	 * @parameter expression="${type}" required="true"
-	 * default-value="wp8"
 	 * @readonly
 	 */
 	protected String type;
@@ -155,8 +158,17 @@ public class WPPackage extends AbstractMojo implements PluginConstants {
 	}
 	private void init() throws MojoExecutionException {
 		try {
-			if (StringUtils.isEmpty(environmentName) || StringUtils.isEmpty(type)) {
+			if (StringUtils.isEmpty(environmentName) || StringUtils.isEmpty(type) || (!type.equals("wp7") && !type.equals("wp8"))) {
 				callUsage();
+			}
+			
+			ProjectAdministrator projAdmin = PhrescoFrameworkFactory.getProjectAdministrator();
+			Project currentProject = projAdmin.getProjectByWorkspace(baseDir);
+			String techId = currentProject.getProjectInfo().getTechnology().getId();
+			
+			if ((type.equals("wp8") && !techId.equals(TechnologyTypes.WIN_METRO)) ||
+					(type.equals("wp7") && !techId.equals(TechnologyTypes.WIN_PHONE))	) {
+				invalidProjectType();
 			}
 			
 			getSolutionFile();
@@ -190,6 +202,11 @@ public class WPPackage extends AbstractMojo implements PluginConstants {
 		throw new MojoExecutionException("Invalid Usage. Please see the Usage of Package Goal");
 	}
 	
+	private void invalidProjectType() throws MojoExecutionException {
+		getLog().error("Invalid project type.");
+		getLog().info("Please check the &lt;type&gt; tag in plugin configuration section in pom.xml");
+		throw new MojoExecutionException("Invalid project type.");
+	}
 	private void getSolutionFile() throws MojoExecutionException {
 		try {
 			// Get .sln file from the source folder
