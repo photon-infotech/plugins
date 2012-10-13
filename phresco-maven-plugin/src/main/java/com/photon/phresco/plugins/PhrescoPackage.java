@@ -78,6 +78,7 @@ public class PhrescoPackage extends PhrescoAbstractMojo {
         mavenProjectInfo.setProject(project);
         return mavenProjectInfo;
     }
+    
     private String getPluginName() throws PhrescoException {
     	MojoProcessor processor = new MojoProcessor(new File(baseDir, PHRESCO_PLUGIN_INFO_XML));
     	return processor.getImplementationClassName(PACKAGE);
