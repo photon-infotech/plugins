@@ -149,8 +149,8 @@ public class Deploy implements PluginConstants {
 				List<SettingsInfo> settingsInfos = getSettingsInfo(Constants.SETTINGS_TEMPLATE_DB);
 				for (SettingsInfo databaseDetails : settingsInfos) {
 					String databaseType = databaseDetails.getPropertyInfo(Constants.DB_TYPE).getValue();
-					utils.getSqlFilePath(databaseDetails,baseDir, databaseType);
-					utils.updateSqlQuery(databaseDetails, serverHost, context, serverport);
+//					utils.getSqlFilePath(databaseDetails,baseDir, databaseType);
+//					utils.updateSqlQuery(databaseDetails, serverHost, context, serverport);
 				}
 				
 			}

@@ -82,7 +82,7 @@ public class Package implements PluginConstants {
 		boolean isBuildSuccess = true;
 		try {
 			configure();
-			FileUtils.copyDirectoryStructure(srcDir, targetDir);
+			FileUtils.copyDirectory(srcDir, targetDir);
 			createPackage();
 		} catch (IOException e) {
 			isBuildSuccess = false;

@@ -16,6 +16,7 @@ public class Deploy implements PluginConstants {
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
 		String buildName = configs.get(BUILD_NAME);
 		String usb = "emulator-5554";
+//		String usb = "usb";
 		String avd = "default";
 		log.info("Project is Deploying...");
 		StringBuilder builder = new StringBuilder();
