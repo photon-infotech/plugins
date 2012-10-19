@@ -1,12 +1,17 @@
 package com.photon.phresco.plugins;
 
+import java.io.File;
 import java.lang.reflect.Constructor;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+import com.photon.phresco.plugins.util.MojoProcessor;
 
 public abstract class PhrescoAbstractMojo extends AbstractMojo {
     
@@ -26,5 +31,23 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
         } catch (Exception e) {
             throw new PhrescoException(e);
         }
+    }
+    
+    protected Configuration getConfiguration(File baseDir, String goal) throws PhrescoException {
+        MojoProcessor processor = new MojoProcessor(new File(baseDir, PHRESCO_PLUGIN_INFO_XML));
+        return processor.getConfiguration(goal);
+    }
+    
+    protected MavenProjectInfo getMavenProjectInfo(MavenProject project) {
+        MavenProjectInfo mavenProjectInfo = new MavenProjectInfo();
+    	mavenProjectInfo.setBaseDir(project.getBasedir());
+        mavenProjectInfo.setProject(project);
+        mavenProjectInfo.setProjectCode(project.getBasedir().getName());
+        return mavenProjectInfo;
+    }
+    
+    protected String getPluginName(File baseDir, String goal) throws PhrescoException {
+    	MojoProcessor processor = new MojoProcessor(new File(baseDir, PHRESCO_PLUGIN_INFO_XML));
+    	return processor.getImplementationClassName(goal);
     }
 }

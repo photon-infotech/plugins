@@ -4,10 +4,10 @@ import org.apache.maven.plugin.logging.Log;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
-import com.photon.phresco.plugins.PhrescoAbstractPlugin;
+import com.photon.phresco.plugins.PhrescoBasePlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 
-public class DrupalPlugin extends PhrescoAbstractPlugin {
+public class DrupalPlugin extends PhrescoBasePlugin {
 
 	public DrupalPlugin(Log log) {
 		super(log);
@@ -25,4 +25,7 @@ public class DrupalPlugin extends PhrescoAbstractPlugin {
 		deploy.deploy(configuration, mavenProjectInfo, log);
 	}
 
+	public void validate() throws PhrescoException {
+				
+	}
 }

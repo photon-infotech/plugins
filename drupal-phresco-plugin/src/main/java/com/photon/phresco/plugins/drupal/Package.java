@@ -94,7 +94,6 @@ public class Package implements PluginConstants {
 	private void createPackage() {
 		String zipName = util.createPackage(buildName, buildNumber, nextBuildNo, currentDate);
 		String zipFilePath = buildDir.getPath() + File.separator + zipName;
-		log.info("zipFilePath============> " + zipFilePath);
 		try {
 			ArchiveUtil.createArchive(targetDir.getPath(), zipFilePath, ArchiveType.ZIP);
 		} catch (PhrescoException e) {

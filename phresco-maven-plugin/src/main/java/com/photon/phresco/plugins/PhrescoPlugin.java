@@ -6,7 +6,7 @@ import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 
 public interface PhrescoPlugin {
     
-    void validate() throws PhrescoException;
+    void validate(Configuration configuration) throws PhrescoException;
     
     void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     

@@ -6,10 +6,10 @@ import org.apache.maven.plugin.logging.Log;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
-import com.photon.phresco.plugins.PhrescoAbstractPlugin;
+import com.photon.phresco.plugins.PhrescoBasePlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 
-public class XcodePlugin extends PhrescoAbstractPlugin {
+public class XcodePlugin extends PhrescoBasePlugin {
 
 	public XcodePlugin(Log log) {
 		super(log);
@@ -24,14 +24,17 @@ public class XcodePlugin extends PhrescoAbstractPlugin {
 
 	public void deploy(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-			System.out.println("WAXSIM_HOME... " + System.getenv("PHRESCO_HOME"));
-			System.out.println("WAXSIM_HOME... " + System.getenv("waxsim_home"));
-			Deploy deploy = new Deploy();
-			try {
-				deploy.deploy(configuration, mavenProjectInfo, log);
-			} catch (MojoExecutionException e) {
-			} catch (MojoFailureException e) {
-			}
+		Deploy deploy = new Deploy();
+		try {
+			deploy.deploy(configuration, mavenProjectInfo, log);
+		} catch (MojoExecutionException e) {
+		} catch (MojoFailureException e) {
+		}
+	}
+	
+	public void validate(Configuration configuration) {
+		ClangCodeValidator validator = new ClangCodeValidator();
+		validator.validate(configuration);
 	}
 
 }

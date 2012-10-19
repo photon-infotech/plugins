@@ -206,6 +206,7 @@ public interface PluginConstants {
 	 
 	 //Xcode plugin constants
 	 String WAXSIM_HOME 				= "WAXSIM_HOME";
+	 String XCODE_CODE_VALIDATOR_COMMAND= "mvn xcode:codevalidate";
 	 
 	 //Constants for dynamic parameter
 	 String BUILD_NAME 					= "buildName";
@@ -222,6 +223,8 @@ public interface PluginConstants {
 	 
 	 //Constants for CodeValidator
 	 String SONAR_COMMAND				= "mvn sonar:sonar";
+	 String SONAR						= "sonar";
+	 String PLUGIN_PARAMETER 			= "plugin";
 	 
 	// BlackBerry maven plugin constants
 	// Author: Viral

@@ -4,11 +4,11 @@ import org.apache.maven.plugin.logging.Log;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
-import com.photon.phresco.plugins.PhrescoAbstractPlugin;
+import com.photon.phresco.plugins.PhrescoBasePlugin;
 import com.photon.phresco.plugins.java.Package;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 
-public class JavaPlugin extends PhrescoAbstractPlugin {
+public class JavaPlugin extends PhrescoBasePlugin {
 
 	public JavaPlugin(Log log) {
 		super(log);

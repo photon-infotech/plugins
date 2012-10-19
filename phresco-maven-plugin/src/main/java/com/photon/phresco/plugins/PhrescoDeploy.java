@@ -52,29 +52,10 @@ public class PhrescoDeploy extends PhrescoAbstractMojo {
         //Find the implementation class based on the technology
         //execute deploy method
         try {
-            PhrescoPlugin plugin = getPlugin(getPluginName());
-            plugin.deploy(getConfiguration(), getMavenProjectInfo());
+            PhrescoPlugin plugin = getPlugin(getPluginName(baseDir, DEPLOY));
+            plugin.deploy(getConfiguration(baseDir, DEPLOY), getMavenProjectInfo(project));
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
     }
-	
-	private Configuration getConfiguration() throws PhrescoException {
-        MojoProcessor processor = new MojoProcessor(new File(baseDir, PHRESCO_PLUGIN_INFO_XML));
-        return processor.getConfiguration(DEPLOY);
-    }
-    
-    private MavenProjectInfo getMavenProjectInfo() {
-        MavenProjectInfo mavenProjectInfo = new MavenProjectInfo();
-        mavenProjectInfo.setBaseDir(baseDir);
-        mavenProjectInfo.setProject(project);
-        mavenProjectInfo.setProjectCode(projectCode);
-        return mavenProjectInfo;
-    }
-    
-    private String getPluginName() throws PhrescoException {
-    	MojoProcessor processor = new MojoProcessor(new File(baseDir, PHRESCO_PLUGIN_INFO_XML));
-    	return processor.getImplementationClassName(DEPLOY);
-    }
-
 }

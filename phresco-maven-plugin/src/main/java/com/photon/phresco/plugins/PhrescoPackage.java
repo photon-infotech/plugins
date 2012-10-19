@@ -60,27 +60,10 @@ public class PhrescoPackage extends PhrescoAbstractMojo {
         //Find the implementation class based on the technology
         //execute package method
         try {
-            PhrescoPlugin plugin = getPlugin(getPluginName());
-            plugin.pack(getConfiguration(), getMavenProjectInfo());
+            PhrescoPlugin plugin = getPlugin(getPluginName(baseDir, PACKAGE));
+            plugin.pack(getConfiguration(baseDir, PACKAGE), getMavenProjectInfo(project));
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
-    }
-    
-    private Configuration getConfiguration() throws PhrescoException {
-        MojoProcessor processor = new MojoProcessor(new File(baseDir, PHRESCO_PLUGIN_INFO_XML));
-        return processor.getConfiguration(PACKAGE);
-    }
-    
-    private MavenProjectInfo getMavenProjectInfo() {
-        MavenProjectInfo mavenProjectInfo = new MavenProjectInfo();
-        mavenProjectInfo.setBaseDir(baseDir);
-        mavenProjectInfo.setProject(project);
-        return mavenProjectInfo;
-    }
-    
-    private String getPluginName() throws PhrescoException {
-    	MojoProcessor processor = new MojoProcessor(new File(baseDir, PHRESCO_PLUGIN_INFO_XML));
-    	return processor.getImplementationClassName(PACKAGE);
     }
 }
