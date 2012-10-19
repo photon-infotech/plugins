@@ -47,8 +47,8 @@ import com.mongodb.DBDecoder;
 import com.mongodb.DBObject;
 import com.mongodb.DefaultDBDecoder;
 import com.mongodb.Mongo;
+import com.photon.phresco.configuration.Configuration;
 import com.photon.phresco.exception.PhrescoException;
-import com.photon.phresco.framework.model.SettingsInfo;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
 
@@ -110,14 +110,14 @@ public class DatabaseUtil {
 		return collName;
 	}
 
-	private void executeSql(SettingsInfo info, File basedir, List<String> filepaths) throws PhrescoException {
+	private void executeSql(Configuration dbConfiguration, File basedir, List<String> filepaths) throws PhrescoException {
 		initDriverMap();
-		String host = info.getPropertyInfo(Constants.DB_HOST).getValue();
-		String port = info.getPropertyInfo(Constants.DB_PORT).getValue();
-		String userName = info.getPropertyInfo(Constants.DB_USERNAME).getValue();
-		String password = info.getPropertyInfo(Constants.DB_PASSWORD).getValue();
-		String databaseName = info.getPropertyInfo(Constants.DB_NAME).getValue();
-		String databaseType = info.getPropertyInfo(Constants.DB_TYPE).getValue();
+		String host = dbConfiguration.getProperties().getProperty(Constants.DB_HOST);
+		String port = dbConfiguration.getProperties().getProperty(Constants.DB_PORT);
+		String userName = dbConfiguration.getProperties().getProperty(Constants.DB_USERNAME);
+		String password = dbConfiguration.getProperties().getProperty(Constants.DB_PASSWORD);
+		String databaseName = dbConfiguration.getProperties().getProperty(Constants.DB_NAME);
+		String databaseType = dbConfiguration.getProperties().getProperty(Constants.DB_TYPE);
 		String connectionProtocol = findConnectionProtocol(databaseType, host, port, databaseName);
 		Connection con = null;
 		FileInputStream fis = null;
@@ -181,7 +181,7 @@ public class DatabaseUtil {
 		}
 	}
 
-	public void getSqlFilePath(SettingsInfo databaseDetails, File basedir, String databaseType) throws PhrescoException {
+	public void getSqlFilePath(Configuration dbConfiguration, File basedir, String databaseType) throws PhrescoException {
 		List<String> filepaths = new ArrayList<String>();
 		try {
 			File jsonFile = new File(basedir.getPath() + Constants.JSON_PATH);
@@ -195,7 +195,7 @@ public class DatabaseUtil {
 					Entry<String, List<String>> entry = iterator.next();
 					if (entry.getKey().equals(databaseType)) {
 						filepaths = entry.getValue();
-						executeSql(databaseDetails, basedir, filepaths);
+						executeSql(dbConfiguration, basedir, filepaths);
 					}
 				}
 			}
@@ -222,18 +222,18 @@ public class DatabaseUtil {
 		return connectionProtocol;
 	}
 
-	public void updateSqlQuery(SettingsInfo info, String serverHost, String context, String serverport)
+	public void updateSqlQuery(Configuration dbConfiguration, String serverHost, String context, String serverport)
 			throws PhrescoException {
 		Connection conn = null;
 		String updateQuery;
 		String updateHomeQuery;
 		try {
-			String host = info.getPropertyInfo(Constants.DB_HOST).getValue();
-			String port = info.getPropertyInfo(Constants.DB_PORT).getValue();
-			String username = info.getPropertyInfo(Constants.DB_USERNAME).getValue();
-			String password = info.getPropertyInfo(Constants.DB_PASSWORD).getValue();
-			String database = info.getPropertyInfo(Constants.DB_NAME).getValue();
-			String databasetype = info.getPropertyInfo(Constants.DB_TYPE).getValue();
+			String host = dbConfiguration.getProperties().getProperty(Constants.DB_HOST);
+			String port = dbConfiguration.getProperties().getProperty(Constants.DB_PORT);
+			String username = dbConfiguration.getProperties().getProperty(Constants.DB_USERNAME);
+			String password = dbConfiguration.getProperties().getProperty(Constants.DB_PASSWORD);
+			String database = dbConfiguration.getProperties().getProperty(Constants.DB_NAME);
+			String databasetype = dbConfiguration.getProperties().getProperty(Constants.DB_TYPE);
 			String dbUrl = "jdbc:" + databasetype + "://" + host + ":" + port;
 			String url = dbUrl + PluginConstants.FORWARD_SLASH + database;
 			conn = DriverManager.getConnection(url, username, password);

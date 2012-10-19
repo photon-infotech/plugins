@@ -15,17 +15,15 @@ import com.photon.phresco.commons.api.ConfigManager;
 import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
-import com.photon.phresco.framework.api.ProjectAdministrator;
-import com.photon.phresco.framework.model.SettingsInfo;
+import com.photon.phresco.plugin.commons.DatabaseUtil;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
-import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.ArchiveUtil;
+import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
-import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 
 public class Deploy implements PluginConstants {
 
@@ -93,13 +91,13 @@ public class Deploy implements PluginConstants {
 	}
 	
 	private void createDb() throws MojoExecutionException {
-		PluginUtils util = new PluginUtils();
+		DatabaseUtil util = new DatabaseUtil();
 		try {
 			if (importSql) {
 				List<com.photon.phresco.configuration.Configuration> configurations = getConfiguration(Constants.SETTINGS_TEMPLATE_DB);
 				for (com.photon.phresco.configuration.Configuration configuration : configurations) {
 					String databaseType = configuration.getProperties().getProperty(Constants.DB_TYPE);
-//					util.getSqlFilePath(databaseDetails,baseDir, databaseType);
+					util.getSqlFilePath(configuration, baseDir, databaseType);
 				}
 			}
 		} catch (Exception e) {

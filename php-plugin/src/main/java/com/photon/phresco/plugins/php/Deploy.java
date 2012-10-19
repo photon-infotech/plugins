@@ -14,6 +14,7 @@ import com.photon.phresco.commons.api.ConfigManager;
 import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
+import com.photon.phresco.plugin.commons.DatabaseUtil;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
@@ -78,13 +79,13 @@ public class Deploy implements PluginConstants {
 	}
 
 	private void createDb() throws MojoExecutionException {
-		PluginUtils util = new PluginUtils();
+		DatabaseUtil util = new DatabaseUtil();
 		try {
 			if (importSql) {
 				List<com.photon.phresco.configuration.Configuration> configuration = getConfiguration(Constants.SETTINGS_TEMPLATE_DB);
 				for (com.photon.phresco.configuration.Configuration config : configuration) {
 					String databaseType = config.getProperties().getProperty(Constants.DB_TYPE);
-//					util.getSqlFilePath(databaseDetails,baseDir, databaseType);
+					util.getSqlFilePath(config, baseDir, databaseType);
 				}
 			}
 		} catch (PhrescoException e) {

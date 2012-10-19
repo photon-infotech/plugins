@@ -10,9 +10,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.commons.io.FileUtils;
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
