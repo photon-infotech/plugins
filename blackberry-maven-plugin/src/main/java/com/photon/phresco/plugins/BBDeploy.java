@@ -33,6 +33,8 @@ import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.Commandline;
 
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.framework.PhrescoFrameworkFactory;
+import com.photon.phresco.framework.api.ApplicationManager;
 import com.photon.phresco.framework.model.BuildInfo;
 import com.photon.phresco.util.ArchiveUtil;
 
@@ -92,9 +94,9 @@ public class BBDeploy extends AbstractMojo implements PluginConstants {
 			if (StringUtils.isEmpty(buildNumber) || StringUtils.isEmpty(environmentName)) {
 				callUsage();
 			}
-			
+			ApplicationManager applicationManager = PhrescoFrameworkFactory.getApplicationManager();
 			PluginUtils pu = new PluginUtils();
-			buildInfo = pu.getBuildInfo(Integer.parseInt(buildNumber));
+//			buildInfo = pu.getBuildInfo(Integer.parseInt(buildNumber));
 			
 			buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
 			buildFile = new File(buildDir.getPath() + File.separator + buildInfo.getBuildName());
