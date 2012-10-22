@@ -18,39 +18,35 @@ import com.photon.phresco.util.Utility;
 public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 
 	public Log log;
-    
-    public PhrescoBasePlugin(Log log) {
-        this.log = log;
-    }
-    
-    protected final Log getLog() {
-        return log;
-    }
-    
-    public void runAgainstSource() throws PhrescoException {
-        
-    }
 
-    public void runUnitTest() throws PhrescoException {
-    	StringBuilder sb = new StringBuilder();
+	public PhrescoBasePlugin(Log log) {
+		this.log = log;
+	}
+
+	protected final Log getLog() {
+		return log;
+	}
+
+	public void runUnitTest() throws PhrescoException {
+		StringBuilder sb = new StringBuilder();
 		sb.append(UNIT_TEST_COMMAND);
 		Utility.executeStreamconsumer(sb.toString());
-    }
+	}
 
-    public void runFunctionalTest() throws PhrescoException {
-        // TODO Auto-generated method stub
-        
-    }
+	public void runFunctionalTest() throws PhrescoException {
+		// TODO Auto-generated method stub
 
-    public void runPerformanceTest() throws PhrescoException {
-        // TODO Auto-generated method stub
-        
-    }
+	}
 
-    public void runLoadTest() throws PhrescoException {
-        // TODO Auto-generated method stub
-        
-    }
+	public void runPerformanceTest() throws PhrescoException {
+		// TODO Auto-generated method stub
+
+	}
+
+	public void runLoadTest() throws PhrescoException {
+		// TODO Auto-generated method stub
+
+	}
 
 	public void validate(Configuration configuration) throws PhrescoException {
 		StringBuilder sb = new StringBuilder();
@@ -60,10 +56,10 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 		String string = config.get(value);
 		List<Parameter> parameters = configuration.getParameters().getParameter();
 		for (Parameter parameter : parameters) {
-			if(parameter.getPluginParameter() != null && parameter.getPluginParameter().equals(PLUGIN_PARAMETER)) {
+			if (parameter.getPluginParameter() != null && parameter.getPluginParameter().equals(PLUGIN_PARAMETER)) {
 				List<MavenCommand> mavenCommands = parameter.getMavenCommands().getMavenCommand();
 				for (MavenCommand mavenCommand : mavenCommands) {
-					if(parameter.getValue().equals(value) || mavenCommand.getKey().equals(string)) {
+					if (parameter.getValue().equals(value) || mavenCommand.getKey().equals(string)) {
 						String mavenCommandValue = mavenCommand.getValue();
 						sb.append(STR_SPACE);
 						sb.append(mavenCommandValue);
@@ -72,18 +68,23 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 			}
 		}
 		Utility.executeStreamconsumer(sb.toString());
-		
+
 	}
 
-	public void pack(Configuration configuration,
-			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
-	public void deploy(Configuration configuration,
-			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		
+	public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		// TODO Auto-generated method stub
 	}
 
+	public void startServer(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		// TODO Auto-generated method stub
+	}
+
+	public void stopServer(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		// TODO Auto-generated method stub
+	}
 }

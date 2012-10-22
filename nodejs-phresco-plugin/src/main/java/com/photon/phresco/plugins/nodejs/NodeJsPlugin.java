@@ -13,14 +13,18 @@ public class NodeJsPlugin extends PhrescoBasePlugin {
 		super(log);
 	}
 
-	public void pack(Configuration configuration,
-			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		Package pack = new Package();
 		pack.pack(configuration, mavenProjectInfo, log);
 	}
 
-	public void deploy(Configuration configuration,
-			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+	public void startServer(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		Start start = new Start();
+		start.start(configuration, mavenProjectInfo, log);
 	}
 
+	public void stopServer(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		Stop stop = new Stop();
+		stop.stop(mavenProjectInfo, log);
+	}
 }
