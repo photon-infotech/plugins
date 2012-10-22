@@ -15,9 +15,11 @@ import com.photon.phresco.commons.api.ConfigManager;
 import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
+import com.photon.phresco.framework.model.BuildInfo;
 import com.photon.phresco.plugin.commons.DatabaseUtil;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
+import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.ArchiveUtil;
@@ -28,9 +30,10 @@ import com.photon.phresco.util.Utility;
 public class Deploy implements PluginConstants {
 
 	private File baseDir;
-	private String buildName;
+	private String buildNumber;
 	private String environmentName;
 	private boolean importSql;
+	private File buildDir;
 	private File binariesDir;
 	private File buildFile;
 	private File tempDir;
@@ -41,7 +44,7 @@ public class Deploy implements PluginConstants {
 		baseDir = mavenProjectInfo.getBaseDir();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
-        buildName = configs.get(BUILD_NAME);
+        buildNumber = configs.get(USER_BUILD_NUMBER);
         
 		try {
 			init();
@@ -57,11 +60,17 @@ public class Deploy implements PluginConstants {
 	
 	private void init() throws MojoExecutionException  {
 		try {
-			if (StringUtils.isEmpty(buildName) || StringUtils.isEmpty(environmentName)) {
+			if (StringUtils.isEmpty(buildNumber) || StringUtils.isEmpty(environmentName)) {
 				callUsage();
 			}
-			File buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
-			buildFile = new File(buildDir.getPath() + File.separator + buildName);
+			
+			PluginUtils pu = new PluginUtils();
+			BuildInfo buildInfo = pu.getBuildInfo(Integer.parseInt(buildNumber));
+			log.info("Build Name " + buildInfo);
+			
+			buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
+			buildFile = new File(buildDir.getPath() + File.separator + buildInfo.getBuildName());
+			log.info("buildFile path " + buildFile.getPath());
 			binariesDir = new File(baseDir.getPath() + BINARIES_DIR);
 			
 			String context = "";
@@ -77,7 +86,6 @@ public class Deploy implements PluginConstants {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
-
 
 	private void callUsage() throws MojoExecutionException {
 		log.error("Invalid usage.");
@@ -178,13 +186,8 @@ public class Deploy implements PluginConstants {
 		}
 	}
 	
-//	private List<SettingsInfo> getSettingsInfo(String configType) throws PhrescoException {
-//		ProjectAdministrator projAdmin = PhrescoFrameworkFactory.getProjectAdministrator();
-//		return projAdmin.getSettingsInfos(configType, baseDir.getName(), environmentName);
-//	}
-	
 	private List<com.photon.phresco.configuration.Configuration> getConfiguration(String type) throws PhrescoException, ConfigurationException {
-		ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(new File(baseDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE));
+		ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(new File(baseDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + CONFIG_FILE));
 		return configManager.getConfigurations(environmentName, type);		
 	}
 

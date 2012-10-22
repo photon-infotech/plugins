@@ -2,9 +2,11 @@ package com.photon.phresco.plugins.sharepoint;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -13,9 +15,12 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
+import org.codehaus.plexus.util.cli.CommandLineException;
+import org.codehaus.plexus.util.cli.Commandline;
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
@@ -88,9 +93,7 @@ public class Package implements PluginConstants {
 		}
 	}
 	
-	private void unPackCabLib() throws PhrescoException  {
-		BufferedReader bufferedReader = null;
-		boolean errorParam = false;
+	private void unPackCabLib() throws MojoExecutionException  {
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append(MVN_CMD);
@@ -98,24 +101,19 @@ public class Package implements PluginConstants {
 			sb.append(MVN_PHASE_CLEAN);
 			sb.append(STR_SPACE);
 			sb.append(MVN_PHASE_VALDATE);
-			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
+			Commandline cl = new Commandline(sb.toString());
+			cl.setWorkingDirectory(baseDir);
+			Process process = cl.execute();
+			BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
 			String line = null;
-			while ((line = bufferedReader.readLine()) != null) {
-				if (line.startsWith("[ERROR]")) {
-					errorParam = true;
-				}
-			}
-			if (errorParam) {
-				throw new MojoExecutionException("Download CabLib.dll Failed");
+			while ((line = in.readLine()) != null) {
 			}
 		} catch (Exception e) {
-			throw new PhrescoException(e);
-		} finally {
-			Utility.closeStream(bufferedReader);
+			throw new MojoExecutionException(e.getMessage());
 		}
 	}
 
-	private void replaceValue() throws PhrescoException {
+	private void replaceValue() throws MojoExecutionException {
 		SAXBuilder builder = new SAXBuilder();
 		try {
 			File xmlFile = new File(baseDir.getPath() + sourceDirectory + SHAREPOINT_WSP_CONFIG_FILE);
@@ -130,52 +128,53 @@ public class Package implements PluginConstants {
 					Attribute attribute = dependent.getAttribute(SHAREPOINT_VALUE);
 					if (keyValue.equals(SHAREPOINT_SOLUTION_PATH)) {
 						attribute.setValue(baseDir.getPath() + sourceDirectory);
-					}
-					if (keyValue.equals(SHAREPOINT_OUTPUT_PATH)) {
+					} else if (keyValue.equals(SHAREPOINT_OUTPUT_PATH)) {
 						attribute.setValue(baseDir.getPath() + sourceDirectory);
-					}
-					if (keyValue.equals(SHAREPOINT_WSPNAME)) {
+					} else if (keyValue.equals(SHAREPOINT_WSPNAME)) {
 						attribute.setValue(baseDir.getName() + ".wsp");
 					}
 				}
 				saveFile(xmlFile, doc);
 			}
-		} catch (Exception e) {
-			throw new PhrescoException(e);
-		} 
+		} catch (FileNotFoundException e) {
+			throw new MojoExecutionException(SHAREPOINT_WSP_CONFIG_FILE +" is missing!");
+		} catch (JDOMException e) {
+			throw new MojoExecutionException(e.getMessage());
+		} catch (IOException e) {
+			throw new MojoExecutionException(e.getMessage());
+		}
 	}
 	
-	public void saveFile(File projectPath, Document doc) throws IOException {
+	private void saveFile(File projectPath, Document doc) throws IOException {
 		FileWriter writer = null;
 		try {
 			writer = new FileWriter(projectPath);
-				XMLOutputter xmlOutput = new XMLOutputter();
-				xmlOutput.setFormat(Format.getPrettyFormat());
-				xmlOutput.output(doc, writer);
+			XMLOutputter xmlOutput = new XMLOutputter();
+			xmlOutput.setFormat(Format.getPrettyFormat());
+			xmlOutput.output(doc, writer);
 		} finally {
-				Utility.closeStream(writer);
+			Utility.closeStream(writer);
 		}
 	}
 
 	private void executeExe() throws MojoExecutionException {
-		BufferedReader bufferedReader = null;
-		boolean errorParam = false;
+		BufferedReader in = null;
 		try {
 			log.info("Executing ...");
-			bufferedReader = Utility.executeCommand("WSPBuilder.exe", baseDir.getPath() + sourceDirectory);
+			Commandline cl = new Commandline("WSPBuilder.exe");
+			cl.setWorkingDirectory(baseDir.getPath() + sourceDirectory);
+			Process process = cl.execute();
+			in = new BufferedReader(new InputStreamReader(
+					process.getInputStream()));
 			String line = null;
-			while ((line = bufferedReader.readLine()) != null) {
-				if (line.startsWith("[ERROR]")) {
-					errorParam = true;
-				}
+			while ((line = in.readLine()) != null) {
 			}
-			if (errorParam) {
-				throw new MojoExecutionException("Overwritten of WSPBuilder.exe.config File Failed");
-			}
+		} catch (CommandLineException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		} finally {
-			Utility.closeStream(bufferedReader);
+			Utility.closeStream(in);
 		}
 	}
 
@@ -187,7 +186,7 @@ public class Package implements PluginConstants {
 			createPackage();
 		} catch (Exception e) {
 			isBuildSuccess = false;
-			log.error(e.getMessage());
+			log.error(e);
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 		return isBuildSuccess;

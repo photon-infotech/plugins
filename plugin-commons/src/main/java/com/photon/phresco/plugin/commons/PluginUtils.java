@@ -19,15 +19,19 @@
  */
 package com.photon.phresco.plugin.commons;
 
+import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,16 +47,21 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.util.FileUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.photon.phresco.configuration.ConfigReader;
 import com.photon.phresco.configuration.ConfigWriter;
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.framework.model.BuildInfo;
 import com.photon.phresco.util.Utility;
 
 public class PluginUtils {
@@ -172,4 +181,48 @@ public class PluginUtils {
 			throw new PhrescoException(e);
 		}
 	}
+
+	public BuildInfo getBuildInfo(int buildNumber) throws MojoExecutionException {
+		File currentDirectory = new File(".");
+		System.out.println("currentDirectory.getPath() in pluginUils is " + currentDirectory.getPath());
+		File buildInfoFile = new File(currentDirectory.getPath() + PluginConstants.BUILD_DIRECTORY + PluginConstants.BUILD_INFO_FILE);
+		if (!buildInfoFile.exists()) {
+			throw new MojoExecutionException("Build info is not available!");
+		}
+		try {
+			List<BuildInfo> buildInfos = getBuildInfo(buildInfoFile);
+			
+			 if (CollectionUtils.isEmpty(buildInfos)) {
+				 throw new MojoExecutionException("Build info is empty!");
+			 }
+
+			 for (BuildInfo buildInfo : buildInfos) {
+				 if (buildInfo.getBuildNo() == buildNumber) {
+					 return buildInfo;
+				 }
+			 }
+
+			 throw new MojoExecutionException("Build info is empty!");
+		} catch (Exception e) {
+			throw new MojoExecutionException(e.getLocalizedMessage());
+		}
+	}
+	
+	 public List<BuildInfo> getBuildInfo(File path) throws IOException {
+		 if (!path.exists()) {
+			 System.out.println("build info file doesnot exist!!!");
+			 return new ArrayList<BuildInfo>(1);
+		 }
+
+		 BufferedReader bufferedReader = new BufferedReader(new FileReader(path));
+		 Gson gson = new Gson();
+		 Type type = new TypeToken<List<BuildInfo>>(){}.getType();
+
+		 List<BuildInfo> buildInfos = gson.fromJson(bufferedReader, type);
+		 Collections.sort(buildInfos, new BuildInfoComparator());
+		 bufferedReader.close();
+
+		 return buildInfos;
+	 }
+
 }

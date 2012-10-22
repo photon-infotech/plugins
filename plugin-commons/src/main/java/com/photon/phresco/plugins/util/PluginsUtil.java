@@ -47,12 +47,12 @@ public class PluginsUtil implements PluginConstants {
 		return zipName;
 	}
 	
-	private String getTimeStampForDisplay(Date currentDate) {
+	public String getTimeStampForDisplay(Date currentDate) {
 		SimpleDateFormat formatter = new SimpleDateFormat(TIME_STAMP_FOR_DISPLAY);
 		return formatter.format(currentDate.getTime());
 	}
 
-	private String getTimeStampForBuildName(Date currentDate) {
+	public String getTimeStampForBuildName(Date currentDate) {
 		SimpleDateFormat formatter = new SimpleDateFormat(TIME_STAMP_FOR_BUILD_NAME);
 		return formatter.format(currentDate.getTime());
 	}

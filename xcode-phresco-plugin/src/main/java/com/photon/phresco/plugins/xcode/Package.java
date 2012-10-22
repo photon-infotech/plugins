@@ -30,13 +30,15 @@ import com.photon.phresco.framework.model.BuildInfo;
 import com.photon.phresco.commons.XCodeConstants;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
+import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoUtil;
+import com.photon.phresco.plugins.util.PluginsUtil;
 import com.photon.phresco.plugins.xcode.utils.SdkVerifier;
 import com.photon.phresco.plugins.xcode.utils.XcodeUtil;
 
-public class Package {
+public class Package implements PluginConstants {
 	
 	private static final String DO_NOT_CHECKIN_BUILD = "/do_not_checkin/build";
 
@@ -64,6 +66,7 @@ public class Package {
 	private String dSYMFileName;
 	private String deliverable;
 	private Log log;
+	private PluginsUtil util;
 	
 	/**
 	 * Execute the xcode command line utility.
@@ -74,11 +77,11 @@ public class Package {
 		baseDir = mavenProjectInfo.getBaseDir();
 		project = mavenProjectInfo.getProject();
         Map<String, String> configs = MojoUtil.getAllValues(config);
-        environmentName = configs.get("environmentName");
+        environmentName = configs.get(ENVIRONMENT_NAME);
         basedir = baseDir.getPath();
         xcodeCommandLine = new File("/usr/bin/xcodebuild");
         buildDirectory = new File(project.getBuild().getDirectory());
-        buildNumber = configs.get("userBuildNumber");
+        buildNumber = configs.get(USER_BUILD_NUMBER);
         
 		if (!xcodeCommandLine.exists()) {
 			throw new PhrescoException("Invalid path, invalid xcodebuild file: "
@@ -264,7 +267,7 @@ public class Package {
 				System.out.println("Completed " + outputFile.getAbsolutePath());
 				log.info("Folder name ....." + baseDir.getName());
 				log.info("APP created.. Copying to Build directory....." + project.getBuild().getFinalName());
-				String buildName = project.getBuild().getFinalName() + '_' + getTimeStampForBuildName(currentDate);
+				String buildName = project.getBuild().getFinalName() + '_' + util.getTimeStampForBuildName(currentDate);
 				File baseFolder = new File(baseDir + DO_NOT_CHECKIN_BUILD, buildName);
 				if (!baseFolder.exists()) {
 					baseFolder.mkdirs();
@@ -306,7 +309,7 @@ public class Package {
 			try {
 				System.out.println("Completed " + outputFile.getAbsolutePath());
 				log.info("dSYM created.. Copying to Build directory.....");
-				String buildName = project.getBuild().getFinalName() + '_' + getTimeStampForBuildName(currentDate);
+				String buildName = project.getBuild().getFinalName() + '_' + util.getTimeStampForBuildName(currentDate);
 				File baseFolder = new File(baseDir + DO_NOT_CHECKIN_BUILD, buildName);
 				if (!baseFolder.exists()) {
 					baseFolder.mkdirs();
@@ -388,7 +391,7 @@ public class Package {
 			} else {
 				buildInfo.setBuildNo(nextBuildNo);
 			}
-			buildInfo.setTimeStamp(getTimeStampForDisplay(currentDate));
+			buildInfo.setTimeStamp(util.getTimeStampForDisplay(currentDate));
 			if (isBuildSuccess) {
 				buildInfo.setBuildStatus("SUCCESS");
 			} else {
@@ -422,18 +425,6 @@ public class Package {
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
-	}
-
-	private String getTimeStampForDisplay(Date currentDate) {
-		SimpleDateFormat formatter = new SimpleDateFormat("dd/MMM/yyyy HH:mm:ss");
-		String timeStamp = formatter.format(currentDate.getTime());
-		return timeStamp;
-	}
-
-	private String getTimeStampForBuildName(Date currentDate) {
-		SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy-HH-mm-ss");
-		String timeStamp = formatter.format(currentDate.getTime());
-		return timeStamp;
 	}
 
 	private void configure() throws MojoExecutionException {

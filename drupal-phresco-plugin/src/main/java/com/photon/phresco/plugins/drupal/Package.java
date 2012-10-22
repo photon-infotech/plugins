@@ -5,10 +5,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
-import org.apache.commons.io.FileUtils;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
@@ -63,11 +63,9 @@ public class Package implements PluginConstants {
 			srcDir = new File(baseDir.getPath() + File.separator + DRUPAL_SOURCE_DIR);
 			buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
 			if (!buildDir.exists()) {
-				//check for failure cases and report the error correctly
 				buildDir.mkdir();
 				log.info("Build directory created..." + buildDir.getPath());
 			}
-			
 			buildInfoFile = new File(buildDir.getPath() + BUILD_INFO_FILE);
 			targetDir = new File(project.getBuild().getDirectory());
 			nextBuildNo = util.generateNextBuildNo(buildInfoFile);
@@ -86,7 +84,7 @@ public class Package implements PluginConstants {
 			createPackage();
 		} catch (Exception e) {
 			isBuildSuccess = false;
-			log.error(e.getMessage(), e);
+			log.error(e);
 		}
 		return isBuildSuccess;
 	}

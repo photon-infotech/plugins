@@ -13,19 +13,19 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
-import org.apache.commons.io.FileUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.photon.phresco.commons.api.ConfigManager;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.framework.api.Project;
 import com.photon.phresco.framework.api.ProjectAdministrator;
-import com.photon.phresco.framework.model.SettingsInfo;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
@@ -129,29 +129,23 @@ public class Package implements PluginConstants{
 
 	private void updateFinalName() throws MojoExecutionException {
 		try {
-			ProjectAdministrator projAdmin = PhrescoFrameworkFactory.getProjectAdministrator();
-			Project currentProject = projAdmin.getProjectByWorkspace(baseDir);
-			String techId = currentProject.getApplicationInfo().getTechInfo().getVersion();
-			if (!techId.equals(TechnologyTypes.JAVA_STANDALONE)) {
-				String envName = environmentName;
-				if (environmentName.indexOf(',') > -1) { // multi-value
-					envName = projAdmin.getDefaultEnvName(baseDir.getName());
-				}
-				List<SettingsInfo> settingsInfos = projAdmin.getSettingsInfos(Constants.SETTINGS_TEMPLATE_SERVER,
-						currentProject.getApplicationInfo().getCode(), envName);
-				for (SettingsInfo settingsInfo : settingsInfos) {
-					context = settingsInfo.getPropertyInfo(Constants.SERVER_CONTEXT).getValue();
-					break;
-				}
-			} else {
+			File pom = project.getFile();
+			PomProcessor pomprocessor = new PomProcessor(pom);
+			if(pomprocessor.getModel().getPackaging() != null && pomprocessor.getModel().getPackaging().equals(PACKAGING_TYPE_JAR)) {
 				context = jarName;
 				updatemainClassName();
+			} else {
+				ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(new File(baseDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE));
+				List<com.photon.phresco.configuration.Configuration> configurations = configManager.getConfigurations(environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
+				for (com.photon.phresco.configuration.Configuration configuration : configurations) {
+					context = configuration.getProperties().getProperty(Constants.SERVER_CONTEXT);
+					break;
+				}
 			}
+			
 			if (StringUtils.isEmpty(context)) {
 				return;
 			}
-			File pom = project.getFile();
-			PomProcessor pomprocessor = new PomProcessor(pom);
 			pomprocessor.setFinalName(context);
 			pomprocessor.save();
 		} catch (IOException e) {

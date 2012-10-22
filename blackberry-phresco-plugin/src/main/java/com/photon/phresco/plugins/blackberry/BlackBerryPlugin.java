@@ -1,4 +1,4 @@
-package com.photon.phresco.plugins.drupal;
+package com.photon.phresco.plugins.blackberry;
 
 import org.apache.maven.plugin.logging.Log;
 
@@ -7,12 +7,12 @@ import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugins.PhrescoBasePlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 
-public class DrupalPlugin extends PhrescoBasePlugin {
+public class BlackBerryPlugin extends PhrescoBasePlugin {
 
-	public DrupalPlugin(Log log) {
+	public BlackBerryPlugin(Log log) {
 		super(log);
 	}
-
+	
 	public void pack(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		Package pack = new Package();

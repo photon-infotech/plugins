@@ -14,6 +14,7 @@ import com.photon.phresco.commons.api.ConfigManager;
 import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
+import com.photon.phresco.framework.model.BuildInfo;
 import com.photon.phresco.plugin.commons.DatabaseUtil;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
@@ -27,7 +28,7 @@ import com.photon.phresco.util.Constants;
 public class Deploy implements PluginConstants {
 	
 	private File baseDir;
-	private String buildName;
+	private String buildNumber;
 	private String environmentName;
 	private String projectCode;
 	private boolean importSql;
@@ -41,7 +42,7 @@ public class Deploy implements PluginConstants {
     	baseDir = mavenProjectInfo.getBaseDir();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
-        buildName = configs.get(BUILD_NAME);
+        buildNumber = configs.get(USER_BUILD_NUMBER);
         projectCode = mavenProjectInfo.getProjectCode();
     	try { 
 			init();
@@ -56,11 +57,19 @@ public class Deploy implements PluginConstants {
 	}
 	private void init() throws MojoExecutionException {
 		try {
-			if (StringUtils.isEmpty(buildName) || StringUtils.isEmpty(environmentName)) {
+			if (StringUtils.isEmpty(buildNumber) || StringUtils.isEmpty(environmentName)) {
 				callUsage();
 			}
+			
+			log.info("Build id is " + buildNumber);
+			log.info("Project Code " + baseDir.getName());
+			
+			PluginUtils pu = new PluginUtils();
+			BuildInfo buildInfo = pu.getBuildInfo(Integer.parseInt(buildNumber));
+			log.info("Build Name " + buildInfo);
+			
 			buildDir = new File(baseDir.getPath() + PluginConstants.BUILD_DIRECTORY);
-			buildFile = new File(buildDir.getPath() + File.separator + buildName);
+			buildFile = new File(buildDir.getPath() + File.separator + buildInfo.getBuildName());
 		} catch (Exception e) {
 			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);

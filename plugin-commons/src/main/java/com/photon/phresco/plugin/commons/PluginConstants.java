@@ -107,6 +107,7 @@ public interface PluginConstants {
 	 String SERVER_SHUTDOWN_PORT		= "-Dserver.shutdown.port=";
 	 String JAVA_TOMCAT_RUN             = "tomcat:run";
 	 String JAVA_UNIX_PROCESS_KILL_CMD	= "kill -9 ";
+	 String PACKAGING_TYPE_JAR			= "jar";
 	
 	//Constants for NodeJs Plugin
 	 String NODE_EXE_PATH				= "\\node.exe";
@@ -225,6 +226,9 @@ public interface PluginConstants {
 	 String SONAR_COMMAND				= "mvn sonar:sonar";
 	 String SONAR						= "sonar";
 	 String PLUGIN_PARAMETER 			= "plugin";
+	 
+	 //Constants for Tests
+	 String UNIT_TEST_COMMAND			= "mvn clean test";	 
 	 
 	// BlackBerry maven plugin constants
 	// Author: Viral

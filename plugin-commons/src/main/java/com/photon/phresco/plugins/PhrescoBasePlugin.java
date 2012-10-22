@@ -32,7 +32,9 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
     }
 
     public void runUnitTest() throws PhrescoException {
-        // TODO Auto-generated method stub
+    	StringBuilder sb = new StringBuilder();
+		sb.append(UNIT_TEST_COMMAND);
+		Utility.executeStreamconsumer(sb.toString());
     }
 
     public void runFunctionalTest() throws PhrescoException {
@@ -69,7 +71,6 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 				}
 			}
 		}
-		System.out.println("Final Command==============> " + sb.toString());
 		Utility.executeStreamconsumer(sb.toString());
 		
 	}

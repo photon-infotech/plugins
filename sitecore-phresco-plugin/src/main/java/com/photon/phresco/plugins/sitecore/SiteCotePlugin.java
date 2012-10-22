@@ -1,4 +1,4 @@
-package com.photon.phresco.plugins.drupal;
+package com.photon.phresco.plugins.sitecore;
 
 import org.apache.maven.plugin.logging.Log;
 
@@ -7,20 +7,18 @@ import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugins.PhrescoBasePlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 
-public class DrupalPlugin extends PhrescoBasePlugin {
+public class SiteCotePlugin extends PhrescoBasePlugin {
 
-	public DrupalPlugin(Log log) {
+	public SiteCotePlugin(Log log) {
 		super(log);
 	}
-
-	public void pack(Configuration configuration,
-			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+	
+	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		Package pack = new Package();
 		pack.pack(configuration, mavenProjectInfo, log);
 	}
-
-	public void deploy(Configuration configuration,
-			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+	
+	public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException { 
 		Deploy deploy = new Deploy();
 		deploy.deploy(configuration, mavenProjectInfo, log);
 	}

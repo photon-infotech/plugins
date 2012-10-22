@@ -16,6 +16,7 @@ import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.framework.api.ProjectAdministrator;
+import com.photon.phresco.framework.model.BuildInfo;
 import com.photon.phresco.framework.model.SettingsInfo;
 import com.photon.phresco.plugin.commons.DatabaseUtil;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
@@ -31,11 +32,12 @@ import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 public class Deploy implements PluginConstants {
 
 	private File baseDir;
-	private String buildName;
+	private String buildNumber;
 	private String environmentName;
 	private boolean importSql;
 
 	private File buildFile;
+	private File buildDir;
 	private File tempDir;
 	private File binariesDir;
 	private String serverHost;
@@ -47,7 +49,7 @@ public class Deploy implements PluginConstants {
 		baseDir = mavenProjectInfo.getBaseDir();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
-        buildName = configs.get(BUILD_NAME);
+        buildNumber = configs.get(BUILD_NAME);
         
         try {
 			init();
@@ -62,12 +64,17 @@ public class Deploy implements PluginConstants {
 	}
 	private void init() throws MojoExecutionException {
 		try {
-			if (StringUtils.isEmpty(buildName) || StringUtils.isEmpty(environmentName)) {
+			if (StringUtils.isEmpty(buildNumber) || StringUtils.isEmpty(environmentName)) {
 				callUsage();
 			}
-			File buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
+			
+			PluginUtils pu = new PluginUtils();
+			BuildInfo buildInfo = pu.getBuildInfo(Integer.parseInt(buildNumber));
+			log.info("Build Name " + buildInfo);
+			
+			buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
 			binariesDir = new File(baseDir.getPath() + BINARIES_DIR);
-			buildFile = new File(buildDir.getPath() + File.separator + buildName);
+			buildFile = new File(buildDir.getPath() + File.separator + buildInfo.getBuildName());
 			List<com.photon.phresco.configuration.Configuration> configurations = getConfiguration(Constants.SETTINGS_TEMPLATE_SERVER);
 			for (com.photon.phresco.configuration.Configuration configuration : configurations) {
 				context = configuration.getProperties().getProperty(Constants.SERVER_CONTEXT);

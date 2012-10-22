@@ -3,6 +3,7 @@ package com.photon.phresco.plugins.sharepoint;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 
@@ -10,28 +11,31 @@ import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.cli.CommandLineException;
+import org.codehaus.plexus.util.cli.Commandline;
 
 import com.photon.phresco.commons.api.ConfigManager;
 import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
+import com.photon.phresco.framework.model.BuildInfo;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
+import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.ArchiveUtil;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 import com.photon.phresco.util.Constants;
-import com.photon.phresco.util.Utility;
 
 public class Deploy implements PluginConstants {
 	
-	private static final String DOT_WSP = ".wsp";
 	private File baseDir;
-	private String buildName;
+	private String buildNumber;
 	private String environmentName;
 
 	private File buildFile;
+	private File buildDir;
 	private File tempDir;
 	private File temp;
 	private File build;
@@ -42,7 +46,7 @@ public class Deploy implements PluginConstants {
 		baseDir = mavenProjectInfo.getBaseDir();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
-        buildName = configs.get(BUILD_NAME);
+        buildNumber = configs.get(USER_BUILD_NUMBER);
         
 		try {
 			init();
@@ -56,15 +60,20 @@ public class Deploy implements PluginConstants {
 	private void init() throws MojoExecutionException {
 		try {
 
-			if (StringUtils.isEmpty(buildName) || StringUtils.isEmpty(environmentName)) {
+			if (StringUtils.isEmpty(buildNumber) || StringUtils.isEmpty(environmentName)) {
 				callUsage();
 			}
-			File buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
+			
+			PluginUtils pu = new PluginUtils();
+			BuildInfo buildInfo = pu.getBuildInfo(Integer.parseInt(buildNumber));
+			log.info("Build Name " + buildInfo);
+			
+			buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
 			build = new File(baseDir.getPath() + "\\source" + "\\");
-			buildFile = new File(buildDir.getPath() + File.separator + buildName);
+			buildFile = new File(buildDir.getPath() + File.separator + buildInfo.getBuildName());
 			tempDir = new File(buildDir.getPath() + TEMP_DIR);
 			tempDir.mkdirs();
-			temp = new File(tempDir.getPath() + "\\" + baseDir.getName() + DOT_WSP);
+			temp = new File(tempDir.getPath() + "\\" + baseDir.getName() + ".wsp");
 		} catch (Exception e) {
 			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
@@ -92,7 +101,7 @@ public class Deploy implements PluginConstants {
 		}
 	}
 
-	private void deploy() throws MojoExecutionException {
+	private void deploy() throws MojoExecutionException, PhrescoException {
 		try {
 			ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(new File(baseDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE));
 
@@ -111,63 +120,53 @@ public class Deploy implements PluginConstants {
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getErrorMessage(), e);
 		} catch (ConfigurationException e) {
+		} catch (CommandLineException e) {
+			throw new PhrescoException(e);
+		} catch (IOException e) {
+			throw new PhrescoException(e);
 		}
 	}
 
-	private void restore(String protocol, String deployDirectory, String serverContext, String host, String port) throws MojoExecutionException
-	 {
-		BufferedReader bufferedReader = null;
-		boolean errorParam = false;
-		try {
-			File file = new File(build.getPath() + "\\phresco-pilot.dat");
-			if (!file.exists()) {
-				return;
-			}
-			StringBuilder sb = new StringBuilder();
-			sb.append(SHAREPOINT_STSADM);
-			sb.append(STR_SPACE);
-			sb.append(SHAREPOINT_STR_O);
-			sb.append(SHAREPOINT_RESTORE);
-			sb.append(STR_SPACE);
-			sb.append(SHAREPOINT_STR_URL);
-			sb.append(STR_SPACE);
-			sb.append(protocol);
-			sb.append(SHAREPOINT_STR_COLON);
-			sb.append(SHAREPOINT_STR_DOUBLESLASH);
-			sb.append(host);
-			sb.append(SHAREPOINT_STR_COLON);
-			sb.append(port);
-			sb.append(SHAREPOINT_STR_BACKSLASH);
-			sb.append(serverContext);
-			sb.append(STR_SPACE);
-			sb.append(SHAREPOINT_STR_HYPEN);
-			sb.append(SHAREPOINT_STR_OVERWRITE);
-			sb.append(STR_SPACE);
-			sb.append(SHAREPOINT_STR_HYPEN);
-			sb.append(SHAREPOINT_STR_FILENAME);
-			sb.append(STR_SPACE);
-			sb.append(SHAREPOINT_STR_DOUBLEQUOTES + build.getPath() + "\\phresco-pilot.dat" + SHAREPOINT_STR_DOUBLEQUOTES);
-			
-			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
-			String line = null;
-			while ((line = bufferedReader.readLine()) != null) {
-				if (line.startsWith("[ERROR]")) {
-					errorParam = true;
-				}
-			}
-			if (errorParam) {
-				throw new MojoExecutionException("Restore Failed ");
-			}
-		} catch (IOException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
-		} finally {
-			Utility.closeStream(bufferedReader);
+	private void restore(String protocol, String deployDirectory, String serverContext, String host, String port)
+	throws CommandLineException, IOException, MojoExecutionException {
+		File file = new File(build.getPath() + "\\phresco-pilot.dat");
+		if (!file.exists()) {
+			return;
+		}
+		StringBuilder sb = new StringBuilder();
+		sb.append(SHAREPOINT_STSADM);
+		sb.append(STR_SPACE);
+		sb.append(SHAREPOINT_STR_O);
+		sb.append(SHAREPOINT_RESTORE);
+		sb.append(STR_SPACE);
+		sb.append(SHAREPOINT_STR_URL);
+		sb.append(STR_SPACE);
+		sb.append(protocol);
+		sb.append(SHAREPOINT_STR_COLON);
+		sb.append(SHAREPOINT_STR_DOUBLESLASH);
+		sb.append(host);
+		sb.append(SHAREPOINT_STR_COLON);
+		sb.append(port);
+		sb.append(SHAREPOINT_STR_BACKSLASH);
+		sb.append(serverContext);
+		sb.append(STR_SPACE);
+		sb.append(SHAREPOINT_STR_HYPEN);
+		sb.append(SHAREPOINT_STR_OVERWRITE);
+		sb.append(STR_SPACE);
+		sb.append(SHAREPOINT_STR_HYPEN);
+		sb.append(SHAREPOINT_STR_FILENAME);
+		sb.append(STR_SPACE);
+		sb.append(SHAREPOINT_STR_DOUBLEQUOTES + build.getPath() + "\\phresco-pilot.dat" + SHAREPOINT_STR_DOUBLEQUOTES);
+		Commandline cl = new Commandline(sb.toString());
+		cl.setWorkingDirectory(deployDirectory);
+		Process process = cl.execute();
+		BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+		String line = null;
+		while ((line = in.readLine()) != null) {
 		}
 	}
 
 	private void addSolution(String ProjectCode, String deployDirectory) throws MojoExecutionException {
-		BufferedReader bufferedReader = null;
-		boolean errorParam = false;
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append(SHAREPOINT_STSADM);
@@ -180,34 +179,31 @@ public class Deploy implements PluginConstants {
 			sb.append(SHAREPOINT_STR_FILENAME);
 			sb.append(STR_SPACE);
 			sb.append(SHAREPOINT_STR_DOUBLEQUOTES + baseDir.getPath() + "\\source" + "\\"
-					+ ProjectCode + DOT_WSP + SHAREPOINT_STR_DOUBLEQUOTES);
+					+ ProjectCode + ".wsp" + SHAREPOINT_STR_DOUBLEQUOTES);
 			File file = new File(baseDir.getPath() + "\\source" + "\\"
-					+ ProjectCode + DOT_WSP);
+					+ ProjectCode + ".wsp");
 			if (file.exists()) {
-				bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
+				Commandline cl = new Commandline(sb.toString());
+				cl.setWorkingDirectory(deployDirectory);
+				Process process = cl.execute();
+				BufferedReader in = new BufferedReader(new InputStreamReader(
+						process.getInputStream()));
 				String line = null;
-				while ((line = bufferedReader.readLine()) != null) {
-					if (line.startsWith("[ERROR]")) {
-						errorParam = true;
-					}
-				}
-				if (errorParam) {
-					throw new MojoExecutionException("addSolution Failed");
+				while ((line = in.readLine()) != null) {
 				}
 			} else {
 				log.error("File Not found Exception");
 			}
+		} catch (CommandLineException e) {
+
+			throw new MojoExecutionException(e.getMessage(), e);
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
-		} finally {
-			Utility.closeStream(bufferedReader);
 		}
 	}
 
 	private void deploysolution(String protocol, String deploydirectory, String serverContext, String host,
-			String port, String projectCode) throws MojoExecutionException {
-		BufferedReader bufferedReader = null;
-		boolean errorParam = false;
+			String port, String projectCode) throws MojoExecutionException, CommandLineException {
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append(SHAREPOINT_STSADM);
@@ -219,7 +215,7 @@ public class Deploy implements PluginConstants {
 			sb.append(SHAREPOINT_STR_HYPEN);
 			sb.append(SHAREPOINT_STR_NAME);
 			sb.append(STR_SPACE);
-			sb.append(projectCode + DOT_WSP);
+			sb.append(projectCode + ".wsp");
 			sb.append(STR_SPACE);
 			sb.append(SHAREPOINT_STR_HYPEN);
 			sb.append(SHAREPOINT_STR_URL);
@@ -238,21 +234,18 @@ public class Deploy implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(SHAREPOINT_STR_HYPEN);
 			sb.append(SHAREPOINT_STR_ALLOWACDEP);
-			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
+			Commandline cl = new Commandline(sb.toString());
+			cl.setWorkingDirectory(deploydirectory);
+			Process process = cl.execute();
+			BufferedReader in = new BufferedReader(new InputStreamReader(
+					process.getInputStream()));
 			String line = null;
-			while ((line = bufferedReader.readLine()) != null) {
-				if (line.startsWith("[ERROR]")) {
-					errorParam = true;
-				}
+			while ((line = in.readLine()) != null) {
 			}
-			if (errorParam) {
-				throw new MojoExecutionException("deploysolution Failed");
-			}
+		} catch (CommandLineException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
-		} finally {
-			Utility.closeStream(bufferedReader);
 		}
 	}
-
 }
