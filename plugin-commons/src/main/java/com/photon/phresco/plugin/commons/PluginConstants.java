@@ -108,6 +108,8 @@ public interface PluginConstants {
 	 String JAVA_TOMCAT_RUN             = "tomcat:run";
 	 String JAVA_UNIX_PROCESS_KILL_CMD	= "kill -9 ";
 	 String PACKAGING_TYPE_JAR			= "jar";
+	 String JAR_NAME					= "jarName";
+	 String MAIN_CLASS_NAME				= "mainClassName";
 	
 	//Constants for NodeJs Plugin
 	 String NODE_EXE_PATH				= "\\node.exe";
@@ -209,6 +211,11 @@ public interface PluginConstants {
 	 String WAXSIM_HOME 				= "WAXSIM_HOME";
 	 String XCODE_CODE_VALIDATOR_COMMAND= "mvn xcode:codevalidate";
 	 
+	 //Constants for Android
+	 
+	 String PROGUARD_SKIP = "proguardSkip";
+	 String ANDROID_VERSION = "android_version";
+	 
 	 //Constants for dynamic parameter
 	 String BUILD_NAME 					= "buildName";
 	 String ENVIRONMENT_NAME 			= "environmentName";
@@ -216,7 +223,7 @@ public interface PluginConstants {
 	 String CONFIG 						= "config";
 	 String PLATFORM 					= "platform";
 	 String DOT_ZIP 					= ".zip";
-	 String USER_BUILD_NUMBER 			= "userBuildNumber";
+	 String BUILD_NUMBER 				= "buildNumber";
 	 
 	 //Constants for Time Formatter
 	 String TIME_STAMP_FOR_BUILD_NAME 	= "dd-MMM-yyyy-HH-mm-ss";

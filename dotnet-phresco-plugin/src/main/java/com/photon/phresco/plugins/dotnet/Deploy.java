@@ -51,7 +51,7 @@ public class Deploy implements PluginConstants {
 		project = mavenProjectInfo.getProject();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
-        buildNumber = configs.get(USER_BUILD_NUMBER);
+        buildNumber = configs.get(BUILD_NUMBER);
         
         try {
 			init();

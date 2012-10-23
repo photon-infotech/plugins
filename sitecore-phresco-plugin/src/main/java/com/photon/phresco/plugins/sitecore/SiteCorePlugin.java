@@ -7,9 +7,9 @@ import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugins.PhrescoBasePlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 
-public class SiteCotePlugin extends PhrescoBasePlugin {
+public class SiteCorePlugin extends PhrescoBasePlugin {
 
-	public SiteCotePlugin(Log log) {
+	public SiteCorePlugin(Log log) {
 		super(log);
 	}
 	

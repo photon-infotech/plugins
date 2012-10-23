@@ -44,7 +44,7 @@ public class Package implements PluginConstants {
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
         buildName = configs.get(BUILD_NAME);
-        buildNumber = configs.get(USER_BUILD_NUMBER);
+        buildNumber = configs.get(BUILD_NUMBER);
         util = new PluginsUtil();
         try {
             init();

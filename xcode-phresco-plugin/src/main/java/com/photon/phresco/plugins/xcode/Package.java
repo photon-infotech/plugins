@@ -81,7 +81,7 @@ public class Package implements PluginConstants {
         basedir = baseDir.getPath();
         xcodeCommandLine = new File("/usr/bin/xcodebuild");
         buildDirectory = new File(project.getBuild().getDirectory());
-        buildNumber = configs.get(USER_BUILD_NUMBER);
+        buildNumber = configs.get(BUILD_NUMBER);
         
 		if (!xcodeCommandLine.exists()) {
 			throw new PhrescoException("Invalid path, invalid xcodebuild file: "

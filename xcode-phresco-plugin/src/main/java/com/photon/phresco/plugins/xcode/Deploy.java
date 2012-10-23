@@ -109,7 +109,7 @@ public class Deploy implements PluginConstants {
 		project = mavenProjectInfo.getProject();
 		baseDir = mavenProjectInfo.getBaseDir();
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
-		buildNumber = configs.get(USER_BUILD_NUMBER);
+		buildNumber = configs.get(BUILD_NUMBER);
 		try {
 			if(!deviceDeploy && !SdkVerifier.isAvailable(simVersion)) {
 				throw new MojoExecutionException("Selected version " +simVersion +" is not available!");
