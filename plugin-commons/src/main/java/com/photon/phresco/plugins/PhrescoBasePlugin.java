@@ -27,7 +27,7 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 		return log;
 	}
 
-	public void runUnitTest() throws PhrescoException {
+	public void runUnitTest(Configuration configuration) throws PhrescoException {
 		StringBuilder sb = new StringBuilder();
 		sb.append(UNIT_TEST_COMMAND);
 		Utility.executeStreamconsumer(sb.toString());

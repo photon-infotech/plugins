@@ -36,5 +36,10 @@ public class XcodePlugin extends PhrescoBasePlugin {
 		ClangCodeValidator validator = new ClangCodeValidator();
 		validator.validate(configuration);
 	}
+	
+	public void runUnitTest(Configuration configuration) throws PhrescoException {
+		UnitTest test = new UnitTest();
+		test.unitTest(configuration);
+	}
 
 }

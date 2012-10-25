@@ -16,7 +16,7 @@ public interface PhrescoPlugin {
     
     void stopServer(MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
-    void runUnitTest() throws PhrescoException;
+    void runUnitTest(Configuration configuration) throws PhrescoException;
     
     void runFunctionalTest() throws PhrescoException;
     

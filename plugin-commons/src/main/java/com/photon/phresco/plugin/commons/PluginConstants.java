@@ -214,7 +214,7 @@ public interface PluginConstants {
 	 //Constants for Android
 	 
 	 String PROGUARD_SKIP = "proguardSkip";
-	 String ANDROID_VERSION = "android_version";
+	 String SDK_VERSION = "sdk";
 	 
 	 //Constants for dynamic parameter
 	 String BUILD_NAME 					= "buildName";

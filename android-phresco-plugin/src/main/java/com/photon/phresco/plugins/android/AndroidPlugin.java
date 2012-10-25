@@ -6,7 +6,6 @@ import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugins.PhrescoBasePlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
-import com.photon.phresco.util.Utility;
 
 public class AndroidPlugin extends PhrescoBasePlugin {
 
@@ -16,7 +15,7 @@ public class AndroidPlugin extends PhrescoBasePlugin {
 
 	public void pack(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		Pack pack = new Pack();
+		Package pack = new Package();
 		pack.pack(configuration, mavenProjectInfo, log);
 	}
 
@@ -24,6 +23,11 @@ public class AndroidPlugin extends PhrescoBasePlugin {
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		Deploy deploy = new Deploy();
 		deploy.deploy(configuration, mavenProjectInfo, log);
+	}
+	
+	public void runUnitTest(Configuration configuration) {
+		UnitTest test = new UnitTest();
+		test.unitTest(configuration);
 	}
 
 }

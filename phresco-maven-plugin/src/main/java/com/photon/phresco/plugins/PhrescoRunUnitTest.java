@@ -12,11 +12,13 @@ import com.photon.phresco.plugins.api.PhrescoPlugin;
 /**
  * 
  * @author suresh_ma
- * @goal test
+ * @goal unit-test
  *
  */
 public class PhrescoRunUnitTest extends PhrescoAbstractMojo {
 
+	private static final String UNIT_TEST = "unit-test";
+	
 	/**
      * The Maven project.
      * 
@@ -34,8 +36,13 @@ public class PhrescoRunUnitTest extends PhrescoAbstractMojo {
     
     public void execute() throws MojoExecutionException, MojoFailureException {
     	try {
-    		PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());
-    		plugin.runUnitTest();
+    		if (getPluginName(baseDir, UNIT_TEST) != null) {
+				PhrescoPlugin plugin = getPlugin(getPluginName(baseDir, UNIT_TEST));
+		        plugin.runUnitTest(getConfiguration(baseDir, UNIT_TEST));
+			} else {
+				PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());
+		        plugin.runUnitTest(getConfiguration(baseDir, UNIT_TEST));
+			}
     	} catch (PhrescoException e) {
     		throw new MojoExecutionException(e.getMessage(), e);
     	}
