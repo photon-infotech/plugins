@@ -31,7 +31,7 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.cli.Commandline;
 
 import com.google.gson.Gson;
-import com.photon.phresco.commons.api.ConfigManager;
+import com.photon.phresco.api.ConfigManager;
 import com.photon.phresco.configuration.ConfigurationInfo;
 import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;

@@ -8,16 +8,15 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
+import com.photon.phresco.api.DynamicParameter;
 import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
-import com.photon.phresco.param.api.DynamicParameter;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.PossibleValues;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.PossibleValues.Value;
 import com.photon.phresco.util.IosSdkUtil;
 import com.photon.phresco.util.IosSdkUtil.MacSdkType;
 
 public class IosSdkParameter implements DynamicParameter {
-
 	@Override
 	public PossibleValues getValues(Map<String, Object> macParameter)
 			throws IOException, ParserConfigurationException, SAXException,
