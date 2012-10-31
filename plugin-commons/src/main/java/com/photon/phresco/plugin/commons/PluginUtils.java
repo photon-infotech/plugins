@@ -58,10 +58,10 @@ import org.xml.sax.SAXException;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.photon.phresco.commons.model.BuildInfo;
 import com.photon.phresco.configuration.ConfigReader;
 import com.photon.phresco.configuration.ConfigWriter;
 import com.photon.phresco.exception.PhrescoException;
-import com.photon.phresco.framework.model.BuildInfo;
 import com.photon.phresco.util.Utility;
 
 public class PluginUtils {

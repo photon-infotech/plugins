@@ -29,13 +29,14 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 
 	public void runUnitTest(Configuration configuration) throws PhrescoException {
 		StringBuilder sb = new StringBuilder();
-		sb.append(UNIT_TEST_COMMAND);
+		sb.append(TEST_COMMAND);
 		Utility.executeStreamconsumer(sb.toString());
 	}
 
-	public void runFunctionalTest() throws PhrescoException {
-		// TODO Auto-generated method stub
-
+	public void runFunctionalTest(Configuration configuration) throws PhrescoException {
+		StringBuilder sb = new StringBuilder();
+		sb.append(TEST_COMMAND);
+		Utility.executeStreamconsumer(sb.toString());
 	}
 
 	public void runPerformanceTest() throws PhrescoException {
