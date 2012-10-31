@@ -35,6 +35,7 @@ public interface PluginConstants {
      String STR_SPACE 					= " ";
      String STR_UNDERSCORE				= "_";
      String PROJECT_INFO_FILE			= "project.info";
+     String PLUGIN_INFO_FILE			= "phresco-plugin-info.xml";
      String FORWARD_SLASH               = "/";
      String CONFIG_FILE					= "phresco-env-config.xml";
      String SETTINGS_FILE				= "settings.xml";
@@ -246,4 +247,8 @@ public interface PluginConstants {
 	String BB_LOAD = "load";
 	String BB_STANDARD_INSTALL = "StandardInstall";
 	String BB_OTA_INSTALL = "OTAInstall";
+	
+	 //Constants for Jenkins
+	String JENKINS_HOME = "JENKINS_HOME";
+	String WORKSPACE_DIR = "workspace";
 }
