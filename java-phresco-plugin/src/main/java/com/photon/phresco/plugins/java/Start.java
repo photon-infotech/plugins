@@ -19,6 +19,7 @@
  */
 package com.photon.phresco.plugins.java;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -28,7 +29,6 @@ import java.util.Map;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.cli.Commandline;
 
 import com.google.gson.Gson;
 import com.photon.phresco.api.ConfigManager;
@@ -55,8 +55,10 @@ public class Start implements PluginConstants {
 
 	private String environmentName;
 	private MavenProject project;
-	private String port;
-	private String context;
+	private String serverPort;
+	private String serverHost;
+	private String serverProtocol;
+	private String serverContext;
 	private File baseDir;
 	private String projectCode;
 	private Log log;
@@ -69,8 +71,8 @@ public class Start implements PluginConstants {
 		projectCode = mavenProjectInfo.getProjectCode();
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
 		environmentName = configs.get(ENVIRONMENT_NAME);
-		port = configs.get(Constants.SERVER_PORT);
-		context = configs.get(Constants.SERVER_CONTEXT);
+		// port = configs.get(Constants.SERVER_PORT);
+		// context = configs.get(Constants.SERVER_CONTEXT);
 		try {
 			if (environmentName != null) {
 				updateFinalName();
@@ -86,9 +88,16 @@ public class Start implements PluginConstants {
 
 	private void updateFinalName() throws MojoExecutionException {
 		try {
+			List<com.photon.phresco.configuration.Configuration> configuration = getConfiguration(Constants.SETTINGS_TEMPLATE_SERVER);
+			for (com.photon.phresco.configuration.Configuration serverConfiguration : configuration) {
+				serverHost = serverConfiguration.getProperties().getProperty(Constants.SERVER_HOST);
+				serverProtocol = serverConfiguration.getProperties().getProperty(Constants.SERVER_PROTOCOL);
+				serverPort = serverConfiguration.getProperties().getProperty(Constants.SERVER_PORT);
+				serverContext = serverConfiguration.getProperties().getProperty(Constants.SERVER_CONTEXT);
+			}
 			File pom = project.getFile();
 			PomProcessor pomprocessor = new PomProcessor(pom);
-			pomprocessor.setFinalName(context);
+			pomprocessor.setFinalName(serverContext);
 			pomprocessor.save();
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
@@ -105,15 +114,15 @@ public class Start implements PluginConstants {
 
 	private void storeEnvName() throws MojoExecutionException {
 		ConfigurationInfo info = new ConfigurationInfo();
-		info.setContext(context);
+		info.setContext(serverContext);
 		info.setEnvironmentName(environmentName);
 		info.setModuleName("");// projectModule
-		info.setServerPort(port);
+		info.setServerPort(serverPort);
 		Gson gson = new Gson();
 		String envName = gson.toJson(info);
 		FileOutputStream fos = null;
 		File pomPath = new File(Utility.getProjectHome() + File.separator + projectCode + File.separator
-				+ DOT_PHRESCO_FOLDER + File.separator + NODE_ENV_FILE);
+				+ DOT_PHRESCO_FOLDER + File.separator + ENV_FILE);
 		try {
 			fos = new FileOutputStream(pomPath, false);
 			fos.write(envName.getBytes());
@@ -146,7 +155,7 @@ public class Start implements PluginConstants {
 	}
 
 	private void adaptDbConfig() throws MojoExecutionException {
-		File dbConfigFile = new File(baseDir + JAVA_CONFIG_FILE);
+		File dbConfigFile = new File(baseDir + JAVA_WEBAPP_CONFIG_FILE);
 		File parentFile = dbConfigFile.getParentFile();
 		String basedir = projectCode;
 		if (parentFile.exists()) {
@@ -156,7 +165,7 @@ public class Start implements PluginConstants {
 	}
 
 	private void adaptSourceConfig() throws MojoExecutionException {
-		File wsConfigFile = new File(getProjectHome() + File.separator + CONFIG_FILE);
+		File wsConfigFile = new File(baseDir + JAVA_CONFIG_FILE);
 		File parentFile = wsConfigFile.getParentFile();
 		String basedir = projectCode;
 		if (parentFile.exists()) {
@@ -166,25 +175,26 @@ public class Start implements PluginConstants {
 	}
 
 	private void executePhase() throws MojoExecutionException {
+		BufferedReader bufferedReader = null;
+		FileOutputStream fos = null;
 		try {
+			File errorLog = new File(Utility.getProjectHome() + File.separator + projectCode + File.separator
+					+ LOG_FILE_DIRECTORY + RUN_AGS_LOG_FILE);
 			StringBuilder sb = new StringBuilder();
 			sb.append(MVN_CMD);
 			sb.append(STR_SPACE);
 			sb.append(JAVA_TOMCAT_RUN);
 			sb.append(STR_SPACE);
 			sb.append("-Dserver.port=");
-			sb.append(port);
-		//	ProcessBuilder pb = new ProcessBuilder(BASH, "-c", sb.toString());
-			Commandline cl = new Commandline(sb.toString());
-			cl.setWorkingDirectory(baseDir);
-			Process process = cl.execute();
-		//	pb.directory(getProjectHome());
-		//	Process process = pb.start();
+			sb.append(serverPort);
+			fos = new FileOutputStream(errorLog, false);
+			// ProcessBuilder pb = new ProcessBuilder(BASH, "-c", sb.toString());
+			Utility.executeStreamconsumer(sb.toString(), fos);
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);
+		} finally {
+			Utility.closeStream(bufferedReader);
 		}
-		log.info("Server started successfully...");
-		log.info("Server running at http://localhost:" + port + "/" + context);
 	}
 
 	private List<com.photon.phresco.configuration.Configuration> getConfiguration(String configType)

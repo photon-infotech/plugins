@@ -40,6 +40,7 @@ public interface PluginConstants {
      String CONFIG_FILE					= "phresco-env-config.xml";
      String SETTINGS_FILE				= "settings.xml";
      String BASH 						= "bash";
+     String ENV_FILE				= "runagainstsource.info";
 	
 	//Constants for Maven commands
      String MVN_CMD 					= "mvn";
@@ -118,7 +119,6 @@ public interface PluginConstants {
 	 String NODE_CONFIG_FILE 			= "/source/public/resources/" + CONFIG_FILE;
 	 String NODE_CMD		 			= "node";
 	 String NODE_SERVER_FILE			= "server.js";
-	 String NODE_ENV_FILE				= "runagainstsource.info";
 	 String NODE_SQL_DIR				= "/source/sql/";
 	 String NODE_SQL_FILE 				= "/site.sql";
 	
@@ -164,7 +164,8 @@ public interface PluginConstants {
 	 String OS_NAME						= "os.name";
 	 String WINDOWS_PLATFORM			= "Windows";
 	 String LOG_FILE_DIRECTORY			=  DO_NOT_CHECKIN_FOLDER + "/log";
-	 String SERVER_LOG_FILE				= "/server.log";
+	 String COMPILE_LOG_FILE			= "/sourcecompile.log";
+	 String RUN_AGS_LOG_FILE			= "/runagainstsource.log";
 	 
 	 // Constants for Windows Phone Plugin
 	 // Author: Viral

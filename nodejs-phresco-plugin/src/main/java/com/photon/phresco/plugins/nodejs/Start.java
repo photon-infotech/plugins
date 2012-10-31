@@ -33,7 +33,10 @@ import java.util.Map;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 
+
 import com.photon.phresco.api.ConfigManager;
+import com.google.gson.Gson;
+import com.photon.phresco.configuration.ConfigurationInfo;
 import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
@@ -59,7 +62,7 @@ public class Start implements PluginConstants {
 		environmentName = configs.get(ENVIRONMENT_NAME);
 		try {
 			configure();
-			storeEnvName(environmentName);
+			storeEnvName();
 			// createDb();
 			startNodeJS();
 		} catch (MojoExecutionException e) {
@@ -90,7 +93,7 @@ public class Start implements PluginConstants {
 				}
 			}
 		} catch (PhrescoException e) {
-			log.info("server startup failed");
+			log.info("Server startup failed");
 			throw new MojoExecutionException(e.getMessage());
 		} catch (ConfigurationException e) {
 			throw new MojoExecutionException(e.getMessage());
@@ -101,6 +104,10 @@ public class Start implements PluginConstants {
 		BufferedReader bufferedReader = null;
 		InputStreamReader isr = null;
 		FileWriter fileWriter = null;
+		String serverhost = null;
+		int serverport = 0;
+		String serverProtocol = null;
+		String serverContext = null;
 		try {
 			boolean tempConnectionAlive = false;
 			StringBuilder sb = new StringBuilder();
@@ -109,12 +116,12 @@ public class Start implements PluginConstants {
 			sb.append(NODE_SERVER_FILE);
 			sb.append(STR_SPACE);
 			sb.append(environmentName);
-			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath()+ PHP_SOURCE_DIR);
+			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath() + PHP_SOURCE_DIR);
 			File file = new File(baseDir.getPath() + LOG_FILE_DIRECTORY);
 			if (!file.exists()) {
 				file.mkdirs();
 			}
-			fileWriter = new FileWriter(baseDir.getPath() + LOG_FILE_DIRECTORY + SERVER_LOG_FILE, false);
+			fileWriter = new FileWriter(baseDir.getPath() + LOG_FILE_DIRECTORY + RUN_AGS_LOG_FILE, false);
 			LogWriter logWriter = new LogWriter();
 			ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(new File(baseDir.getPath()
 					+ File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator
@@ -122,21 +129,23 @@ public class Start implements PluginConstants {
 			List<com.photon.phresco.configuration.Configuration> configurations = configManager.getConfigurations(
 					environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
 			for (com.photon.phresco.configuration.Configuration serverConfiguration : configurations) {
-
-				String serverhost = serverConfiguration.getProperties().getProperty(Constants.SERVER_HOST);
-				int serverport = Integer.parseInt(serverConfiguration.getProperties()
-						.getProperty(Constants.SERVER_PORT));
-				String serverProtocol = serverConfiguration.getProperties().getProperty(Constants.SERVER_PROTOCOL);
-				tempConnectionAlive = isConnectionAlive(serverProtocol, serverhost, serverport);
+				serverhost = serverConfiguration.getProperties().getProperty(Constants.SERVER_HOST);
+				serverport = Integer.parseInt(serverConfiguration.getProperties().getProperty(Constants.SERVER_PORT));
+				serverProtocol = serverConfiguration.getProperties().getProperty(Constants.SERVER_PROTOCOL);
+				serverContext = serverConfiguration.getProperties().getProperty(Constants.SERVER_CONTEXT);
 			}
+
+			tempConnectionAlive = isConnectionAlive(serverProtocol, serverhost, serverport);
 			if (tempConnectionAlive) {
 				log.info("server started");
+				log.info("Server running at " + serverProtocol + "://" + serverhost + ":" + serverport + "/"
+						+ serverContext);
 			} else {
-				log.info("server startup failed");
+				log.info("Server startup failed");
 			}
 			logWriter.writeLog(bufferedReader, fileWriter);
 		} catch (Exception e) {
-			log.info("server startup failed");
+			log.info("Server startup failed");
 			throw new MojoExecutionException(e.getMessage());
 		} finally {
 			Utility.closeStream(bufferedReader);
@@ -145,9 +154,13 @@ public class Start implements PluginConstants {
 		}
 	}
 
-	private void storeEnvName(String envName) throws MojoExecutionException {
+	private void storeEnvName() throws MojoExecutionException {
+		File file = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + ENV_FILE);
+		ConfigurationInfo info = new ConfigurationInfo();
+		info.setEnvironmentName(environmentName);
+		Gson gson = new Gson();
+		String envName = gson.toJson(info);
 		FileOutputStream fos = null;
-		File file = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + NODE_ENV_FILE);
 		try {
 			fos = new FileOutputStream(file, false);
 			fos.write(envName.getBytes());

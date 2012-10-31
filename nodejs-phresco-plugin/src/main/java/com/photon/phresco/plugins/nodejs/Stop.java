@@ -19,12 +19,7 @@
  */
 package com.photon.phresco.plugins.nodejs;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
@@ -35,48 +30,16 @@ import com.photon.phresco.plugin.commons.PluginConstants;
 
 public class Stop implements PluginConstants {
 
-	private File baseDir;
 	private Log log;
 
 	public void stop(MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
-		baseDir = mavenProjectInfo.getBaseDir();
-		ByteArrayInputStream is = null;
-		BufferedReader reader = null;
-		InputStreamReader isr = null;
-		FileWriter fileWriter = null;
-		String result = "";
 		try {
 			stopNodeJS();
-			result = "Server Stopped Successfully...";
-			is = new ByteArrayInputStream(result.getBytes());
-			isr = new InputStreamReader(is);
-			reader = new BufferedReader(isr);
-			fileWriter = new FileWriter(baseDir.getPath() + LOG_FILE_DIRECTORY + SERVER_LOG_FILE, false);
-			LogWriter writer = new LogWriter();
-			writer.writeLog(reader, fileWriter);
+			log.info("Server Stopped Successfully...");
 		} catch (MojoExecutionException e) {
 			log.error("Failed to stop server " + e);
 			throw new PhrescoException(e);
-		} catch (IOException e) {
-			throw new PhrescoException(e);
-		} finally {
-			try {
-				if (is != null) {
-					is.close();
-				}
-				if (reader != null) {
-					reader.close();
-				}
-				if (isr != null) {
-					isr.close();
-				}
-				if (fileWriter != null) {
-					fileWriter.close();
-				}
-			} catch (Exception e) {
-				throw new PhrescoException(e);
-			}
 		}
 	}
 

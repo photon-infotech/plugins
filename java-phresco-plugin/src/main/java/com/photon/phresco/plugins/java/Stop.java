@@ -105,7 +105,7 @@ public class Stop implements PluginConstants {
 		ConfigurationInfo info = new ConfigurationInfo();
 		try {
 			File pomPath = new File(Utility.getProjectHome() + File.separator + projectCode + File.separator
-					+ DOT_PHRESCO_FOLDER + File.separator + NODE_ENV_FILE);
+					+ DOT_PHRESCO_FOLDER + File.separator + ENV_FILE);
 			BufferedReader reader = new BufferedReader(new FileReader(pomPath));
 			Gson gson = new Gson();
 			info = gson.fromJson(reader, ConfigurationInfo.class);
