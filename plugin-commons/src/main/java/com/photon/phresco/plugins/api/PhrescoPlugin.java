@@ -18,7 +18,7 @@ public interface PhrescoPlugin {
     
     void runUnitTest(Configuration configuration) throws PhrescoException;
     
-    void runFunctionalTest() throws PhrescoException;
+    void runFunctionalTest(Configuration configuration) throws PhrescoException;
     
     void runPerformanceTest() throws PhrescoException;
     

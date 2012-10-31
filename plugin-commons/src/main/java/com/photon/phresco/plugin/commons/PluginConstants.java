@@ -236,7 +236,7 @@ public interface PluginConstants {
 	 String PLUGIN_PARAMETER 			= "plugin";
 	 
 	 //Constants for Tests
-	 String UNIT_TEST_COMMAND			= "mvn clean test";	 
+	 String TEST_COMMAND				= "mvn clean test";	 
 	 
 	// BlackBerry maven plugin constants
 	// Author: Viral
