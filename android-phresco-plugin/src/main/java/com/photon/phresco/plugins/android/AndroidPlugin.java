@@ -13,21 +13,28 @@ public class AndroidPlugin extends PhrescoBasePlugin {
 		super(log);
 	}
 
+	@Override
 	public void pack(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		Package pack = new Package();
 		pack.pack(configuration, mavenProjectInfo, log);
 	}
 
+	@Override
 	public void deploy(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		Deploy deploy = new Deploy();
 		deploy.deploy(configuration, mavenProjectInfo, log);
 	}
 	
-	public void runUnitTest(Configuration configuration) {
+	@Override
+	public void runUnitTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException{
 		UnitTest test = new UnitTest();
-		test.unitTest(configuration);
+		test.unitTest(configuration, mavenProjectInfo);
 	}
-
+	
+	@Override
+	public void runFunctionalTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		
+	}
 }

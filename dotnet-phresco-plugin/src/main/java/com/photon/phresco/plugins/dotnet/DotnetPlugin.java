@@ -13,12 +13,14 @@ public class DotnetPlugin extends PhrescoBasePlugin {
 		super(log);
 	}
 
+	@Override
 	public void pack(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		Package pack = new Package();
 		pack.pack(configuration, mavenProjectInfo, log);
 	}
 
+	@Override
 	public void deploy(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		Deploy deploy = new Deploy();

@@ -13,16 +13,18 @@ public class WordPressPlugin extends PhrescoBasePlugin{
 		super(log);
 	}
 
+	@Override
 	public void pack(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		Package pack = new Package();
-		pack.pack(configuration, mavenProjectInfo, log);
+		pack.pack(configuration, mavenProjectInfo, getLog());
 	}
 
+	@Override
 	public void deploy(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		Deploy deploy = new Deploy();
-		deploy.deploy(configuration, mavenProjectInfo, log);
+		deploy.deploy(configuration, mavenProjectInfo, getLog());
 	}
 
 }

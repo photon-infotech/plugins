@@ -13,22 +13,26 @@ public class JavaPlugin extends PhrescoBasePlugin {
 		super(log);
 	}
 
+	@Override
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		Package pack = new Package();
 		pack.pack(configuration, mavenProjectInfo, log);
 	}
 
+	@Override
 	public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		Deploy deploy = new Deploy();
 		deploy.deploy(configuration, mavenProjectInfo, log);
 
 	}
 
+	@Override
 	public void startServer(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		Start start = new Start();
 		start.start(configuration, mavenProjectInfo, log);
 	}
 
+	@Override
 	public void stopServer(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		Stop stop = new Stop();
 		stop.stop(mavenProjectInfo, log);

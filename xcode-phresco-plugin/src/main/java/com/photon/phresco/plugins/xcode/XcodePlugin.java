@@ -15,31 +15,34 @@ public class XcodePlugin extends PhrescoBasePlugin {
 		super(log);
 	}
 
+	@Override
 	public void pack(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		Package pack = new Package();
-		pack.pack(configuration, mavenProjectInfo, log);
+		pack.pack(configuration, mavenProjectInfo, getLog());
 		
 	}
 
+	@Override
 	public void deploy(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		Deploy deploy = new Deploy();
 		try {
-			deploy.deploy(configuration, mavenProjectInfo, log);
+			deploy.deploy(configuration, mavenProjectInfo, getLog());
 		} catch (MojoExecutionException e) {
 		} catch (MojoFailureException e) {
 		}
 	}
 	
-	public void validate(Configuration configuration) {
+	@Override
+	public void validate(Configuration configuration, MavenProjectInfo mavenProjectInfo) {
 		ClangCodeValidator validator = new ClangCodeValidator();
 		validator.validate(configuration);
 	}
 	
-	public void runUnitTest(Configuration configuration) throws PhrescoException {
+	@Override
+	public void runUnitTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		UnitTest test = new UnitTest();
 		test.unitTest(configuration);
 	}
-
 }

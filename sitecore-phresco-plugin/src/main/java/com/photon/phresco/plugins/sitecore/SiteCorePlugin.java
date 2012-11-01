@@ -13,13 +13,15 @@ public class SiteCorePlugin extends PhrescoBasePlugin {
 		super(log);
 	}
 	
-	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
+	@Override
+	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		Package pack = new Package();
-		pack.pack(configuration, mavenProjectInfo, log);
+		pack.pack(configuration, mavenProjectInfo, getLog());
 	}
 	
-	public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException { 
+	@Override
+	public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException { 
 		Deploy deploy = new Deploy();
-		deploy.deploy(configuration, mavenProjectInfo, log);
+		deploy.deploy(configuration, mavenProjectInfo, getLog());
 	}
 }

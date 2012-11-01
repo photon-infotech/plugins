@@ -6,7 +6,7 @@ import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 
 public interface PhrescoPlugin {
     
-    void validate(Configuration configuration) throws PhrescoException;
+    void validate(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
     void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
@@ -16,9 +16,9 @@ public interface PhrescoPlugin {
     
     void stopServer(MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
-    void runUnitTest(Configuration configuration) throws PhrescoException;
+    void runUnitTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
-    void runFunctionalTest(Configuration configuration) throws PhrescoException;
+    void runFunctionalTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
     void runPerformanceTest() throws PhrescoException;
     

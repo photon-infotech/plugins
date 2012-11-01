@@ -36,10 +36,10 @@ public class PhrescoRunFunctionalTest extends PhrescoAbstractMojo {
 		try {
     		if (getPluginName(baseDir, FUNCTIONAL_TEST) != null) {
 				PhrescoPlugin plugin = getPlugin(getPluginName(baseDir, FUNCTIONAL_TEST));
-		        plugin.runFunctionalTest(getConfiguration(baseDir, FUNCTIONAL_TEST));
+		        plugin.runFunctionalTest(getConfiguration(baseDir, FUNCTIONAL_TEST), getMavenProjectInfo(project));
 			} else {
 				PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());
-		        plugin.runFunctionalTest(getConfiguration(baseDir, FUNCTIONAL_TEST));
+		        plugin.runFunctionalTest(getConfiguration(baseDir, FUNCTIONAL_TEST), getMavenProjectInfo(project));
 			}
     	} catch (PhrescoException e) {
     		throw new MojoExecutionException(e.getMessage(), e);
