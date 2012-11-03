@@ -34,6 +34,7 @@
 		<module>windows-phone-phresco-plugin</module>
 		<module>blackberry-phresco-plugin</module>
     	<module>ci-phresco-plugin</module>
+    <module>report-phresco-plugin</module>
   </modules>
     
 	 <properties>
