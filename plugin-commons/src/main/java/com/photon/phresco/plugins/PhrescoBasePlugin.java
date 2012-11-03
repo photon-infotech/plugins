@@ -107,7 +107,10 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 	}
 	
 	public void performCIPreBuildStep(String jobName, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		System.out.println("Just root method call ... ");
+		// TODO Auto-generated method stub
+	}
+	
+	public void generateReport(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		// TODO Auto-generated method stub
 	}
 	

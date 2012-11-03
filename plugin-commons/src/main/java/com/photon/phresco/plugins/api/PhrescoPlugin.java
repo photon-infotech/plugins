@@ -25,4 +25,6 @@ public interface PhrescoPlugin {
     void runLoadTest() throws PhrescoException;
     
     void performCIPreBuildStep(String jobName, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
+    
+    public void generateReport(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
 }
