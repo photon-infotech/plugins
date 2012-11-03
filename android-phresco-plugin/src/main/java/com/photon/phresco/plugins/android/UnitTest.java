@@ -16,6 +16,7 @@ import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands.MavenCommand;
 import com.photon.phresco.plugins.util.MojoUtil;
+import com.photon.phresco.util.Constants;
 
 public class UnitTest implements PluginConstants {
 	
@@ -47,7 +48,7 @@ public class UnitTest implements PluginConstants {
 			sb.append("-Dandroid.emulator.avd=default");
 			Commandline commandline = new Commandline(sb.toString());
 			MavenProject project = mavenProjectInfo.getProject();
-			String workingDir = project.getProperties().getProperty(FrameworkConstants.POM_PROP_KEY_UNITTEST_DIR);
+			String workingDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_DIR);
 			String baseDir = mavenProjectInfo.getBaseDir().getPath();
 			if (StringUtils.isNotEmpty(workingDir)) {
 				commandline.setWorkingDirectory(baseDir + workingDir);
