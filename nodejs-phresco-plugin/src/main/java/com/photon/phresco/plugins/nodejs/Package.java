@@ -6,10 +6,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
-import org.apache.commons.io.FileUtils;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
@@ -20,6 +20,8 @@ import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.plugins.util.PluginsUtil;
 import com.photon.phresco.util.ArchiveUtil;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
+import com.phresco.pom.exception.PhrescoPomException;
+import com.phresco.pom.util.PomProcessor;
 
 public class Package implements PluginConstants {
 
@@ -93,21 +95,29 @@ public class Package implements PluginConstants {
 		return isBuildSuccess;
 	}
 	
-	private void createPackage() {
+	private void createPackage() throws MojoExecutionException {
 		String zipName = util.createPackage(buildName, buildNumber, nextBuildNo, currentDate);
 		String zipFilePath = buildDir.getPath() + File.separator + zipName;
 		try {
 			ArchiveUtil.createArchive(targetDir.getPath(), zipFilePath, ArchiveType.ZIP);
 		} catch (PhrescoException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
 
 	private void configure() throws MojoExecutionException {
-		log.info("Configuring the project....");
-		File configfile = new File(baseDir + NODE_CONFIG_FILE);
-		String basedir = baseDir.getName();
-		PluginUtils pu = new PluginUtils();
-		pu.executeUtil(environmentName, basedir, configfile);
+		try {
+			log.info("Configuring the project....");
+			File pom = project.getFile();
+		    PomProcessor pomProcessor = new PomProcessor(pom);
+			String sourceDir = pomProcessor.getProperty(POM_PROP_KEY_SOURCE_DIR);
+			File configfile = new File(baseDir + sourceDir + FORWARD_SLASH +  CONFIG_FILE);
+			String basedir = baseDir.getName();
+			PluginUtils pu = new PluginUtils();
+			pu.executeUtil(environmentName, basedir, configfile);
+		} catch (PhrescoPomException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		}
 	}
 
 	private void writeBuildInfo(boolean isBuildSuccess) throws MojoExecutionException {
