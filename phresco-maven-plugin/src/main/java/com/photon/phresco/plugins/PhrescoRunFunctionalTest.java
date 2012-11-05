@@ -11,11 +11,12 @@ import com.photon.phresco.plugins.api.PhrescoPlugin;
 
 /**
  * @author suresh_ma
+ * @goal functional-test
  *
  */
 public class PhrescoRunFunctionalTest extends PhrescoAbstractMojo {
 
-	private static final String FUNCTIONAL_TEST = "fuctional-test";
+	private static final String FUNCTIONAL_TEST = "functional-test";
 	
 	/**
      * The Maven project.

@@ -7,11 +7,11 @@ import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.util.Constants;
 
-public class UnitTest {
-	
-	public void unitTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+public class FunctionalTest {
+
+	public void functionalTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		MavenProject project = mavenProjectInfo.getProject();
-		String workingDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_DIR);
+		String workingDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
 		RunAndroidTest.runAndroidTest(configuration, mavenProjectInfo, workingDir);
 	}
 }
