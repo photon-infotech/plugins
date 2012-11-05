@@ -128,8 +128,6 @@ public class Deploy implements PluginConstants {
 			pomprocessor.setFinalName(context);
 			pomprocessor.save();
 
-		} catch (IOException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		} catch (Exception e) {
@@ -261,10 +259,6 @@ public class Deploy implements PluginConstants {
 			PomProcessor processor = new PomProcessor(project.getFile());
 			processor.deletePluginDependency(CODEHAUS_CARGO_PLUGIN, CARGO_MAVEN2_PLUGIN);
 			processor.save();
-		} catch (JAXBException e) {
-			throw new PhrescoException(e);
-		} catch (IOException e) {
-			throw new PhrescoException(e);
 		} catch (PhrescoPomException e) {
 			throw new PhrescoException(e);
 		}

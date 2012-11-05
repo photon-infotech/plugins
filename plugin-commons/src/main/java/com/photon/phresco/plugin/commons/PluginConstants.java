@@ -40,7 +40,8 @@ public interface PluginConstants {
      String CONFIG_FILE					= "phresco-env-config.xml";
      String SETTINGS_FILE				= "settings.xml";
      String BASH 						= "bash";
-     String ENV_FILE				= "runagainstsource.info";
+     String ENV_FILE					= "runagainstsource.info";
+     String POM_PROP_KEY_SOURCE_DIR     = "phresco.source.resource.dir";
 	
 	//Constants for Maven commands
      String MVN_CMD 					= "mvn";

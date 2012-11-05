@@ -44,6 +44,7 @@ import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
+import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.util.PomProcessor;
 
 public class Start implements PluginConstants {
@@ -62,6 +63,7 @@ public class Start implements PluginConstants {
 	private File baseDir;
 	private String projectCode;
 	private Log log;
+	private String sourceDir;
 	private boolean importSql; // only declared, value not passed
 
 	public void start(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
@@ -97,11 +99,12 @@ public class Start implements PluginConstants {
 			}
 			File pom = project.getFile();
 			PomProcessor pomprocessor = new PomProcessor(pom);
+			sourceDir = pomprocessor.getProperty(POM_PROP_KEY_SOURCE_DIR);
 			pomprocessor.setFinalName(serverContext);
 			pomprocessor.save();
-		} catch (IOException e) {
+		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
-		} catch (Exception e) {
+		} catch (PhrescoPomException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
@@ -109,7 +112,6 @@ public class Start implements PluginConstants {
 	private void configure() throws MojoExecutionException {
 		log.info("Configuring the project....");
 		adaptSourceConfig();
-		adaptDbConfig();
 	}
 
 	private void storeEnvName() throws MojoExecutionException {
@@ -154,18 +156,8 @@ public class Start implements PluginConstants {
 		}
 	}
 
-	private void adaptDbConfig() throws MojoExecutionException {
-		File dbConfigFile = new File(baseDir + JAVA_WEBAPP_CONFIG_FILE);
-		File parentFile = dbConfigFile.getParentFile();
-		String basedir = projectCode;
-		if (parentFile.exists()) {
-			PluginUtils pu = new PluginUtils();
-			pu.executeUtil(environmentName, basedir, dbConfigFile);
-		}
-	}
-
 	private void adaptSourceConfig() throws MojoExecutionException {
-		File wsConfigFile = new File(baseDir + JAVA_CONFIG_FILE);
+		File wsConfigFile = new File(baseDir + sourceDir + FORWARD_SLASH +  CONFIG_FILE);
 		File parentFile = wsConfigFile.getParentFile();
 		String basedir = projectCode;
 		if (parentFile.exists()) {

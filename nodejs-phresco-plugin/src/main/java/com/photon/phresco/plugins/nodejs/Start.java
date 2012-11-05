@@ -32,10 +32,10 @@ import java.util.Map;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.project.MavenProject;
 
-
-import com.photon.phresco.api.ConfigManager;
 import com.google.gson.Gson;
+import com.photon.phresco.api.ConfigManager;
 import com.photon.phresco.configuration.ConfigurationInfo;
 import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
@@ -48,9 +48,12 @@ import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
+import com.phresco.pom.exception.PhrescoPomException;
+import com.phresco.pom.util.PomProcessor;
 
 public class Start implements PluginConstants {
 	private File baseDir;
+	private MavenProject project;
 	private boolean importSql; // value need passed
 	private String environmentName;
 	private Log log;
@@ -58,6 +61,7 @@ public class Start implements PluginConstants {
 	public void start(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
+		project = mavenProjectInfo.getProject();
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
 		environmentName = configs.get(ENVIRONMENT_NAME);
 		try {
@@ -71,11 +75,18 @@ public class Start implements PluginConstants {
 	}
 
 	private void configure() throws MojoExecutionException {
-		log.info("Configuring the project....");
-		File ConfigFile = new File(baseDir + NODE_CONFIG_FILE);
-		String basedir = baseDir.getName();
-		PluginUtils pu = new PluginUtils();
-		pu.executeUtil(environmentName, basedir, ConfigFile);
+		try {
+			log.info("Configuring the project....");
+			File pom = project.getFile();
+			PomProcessor pomProcessor = new PomProcessor(pom);
+			String sourceDir = pomProcessor.getProperty(POM_PROP_KEY_SOURCE_DIR);
+			File ConfigFile = new File(baseDir + sourceDir + FORWARD_SLASH +  CONFIG_FILE);
+			String basedir = baseDir.getName();
+			PluginUtils pu = new PluginUtils();
+			pu.executeUtil(environmentName, basedir, ConfigFile);
+		} catch (PhrescoPomException e) {
+			throw new MojoExecutionException(e.getMessage());
+		}
 	}
 
 	private void createDb() throws MojoExecutionException {

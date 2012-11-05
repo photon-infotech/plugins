@@ -11,6 +11,7 @@ import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -21,10 +22,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.photon.phresco.api.ConfigManager;
+import com.photon.phresco.commons.model.ProjectInfo;
+import com.photon.phresco.commons.model.TechnologyInfo;
+import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
-import com.photon.phresco.framework.api.Project;
-import com.photon.phresco.framework.api.ProjectAdministrator;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
@@ -34,8 +36,10 @@ import com.photon.phresco.plugins.util.PluginsUtil;
 import com.photon.phresco.util.ArchiveUtil;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.ProjectUtils;
 import com.photon.phresco.util.TechnologyTypes;
 import com.photon.phresco.util.Utility;
+import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.util.PomProcessor;
 
 public class Package implements PluginConstants{
@@ -59,6 +63,7 @@ public class Package implements PluginConstants{
 	private String context;
 	private Log log;
 	private PluginsUtil util;
+	private String sourceDir;
 	
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -143,15 +148,18 @@ public class Package implements PluginConstants{
 					break;
 				}
 			}
-			
+			 sourceDir = pomprocessor.getProperty(POM_PROP_KEY_SOURCE_DIR);
+			 System.out.println("source dir :: " + sourceDir);
 			if (StringUtils.isEmpty(context)) {
 				return;
 			}
 			pomprocessor.setFinalName(context);
 			pomprocessor.save();
-		} catch (IOException e) {
+		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
-		} catch (Exception e) {
+		} catch (PhrescoPomException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		} catch (ConfigurationException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
@@ -181,9 +189,9 @@ public class Package implements PluginConstants{
 
 			pomprocessor.addConfiguration(JAR_PLUGIN_GROUPID, JAR_PLUGIN_ARTIFACT_ID, configList, false);
 			pomprocessor.save();
-		} catch (IOException e) {
+		} catch (PhrescoPomException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
-		} catch (Exception e) {
+		} catch (ParserConfigurationException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
@@ -214,19 +222,19 @@ public class Package implements PluginConstants{
 		return isBuildSuccess;
 	}
 
-	private void configure() throws MojoExecutionException {
+	private void configure() {
 		log.info("Configuring the project....");
-		adaptDbConfig();
 		adaptSourceConfig();
 	}
 
-	private void adaptSourceConfig() throws MojoExecutionException {
+	private void adaptSourceConfig() {
 		String basedir = baseDir.getName();
 		String modulePath = "";
 		if (moduleName != null) {
 			modulePath = File.separatorChar + moduleName;
 		}
-		File sourceConfigXML = new File(baseDir + modulePath + JAVA_WEBAPP_CONFIG_FILE);
+		File sourceConfigXML = new File(baseDir + modulePath + sourceDir + FORWARD_SLASH +  CONFIG_FILE);
+		  System.out.println("src config path ::: " + sourceConfigXML.getPath());
 		File parentFile = sourceConfigXML.getParentFile();
 		if (parentFile.exists()) {
 			PluginUtils pu = new PluginUtils();
@@ -234,29 +242,16 @@ public class Package implements PluginConstants{
 		}
 	}
 
-	private void adaptDbConfig() {
-		String basedir = baseDir.getName();
-		String modulePath = "";
-		if (moduleName != null) {
-			modulePath = File.separatorChar + moduleName;
-		}
-		File sourceConfigXML = new File(baseDir + modulePath + JAVA_CONFIG_FILE);
-		File parentFile = sourceConfigXML.getParentFile();
-		if (parentFile.exists()) {
-			PluginUtils pu = new PluginUtils();
-			pu.executeUtil(environmentName, basedir, sourceConfigXML);
-		}
-	}
-
-	private void createPackage() throws MojoExecutionException, IOException {
+	private void createPackage() throws MojoExecutionException {
 		try {
 			zipName = util.createPackage(buildName, buildNumber, nextBuildNo, currentDate);
 			String zipFilePath = buildDir.getPath() + File.separator + zipName;
 			String zipNameWithoutExt = zipName.substring(0, zipName.lastIndexOf('.'));
-			ProjectAdministrator projectAdministrator = PhrescoFrameworkFactory.getProjectAdministrator();
-			Project currentProject = projectAdministrator.getProjectByWorkspace(baseDir);
-			String techId = currentProject.getApplicationInfo().getTechInfo().getVersion();
-			if (techId.equals(TechnologyTypes.JAVA_STANDALONE)) {
+			ProjectUtils projectutils = new ProjectUtils();
+			ProjectInfo projectInfo = projectutils.getProjectInfo(baseDir);
+			TechnologyInfo applicationInfo = projectInfo.getAppInfos().get(0).getTechInfo();
+			String appTechId = applicationInfo.getId();
+			if (appTechId.equals(TechnologyTypes.JAVA_STANDALONE)) {
 				copyJarToPackage(zipNameWithoutExt);
 			} else {
 				copyWarToPackage(zipNameWithoutExt, context);
@@ -267,13 +262,17 @@ public class Package implements PluginConstants{
 		}
 	}
 
-	private void copyJarToPackage(String zipNameWithoutExt) throws IOException {
-		String[] list = targetDir.list(new JarFileNameFilter());
-		if (list.length > 0) {
-			File jarFile = new File(targetDir.getPath() + File.separator + list[0]);
-			tempDir = new File(buildDir.getPath() + File.separator + zipNameWithoutExt);
-			tempDir.mkdir();
-			FileUtils.copyFileToDirectory(jarFile, tempDir);
+	private void copyJarToPackage(String zipNameWithoutExt) throws MojoExecutionException {
+		try {
+			String[] list = targetDir.list(new JarFileNameFilter());
+			if (list.length > 0) {
+				File jarFile = new File(targetDir.getPath() + File.separator + list[0]);
+				tempDir = new File(buildDir.getPath() + File.separator + zipNameWithoutExt);
+				tempDir.mkdir();
+				FileUtils.copyFileToDirectory(jarFile, tempDir);
+			}
+		} catch (IOException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
 

@@ -19,6 +19,8 @@ import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.plugins.util.PluginsUtil;
 import com.photon.phresco.util.ArchiveUtil;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
+import com.phresco.pom.exception.PhrescoPomException;
+import com.phresco.pom.util.PomProcessor;
 
 public class Package implements PluginConstants {
     
@@ -98,14 +100,19 @@ public class Package implements PluginConstants {
     private void configure() throws MojoExecutionException {
         try {
             log.info("Configuring the project....");
-            File srcConfigFile = new File(baseDir + PHP_SOURCE_CONFIG_FILE);
+            File pom = project.getFile();
+            PomProcessor pomProcessor = new PomProcessor(pom);
+            String sourceDir = pomProcessor.getProperty(POM_PROP_KEY_SOURCE_DIR);
+            File srcConfigFile = new File(baseDir + sourceDir + FORWARD_SLASH +  CONFIG_FILE);
             String basedir = baseDir.getName();
             PluginUtils pu = new PluginUtils();
             pu.executeUtil(environmentName, basedir, srcConfigFile);
             pu.encryptConfigFile(srcConfigFile.getPath());
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);
-        }
+        } catch (PhrescoPomException e) {
+        	 throw new MojoExecutionException(e.getMessage(), e);
+		}
     }
 
     private void writeBuildInfo(boolean isBuildSuccess) throws MojoExecutionException {
