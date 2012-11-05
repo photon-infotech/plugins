@@ -14,8 +14,8 @@ public class ReportPlugin  extends PhrescoBasePlugin  {
 
 	@Override
 	public void generateReport(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-//		Deploy deploy = new Deploy();
-//      deploy.deploy(configuration, mavenProjectInfo, getLog());
+		GenerateReport report = new GenerateReport();
+		report.generate(configuration, mavenProjectInfo, getLog());
 	}
 	
 }
