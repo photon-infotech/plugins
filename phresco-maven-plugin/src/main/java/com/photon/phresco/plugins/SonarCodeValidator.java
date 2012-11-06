@@ -9,6 +9,7 @@ import org.apache.maven.project.MavenProject;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
+import com.photon.phresco.util.Constants;
 
 /**
  * Goal which validate the code
@@ -18,7 +19,7 @@ import com.photon.phresco.plugins.api.PhrescoPlugin;
  */
 public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginConstants {
 	
-	private static final String VALIDATE_CODE = "validate-code";
+	private static final String VALIDATE_CODE = Constants.PHASE_VALIDATE_CODE;
 
 	/**
      * The Maven project.

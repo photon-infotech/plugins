@@ -27,6 +27,7 @@ import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoProcessor;
+import com.photon.phresco.util.Constants;
 
 /**
  * Phresco Maven Plugin for executing package command of the plugins
@@ -34,7 +35,7 @@ import com.photon.phresco.plugins.util.MojoProcessor;
  */
 public class PhrescoPackage extends PhrescoAbstractMojo {
     
-    private static final String PACKAGE = "package";
+    private static final String PACKAGE = Constants.PHASE_PACKAGE;
 
 	/**
      * The Maven project.

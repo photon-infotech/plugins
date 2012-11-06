@@ -8,6 +8,7 @@ import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
+import com.photon.phresco.util.Constants;
 
 /**
  * Goal which deploys the PHP project
@@ -17,7 +18,7 @@ import com.photon.phresco.plugins.api.PhrescoPlugin;
  */
 public class PhrescoStop extends PhrescoAbstractMojo {
 
-	private static final String STOP = "stop";
+	private static final String STOP = Constants.PHASE_RUNGAINST_SRC_STOP;
 
 	/**
 	 * @parameter expression="${project.basedir}" required="true"

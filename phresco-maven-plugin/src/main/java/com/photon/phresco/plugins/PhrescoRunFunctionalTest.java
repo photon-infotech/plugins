@@ -8,6 +8,7 @@ import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
+import com.photon.phresco.util.Constants;
 
 /**
  * @author suresh_ma
@@ -16,7 +17,7 @@ import com.photon.phresco.plugins.api.PhrescoPlugin;
  */
 public class PhrescoRunFunctionalTest extends PhrescoAbstractMojo {
 
-	private static final String FUNCTIONAL_TEST = "functional-test";
+	private static final String FUNCTIONAL_TEST = Constants.PHASE_FUNCTIONAL_TEST;
 	
 	/**
      * The Maven project.
