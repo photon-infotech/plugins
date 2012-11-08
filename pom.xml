@@ -35,6 +35,7 @@
 		<module>blackberry-phresco-plugin</module>
     	<module>ci-phresco-plugin</module>
 		<module>phresco-maven-plugin</module>
+		<module>report-phresco-plugin</module>
   </modules>
     
 	 <properties>
