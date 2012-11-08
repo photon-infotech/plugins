@@ -37,7 +37,6 @@ import org.w3c.dom.Node;
 import com.photon.phresco.api.ConfigManager;
 import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
-import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.impl.ConfigManagerImpl;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
@@ -51,7 +50,6 @@ import com.photon.phresco.util.Constants;
 public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 
 	public Log log;
-	private ConfigManager configManager;
 
 	public PhrescoBasePlugin(Log log) {
 		this.log = log;
@@ -74,8 +72,10 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 		String resolutionValue = configValues.get(RESOLUTION);
 		File selectedEnvFile = new File(basedir + File.separator + DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE);
 		String resultConfigFileDir = project.getProperties().getProperty(Constants.PHRESCO_FUNCTIONAL_TEST_ADAPT_DIR);
-		File resultConfigXml = new File(basedir + resultConfigFileDir, Constants.CONFIGURATION_INFO_FILE);
+		if(StringUtils.isNotEmpty(resultConfigFileDir)) {
+		File resultConfigXml = new File(basedir + resultConfigFileDir);
 		adaptTestConfig(selectedEnvFile, resultConfigXml, environmentName, browserValue, resolutionValue);
+		}
 		generateMavenCommand(mavenProjectInfo, Constants.POM_PROP_KEY_FUNCTEST_DIR);
 	}
 

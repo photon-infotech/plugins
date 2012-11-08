@@ -8,6 +8,7 @@ import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
+import com.photon.phresco.util.Constants;
 
 /**
  * 
@@ -17,7 +18,7 @@ import com.photon.phresco.plugins.api.PhrescoPlugin;
  */
 public class PhrescoRunUnitTest extends PhrescoAbstractMojo {
 
-	private static final String UNIT_TEST = "unit-test";
+	private static final String UNIT_TEST = Constants.PHASE_UNIT_TEST;
 	
 	/**
      * The Maven project.

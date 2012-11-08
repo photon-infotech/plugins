@@ -11,6 +11,7 @@ import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoProcessor;
+import com.photon.phresco.util.Constants;
 
 /**
  * Goal which deploys the PHP project
@@ -21,7 +22,7 @@ import com.photon.phresco.plugins.util.MojoProcessor;
 public class PhrescoDeploy extends PhrescoAbstractMojo {
 	
 	
-	 private static final String DEPLOY = "deploy";
+	 private static final String DEPLOY = Constants.PHASE_DEPLOY;
 
 	/**
      * @parameter expression="${project.basedir}" required="true"
