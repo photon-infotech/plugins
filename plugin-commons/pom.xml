@@ -51,7 +51,13 @@
             <groupId>com.photon.phresco.framework</groupId>
             <artifactId>phresco-framework</artifactId>
             <version>${phresco-commons-version}</version>
-        </dependency>
+   </dependency>
+        
+   <dependency>
+	       <groupId>xalan</groupId>
+	       <artifactId>xalan</artifactId>
+	       <version>${xalan.version}</version>
+   </dependency>
         
     </dependencies>
     

@@ -42,6 +42,8 @@ public interface PluginConstants {
      String BASH 						= "bash";
      String ENV_FILE					= "runagainstsource.info";
      String POM_PROP_KEY_SOURCE_DIR     = "phresco.source.resource.dir";
+     String BUILD_XML_FILE				= "build.xml";
+     String LOAD_TEST_CONFIG_FILE		= "phresco-env-config.csv";
 	
 	//Constants for Maven commands
      String MVN_CMD 					= "mvn";
@@ -256,4 +258,12 @@ public interface PluginConstants {
 	 //Constants for Jenkins
 	String JENKINS_HOME = "JENKINS_HOME";
 	String WORKSPACE_DIR = "workspace";
+	
+	//Load Test Parameter Keys
+	String KEY_LOAD					= "load";
+	String KEY_TEST_NAME			= "testName";
+	String KEY_NO_OF_USERS			= "noOfUsers";
+	String KEY_RAMP_UP_PERIOD		= "rampUpPeriod";
+	String KEY_LOOP_COUNT			= "loopCount";
+	String ADD_HEADER				= "addHeader";
 }

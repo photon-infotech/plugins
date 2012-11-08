@@ -22,7 +22,7 @@ public interface PhrescoPlugin {
     
     void runPerformanceTest() throws PhrescoException;
     
-    void runLoadTest() throws PhrescoException;
+    void runLoadTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
     void performCIPreBuildStep(String jobName, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     

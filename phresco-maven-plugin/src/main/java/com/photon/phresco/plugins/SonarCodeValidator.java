@@ -40,7 +40,7 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
 		
 		getLog().info("Executing Code Validation");
 		try {
-			if (getPluginName(baseDir, VALIDATE_CODE) != null) {
+			if (isGoalAvailable(baseDir, VALIDATE_CODE) && getPluginName(baseDir, VALIDATE_CODE) != null) {
 				PhrescoPlugin plugin = getPlugin(getPluginName(baseDir, VALIDATE_CODE));
 		        plugin.validate(getConfiguration(baseDir, VALIDATE_CODE), getMavenProjectInfo(project));
 			} else {

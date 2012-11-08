@@ -86,6 +86,7 @@
 		<jslint4java.version>1.4.7</jslint4java.version>
 		<jetty-server.version>7.4.2.v20110526</jetty-server.version>
 		<jackson-core-asl.version>1.8.2</jackson-core-asl.version>
+		<xalan.version>2.7.1</xalan.version>
 		<javax.inject.version>1</javax.inject.version>
 		<jsr250-api.version>1.0</jsr250-api.version>
 		<slf4j-api.version>1.6.1</slf4j-api.version>
