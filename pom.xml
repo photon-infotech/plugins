@@ -17,7 +17,7 @@
 	<description>phresco-plugins-root</description>
     <modules>
         <module>drupal-phresco-plugin</module>
-        <module>php-plugin</module>
+        <module>php-phresco-plugin</module>
         <module>android-phresco-plugin</module> 
         <module>sharepoint-phresco-plugin</module>
 		<module>dotnet-phresco-plugin</module>

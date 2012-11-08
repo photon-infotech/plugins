@@ -79,7 +79,7 @@
 	</dependency>
 	<dependency>
 	  <groupId>com.photon.phresco.plugins</groupId>
-	  <artifactId>php-plugin</artifactId>
+	  <artifactId>php-phresco-plugin</artifactId>
 	  <version>${phresco-commons-version}</version>
 	</dependency>
 	<dependency>
