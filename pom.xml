@@ -30,11 +30,11 @@
         <module>javascript-maven-plugin</module>
         <module>plugin-commons</module>        
         <module>jslint-maven-plugin</module>        
-		<module>js-import-maven-plugin</module> 
+		<!-- <module>js-import-maven-plugin</module>  -->
 		<module>windows-phone-phresco-plugin</module>
 		<module>blackberry-phresco-plugin</module>
     	<module>ci-phresco-plugin</module>
-    <module>report-phresco-plugin</module>
+		<module>phresco-maven-plugin</module>
   </modules>
     
 	 <properties>

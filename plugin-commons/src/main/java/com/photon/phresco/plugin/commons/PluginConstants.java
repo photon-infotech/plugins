@@ -228,6 +228,8 @@ public interface PluginConstants {
 	 String PLATFORM 					= "platform";
 	 String DOT_ZIP 					= ".zip";
 	 String BUILD_NUMBER 				= "buildNumber";
+	 String BROWSER						= "browser";
+	 String RESOLUTION					= "resolution";
 	 
 	 //Constants for Time Formatter
 	 String TIME_STAMP_FOR_BUILD_NAME 	= "dd-MMM-yyyy-HH-mm-ss";

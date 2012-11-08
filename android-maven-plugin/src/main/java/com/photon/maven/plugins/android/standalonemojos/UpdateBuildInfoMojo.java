@@ -47,7 +47,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import com.photon.phresco.plugin.commons.PluginUtils;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -56,7 +56,8 @@ import org.codehaus.plexus.archiver.zip.ZipArchiver;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.photon.maven.plugins.android.AbstractAndroidMojo;
-import com.photon.phresco.commons.BuildInfo;
+import com.photon.phresco.commons.model.BuildInfo;
+import com.photon.phresco.plugin.commons.PluginUtils;
 
 
 /**

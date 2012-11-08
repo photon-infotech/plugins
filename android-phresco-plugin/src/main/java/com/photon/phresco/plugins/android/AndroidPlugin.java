@@ -35,6 +35,7 @@ public class AndroidPlugin extends PhrescoBasePlugin {
 	
 	@Override
 	public void runFunctionalTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		
+		FunctionalTest functionalTest = new FunctionalTest();
+		functionalTest.functionalTest(configuration, mavenProjectInfo);
 	}
 }

@@ -15,12 +15,12 @@ public class Deploy implements PluginConstants {
 	public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) {
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
 		String buildName = configs.get(BUILD_NAME);
-		String usb = "emulator-5554";
+		String device = "emulator-5554";
 //		String usb = "usb";
 		String avd = "default";
 		log.info("Project is Deploying...");
 		StringBuilder builder = new StringBuilder();
-		builder.append("mvn android:deploy -DskipTests=false -DbuildName="+buildName+" -Dandroid.device="+usb+" -Dandroid.emulator.avd="+avd+"");
+		builder.append("mvn android:deploy -DskipTests=false -DbuildName="+buildName+" -Dandroid.device="+device+" -Dandroid.emulator.avd="+avd+"");
 		Utility.executeStreamconsumer(builder.toString());
 	}
 }
