@@ -50,4 +50,9 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
     	MojoProcessor processor = new MojoProcessor(new File(baseDir, PHRESCO_PLUGIN_INFO_XML));
     	return processor.getImplementationClassName(goal);
     }
+    
+    protected boolean isGoalAvailable(File baseDir, String goal) throws PhrescoException {
+    	MojoProcessor processor = new MojoProcessor(new File(baseDir, PHRESCO_PLUGIN_INFO_XML));
+    	return processor.isGoalAvailable(goal);
+	}
 }

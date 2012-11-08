@@ -6,8 +6,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringReader;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -40,6 +44,7 @@ import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.impl.ConfigManagerImpl;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
+import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
@@ -84,9 +89,43 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 
 	}
 
-	public void runLoadTest() throws PhrescoException {
-		// TODO Auto-generated method stub
-
+	public void runLoadTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		try {
+			PluginUtils pluginUtils = new PluginUtils();
+			MavenProject project = mavenProjectInfo.getProject();
+			String basedir = project.getBasedir().getPath();
+			Map<String, String> configs = MojoUtil.getAllValues(configuration);
+			String testAgainstType = configs.get(KEY_LOAD);
+			String testName = configs.get(KEY_TEST_NAME);
+			String environmentName = configs.get(ENVIRONMENT_NAME);
+			String type = configs.get(testAgainstType);
+			String noOfUsers = configs.get(KEY_NO_OF_USERS);
+			String rampUpPeriod = configs.get(KEY_RAMP_UP_PERIOD);
+			String loopCount = configs.get(KEY_LOOP_COUNT);
+			String str = configs.get(ADD_HEADER);
+			StringReader reader = new StringReader(str);
+			Properties props = new Properties();
+			props.load(reader);
+			Set<String> propertyNames = props.stringPropertyNames();
+			Map<String, String> headersMap = new HashMap<String, String>(2);
+			for (String key : propertyNames) {
+				headersMap.put(key, props.getProperty(key));
+			}
+			ConfigManager configManager = new ConfigManagerImpl(new File(basedir + File.separator + DOT_PHRESCO_FOLDER + File.separator + CONFIG_FILE));
+			com.photon.phresco.configuration.Configuration config = configManager.getConfiguration(environmentName, testAgainstType, type);
+			String performancePath = project.getProperties().getProperty(Constants.POM_PROP_KEY_LOADTEST_DIR);
+			if(StringUtils.isNotEmpty(performancePath)) {
+				pluginUtils.changeTestName(basedir + File.separator + performancePath + File.separator, testName);
+			}
+			String testConfigFilePath = basedir + File.separator + performancePath + File.separator + "tests";
+			pluginUtils.adaptTestConfig(testConfigFilePath + File.separator , config);
+			pluginUtils.adaptLoadJmx(testConfigFilePath + File.separator, Integer.parseInt(noOfUsers), Integer.parseInt(rampUpPeriod), Integer.parseInt(loopCount), headersMap);
+			generateMavenCommand(mavenProjectInfo, Constants.POM_PROP_KEY_LOADTEST_DIR);
+		} catch (ConfigurationException e) {
+			throw new PhrescoException(e);
+		} catch (Exception e) {
+			throw new PhrescoException(e);
+		}
 	}
 
 	public void validate(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
@@ -187,7 +226,7 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 		} catch (CommandLineException e) {
 			throw new PhrescoException(e);
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new PhrescoException(e);
 		}
 	}
 	
@@ -240,7 +279,6 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 	        configNode.appendChild(importNode);
 	        writeXml(new FileOutputStream(resultConfigXml), document);
         } catch (Exception e) {
-        	e.printStackTrace();
             throw new PhrescoException("Configuration not found to delete");
         }
     }

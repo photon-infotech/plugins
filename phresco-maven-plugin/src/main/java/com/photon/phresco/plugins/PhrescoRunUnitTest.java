@@ -37,7 +37,7 @@ public class PhrescoRunUnitTest extends PhrescoAbstractMojo {
     
     public void execute() throws MojoExecutionException, MojoFailureException {
     	try {
-    		if (getPluginName(baseDir, UNIT_TEST) != null) {
+    		if (isGoalAvailable(baseDir, UNIT_TEST) && getPluginName(baseDir, UNIT_TEST) != null) {
 				PhrescoPlugin plugin = getPlugin(getPluginName(baseDir, UNIT_TEST));
 		        plugin.runUnitTest(getConfiguration(baseDir, UNIT_TEST), getMavenProjectInfo(project));
 			} else {
