@@ -35,26 +35,20 @@
  ******************************************************************************/
 package com.photon.phresco.plugins.xcode;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.project.MavenProject;
+import org.apache.commons.collections.*;
+import org.apache.commons.lang.*;
+import org.apache.maven.plugin.*;
+import org.apache.maven.project.*;
 
-import com.photon.phresco.commons.BuildInfo;
-import com.photon.phresco.exception.PhrescoException;
-import com.photon.phresco.framework.PhrescoFrameworkFactory;
-import com.photon.phresco.framework.api.ProjectAdministrator;
-import com.photon.phresco.plugin.commons.PluginConstants;
-import com.photon.phresco.plugins.xcode.utils.SdkVerifier;
+import com.photon.phresco.commons.model.*;
+import com.photon.phresco.exception.*;
+import com.photon.phresco.framework.*;
+import com.photon.phresco.framework.api.*;
+import com.photon.phresco.plugin.commons.*;
+import com.photon.phresco.plugins.xcode.utils.*;
 import com.photon.phresco.plugins.xcode.utils.XcodeUtil;
 /**
  * APP deploy
