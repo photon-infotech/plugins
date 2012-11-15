@@ -27,7 +27,7 @@ public class Package implements PluginConstants {
 			Map<String, String> configs = MojoUtil.getAllValues(config);
 			environmentName = configs.get(ENVIRONMENT_NAME);
 			String sdk = configs.get("sdk");
-			String targetName = configs.get("targetName");
+			String targetName = configs.get("target");
 			String configuration = configs.get("mode");
 			String encrypt = configs.get("encrypt");
 			String plistFile = configs.get("plistFile");
