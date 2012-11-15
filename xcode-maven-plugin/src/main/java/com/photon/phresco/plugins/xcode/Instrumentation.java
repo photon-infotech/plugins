@@ -17,51 +17,43 @@
 package com.photon.phresco.plugins.xcode;
 
 
-import java.io.BufferedInputStream;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Writer;
+import java.io.*;
+import java.text.*;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
+import javax.xml.parsers.*;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.*;
+import javax.xml.transform.stream.*;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.configuration.plist.XMLPropertyListConfiguration;
-import org.apache.commons.configuration.tree.ConfigurationNode;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.project.MavenProject;
-import org.w3c.dom.Document;
+import org.apache.commons.configuration.HierarchicalConfiguration.Node;
+import org.apache.commons.configuration.plist.*;
+import org.apache.commons.configuration.tree.*;
+import org.apache.commons.io.*;
+import org.apache.commons.lang.*;
+import org.apache.maven.plugin.*;
+import org.apache.maven.project.*;
+import org.w3c.dom.*;
 import org.w3c.dom.Element;
 
-import com.photon.phresco.commons.BuildInfo;
-import com.photon.phresco.exception.PhrescoException;
-import com.photon.phresco.framework.PhrescoFrameworkFactory;
-import com.photon.phresco.framework.api.ProjectAdministrator;
-import com.photon.phresco.plugin.commons.PluginConstants;
-import com.photon.phresco.plugins.xcode.utils.SdkVerifier;
-import com.photon.phresco.plugins.xcode.utils.XMLConstants;
+import com.photon.phresco.commons.model.*;
+import com.photon.phresco.plugin.commons.*;
+import com.photon.phresco.plugins.xcode.utils.*;
 
 /**
  * APP instrumentation
  * @goal instruments
  */
 public class Instrumentation extends AbstractXcodeMojo implements PluginConstants {
+	private static final String YES = "yes";
+
+	private static final String EEE_MMM_DD_HH_MM_SS_Z_YYYY = "EEE MMM dd hh:mm:ss z yyyy";
+
+	private static final String LOG_TYPE = "LogType";
+
+	private static final String TIMESTAMP = "Timestamp";
+	
 	/**
 	 * @parameter experssion="${command}" default-value="instruments"
 	 */
@@ -77,7 +69,7 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 	protected MavenProject project;
 	
 	/**
-	 * @parameter expression="${template}" default-value="/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/Instruments/PlugIns/AutomationInstrument.bundle/Contents/Resources/Automation.tracetemplate"
+	 * @parameter expression="${template}" default-value="/Developer/Platforms/iPhoneOS.platform/Developer/Library/Instruments/PlugIns/AutomationInstrument.bundle/Contents/Resources/Automation.tracetemplate"
 	 */
 	private String template;
 	
@@ -96,6 +88,8 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 	 * @parameter expression="${verbose}" default-value="false"
 	 */
 	private boolean verbose;
+	
+	private String appPath;
 	
 	/**
 	 * @parameter expression="${script.name}" default-value="test/functional/src/AllTests.js"
@@ -132,44 +126,43 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 	 * @parameter 
 	 */
 	private static XMLPropertyListConfiguration config;
-	private String appPath;
 	private File buildInfoFile;
 	
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-			getLog().info("Instrumentation command" + command);
-			try {	
-				if(SdkVerifier.isAvailable("iphonesimulator5.1")) {
-					template = "/Applications/Xcode.app/Contents" + template;
-			    }
-			} catch (IOException e2) {
-			    throw new MojoExecutionException("Template not found");
-			} catch (InterruptedException e2) {
-				throw new MojoExecutionException("Template interrupted!");
+		getLog().info("Instrumentation command" + command);
+		try {	
+			if(SdkVerifier.isAvailable("iphonesimulator5.1")) {
+				template = "/Applications/Xcode.app/Contents" + template;
 			}
-				
-			if (StringUtils.isEmpty(buildNumber)) {
-				throw new MojoExecutionException("Selected build is not available!");
-			}
-			getLog().info("Build id is " + buildNumber);
-			getLog().info("Project Code " + baseDir.getName());
-			
-			BuildInfo buildInfo = getBuildInfo(Integer.parseInt(buildNumber));
-			appPath = buildInfo.getBuildName();
-			getLog().info("Application.path = " + appPath);
-			
-		    try {
-				outputFolder = project.getBasedir().getAbsolutePath();
-				File f = new File(outputFolder);
-				File files[] = f.listFiles();
-				for(File file : files) {
-					if(file.getName().startsWith("Run 1" ) || file.getName().endsWith(".trace")) {
-						FileUtils.deleteDirectory(file);		
-					}
+		} catch (IOException e2) {
+            throw new MojoExecutionException("Template not found");
+        } catch (InterruptedException e2) {
+        	throw new MojoExecutionException("Template interrupted!");
+        }
+		
+		if (StringUtils.isEmpty(buildNumber)) {
+			throw new MojoExecutionException("Selected build is not available!");
+		}
+		getLog().info("Build id is " + buildNumber);
+		getLog().info("Project Code " + baseDir.getName());
+		PluginUtils pu = new PluginUtils();
+		BuildInfo buildInfo = pu.getBuildInfo(Integer.parseInt(buildNumber));
+		appPath = buildInfo.getBuildName();
+		getLog().info("Application.path = " + appPath);
+		
+		try {
+			outputFolder = project.getBasedir().getAbsolutePath();
+			File f = new File(outputFolder);
+			File files[] = f.listFiles();
+			for(File file : files) {
+				if(file.getName().startsWith("Run 1" ) || file.getName().endsWith(".trace")) {
+					FileUtils.deleteDirectory(file);		
 				}
-			} catch (IOException e) {
-				getLog().error(e);
 			}
+		} catch (IOException e) {
+			getLog().error(e);
+		}
 			
 			Runnable runnable = new Runnable() {
 				public void run() {
@@ -234,6 +227,7 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 			}
 
 			preparePlistResult();
+			getLog().info("Plist path ... " + project.getBasedir().getAbsolutePath()+File.separator+plistResult);
 			generateXMLReport(project.getBasedir().getAbsolutePath()+File.separator+plistResult);
 	}
 
@@ -258,6 +252,14 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 		}
 	}
 
+//    public static void main(String[] args) {
+//        try {
+//            new Instrumentation().generateXMLReport("/Users/kal/Notes/XCOde-Plist/Automation Results-DD-old.plist");
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
+	
 	private void generateXMLReport(String location) {
 		getLog().info("xml generation started");
 		try {
@@ -265,14 +267,13 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 			int total,pass,fail;
 			total=pass=fail=0;
 			config = new XMLPropertyListConfiguration(location);
+			// getting all <dict> tags
 			ArrayList list =  (ArrayList) config.getRoot().getChild(0).getValue();
 			String key;
-
 
 			DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
 			DocumentBuilder docBuilder = dbfac.newDocumentBuilder();
 			Document doc = docBuilder.newDocument();
-
 
 			Element root = doc.createElement(XMLConstants.TESTSUITES_NAME);
 			doc.appendChild(root);
@@ -282,61 +283,61 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 
 
 			for (Object object : list) {
-
+				// getting start time from initial <dict tag>
 				XMLPropertyListConfiguration config = (XMLPropertyListConfiguration) object;
-
-				startTime = config.getRoot().getChild(2).getValue().toString();
-
+				startTime = getValueOfNode(config.getRoot(), TIMESTAMP);
 				break;
 			}
 
 			for (Object object : list) {
-
+				// getChild(0) - <key>LogType</key>
+				// getChild(1) - <key>Message</key>
+				// getChild(2) - <key>Timestamp</key>
 				XMLPropertyListConfiguration config = (XMLPropertyListConfiguration) object;
 
-				ConfigurationNode con = config.getRoot().getChild(0);
-				key = con.getName();
-
-				if(key.equals(XMLConstants.LOGTYPE) && con.getValue().equals(XMLConstants.PASS)){
-					pass++;total++;
-					Element child1 = doc.createElement(XMLConstants.TESTCASE_NAME);
-					child1.setAttribute(XMLConstants.NAME,(String) config.getRoot().getChild(1).getValue());
-					child1.setAttribute(XMLConstants.RESULT,(String) con.getValue());
-
-					String endTime = config.getRoot().getChild(2).getValue().toString();
-					
-					long differ = getTimeDiff(startTime, endTime);
-					startTime = endTime;
-					child1.setAttribute(XMLConstants.TIME, differ+"");
-					testSuite.appendChild(child1);
-				}
-				else if(key.equals(XMLConstants.LOGTYPE) && con.getValue().equals(XMLConstants.ERROR)){
-					fail++;total++;
-					Element child1 = doc.createElement(XMLConstants.TESTCASE_NAME);
-					child1.setAttribute(XMLConstants.NAME,(String) config.getRoot().getChild(1).getValue());
-					child1.setAttribute(XMLConstants.RESULT,(String) con.getValue());
-					
-					String endTime = config.getRoot().getChild(2).getValue().toString();
-					
-					List<ConfigurationNode> children = (List<ConfigurationNode>) config.getRoot().getChildren();
-					String errorTextNodes = XMLConstants.DICT_START;
-					for (ConfigurationNode child : children) {
-						errorTextNodes = errorTextNodes + XMLConstants.KEY_START + child.getName() + XMLConstants.KEY_END;
-						errorTextNodes = errorTextNodes + XMLConstants.STRING_START + child.getValue() + XMLConstants.STRING_END;
+				ConfigurationNode con = getConfigurationOfNode(config.getRoot(), LOG_TYPE);
+				
+				if (con != null) {
+				
+					key = con.getName();
+					if(key.equals(XMLConstants.LOGTYPE) && con.getValue().equals(XMLConstants.PASS)){
+						pass++;total++;
+						Element child1 = doc.createElement(XMLConstants.TESTCASE_NAME);
+						child1.setAttribute(XMLConstants.NAME,(String) config.getRoot().getChild(1).getValue());
+						child1.setAttribute(XMLConstants.RESULT,(String) con.getValue());
+	
+						String endTime = getValueOfNode(config.getRoot(), TIMESTAMP);
+						
+						long differ = getTimeDiff(startTime, endTime);
+						startTime = endTime;
+						child1.setAttribute(XMLConstants.TIME, differ+"");
+						testSuite.appendChild(child1);
+					} else if (key.equals(XMLConstants.LOGTYPE) && con.getValue().equals(XMLConstants.ERROR)) {
+						fail++;total++;
+						Element child1 = doc.createElement(XMLConstants.TESTCASE_NAME);
+						child1.setAttribute(XMLConstants.NAME,(String) config.getRoot().getChild(1).getValue());
+						child1.setAttribute(XMLConstants.RESULT,(String) con.getValue());
+						String endTime = getValueOfNode(config.getRoot(), TIMESTAMP);
+						
+						List<ConfigurationNode> children = (List<ConfigurationNode>) config.getRoot().getChildren();
+						String errorTextNodes = XMLConstants.DICT_START;
+						for (ConfigurationNode child : children) {
+							errorTextNodes = errorTextNodes + XMLConstants.KEY_START + child.getName() + XMLConstants.KEY_END;
+							errorTextNodes = errorTextNodes + XMLConstants.STRING_START + child.getValue() + XMLConstants.STRING_END;
+						}
+						errorTextNodes = errorTextNodes + XMLConstants.DICT_END;
+						
+						getLog().info("error node " + errorTextNodes);
+						long differ = getTimeDiff(startTime, endTime);
+						startTime = endTime;
+						child1.setAttribute(XMLConstants.TIME, differ+"");
+						//adding error element
+						Element errorElem = doc.createElement(XMLConstants.FAILURE);
+						errorElem.setAttribute(XMLConstants.TYPE, "Exception");
+						errorElem.setTextContent(errorTextNodes);
+						child1.appendChild(errorElem);
+						testSuite.appendChild(child1);
 					}
-					errorTextNodes = errorTextNodes + XMLConstants.DICT_END;
-					
-					getLog().info("error node " + errorTextNodes);
-					
-					long differ = getTimeDiff(startTime, endTime);
-					startTime = endTime;
-					child1.setAttribute(XMLConstants.TIME, differ+"");
-					//adding error element
-					Element errorElem = doc.createElement(XMLConstants.FAILURE);
-					errorElem.setAttribute(XMLConstants.TYPE, "Exception");
-					errorElem.setTextContent(errorTextNodes);
-					child1.appendChild(errorElem);
-					testSuite.appendChild(child1);
 				}
 
 			}
@@ -351,23 +352,46 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 
 			TransformerFactory transfac = TransformerFactory.newInstance();
 			Transformer trans = transfac.newTransformer();
-			trans.setOutputProperty(OutputKeys.INDENT, "yes");
+			trans.setOutputProperty(OutputKeys.INDENT, YES);
 
+//			File file = new File("/Users/kal/Notes/XCOde-Plist/DDOld.xml");
+			getLog().info("functional xml file generated ... ");
 			File file = new File(project.getBasedir().getAbsolutePath()+File.separator+xmlResult);
 			Writer bw = new BufferedWriter(new FileWriter(file));
 			StreamResult result = new StreamResult(bw);
 			DOMSource source = new DOMSource(doc);
 			trans.transform(source, result);
 
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			getLog().error(e);
 		}
 	}
 
+    private String getValueOfNode(Node rootNode, String nodeName) {
+        List<ConfigurationNode> children = (List<ConfigurationNode>) rootNode.getChildren();
+        String value = "";
+        for (ConfigurationNode child : children) {
+            if (nodeName.equals(child.getName())) {
+                value = child.getValue().toString();
+                break;
+            }
+        }
+        return value;
+    }
+    
+    private ConfigurationNode getConfigurationOfNode(Node rootNode, String nodeName) {
+        List<ConfigurationNode> children = (List<ConfigurationNode>) rootNode.getChildren();
+        for (ConfigurationNode child : children) {
+            if (nodeName.equals(child.getName())) {
+                return child;
+            }
+        }
+		return null;
+    }
+    
 	private long getTimeDiff(String dateStart, String dateStop) {
 		//TODO try to get the system time format.
-		SimpleDateFormat format = new SimpleDateFormat("EEE MMM dd hh:mm:ss z yyyy");  
+		SimpleDateFormat format = new SimpleDateFormat(EEE_MMM_DD_HH_MM_SS_Z_YYYY);  
 		Date d1 = null;
 		Date d2 = null;
 		try {
@@ -381,35 +405,4 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 		return diff;
 	}
 	
-	private BuildInfo getBuildInfo(int buildNumber) throws MojoExecutionException {
-		ProjectAdministrator administrator;
-		try {
-			administrator = PhrescoFrameworkFactory.getProjectAdministrator();
-		} catch (PhrescoException e) {
-			throw new MojoExecutionException("Project administrator object creation error!");
-		}
-		buildInfoFile = new File(baseDir.getPath() + PluginConstants.BUILD_DIRECTORY + BUILD_INFO_FILE);
-		if (!buildInfoFile.exists()) {
-			throw new MojoExecutionException("Build info is not available!");
-		}
-		try {
-			List<BuildInfo> buildInfos = administrator.readBuildInfo(buildInfoFile);
-			
-			 if (CollectionUtils.isEmpty(buildInfos)) {
-				 throw new MojoExecutionException("Build info is empty!");
-			 }
-
-			 for (BuildInfo buildInfo : buildInfos) {
-				 if (buildInfo.getBuildNo() == buildNumber) {
-					 return buildInfo;
-				 }
-			 }
-
-			 throw new MojoExecutionException("Build info is empty!");
-		} catch (Exception e) {
-			throw new MojoExecutionException(e.getLocalizedMessage());
-		}
-	}
 }
-
-

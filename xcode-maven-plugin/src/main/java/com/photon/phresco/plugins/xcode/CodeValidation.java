@@ -42,7 +42,8 @@ public class CodeValidation extends AbstractXcodeMojo{
 	private static final String DO_NOT_CHECKIN = "/do_not_checkin";
 	private static final String TARGET = "/target";
 	private static final String report = "static-analysis-report";
-
+	private static final String PACKAGING_XCODE_WORLSAPCE = "xcode-workspace";
+	
 	/**
 	 * @parameter  
 	 */
@@ -77,9 +78,17 @@ public class CodeValidation extends AbstractXcodeMojo{
 	 */
 	private File buildDirectory;
 	
+	/**
+	 * @parameter expression="${projectType}" default-value="xcode"
+	 */
+	private String projectType;
+	
 	int exitValue = 0; 
+			
 	File reportingDir =  null;
+	
 	public void execute() throws MojoExecutionException {		
+		getLog().info("Code Validation started...");
 		try {
 			// For each target , we are creating separate folder
 			MAKE_DIR_LOC = MAKE_DIR_LOC + scheme + File.separator + "make";
@@ -87,6 +96,11 @@ public class CodeValidation extends AbstractXcodeMojo{
 			
 			reportingDir = new File(baseDir, DO_NOT_CHECKIN + File.separator + report + File.separator + scheme);
 			getLog().info("reportingDir location ..." + reportingDir.getAbsolutePath());
+			
+			//delete build dir created build
+			getLog().info("Build directory deletion ...");
+			File buildDir = new File(baseDir, SOURCE_BUILD);
+			getLog().info("Build directory loc ..." + buildDir.getCanonicalPath());
 			
 			//delete target folder, which is inside do_not_checkin folder
 			File donotCheckinTargetDir = new File(baseDir, DO_NOT_CHECKIN + TARGET);
@@ -112,9 +126,20 @@ public class CodeValidation extends AbstractXcodeMojo{
 			//specify the folder here to generate it... do not start with /
 			commands.add(MAKE_DIR_LOC);
 			commands.add("xcodebuild");
-			commands.add("-target");
+			
+			if (PACKAGING_XCODE_WORLSAPCE.equals(projectType)) {
+				commands.add("-scheme");
+			} else {
+				commands.add("-target");
+			}
 			commands.add(scheme);
-			commands.add("-project");
+			
+			if (PACKAGING_XCODE_WORLSAPCE.equals(projectType)) {
+				commands.add("-workspace");
+			} else {
+				commands.add("-project");
+			}
+			
 			commands.add(xcodeProject);
 			commands.add("build");
 			
@@ -139,7 +164,7 @@ public class CodeValidation extends AbstractXcodeMojo{
 			child.waitFor();
 			exitValue = child.exitValue();
 			getLog().info("Exit Value: " + exitValue);
-
+			
 			getLog().info("Cleaning existing files from dir to place newly generated files !!! ");
 			if (reportingDir.exists()) {
 				//clean all the file inside folder
@@ -218,7 +243,7 @@ public class CodeValidation extends AbstractXcodeMojo{
 			OutputStream fos = null;
 			StringBuffer sb = new StringBuffer();
 	        sb.append("<html>");
-	        sb.append("<body>");
+	        sb.append("<body style=\"background-color:#FFFFFF;\">");
 	        sb.append("<h1>"); 
 	        sb.append(baseDir.getName() + "- scan-build results");
 	        sb.append("</h1>");
@@ -251,6 +276,6 @@ public class CodeValidation extends AbstractXcodeMojo{
 			return false;
 		}
 		return true;
-	}
-}	
 
+	}
+}

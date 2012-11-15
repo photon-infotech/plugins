@@ -38,15 +38,11 @@ package com.photon.phresco.plugins.xcode;
 import java.io.*;
 import java.util.*;
 
-import org.apache.commons.collections.*;
 import org.apache.commons.lang.*;
 import org.apache.maven.plugin.*;
 import org.apache.maven.project.*;
 
 import com.photon.phresco.commons.model.*;
-import com.photon.phresco.exception.*;
-import com.photon.phresco.framework.*;
-import com.photon.phresco.framework.api.*;
 import com.photon.phresco.plugin.commons.*;
 import com.photon.phresco.plugins.xcode.utils.*;
 import com.photon.phresco.plugins.xcode.utils.XcodeUtil;
@@ -86,7 +82,7 @@ public class AppDeploy extends AbstractMojo implements PluginConstants {
 	 * @parameter expression="${family}" default-value="iphone" 
 	 */
 	private String family;
-
+	
 	/**
 	 * @parameter expression="${device.deploy}"
 	 */
@@ -105,7 +101,6 @@ public class AppDeploy extends AbstractMojo implements PluginConstants {
 	 * @readonly
 	 */
 	protected MavenProject project;
-
 	/**
 	 * @parameter expression="${project.basedir}" required="true"
 	 * @readonly
@@ -125,8 +120,6 @@ public class AppDeploy extends AbstractMojo implements PluginConstants {
 	private String appPath;
 	
 	private File simHomeAppLocation;
-	
-	private File buildInfoFile;
 	
 	private String home = "";
 	
@@ -162,11 +155,10 @@ public class AppDeploy extends AbstractMojo implements PluginConstants {
 		getLog().info("Build id is " + buildNumber);
 		getLog().info("Project Code " + baseDir.getName());
 		
-		BuildInfo buildInfo = getBuildInfo(Integer.parseInt(buildNumber));
+		PluginUtils pu = new PluginUtils();
+		BuildInfo buildInfo = pu.getBuildInfo(Integer.parseInt(buildNumber));
 		getLog().info("Build Name " + buildInfo);
-		
 		appPath = buildInfo.getBuildName();
-		getLog().info("Application.path = " + appPath);
 		getLog().info("triggerSimulator " + triggerSimulator);
 		getLog().info("deviceDeploy " + !deviceDeploy);
 		
@@ -176,18 +168,17 @@ public class AppDeploy extends AbstractMojo implements PluginConstants {
 			// if its simulator deploy, we can deploy in many family(ipad, iphone sim) using WaxSim
 			getLog().info("deployAppWithWaxSim started.... ");
 			deployAppWithWaxSim();
-		} else if (!deviceDeploy && !triggerSimulator) {
+		} else if (!deviceDeploy && !triggerSimulator) { 
 			// jenkins executes it.
 			// This process copies the app file and places it in simulatos applications dir.
 			getLog().info("copyAppToSimHome started.... ");
 			copyAppToSimHome();
 		}
-		
 		Runnable runnable = new Runnable() {
 			public void run() {
 
 				ProcessBuilder pb;
-				if(deviceDeploy){
+				if (deviceDeploy) {
 					pb = new ProcessBuilder("transporter_chief.rb");
 					pb.command().add(appPath);
 				} else {
@@ -222,7 +213,7 @@ public class AppDeploy extends AbstractMojo implements PluginConstants {
 
 		getLog().info("triggerSimulator " + triggerSimulator);
 		getLog().info("deviceDeploy " + deviceDeploy);
-		if (triggerSimulator || deviceDeploy) {
+		if (triggerSimulator || deviceDeploy) { // Phresco app deploy should deploy the app in both simulator and device, In jenkins, app should start running only on device deployment - Due to Pipeline issue
 			getLog().info("Triggering simulator started ");
 			Thread t = new Thread(runnable, "iPhoneSimulator");
 			t.start();
@@ -275,7 +266,7 @@ public class AppDeploy extends AbstractMojo implements PluginConstants {
 				}
 			};
 
-			getLog().error("deviceDeploy " + deviceDeploy);
+			getLog().info("deviceDeploy " + deviceDeploy);
 			Thread t = new Thread(deployRunnable, "iPhoneSimulator");
 			t.start();
 			try {
@@ -326,7 +317,7 @@ public class AppDeploy extends AbstractMojo implements PluginConstants {
 			getLog().error("couldn't copy the application " + appPath +" to "+ simHomeAppLocation);
 		}
 	}
-	
+
 	private String getAppFileName(String appPath2) {
 		if(StringUtils.isNotBlank(appPath2)){
 			if(appPath2.endsWith("app")) {
@@ -359,33 +350,4 @@ public class AppDeploy extends AbstractMojo implements PluginConstants {
 		return appPath2;
 	}
 	
-	private BuildInfo getBuildInfo(int buildNumber) throws MojoExecutionException {
-		ProjectAdministrator administrator;
-		try {
-			administrator = PhrescoFrameworkFactory.getProjectAdministrator();
-		} catch (PhrescoException e) {
-			throw new MojoExecutionException("Project administrator object creation error!");
-		}
-		buildInfoFile = new File(baseDir.getPath() + PluginConstants.BUILD_DIRECTORY + BUILD_INFO_FILE);
-		if (!buildInfoFile.exists()) {
-			throw new MojoExecutionException("Build info is not available!");
-		}
-		try {
-			List<BuildInfo> buildInfos = administrator.readBuildInfo(buildInfoFile);
-			
-			 if (CollectionUtils.isEmpty(buildInfos)) {
-				 throw new MojoExecutionException("Build info is empty!");
-			 }
-
-			 for (BuildInfo buildInfo : buildInfos) {
-				 if (buildInfo.getBuildNo() == buildNumber) {
-					 return buildInfo;
-				 }
-			 }
-
-			 throw new MojoExecutionException("Build info is empty!");
-		} catch (Exception e) {
-			throw new MojoExecutionException(e.getLocalizedMessage());
-		}
-	}
 }
