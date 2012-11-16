@@ -243,7 +243,6 @@ public class XcodeBuild extends AbstractMojo {
 	 * Execute the xcode command line utility.
 	 */
 	public void execute() throws MojoExecutionException {
-		getLog().info("This is 2.000000000000000000000000");
 		if (!xcodeCommandLine.exists()) {
 			throw new MojoExecutionException("Invalid path, invalid xcodebuild file: "
 					+ xcodeCommandLine.getAbsolutePath());
