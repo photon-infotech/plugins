@@ -30,7 +30,9 @@ public class XcodePlugin extends PhrescoBasePlugin {
 		try {
 			deploy.deploy(configuration, mavenProjectInfo, getLog());
 		} catch (MojoExecutionException e) {
+			e.printStackTrace();
 		} catch (MojoFailureException e) {
+			e.printStackTrace();
 		}
 	}
 	

@@ -3,9 +3,7 @@ package com.photon.phresco.plugins.xcode;
 import java.io.*;
 import java.util.*;
 
-import org.apache.commons.lang.*;
 import org.apache.maven.plugin.logging.*;
-import org.apache.maven.project.*;
 import org.codehaus.plexus.util.cli.*;
 
 import com.photon.phresco.exception.*;
