@@ -46,7 +46,7 @@ public class Package implements PluginConstants {
 			sb.append("-Dencrypt=" + encrypt);
 			sb.append(STR_SPACE);
 			sb.append("-Dplistfile=" + plistFile);
-			System.out.println("Command================================> " + sb.toString());
+			System.out.println("Command " + sb.toString());
 			Commandline cl = new Commandline(sb.toString());
 
 			Process pb = cl.execute();

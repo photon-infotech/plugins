@@ -3,6 +3,7 @@ package com.photon.phresco.plugins.xcode;
 import java.io.*;
 import java.util.*;
 
+import org.apache.commons.lang.*;
 import org.apache.maven.plugin.*;
 import org.apache.maven.plugin.logging.*;
 import org.codehaus.plexus.util.cli.*;
@@ -10,6 +11,10 @@ import org.codehaus.plexus.util.cli.*;
 import com.photon.phresco.exception.*;
 import com.photon.phresco.plugin.commons.*;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands.MavenCommand;
 import com.photon.phresco.plugins.util.*;
 
 public class Deploy implements PluginConstants {
@@ -25,18 +30,51 @@ public class Deploy implements PluginConstants {
 			this.log = log;
 			Map<String, String> configs = MojoUtil.getAllValues(config);
 			
-			String buildNumber = configs.get("buildNumber");
-			String family = configs.get("family");
-			String simVersion = configs.get("sdkVersion");
+			String buildNumber = configs.get(BUILD_NUMBER);
+			String family = configs.get(FAMILY);
+			String simVersion = configs.get(SIM_VERSION);
+			String deviceType = configs.get(DEVICE_TYPE);
+			
 			StringBuilder sb = new StringBuilder();
 			sb.append("mvn xcode:deploy");
-			sb.append(STR_SPACE);
-			sb.append("-DbuildNumber=" + buildNumber);
-			sb.append(STR_SPACE);
-			sb.append("-Dfamily=" + family);
-			sb.append(STR_SPACE);
-			sb.append("-Dsimulator.version=" + simVersion);
-			System.out.println("Command================================> " + sb.toString());
+			
+			if (StringUtils.isEmpty(buildNumber)) {
+				throw new MojoExecutionException("Build number is empty for deployment . ");
+			}
+			
+			if (StringUtils.isNotEmpty(deviceType)) {
+				throw new MojoExecutionException("deviceType is not specified for deployment . ");
+			}
+			
+			if (StringUtils.isNotEmpty(buildNumber)) {
+				sb.append(STR_SPACE);
+				sb.append("-DbuildNumber=" + buildNumber);
+			}
+			
+			if (StringUtils.isNotEmpty(family)) {
+				sb.append(STR_SPACE);
+				sb.append("-Dfamily=" + family);
+			}
+			
+			if (StringUtils.isNotEmpty(simVersion)) {
+				sb.append(STR_SPACE);
+				sb.append("-Dsimulator.version=" + simVersion);
+			}
+			
+			List<Parameter> parameters = config.getParameters().getParameter();
+			for (Parameter parameter : parameters) {
+				if (DEVICE_TYPE.equals(parameter.getKey())) {
+					List<MavenCommand> mavenCommands = parameter.getMavenCommands().getMavenCommand();
+					for (MavenCommand mavenCommand : mavenCommands) {
+						if (mavenCommand.getKey().equals(deviceType)) {
+							sb.append(STR_SPACE);
+							sb.append(mavenCommand.getValue());
+						}
+					}
+				}
+			}
+			
+			System.out.println("Command " + sb.toString());
 			Commandline cl = new Commandline(sb.toString());
 			Process pb = cl.execute();
 			

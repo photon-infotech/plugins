@@ -232,6 +232,9 @@ public interface PluginConstants {
 	 String BUILD_NUMBER 				= "buildNumber";
 	 String BROWSER						= "browser";
 	 String RESOLUTION					= "resolution";
+	 String DEVICE_TYPE 				= "deviceType";
+	 String SIM_VERSION 				= "sdkVersion";
+	 String FAMILY 						= "family";
 	 
 	 //Constants for Time Formatter
 	 String TIME_STAMP_FOR_BUILD_NAME 	= "dd-MMM-yyyy-HH-mm-ss";
