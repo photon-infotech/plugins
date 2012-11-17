@@ -31,7 +31,7 @@ public class RunResult {
     public void addSuite(SuiteResult suiteResult) {
         suiteResults.add(suiteResult);
     }
-
+    
     public int findTests() {
         int tests = 0;
         for (SuiteResult suiteResult : suiteResults) {

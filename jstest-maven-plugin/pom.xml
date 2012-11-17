@@ -73,6 +73,11 @@
 			<version>2.0.2</version>
 		</dependency>
 		<dependency>
+		   <groupId>org.apache.httpcomponents</groupId>
+		   <artifactId>httpclient</artifactId>
+		   <version>4.2-alpha1</version>
+		</dependency>
+		<dependency>
 			<groupId>commons-logging</groupId>
 			<artifactId>commons-logging</artifactId>
 			<version>1.1.1</version>
@@ -80,8 +85,13 @@
 		<dependency>
 			<groupId>org.seleniumhq.selenium</groupId>
 			<artifactId>selenium-java</artifactId>
-			<version>2.11.0</version>
+			<version>2.25.0</version>
 		</dependency>
+		<!-- <dependency>
+			<groupId>net.sourceforge.htmlunit</groupId>
+			<artifactId>htmlunit</artifactId>
+			<version>2.10</version>
+		</dependency>  -->
 		<dependency>
 			<groupId>org.antlr</groupId>
 			<artifactId>stringtemplate</artifactId>
@@ -97,7 +107,7 @@
 			<artifactId>jetty-util</artifactId>
 			<version>7.4.2.v20110526</version>
 		</dependency>
-		<dependency>
+		<dependency>	
 			<groupId>backport-util-concurrent</groupId>
 			<artifactId>backport-util-concurrent</artifactId>
 			<version>3.1</version>
@@ -150,6 +160,18 @@
 			<version>${powermock.version}</version>
 			<scope>test</scope>
 		</dependency>
+		
+		<dependency>
+			<groupId>modules.tech-java-webservice.files</groupId>
+			<artifactId>yuitest-coverage-report</artifactId>
+			<version>1.0.0b2</version>
+		</dependency>
+		<dependency>
+			<groupId>modules.tech-java-webservice.files</groupId>
+			<artifactId>yuitest-coverage</artifactId>
+			<version>1.0.0b2</version>
+		</dependency>
+		
 	</dependencies>
 
 	<build>

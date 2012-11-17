@@ -1,13 +1,23 @@
 package net.awired.jstest.server.handler;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.Date;
 import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import net.awired.jscoverage.result.CoverageResult;
 import net.awired.jscoverage.result.LcovWriter;
 import net.awired.jstest.common.io.FileUtilsWrapper;
@@ -16,11 +26,22 @@ import net.awired.jstest.report.MultiReport;
 import net.awired.jstest.result.RunResult;
 import net.awired.jstest.result.RunResults;
 import net.awired.jstest.result.SuiteResult;
+import net.awired.jstest.result.SuiteResults;
 import net.awired.jstest.result.TestResult;
+import net.awired.jstest.runner.TestType;
+
 import org.apache.maven.plugin.logging.Log;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.eclipse.jetty.server.Request;
+import org.json.JSONException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import com.yahoo.platform.yuitest.coverage.report.CoverageReportGenerator;
+import com.yahoo.platform.yuitest.coverage.report.CoverageReportGeneratorFactory;
+import com.yahoo.platform.yuitest.coverage.results.SummaryCoverageReport;
 
 public class ResultHandler {
 
@@ -30,10 +51,15 @@ public class ResultHandler {
     private long lastAction;
 
     private final MultiReport report;
+    private final TestType testType;
+    private File reportDir;
 
-    public ResultHandler(Log log, File reportDir) {
+    public ResultHandler(Log log, File reportDir, TestType testType) {
         this.log = log;
+        this.reportDir = reportDir;
+        System.out.println("reportDir " + reportDir);
         this.report = new MultiReport(log, reportDir);
+        this.testType = testType;
     }
 
     public synchronized void handle(String target, Request baseRequest, HttpServletRequest request,
@@ -41,6 +67,7 @@ public class ResultHandler {
         lastAction = new Date().getTime();
         ServletInputStream inputStream = request.getInputStream();
 
+        String testRunner = request.getParameter("testRunner");
         int browserId = Integer.valueOf(request.getParameter("browserId"));
         RunResult runResult = findRunResult(request, browserId);
 
@@ -50,24 +77,46 @@ public class ResultHandler {
             log.debug(testResult.toString());
             handled = true;
         } else if (target.equals("/result/suite")) {
-            SuiteResult suiteResult = mapper.readValue(inputStream, SuiteResult.class);
-            suiteResult.setRunResult(runResult);
-            runResult.addSuite(suiteResult);
-            report.reportSuite(suiteResult);
-            handled = true;
+    		SuiteResult suiteResult = mapper.readValue(inputStream, SuiteResult.class);
+    		suiteResult.setRunResult(runResult);
+    		runResult.addSuite(suiteResult);
+    		report.reportSuite(suiteResult);
+    		handled = true;
         } else if (target.equals("/result/run")) {
-            PartialRunResult runRes = mapper.readValue(inputStream, PartialRunResult.class);
-            runResult.setDuration(runRes.getDuration());
-            runResult.setCoverageResult(runRes.getCoverageResult());
-            report.reportRun(runResult);
-            handled = true;
+        	if (TestType.YUITEST.equals(testType)){
+	        	File outDir = new File(reportDir, runResult.userAgentToString() + '-' + runResult.getBrowserId());
+	        	InputStreamReader reader = new InputStreamReader(inputStream);
+				try {
+					SummaryCoverageReport fullReport = new SummaryCoverageReport(reader);
+		        	reader.close();
+		        	CoverageReportGenerator generator = CoverageReportGeneratorFactory.getGenerator("lcov", outDir.getAbsolutePath(), false);
+		            generator.generate(fullReport);
+		            CoverageResult coverageResult = new CoverageResult();
+				} catch (Exception e) {
+//					e.printStackTrace();
+				}
+	            runResult.setCoverageResult(null);
+//	            runResults.put(browserId, runResult);
+	            
+	            runResult.setDuration(1000);
+	            report.reportRun(runResult);
+	            handled = true;
+//				handled = true;
+        	} else {	
+	    		PartialRunResult runRes = mapper.readValue(inputStream, PartialRunResult.class);
+	    		runResult.setDuration(runRes.getDuration());
+	    		runResult.setCoverageResult(runRes.getCoverageResult());
+	    		report.reportRun(runResult);
+	            handled = true;
+        	}
         }
+        
         if (handled) {
             response.setStatus(HttpServletResponse.SC_OK);
             baseRequest.setHandled(true);
         }
     }
-
+    
     private RunResult findRunResult(HttpServletRequest request, int browserId) {
         RunResult runResult = runResults.get(browserId);
         if (runResult == null) {

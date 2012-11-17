@@ -36,10 +36,10 @@ public class DevMojo extends AbstractJsTestMojo {
                     buildTestResourceDirectory(), buildOverlaysResourceDirectories(),
                     new ArrayList<ResourceDirectory>());
             //TODO remove resultHandler creation we dont need it here
-            ResultHandler resultHandler = new ResultHandler(getLog(), null);
+            ResultHandler resultHandler = new ResultHandler(getLog(), null, buildTestType(resourceResolver));
             jsTestServer.startServer(new JsTestHandler(resultHandler, getLog(), resourceResolver,
                     buildAmdRunnerType(), buildTestType(resourceResolver), true, getLog().isDebugEnabled(),
-                    getAmdPreloads()));
+                    getAmdPreloads(), getTargetSourceDirectory()));
             getLog().info(String.format(INSTRUCTION_FORMAT, getDevPort(), getSourceDir(), getTestDir()));
             jsTestServer.join();
         } catch (Exception e) {

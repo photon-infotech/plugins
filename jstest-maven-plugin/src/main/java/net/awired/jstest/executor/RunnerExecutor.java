@@ -1,14 +1,21 @@
 package net.awired.jstest.executor;
 
+import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.GeneralSecurityException;
+
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.IncorrectnessListener;
 import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;
+import com.gargoylesoftware.htmlunit.WaitingRefreshHandler;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 public class RunnerExecutor {
 
@@ -37,7 +44,8 @@ public class RunnerExecutor {
         // We have extra configuration to do to the HtmlUnitDriver
         BrowserVersion htmlUnitBrowserVersion;
         try {
-            htmlUnitBrowserVersion = (BrowserVersion) BrowserVersion.class.getField("FIREFOX_3").get(
+        	
+          htmlUnitBrowserVersion = (BrowserVersion) BrowserVersion.class.getField("FIREFOX_3_6").get(
                     BrowserVersion.class);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -68,10 +76,10 @@ public class RunnerExecutor {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
+	}
 
     public void close() {
         driver.quit();
     }
-
+ 
 }

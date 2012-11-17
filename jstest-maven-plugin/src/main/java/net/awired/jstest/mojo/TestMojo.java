@@ -29,17 +29,17 @@ public class TestMojo extends AbstractJsTestMojo {
             getLog().info("Skipping JsTest");
             return;
         }
-
+        
         JsTestServer jsTestServer = new JsTestServer(getLog(), getTestPort(), isTestPortFindFree());
         RunnerExecutor executor = null;
         try {
             ResourceResolver resourceResolver = new ResourceResolver(getLog(), buildCurrentSrcDir(false),
                     buildTestResourceDirectory(), buildOverlaysResourceDirectories(),
                     new ArrayList<ResourceDirectory>());
-            ResultHandler resultHandler = new ResultHandler(getLog(), getPreparedReportDir());
+            ResultHandler resultHandler = new ResultHandler(getLog(), getPreparedReportDir(), buildTestType(resourceResolver));
             jsTestServer.startServer(new JsTestHandler(resultHandler, getLog(), resourceResolver,
                     buildAmdRunnerType(), buildTestType(resourceResolver), false, getLog().isDebugEnabled(),
-                    getAmdPreloads()));
+                    getAmdPreloads(), getTargetSourceDirectory()));
 
             if (isEmulator()) {
                 executor = new RunnerExecutor();
@@ -47,7 +47,7 @@ public class TestMojo extends AbstractJsTestMojo {
             }
 
             // let browsers detect that server is back
-            Thread.sleep(1000);
+            Thread.sleep(5000);
 
             if (!resultHandler.waitAllResult(10000, 1000)) {
                 throw new MojoFailureException("Do not receive all test results from clients");

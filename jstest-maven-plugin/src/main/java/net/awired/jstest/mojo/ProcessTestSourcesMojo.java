@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+
 import net.awired.jscoverage.instrumentation.JsInstrumentedSource;
 import net.awired.jscoverage.instrumentation.JsInstrumentor;
 import net.awired.jstest.common.io.DirectoryCopier;
@@ -12,8 +13,12 @@ import net.awired.jstest.mojo.inherite.AbstractJsTestMojo;
 import net.awired.jstest.resource.ResourceDirectory;
 import net.awired.jstest.resource.ResourceDirectoryScanner;
 import net.awired.jstest.runner.RunnerType;
+
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+
+import com.yahoo.platform.yuitest.coverage.DirectoryInstrumenter;
+
 
 /**
  * @goal processTestSources
@@ -48,6 +53,18 @@ public class ProcessTestSourcesMojo extends AbstractJsTestMojo {
             ResourceDirectory sourceScriptDirectory = buildSrcResourceDirectory();
             List<String> scan = scriptDirScanner.scan(sourceScriptDirectory);
             RunnerType runnerType = buildAmdRunnerType();
+            if (runnerType.equals(RunnerType.YUI)) {
+        		DirectoryInstrumenter.setVerbose(false);
+                //in this case fileArgs[0] and outputLocation are directories
+                try {
+                	getInstrumentedDirectory().mkdirs();
+					DirectoryInstrumenter.instrument(getSourceDir().getAbsolutePath(), getTargetSourceDirectory().getAbsolutePath());
+				} catch (FileNotFoundException e) {
+					throw new IllegalStateException("cannot find source code to instrument", e);
+				} catch (Exception e) {
+					throw new IllegalStateException("cannot instrument source code", e);
+				} 
+            }
             for (String file : scan) {
                 if (!file.toLowerCase().endsWith(".js")) {
                     getLog().debug("Skip instrumentation of file " + file + " as its not a .js file");
@@ -59,11 +76,15 @@ public class ProcessTestSourcesMojo extends AbstractJsTestMojo {
                 }
 
                 try {
-                    JsInstrumentedSource instrument = jsInstrumentor.instrument(file,
-                            fileUtilsWrapper.readFileToString(new File(sourceScriptDirectory.getDirectory(), file)));
-                    File instrumentedfile = new File(getInstrumentedDirectory(), file);
-                    fileUtilsWrapper.forceMkdir(instrumentedfile.getParentFile());
-                    fileUtilsWrapper.writeStringToFile(instrumentedfile, instrument.getIntrumentedSource(), "UTF-8");
+                	JsInstrumentedSource instrument = jsInstrumentor.instrument(file,
+                			fileUtilsWrapper.readFileToString(new File(sourceScriptDirectory.getDirectory(), file)));
+
+                	File instrumentedfile = new File(getInstrumentedDirectory(), file);
+
+                	fileUtilsWrapper.forceMkdir(instrumentedfile.getParentFile());
+
+                	fileUtilsWrapper.writeStringToFile(instrumentedfile, instrument.getIntrumentedSource(), "UTF-8");
+
                 } catch (FileNotFoundException e) {
                     throw new IllegalStateException("cannot find source code to instrument", e);
                 } catch (Exception e) {
@@ -72,5 +93,5 @@ public class ProcessTestSourcesMojo extends AbstractJsTestMojo {
             }
         }
     }
-
+    
 }

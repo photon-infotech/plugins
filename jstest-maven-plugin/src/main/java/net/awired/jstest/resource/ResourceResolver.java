@@ -13,6 +13,7 @@ import com.google.common.collect.Maps;
 
 public class ResourceResolver {
 
+	public static final String SRC_YUI_RESOURCE_PREFIX = "yui";
     public static final String SRC_RESOURCE_PREFIX = "/src/";
     public static final String TEST_RESOURCE_PREFIX = "/test/";
 
@@ -25,6 +26,8 @@ public class ResourceResolver {
     private final List<ResourceDirectory> preloadOverlayDirs;
 
     private final Map<String, File> resources = new LinkedHashMap<String, File>();
+    
+    private final Map<String, File> srcMap = new LinkedHashMap<String, File>();
 
     public ResourceResolver(Log log, ResourceDirectory source, ResourceDirectory test,
             List<ResourceDirectory> overlays, List<ResourceDirectory> preloadOverlayDirs) {
@@ -42,12 +45,27 @@ public class ResourceResolver {
                     overlayPreload.getDirectory(), false);
         }
         registerResourcesToMap(TEST_RESOURCE_PREFIX, directoryScanner.scan(test), test.getDirectory(), true);
-        registerResourcesToMap(SRC_RESOURCE_PREFIX, directoryScanner.scan(source), source.getDirectory(), true);
+        registerSrcResourcesToMap(SRC_RESOURCE_PREFIX, directoryScanner.scan(source), source.getDirectory(), true);
 
         if (log.isDebugEnabled()) {
             log.debug("Resources resolved by the server : ");
             for (String resourcePath : resources.keySet()) {
                 log.debug("* " + resourcePath + " to " + resources.get(resourcePath));
+            }
+        }
+    }
+    
+    private void registerSrcResourcesToMap(String prefix, List<String> founds, File path, boolean logOnConflict) {
+    	for (String found : founds) {
+            File fullPath = new File(path, found);
+            File alreadyRegistered = resources.get(found);
+            if (alreadyRegistered != null) {
+                log.warn("Resource conflics for : " + found + ". Found in " + alreadyRegistered + " and in "
+                        + fullPath);
+            } else {
+                String foundWithSlashes = found.replaceAll("\\\\", "/");
+                resources.put(prefix + foundWithSlashes, fullPath);
+                srcMap.put(prefix + foundWithSlashes, fullPath);
             }
         }
     }
@@ -87,11 +105,29 @@ public class ResourceResolver {
         }
     }
 
+    public Map<String, File> FilterSourcesKeysAlone() {
+    	return Maps.filterKeys(srcMap, new Predicate<String>() {
+            @Override
+            public boolean apply(String input) {
+                return input.startsWith(SRC_RESOURCE_PREFIX);
+            }
+        });
+    }
+    
     public Map<String, File> FilterSourcesKeys() {
         return Maps.filterKeys(resources, new Predicate<String>() {
             @Override
             public boolean apply(String input) {
                 return input.startsWith(SRC_RESOURCE_PREFIX);
+            }
+        });
+    }
+    
+    public Map<String, File> FilterNonYUISourcesKeys() {
+        return Maps.filterKeys(resources, new Predicate<String>() {
+            @Override
+            public boolean apply(String input) {
+                return input.startsWith(SRC_RESOURCE_PREFIX) && !input.contains(SRC_YUI_RESOURCE_PREFIX);
             }
         });
     }

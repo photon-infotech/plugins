@@ -50,5 +50,38 @@ public class ResourceHandler {
             }
         }
     }
-
+    
+    public void yuiHandler(String target, String instrumentedSrcDir, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
+    		throws IOException, ServletException {
+    	
+    	int srcIndex = target.indexOf("/src");
+    	String filePath = instrumentedSrcDir + target.substring(srcIndex + 4);
+    	File file = new File(filePath);
+    	if (!file.exists()) {
+    		file = resourceResolver.getResource(target);
+    	}
+		if (file != null) {
+		    log.debug("Serve resource : " + target + " to target file :" + file);
+		    String contentType = "text/html";
+		    if (target.endsWith(".js")) {
+		        contentType = "application/javascript";
+		    } else if (target.endsWith(".css")) {
+		        contentType = "text/css";
+		    } else if (target.endsWith(".png")) {
+		        contentType = " image/png";
+		    } else if (target.endsWith(".gif")) {
+		        contentType = " image/gif";
+		    }
+		    response.setContentType(contentType + ";charset=utf-8");
+		    response.setStatus(HttpServletResponse.SC_OK);
+		    baseRequest.setHandled(true);
+		    FileInputStream fileInputStream = null;
+		    try {
+		        fileInputStream = new FileInputStream(file);
+		        ByteStreams.copy(fileInputStream, response.getOutputStream());
+		    } finally {
+		        Closeables.closeQuietly(fileInputStream);
+		    }
+		}
+	}
 }
