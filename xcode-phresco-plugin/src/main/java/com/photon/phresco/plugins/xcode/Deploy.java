@@ -37,12 +37,13 @@ public class Deploy implements PluginConstants {
 			
 			StringBuilder sb = new StringBuilder();
 			sb.append("mvn xcode:deploy");
-			
 			if (StringUtils.isEmpty(buildNumber)) {
+				System.out.println("Build number is empty for deployment . ");
 				throw new MojoExecutionException("Build number is empty for deployment . ");
 			}
 			
-			if (StringUtils.isNotEmpty(deviceType)) {
+			if (StringUtils.isEmpty(deviceType)) {
+				System.out.println("deviceType is not specified for deployment . ");
 				throw new MojoExecutionException("deviceType is not specified for deployment . ");
 			}
 			
@@ -84,6 +85,7 @@ public class Deploy implements PluginConstants {
 				System.out.write(singleByte);
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new MojoExecutionException("Deployment failed ", e);
 		}
 	}
