@@ -62,7 +62,7 @@ public class UnitTest implements PluginConstants {
 				}
 			}
 		}
-		System.out.println("UnitTests Command " + sb.toString());
+		System.out.println("UnitTest Command " + sb.toString());
 		Utility.executeStreamconsumer(sb.toString());
 	}
 }
