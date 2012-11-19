@@ -3,6 +3,8 @@ package com.photon.phresco.plugins.xcode;
 import java.io.*;
 import java.util.*;
 
+import org.apache.commons.lang.*;
+import org.apache.maven.plugin.*;
 import org.apache.maven.plugin.logging.*;
 import org.codehaus.plexus.util.cli.*;
 
@@ -25,27 +27,51 @@ public class Package implements PluginConstants {
 			Map<String, String> configs = MojoUtil.getAllValues(config);
 			environmentName = configs.get(ENVIRONMENT_NAME);
 			String sdk = configs.get("sdk");
-			String targetName = configs.get("target");
+			String target = configs.get("target");
 			String configuration = configs.get("mode");
 			String encrypt = configs.get("encrypt");
 			String plistFile = configs.get("plistFile");
 			String projectType = configs.get("projectType");
+			
+			if (StringUtils.isEmpty(environmentName)) {
+				System.out.println("Environment Name is empty . ");
+				throw new PhrescoException("Environment Name is empty . ");
+			}
+			
+			if (StringUtils.isEmpty(sdk)) {
+				System.out.println("SDK is empty . ");
+				throw new PhrescoException("SDK is empty . ");
+			}
+			
+			if (StringUtils.isEmpty(target)) {
+				System.out.println("Target is empty for deployment . ");
+				throw new PhrescoException("Target is empty for deployment .");
+			}
+			
 			StringBuilder sb = new StringBuilder();
 			sb.append("mvn xcode:xcodebuild");
+			
 			sb.append(STR_SPACE);
 			sb.append("-DenvironmentName=" + environmentName);
+			
 			sb.append(STR_SPACE);
 			sb.append("-DprojectType=" + projectType);
+			
 			sb.append(STR_SPACE);
 			sb.append("-Dsdk=" + sdk);
+			
 			sb.append(STR_SPACE);
-			sb.append("-DtargetName=" + targetName);
+			sb.append("-DtargetName=" + target);
+			
 			sb.append(STR_SPACE);
 			sb.append("-Dconfiguration=" + configuration);
+			
 			sb.append(STR_SPACE);
 			sb.append("-Dencrypt=" + encrypt);
+			
 			sb.append(STR_SPACE);
 			sb.append("-Dplistfile=" + plistFile);
+			
 			System.out.println("Command " + sb.toString());
 			Commandline cl = new Commandline(sb.toString());
 
@@ -58,9 +84,13 @@ public class Package implements PluginConstants {
 				System.out.write(singleByte);
 			}
 		} catch (CommandLineException e) {
+			System.out.println("Packaging failed ");
 			e.printStackTrace();
+			throw new PhrescoException(e);
 		} catch (IOException e) {
+			System.out.println("Packaging failed ");
 			e.printStackTrace();
+			throw new PhrescoException(e);
 		}
 
 	}

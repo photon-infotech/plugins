@@ -1,12 +1,10 @@
 package com.photon.phresco.plugins.xcode;
 
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugin.logging.*;
 
-import com.photon.phresco.exception.PhrescoException;
-import com.photon.phresco.plugin.commons.MavenProjectInfo;
-import com.photon.phresco.plugins.PhrescoBasePlugin;
+import com.photon.phresco.exception.*;
+import com.photon.phresco.plugin.commons.*;
+import com.photon.phresco.plugins.*;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 
 public class XcodePlugin extends PhrescoBasePlugin {
@@ -27,13 +25,7 @@ public class XcodePlugin extends PhrescoBasePlugin {
 	public void deploy(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		Deploy deploy = new Deploy();
-		try {
-			deploy.deploy(configuration, mavenProjectInfo, getLog());
-		} catch (MojoExecutionException e) {
-			e.printStackTrace();
-		} catch (MojoFailureException e) {
-			e.printStackTrace();
-		}
+		deploy.deploy(configuration, mavenProjectInfo, getLog());
 	}
 	
 	@Override

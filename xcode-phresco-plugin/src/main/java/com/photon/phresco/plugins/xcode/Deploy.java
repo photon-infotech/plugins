@@ -24,7 +24,7 @@ public class Deploy implements PluginConstants {
 	 * Execute the xcode command line utility for iphone deployment.
 	 * @throws PhrescoException 
 	 */
-	public void deploy(Configuration config, MavenProjectInfo mavenProjectInfo, final Log log) throws MojoExecutionException, MojoFailureException {
+	public void deploy(Configuration config, MavenProjectInfo mavenProjectInfo, final Log log) throws PhrescoException {
 		try {
 			System.out.println("Deployment started ");
 			this.log = log;
@@ -35,17 +35,18 @@ public class Deploy implements PluginConstants {
 			String simVersion = configs.get(SIM_VERSION);
 			String deviceType = configs.get(DEVICE_TYPE);
 			
-			StringBuilder sb = new StringBuilder();
-			sb.append("mvn xcode:deploy");
 			if (StringUtils.isEmpty(buildNumber)) {
 				System.out.println("Build number is empty for deployment . ");
-				throw new MojoExecutionException("Build number is empty for deployment . ");
+				throw new PhrescoException("Build number is empty for deployment . ");
 			}
 			
 			if (StringUtils.isEmpty(deviceType)) {
 				System.out.println("deviceType is not specified for deployment . ");
-				throw new MojoExecutionException("deviceType is not specified for deployment . ");
+				throw new PhrescoException("deviceType is not specified for deployment . ");
 			}
+			
+			StringBuilder sb = new StringBuilder();
+			sb.append("mvn xcode:deploy");
 			
 			if (StringUtils.isNotEmpty(buildNumber)) {
 				sb.append(STR_SPACE);
@@ -86,7 +87,7 @@ public class Deploy implements PluginConstants {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new MojoExecutionException("Deployment failed ", e);
+			throw new PhrescoException(e);
 		}
 	}
 

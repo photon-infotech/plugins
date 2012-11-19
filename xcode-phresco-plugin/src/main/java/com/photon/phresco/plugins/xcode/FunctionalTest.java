@@ -5,6 +5,6 @@ import com.photon.phresco.plugins.model.Mojos.Mojo.*;
 
 public class FunctionalTest implements PluginConstants {
 	public void functionalTest(Configuration configuration) {
-		System.out.println("Final Functional Tests Command ============>  Yet to handle...");
+		System.out.println("Functional Tests Command ============>  Yet to handle...");
 	}
 }
