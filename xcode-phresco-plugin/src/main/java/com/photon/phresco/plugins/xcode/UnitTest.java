@@ -14,7 +14,7 @@ public class UnitTest implements PluginConstants {
 
 	public void unitTest(Configuration configuration) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("mvn xcode:xcodebuild -DskipTests=false -Dunittest=true");
+		sb.append("mvn xcode:xcodebuild -Dunittest=true");
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
 		String sdkValue = configs.get("sdk");
 		String targetValue = configs.get("target");
