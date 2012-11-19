@@ -13,7 +13,7 @@ import com.photon.phresco.util.*;
 public class FunctionalTest implements PluginConstants {
 	public void functionalTest(Configuration config) throws PhrescoException {
 		Map<String, String> configs = MojoUtil.getAllValues(config);
-		String buildNumber = configs.get("buildNumber");
+		String buildNumber = configs.get(BUILD_NUMBER);
 		
 		if (StringUtils.isEmpty(buildNumber)) {
 			System.out.println("Build Number is empty . ");
