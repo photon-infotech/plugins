@@ -46,7 +46,7 @@ public class Deploy implements PluginConstants {
 			}
 			
 			StringBuilder sb = new StringBuilder();
-			sb.append("mvn xcode:deploy");
+			sb.append(XCODE_DEPLOY_COMMAND);
 			
 			if (StringUtils.isNotEmpty(buildNumber)) {
 				sb.append(STR_SPACE);
@@ -86,7 +86,6 @@ public class Deploy implements PluginConstants {
 				System.out.write(singleByte);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw new PhrescoException(e);
 		}
 	}

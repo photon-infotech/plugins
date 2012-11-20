@@ -49,7 +49,7 @@ public class Package implements PluginConstants {
 			}
 			
 			StringBuilder sb = new StringBuilder();
-			sb.append("mvn xcode:xcodebuild");
+			sb.append(XCODE_BUILD_COMMAND);
 			
 			sb.append(STR_SPACE);
 			sb.append("-DenvironmentName=" + environmentName);
@@ -80,7 +80,6 @@ public class Package implements PluginConstants {
 			InputStream is = new BufferedInputStream(pb.getInputStream());
 			int singleByte = 0;
 			while ((singleByte = is.read()) != -1) {
-				//output.write(buffer, 0, bytesRead);
 				System.out.write(singleByte);
 			}
 		} catch (CommandLineException e) {

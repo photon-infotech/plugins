@@ -44,6 +44,8 @@ public interface PluginConstants {
      String POM_PROP_KEY_SOURCE_DIR     = "phresco.source.resource.dir";
      String BUILD_XML_FILE				= "build.xml";
      String LOAD_TEST_CONFIG_FILE		= "phresco-env-config.csv";
+     String HYPHEN_D					= "-D";
+     String EQUAL						= "=";
 	
 	//Constants for Maven commands
      String MVN_CMD 					= "mvn";
@@ -215,6 +217,17 @@ public interface PluginConstants {
 	 //Xcode plugin constants
 	 String WAXSIM_HOME 				= "WAXSIM_HOME";
 	 String XCODE_CODE_VALIDATOR_COMMAND= "mvn xcode:codevalidate";
+	 String XCODE_BUILD_COMMAND			= "mvn xcode:xcodebuild";
+	 String XCODE_DEPLOY_COMMAND		= "mvn xcode:deploy";
+	 String TARGET						= "target";
+	 String PROJECT_TYPE				= "projectType";
+	 String SCHEME						= "scheme";
+	 String SIMULATOR_VERSION			= "simulator.version";
+	 String SDK							= "sdk";
+	 String TARGET_NAME					= "targetName";
+	 String CONFIGURATION				= "configuration";
+	 String ENCRYPT						= "encrypt";
+	 String PLIST_FILE					= "plistfile";
 	 
 	 //Constants for Android
 	 

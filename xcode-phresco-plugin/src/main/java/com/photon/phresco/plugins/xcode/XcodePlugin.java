@@ -31,7 +31,7 @@ public class XcodePlugin extends PhrescoBasePlugin {
 	@Override
 	public void validate(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		ClangCodeValidator validator = new ClangCodeValidator();
-		validator.validate(configuration);
+		validator.validate(configuration, mavenProjectInfo, getLog());
 	}
 	
 	@Override
