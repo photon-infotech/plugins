@@ -38,6 +38,17 @@ import org.apache.maven.plugin.MojoExecutionException;
 
 public class CodeValidation extends AbstractXcodeMojo{
 
+	private static final String MAKE = "make";
+	private static final String O = "-o";
+	private static final String XCODEBUILD = "xcodebuild";
+	private static final String SCHEME = "-scheme";
+	private static final String PROJECT_TARGET = "-target";
+	private static final String WORKSPACE = "-workspace";
+	private static final String PROJECT = "-project";
+	private static final String DEBUG = "Debug";
+	private static final String SDK = "-sdk";
+	private static final String BUILD = "build";
+	private static final String CONFIGURATION = "-configuration";
 	private static final String SOURCE_BUILD = "/source/build";
 	private static String MAKE_DIR_LOC = "do_not_checkin/static-analysis-report/";
 	private static final String DO_NOT_CHECKIN = "/do_not_checkin";
@@ -97,7 +108,7 @@ public class CodeValidation extends AbstractXcodeMojo{
 		getLog().info("Code Validation started...");
 		try {
 			// For each target , we are creating separate folder
-			MAKE_DIR_LOC = MAKE_DIR_LOC + scheme + File.separator + "make";
+			MAKE_DIR_LOC = MAKE_DIR_LOC + scheme + File.separator + MAKE;
 			getLog().info("make dir location ..." + MAKE_DIR_LOC);
 			
 			reportingDir = new File(baseDir, DO_NOT_CHECKIN + File.separator + report + File.separator + scheme);
@@ -128,32 +139,35 @@ public class CodeValidation extends AbstractXcodeMojo{
 
 			List<String> commands = pb.command();
 
-			commands.add("-o");
+			commands.add(O);
 			//specify the folder here to generate it... do not start with /
 			commands.add(MAKE_DIR_LOC);
-			commands.add("xcodebuild");
+			commands.add(XCODEBUILD);
 			
 			if (PACKAGING_XCODE_WORLSAPCE.equals(projectType)) {
-				commands.add("-scheme");
+				commands.add(SCHEME);
 			} else {
-				commands.add("-target");
+				commands.add(PROJECT_TARGET);
 			}
 			commands.add(scheme);
 			
 			if (PACKAGING_XCODE_WORLSAPCE.equals(projectType)) {
-				commands.add("-workspace");
+				commands.add(WORKSPACE);
 			} else {
-				commands.add("-project");
+				commands.add(PROJECT);
 			}
 			commands.add(xcodeProject);
 			
+			commands.add(CONFIGURATION);
+			commands.add(DEBUG);
+			
 //			sdk specification
 			if (StringUtils.isNotEmpty(sdk)) {
-				commands.add("-sdk");
+				commands.add(SDK);
 				commands.add(sdk);
 			}
 			
-			commands.add("build");
+			commands.add(BUILD);
 			
 			commands.add("OBJROOT=" + buildDirectory);
 			commands.add("SYMROOT=" + buildDirectory);
