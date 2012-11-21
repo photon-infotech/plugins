@@ -31,6 +31,7 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Type;
 import java.net.InetAddress;
@@ -39,6 +40,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -459,31 +462,11 @@ public class PluginUtils {
 			}
 		}
 	 
-	public void updateHubConfigInfo(File baseDir, String funcDir, Integer port, Integer newSessionTimeout, String servlets,
-			String prioritizer, String capabilityMatcher, boolean throwOnCapabilityNotPresent, Integer nodePolling,
-			Integer cleanUpCycle, Integer timeout, Integer browserTimeout, Integer maxSession)
-			throws PhrescoException {
+	public void updateHubConfigInfo(File baseDir, String funcDir, HubConfiguration hubConfig)	throws PhrescoException {
 		BufferedWriter out = null;
 		FileWriter fileWriter = null;
 		try {
 			File hubConfigFile = new File(baseDir + funcDir + File.separator + "hubconfig.json");
-			HubConfiguration hubConfig = new HubConfiguration();
-			InetAddress thisIp = InetAddress.getLocalHost();
-			hubConfig.setHost(thisIp.getHostAddress());
-			hubConfig.setPort(port);
-			hubConfig.setNewSessionWaitTimeout(newSessionTimeout);
-			hubConfig.setServlets(servlets);
-			if (StringUtils.isNotEmpty(prioritizer)) {
-				hubConfig.setPrioritizer(prioritizer);
-			}
-			hubConfig.setCapabilityMatcher(capabilityMatcher);
-			hubConfig.setThrowOnCapabilityNotPresent(throwOnCapabilityNotPresent);
-			hubConfig.setNodePolling(nodePolling);
-			hubConfig.setCleanUpCycle(cleanUpCycle);
-			hubConfig.setTimeout(timeout);
-			hubConfig.setBrowserTimeout(browserTimeout);
-			hubConfig.setMaxSession(maxSession);
-
 			Gson gson = new Gson();
 			String infoJSON = gson.toJson(hubConfig);
 			fileWriter = new FileWriter(hubConfigFile);
@@ -496,6 +479,69 @@ public class PluginUtils {
 		} finally {
 			Utility.closeWriter(out);
 			Utility.closeStream(fileWriter);
+		}
+	}
+
+	public void updateNodeConfigInfo(File baseDir, String funcDir, String hubHost, Integer maxSession,
+			String seleniumProtocol, Integer nodeport, String host, boolean register, Integer registerCycle,
+			Integer hubPort, String proxy, String browserInfo) throws PhrescoException {
+		BufferedWriter out = null;
+		FileWriter fileWriter = null;
+		try {
+			File hubConfigFile = new File(baseDir + funcDir + File.separator + "nodeconfig.json");
+			NodeConfiguration nodeConfiguration = new NodeConfiguration();
+			NodeCapability nodeCapability = new NodeCapability();
+			StringReader reader = new StringReader(browserInfo);
+			Properties props = new Properties();
+			props.load(reader); // properties read from the reader 
+			Set<String> propertyNames = props.stringPropertyNames();
+			for (String key : propertyNames) {
+				nodeCapability.setBrowserName(key);
+				nodeCapability.setMaxInstances(Integer.parseInt(props.getProperty(key)));
+				nodeCapability.setSeleniumProtocol(seleniumProtocol);
+			}
+			nodeConfiguration.setNodeCapability(Collections.singletonList(nodeCapability));
+
+			NodeConfig nodeConfig = new NodeConfig();
+			nodeConfig.setProxy(proxy);
+			nodeConfig.setMaxSession(maxSession);
+			nodeConfig.setPort(nodeport);
+			nodeConfig.setHost(host);
+			nodeConfig.setRegister(register);
+			nodeConfig.setRegisterCycle(registerCycle);
+			nodeConfig.setHubPort(hubPort);
+			nodeConfig.setHubHost(hubHost);
+			nodeConfiguration.setNodeConfig(nodeConfig);
+
+			Gson gson = new Gson();
+			String infoJSON = gson.toJson(nodeConfiguration);
+			fileWriter = new FileWriter(hubConfigFile);
+			out = new BufferedWriter(fileWriter);
+			out.write(infoJSON);
+		} catch (IOException e) {
+			throw new PhrescoException(e);
+		} finally {
+			Utility.closeWriter(out);
+			Utility.closeStream(fileWriter);
+		}
+	}
+
+	public void startNode(File baseDir) throws PhrescoException {
+		FileOutputStream fos = null;
+		try {
+			File LogDir = new File(baseDir + File.separator + "do_not_checkin/log");
+			if (!LogDir.exists()) {
+				LogDir.mkdirs();
+			}
+			File logFile  = new File(LogDir + "/node.log");
+			StringBuilder sb = new StringBuilder();
+			sb.append("java -Dwebdriver.chrome.driver=test/functional/chromedriver/chromedriver.exe");
+			sb.append(" -jar test/functional/lib/selenium-server-standalone-2.25.0.jar");
+			sb.append(" -role node -nodeConfig test/functional/nodeconfig.json");
+			fos = new FileOutputStream(logFile, false);
+			Utility.executeStreamconsumer(sb.toString(), fos);
+		} catch (FileNotFoundException e) {
+			throw new PhrescoException(e);
 		}
 	}
 	

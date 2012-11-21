@@ -28,7 +28,7 @@ public interface PhrescoPlugin {
     
     void startNode(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
-    void stopNode(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
+    void stopNode(MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
     void runLoadTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     

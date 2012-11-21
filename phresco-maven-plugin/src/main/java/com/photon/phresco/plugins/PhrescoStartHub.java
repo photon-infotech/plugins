@@ -41,8 +41,8 @@ public class PhrescoStartHub extends PhrescoAbstractMojo {
 	public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().info(baseDir.getPath());
         try {
-            PhrescoPlugin plugin = getPlugin(getPluginName(baseDir, Constants.PHASE_START_HUB));
-            plugin.startHub(getConfiguration(baseDir, Constants.PHASE_START_HUB), getMavenProjectInfo(project));
+        	PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());
+			plugin.startHub(getConfiguration(baseDir, Constants.PHASE_START_HUB),getMavenProjectInfo(project));
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }

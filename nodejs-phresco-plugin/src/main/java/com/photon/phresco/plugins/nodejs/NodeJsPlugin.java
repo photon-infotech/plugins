@@ -30,16 +30,4 @@ public class NodeJsPlugin extends PhrescoBasePlugin {
 		Stop stop = new Stop();
 		stop.stop(mavenProjectInfo, log);
 	}
-	
-	@Override
-    public void startHub(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		StartHub startHub = new StartHub();
-		startHub.startHub(configuration, mavenProjectInfo, getLog());
-    }
-
-	@Override
-    public void startNode(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		StartNode startNode = new StartNode();
-		startNode.startNode(configuration, mavenProjectInfo, getLog());
-    }
 }

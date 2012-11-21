@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +44,7 @@ import com.photon.phresco.api.ConfigManager;
 import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.impl.ConfigManagerImpl;
+import com.photon.phresco.plugin.commons.HubConfiguration;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
@@ -317,7 +320,51 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 
 	@Override
 	public void startHub(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		// TODO Auto-generated method stub
+		System.out.println("phresco base Plugin execution........");
+		File baseDir = mavenProjectInfo.getBaseDir();
+		MavenProject project = mavenProjectInfo.getProject();
+		Map<String, String> configs = MojoUtil.getAllValues(configuration);
+		Integer port = Integer.parseInt(configs.get("port"));
+		Integer newSessionTimeout = Integer.parseInt(configs.get("newSessionWaitTimeout"));
+		String servlets = configs.get("servlets");
+		String prioritizer = configs.get("prioritizer");
+		String capabilityMatcher = configs.get("capabilityMatcher");
+		boolean throwOnCapabilityNotPresent = Boolean.parseBoolean(configs.get("throwOnCapabilityNotPresent"));
+		Integer nodePolling = Integer.parseInt(configs.get("nodePolling"));
+		Integer cleanUpCycle = Integer.parseInt(configs.get("cleanUpCycle"));
+		Integer timeout = Integer.parseInt(configs.get("timeout"));
+		Integer browserTimeout = Integer.parseInt(configs.get("browserTimeout"));
+		Integer maxSession = Integer.parseInt(configs.get("maxSession"));
+		
+		try {
+			HubConfiguration hubConfig = new HubConfiguration();
+			InetAddress thisIp = InetAddress.getLocalHost();
+			hubConfig.setHost(thisIp.getHostAddress());
+			hubConfig.setPort(port);
+			hubConfig.setNewSessionWaitTimeout(newSessionTimeout);
+			hubConfig.setServlets(servlets);
+			if (StringUtils.isNotEmpty(prioritizer)) {
+				hubConfig.setPrioritizer(prioritizer);
+			}
+			hubConfig.setCapabilityMatcher(capabilityMatcher);
+			hubConfig.setThrowOnCapabilityNotPresent(throwOnCapabilityNotPresent);
+			hubConfig.setNodePolling(nodePolling);
+			hubConfig.setCleanUpCycle(cleanUpCycle);
+			hubConfig.setTimeout(timeout);
+			hubConfig.setBrowserTimeout(browserTimeout);
+			hubConfig.setMaxSession(maxSession);
+			File pomFile = project.getFile();
+			PomProcessor processor = new PomProcessor(pomFile);
+			String funcDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
+			PluginUtils plugniutil = new PluginUtils();
+			plugniutil.updateHubConfigInfo(baseDir, funcDir, hubConfig);
+			log.info("Starting the Hub...");
+			plugniutil.startHub(baseDir);
+		} catch (PhrescoPomException e) {
+			throw new PhrescoException(e);
+		} catch (UnknownHostException e) {
+			throw new PhrescoException(e);
+		}
 		
 	}
 
@@ -345,7 +392,7 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 	}
 
 	@Override
-	public void stopNode(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+	public void stopNode(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		// TODO Auto-generated method stub
 		
 	}

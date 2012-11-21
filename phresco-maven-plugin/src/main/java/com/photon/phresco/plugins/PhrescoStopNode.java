@@ -8,7 +8,6 @@ import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
-import com.photon.phresco.util.Constants;
 
 /**
  * Goal which deploys the PHP project
@@ -41,8 +40,8 @@ public class PhrescoStopNode extends PhrescoAbstractMojo {
 	public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().info(baseDir.getPath());
         try {
-            PhrescoPlugin plugin = getPlugin(getPluginName(baseDir, Constants.PHASE_RUNGAINST_SRC_STOP));
-            plugin.stopNode(getConfiguration(baseDir, Constants.PHASE_RUNGAINST_SRC_STOP), getMavenProjectInfo(project));
+        	PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());
+			plugin.stopNode(getMavenProjectInfo(project));
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }

@@ -41,7 +41,7 @@ public class PhrescoStartNode extends PhrescoAbstractMojo {
 	public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().info(baseDir.getPath());
         try {
-            PhrescoPlugin plugin = getPlugin(getPluginName(baseDir, Constants.PHASE_START_NODE));
+        	PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());
             plugin.startNode(getConfiguration(baseDir, Constants.PHASE_START_NODE), getMavenProjectInfo(project));
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);
