@@ -7,7 +7,7 @@ import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugins.PhrescoBasePlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 
-public class WordPressPlugin extends PhrescoBasePlugin{
+public class WordPressPlugin extends PhrescoBasePlugin {
 
 	public WordPressPlugin(Log log) {
 		super(log);
@@ -26,5 +26,16 @@ public class WordPressPlugin extends PhrescoBasePlugin{
 		Deploy deploy = new Deploy();
 		deploy.deploy(configuration, mavenProjectInfo, getLog());
 	}
+	
+	@Override
+    public void startHub(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		StartHub startHub = new StartHub();
+		startHub.startHub(configuration, mavenProjectInfo, getLog());
+    }
 
+	@Override
+    public void startNode(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		StartNode startNode = new StartNode();
+		startNode.startNode(configuration, mavenProjectInfo, getLog());
+    }
 }

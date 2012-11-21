@@ -30,10 +30,8 @@ import com.photon.phresco.plugin.commons.PluginConstants;
 
 public class Stop implements PluginConstants {
 
-	private Log log;
 
 	public void stop(MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
-		this.log = log;
 		try {
 			stopNodeJS();
 			log.info("Server Stopped Successfully...");

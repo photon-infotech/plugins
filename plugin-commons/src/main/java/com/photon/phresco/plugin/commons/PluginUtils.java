@@ -33,6 +33,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.lang.reflect.Type;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -66,6 +68,7 @@ import org.xml.sax.SAXException;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
 import com.photon.phresco.commons.FrameworkConstants;
 import com.photon.phresco.commons.model.BuildInfo;
 import com.photon.phresco.configuration.ConfigReader;
@@ -455,5 +458,143 @@ public class PluginUtils {
 				throw new PhrescoException(e);
 			}
 		}
+	 
+	public void updateHubConfigInfo(File baseDir, String funcDir, Integer port, Integer newSessionTimeout, String servlets,
+			String prioritizer, String capabilityMatcher, boolean throwOnCapabilityNotPresent, Integer nodePolling,
+			Integer cleanUpCycle, Integer timeout, Integer browserTimeout, Integer maxSession)
+			throws PhrescoException {
+		BufferedWriter out = null;
+		FileWriter fileWriter = null;
+		try {
+			File hubConfigFile = new File(baseDir + funcDir + File.separator + "hubconfig.json");
+			HubConfiguration hubConfig = new HubConfiguration();
+			InetAddress thisIp = InetAddress.getLocalHost();
+			hubConfig.setHost(thisIp.getHostAddress());
+			hubConfig.setPort(port);
+			hubConfig.setNewSessionWaitTimeout(newSessionTimeout);
+			hubConfig.setServlets(servlets);
+			if (StringUtils.isNotEmpty(prioritizer)) {
+				hubConfig.setPrioritizer(prioritizer);
+			}
+			hubConfig.setCapabilityMatcher(capabilityMatcher);
+			hubConfig.setThrowOnCapabilityNotPresent(throwOnCapabilityNotPresent);
+			hubConfig.setNodePolling(nodePolling);
+			hubConfig.setCleanUpCycle(cleanUpCycle);
+			hubConfig.setTimeout(timeout);
+			hubConfig.setBrowserTimeout(browserTimeout);
+			hubConfig.setMaxSession(maxSession);
 
+			Gson gson = new Gson();
+			String infoJSON = gson.toJson(hubConfig);
+			fileWriter = new FileWriter(hubConfigFile);
+			out = new BufferedWriter(fileWriter);
+			out.write(infoJSON);
+		} catch (UnknownHostException e) {
+			throw new PhrescoException(e);
+		} catch (IOException e) {
+			throw new PhrescoException(e);
+		} finally {
+			Utility.closeWriter(out);
+			Utility.closeStream(fileWriter);
+		}
+	}
+	
+	public void startHub(File baseDir) throws PhrescoException {
+		FileOutputStream fos = null;
+		try {
+			File LogDir = new File(baseDir + File.separator + "do_not_checkin/log");
+			if (!LogDir.exists()) {
+				LogDir.mkdirs();
+			}
+			File logFile  = new File(LogDir + "/hub.log");
+			StringBuilder sb = new StringBuilder();
+			sb.append("java -jar ");
+			sb.append("test/functional/lib/selenium-server-standalone-2.25.0.jar");
+			sb.append(" -role hub -hubConfig test/functional/hubconfig.json");
+			fos = new FileOutputStream(logFile, false);
+			Utility.executeStreamconsumer(sb.toString(), fos);
+		} catch (FileNotFoundException e) {
+			throw new PhrescoException(e);
+		}
+	}
+	
+	public void stopServer(String portNo, File baseDir) throws PhrescoException {
+		if (System.getProperty(Constants.OS_NAME).startsWith(Constants.WINDOWS_PLATFORM)) {
+			stopJavaServerInWindows("netstat -ao | findstr " + portNo + " | findstr LISTENING", baseDir);
+		} else if (System.getProperty(Constants.OS_NAME).startsWith("Mac")) {
+			stopJavaServer("lsof -i tcp:" + portNo + " | awk '{print $2}'", baseDir);
+		} else {
+			stopJavaServer("fuser " + portNo + "/tcp " + "|" + "awk '{print $1}'", baseDir);
+		}
+	}
+
+	private void stopJavaServerInWindows(String command, File baseDir) throws PhrescoException {
+		BufferedReader bufferedReader = null;
+		try {
+			String pid = "";
+			bufferedReader = Utility.executeCommand(command, baseDir.getPath());
+			String line = null;
+			while ((line = bufferedReader.readLine()) != null) {
+				pid = line.substring(line.length() - 4, line.length());
+			}
+			Runtime.getRuntime().exec("cmd /X /C taskkill /F /PID " + pid);
+		} catch (IOException e) {
+			throw new PhrescoException(e);
+		} finally {
+			Utility.closeStream(bufferedReader);
+		}
+	}
+
+	private void stopJavaServer(String command, File baseDir) throws PhrescoException {
+		BufferedReader bufferedReader = null;
+		try {
+			String pid = "";
+			bufferedReader = Utility.executeCommand(command, baseDir.getPath());
+			String line = null;
+			int count = 1;
+			while ((line = bufferedReader.readLine()) != null) {
+				if (count == 2) {
+					pid = line.trim();
+				}
+				count++;
+			}
+			Runtime.getRuntime().exec(Constants.JAVA_UNIX_PROCESS_KILL_CMD + pid);
+		} catch (IOException e) {
+			throw new PhrescoException(e);
+		} finally {
+			Utility.closeStream(bufferedReader);
+		}
+	}
+
+	public String findPortNumber(File baseDir, File jsonFile) throws PhrescoException {
+		Integer portNumber = null;
+		JsonReader reader = null;
+		try {
+			reader = new JsonReader(new FileReader(jsonFile.getPath()));
+			reader.beginObject();
+			while (reader.hasNext()) {
+				String name = reader.nextName();
+				if (name.equals("port")) {
+					portNumber = reader.nextInt();
+				} else {
+					reader.skipValue(); // avoid some unhandle events
+				}
+			}
+			reader.endObject();
+			return Integer.toString(portNumber);
+
+		} catch (FileNotFoundException e) {
+			throw new PhrescoException(e);
+		} catch (IOException e) {
+			throw new PhrescoException(e);
+		} finally {
+			try {
+				if (reader != null) {
+					reader.close();
+				}
+			} catch (IOException e) {
+				throw new PhrescoException(e);
+			}
+		}
+	}
 }
