@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.*;
 import org.apache.maven.plugin.MojoExecutionException;
 
 /**
@@ -84,7 +85,7 @@ public class CodeValidation extends AbstractXcodeMojo{
 	private String projectType;
 	
 	/**
-	 * @parameter expression="${sdk}" default-value="iphonesimulator5.0"
+	 * @parameter expression="${sdk}"
 	 */
 	private String sdk;
 	
@@ -147,8 +148,10 @@ public class CodeValidation extends AbstractXcodeMojo{
 			commands.add(xcodeProject);
 			
 //			sdk specification
-			commands.add("-sdk");
-			commands.add(sdk);
+			if (StringUtils.isNotEmpty(sdk)) {
+				commands.add("-sdk");
+				commands.add(sdk);
+			}
 			
 			commands.add("build");
 			
