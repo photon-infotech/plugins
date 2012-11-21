@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,9 @@ import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.impl.ConfigManagerImpl;
 import com.photon.phresco.plugin.commons.HubConfiguration;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
+import com.photon.phresco.plugin.commons.NodeCapability;
+import com.photon.phresco.plugin.commons.NodeConfig;
+import com.photon.phresco.plugin.commons.NodeConfiguration;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
@@ -320,7 +324,6 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 
 	@Override
 	public void startHub(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		System.out.println("phresco base Plugin execution........");
 		File baseDir = mavenProjectInfo.getBaseDir();
 		MavenProject project = mavenProjectInfo.getProject();
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
@@ -387,13 +390,73 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 
 	@Override
 	public void startNode(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		// TODO Auto-generated method stub
+		File baseDir = mavenProjectInfo.getBaseDir();
+		MavenProject project = mavenProjectInfo.getProject();
+		Map<String, String> configs = MojoUtil.getAllValues(configuration);
+		String hubHost = configs.get("hubHost");
+		Integer maxSession = Integer.parseInt(configs.get("maxSession"));
+		String seleniumProtocol = configs.get("seleniumProtocol");
+		Integer nodeport = Integer.parseInt(configs.get("nodeport"));
+		String host = configs.get("host");
+		boolean register = Boolean.parseBoolean(configs.get("register"));
+		Integer registerCycle = Integer.parseInt(configs.get("registerCycle"));
+		Integer hubPort = Integer.parseInt(configs.get("hubPort"));
+		String proxy = configs.get("proxy");
+		String browserInfo = configs.get("browserInfo");
+		
+		try {
+			NodeConfiguration nodeConfiguration = new NodeConfiguration();
+			NodeCapability nodeCapability = new NodeCapability();
+			StringReader reader = new StringReader(browserInfo);
+			Properties props = new Properties();
+			props.load(reader); // properties read from the reader 
+			Set<String> propertyNames = props.stringPropertyNames();
+			for (String key : propertyNames) {
+				nodeCapability.setBrowserName(key);
+				nodeCapability.setMaxInstances(Integer.parseInt(props.getProperty(key)));
+				nodeCapability.setSeleniumProtocol(seleniumProtocol);
+			}
+			nodeConfiguration.setCapabilities(Collections.singletonList(nodeCapability));
+
+			NodeConfig nodeConfig = new NodeConfig();
+			nodeConfig.setProxy(proxy);
+			nodeConfig.setMaxSession(maxSession);
+			nodeConfig.setPort(nodeport);
+			nodeConfig.setHost(host);
+			nodeConfig.setRegister(register);
+			nodeConfig.setRegisterCycle(registerCycle);
+			nodeConfig.setHubPort(hubPort);
+			nodeConfig.setHubHost(hubHost);
+			nodeConfiguration.setConfiguration(nodeConfig);
+			File pomFile = project.getFile();
+			PomProcessor processor = new PomProcessor(pomFile);
+			String funcDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
+			PluginUtils plugniutil = new PluginUtils();
+			plugniutil.updateNodeConfigInfo(baseDir, funcDir, nodeConfiguration);
+			log.info("Starting the Node...");
+			plugniutil.startNode(baseDir);
+		}  catch (PhrescoPomException e) {
+			throw new PhrescoException(e);
+		} catch (IOException e) {
+			throw new PhrescoException(e);
+		}
 		
 	}
 
 	@Override
 	public void stopNode(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		// TODO Auto-generated method stub
+		try {
+			File baseDir = mavenProjectInfo.getBaseDir();
+			File pomFile = new File(baseDir  + File.separator + "pom.xml");
+			PomProcessor processor = new PomProcessor(pomFile);
+			String funcDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
+			File jsonFile = new File(baseDir + funcDir + File.separator + "nodeconfig.json");
+			PluginUtils pluginutil = new PluginUtils();
+			String portNumber = pluginutil.findPortNumber(baseDir, jsonFile);
+			pluginutil.stopServer(portNumber, baseDir);
+		} catch (PhrescoPomException e) {
+			throw new PhrescoException(e);
+		}
 		
 	}
 }

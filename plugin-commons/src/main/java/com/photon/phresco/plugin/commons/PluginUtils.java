@@ -482,37 +482,11 @@ public class PluginUtils {
 		}
 	}
 
-	public void updateNodeConfigInfo(File baseDir, String funcDir, String hubHost, Integer maxSession,
-			String seleniumProtocol, Integer nodeport, String host, boolean register, Integer registerCycle,
-			Integer hubPort, String proxy, String browserInfo) throws PhrescoException {
+	public void updateNodeConfigInfo(File baseDir, String funcDir, NodeConfiguration nodeConfiguration) throws PhrescoException {
 		BufferedWriter out = null;
 		FileWriter fileWriter = null;
 		try {
 			File hubConfigFile = new File(baseDir + funcDir + File.separator + "nodeconfig.json");
-			NodeConfiguration nodeConfiguration = new NodeConfiguration();
-			NodeCapability nodeCapability = new NodeCapability();
-			StringReader reader = new StringReader(browserInfo);
-			Properties props = new Properties();
-			props.load(reader); // properties read from the reader 
-			Set<String> propertyNames = props.stringPropertyNames();
-			for (String key : propertyNames) {
-				nodeCapability.setBrowserName(key);
-				nodeCapability.setMaxInstances(Integer.parseInt(props.getProperty(key)));
-				nodeCapability.setSeleniumProtocol(seleniumProtocol);
-			}
-			nodeConfiguration.setNodeCapability(Collections.singletonList(nodeCapability));
-
-			NodeConfig nodeConfig = new NodeConfig();
-			nodeConfig.setProxy(proxy);
-			nodeConfig.setMaxSession(maxSession);
-			nodeConfig.setPort(nodeport);
-			nodeConfig.setHost(host);
-			nodeConfig.setRegister(register);
-			nodeConfig.setRegisterCycle(registerCycle);
-			nodeConfig.setHubPort(hubPort);
-			nodeConfig.setHubHost(hubHost);
-			nodeConfiguration.setNodeConfig(nodeConfig);
-
 			Gson gson = new Gson();
 			String infoJSON = gson.toJson(nodeConfiguration);
 			fileWriter = new FileWriter(hubConfigFile);
