@@ -30,7 +30,6 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.cli.CommandLineException;
@@ -52,6 +51,8 @@ import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Para
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands.MavenCommand;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.Constants;
+import com.phresco.pom.exception.PhrescoPomException;
+import com.phresco.pom.util.PomProcessor;
 
 public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 
@@ -176,8 +177,7 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 		} catch (CommandLineException e) {
 			throw new PhrescoException(e);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new PhrescoException(e);
 		}
 	}
 
@@ -323,10 +323,18 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 
 	@Override
 	public void stopHub(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		File baseDir = mavenProjectInfo.getBaseDir();
-		File pomFile = new File(baseDir  + File.separator + "pom.xml");
-		PluginUtils pluginutil = new PluginUtils();
-		pluginutil.stopServer(baseDir, pomFile);
+		try {
+			File baseDir = mavenProjectInfo.getBaseDir();
+			File pomFile = new File(baseDir  + File.separator + "pom.xml");
+			PomProcessor processor = new PomProcessor(pomFile);
+			String funcDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
+			File jsonFile = new File(baseDir + funcDir + File.separator + "hubconfig.json");
+			PluginUtils pluginutil = new PluginUtils();
+			String portNumber = pluginutil.findPortNumber(baseDir, jsonFile);
+			pluginutil.stopServer(portNumber, baseDir);
+		} catch (PhrescoPomException e) {
+			throw new PhrescoException(e);
+		}
 		
 	}
 

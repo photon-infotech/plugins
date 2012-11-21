@@ -78,8 +78,6 @@ import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.filter.FileListFilter;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
-import com.phresco.pom.exception.PhrescoPomException;
-import com.phresco.pom.util.PomProcessor;
 
 public class PluginUtils {
 	
@@ -520,8 +518,7 @@ public class PluginUtils {
 		}
 	}
 	
-	public void stopServer(File baseDir, File pomFile) throws PhrescoException {
-		String portNo = findPortNumber(baseDir, pomFile);
+	public void stopServer(String portNo, File baseDir) throws PhrescoException {
 		if (System.getProperty(Constants.OS_NAME).startsWith(Constants.WINDOWS_PLATFORM)) {
 			stopJavaServerInWindows("netstat -ao | findstr " + portNo + " | findstr LISTENING", baseDir);
 		} else if (System.getProperty(Constants.OS_NAME).startsWith("Mac")) {
@@ -569,13 +566,10 @@ public class PluginUtils {
 		}
 	}
 
-	public String findPortNumber(File baseDir, File pomFile) throws PhrescoException {
+	public String findPortNumber(File baseDir, File jsonFile) throws PhrescoException {
 		Integer portNumber = null;
 		JsonReader reader = null;
 		try {
-			PomProcessor processor = new PomProcessor(pomFile);
-			String funcDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
-			File jsonFile = new File(baseDir + funcDir + File.separator + "hubconfig.json");
 			reader = new JsonReader(new FileReader(jsonFile.getPath()));
 			reader.beginObject();
 			while (reader.hasNext()) {
@@ -589,8 +583,6 @@ public class PluginUtils {
 			reader.endObject();
 			return Integer.toString(portNumber);
 
-		} catch (PhrescoPomException e) {
-			throw new PhrescoException(e);
 		} catch (FileNotFoundException e) {
 			throw new PhrescoException(e);
 		} catch (IOException e) {
