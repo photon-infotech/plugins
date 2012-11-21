@@ -83,6 +83,11 @@ public class CodeValidation extends AbstractXcodeMojo{
 	 */
 	private String projectType;
 	
+	/**
+	 * @parameter expression="${sdk}" default-value="iphonesimulator5.0"
+	 */
+	private String sdk;
+	
 	int exitValue = 0; 
 			
 	File reportingDir =  null;
@@ -139,8 +144,12 @@ public class CodeValidation extends AbstractXcodeMojo{
 			} else {
 				commands.add("-project");
 			}
-			
 			commands.add(xcodeProject);
+			
+//			sdk specification
+			commands.add("-sdk");
+			commands.add(sdk);
+			
 			commands.add("build");
 			
 			commands.add("OBJROOT=" + buildDirectory);

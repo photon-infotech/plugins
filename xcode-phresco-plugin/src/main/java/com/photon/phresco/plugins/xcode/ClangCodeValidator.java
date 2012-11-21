@@ -30,6 +30,7 @@ public class ClangCodeValidator implements PluginConstants {
 			
 			String target = configs.get(TARGET);
 			String projectType = configs.get(PROJECT_TYPE);
+			String sdk = configs.get(SDK);
 			
 			if (StringUtils.isEmpty(target)) {
 				System.out.println("Target is empty for code validation . ");
@@ -46,6 +47,11 @@ public class ClangCodeValidator implements PluginConstants {
 			sb.append(STR_SPACE);
 //			sb.append("-Dscheme=" + target);
 			sb.append(HYPHEN_D + SCHEME + EQUAL + target);
+			
+			if (StringUtils.isNotEmpty(sdk)) {
+				sb.append(STR_SPACE);
+				sb.append(HYPHEN_D + SDK + EQUAL + sdk);
+			}
 			
 			log.debug("Command " + sb.toString());
 			Commandline commandline = new Commandline(sb.toString());
