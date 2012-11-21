@@ -167,7 +167,6 @@ public class Start implements PluginConstants {
 	}
 
 	private void executePhase() throws MojoExecutionException {
-		BufferedReader bufferedReader = null;
 		FileOutputStream fos = null;
 		try {
 			File errorLog = new File(Utility.getProjectHome() + File.separator + projectCode + File.separator
@@ -184,8 +183,6 @@ public class Start implements PluginConstants {
 			Utility.executeStreamconsumer(sb.toString(), fos);
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);
-		} finally {
-			Utility.closeStream(bufferedReader);
 		}
 	}
 

@@ -30,6 +30,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.cli.CommandLineException;
@@ -312,5 +313,32 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 				fos.close();
 			}
 		}
+	}
+
+	@Override
+	public void startHub(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void stopHub(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		File baseDir = mavenProjectInfo.getBaseDir();
+		File pomFile = new File(baseDir  + File.separator + "pom.xml");
+		PluginUtils pluginutil = new PluginUtils();
+		pluginutil.stopServer(baseDir, pomFile);
+		
+	}
+
+	@Override
+	public void startNode(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void stopNode(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		// TODO Auto-generated method stub
+		
 	}
 }

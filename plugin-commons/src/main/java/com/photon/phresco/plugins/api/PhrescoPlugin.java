@@ -22,6 +22,14 @@ public interface PhrescoPlugin {
     
     void runPerformanceTest() throws PhrescoException;
     
+    void startHub(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
+    
+    void stopHub(MavenProjectInfo mavenProjectInfo) throws PhrescoException;
+    
+    void startNode(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
+    
+    void stopNode(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
+    
     void runLoadTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
     void performCIPreBuildStep(String jobName, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
