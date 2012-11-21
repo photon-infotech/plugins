@@ -47,7 +47,7 @@ public class TestMojo extends AbstractJsTestMojo {
             }
 
             // let browsers detect that server is back
-            Thread.sleep(5000);
+            Thread.sleep(7000);
 
             if (!resultHandler.waitAllResult(10000, 1000)) {
                 throw new MojoFailureException("Do not receive all test results from clients");
