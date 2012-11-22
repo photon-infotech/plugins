@@ -231,9 +231,14 @@ public interface PluginConstants {
 	 
 	 //Constants for Android
 	 
-	 String PROGUARD_SKIP 				= "proguardSkip";
+	 String PROGUARD	 				= "proguard";
+	 String SIGNING 					= "signing";
 	 String SDK_VERSION 				= "sdk";
 	 String DEVICES						= "devices";
+	 String BUILD_COMMAND				= "mvn install";
+	 String SKIP_TEST					= "skipTest";
+	 String ANDROID_VERSION				= "android.version";
+	 String PROGUARD_SKIP				= "android.proguard.skip";
 	 
 	 //Constants for dynamic parameter
 	 String BUILD_NAME 					= "buildName";
