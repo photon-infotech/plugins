@@ -1,15 +1,18 @@
 package com.photon.phresco.plugins;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +44,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import com.google.gson.Gson;
 import com.photon.phresco.api.ConfigManager;
 import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
@@ -328,16 +332,34 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 		MavenProject project = mavenProjectInfo.getProject();
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
 		Integer port = Integer.parseInt(configs.get("port"));
-		Integer newSessionTimeout = Integer.parseInt(configs.get("newSessionWaitTimeout"));
+		int newSessionTimeout = 0;
+		if (StringUtils.isNotEmpty(configs.get("newSessionWaitTimeout"))) {
+		    newSessionTimeout = Integer.parseInt(configs.get("newSessionWaitTimeout"));
+		}
 		String servlets = configs.get("servlets");
 		String prioritizer = configs.get("prioritizer");
 		String capabilityMatcher = configs.get("capabilityMatcher");
-		boolean throwOnCapabilityNotPresent = Boolean.parseBoolean(configs.get("throwOnCapabilityNotPresent"));
-		Integer nodePolling = Integer.parseInt(configs.get("nodePolling"));
-		Integer cleanUpCycle = Integer.parseInt(configs.get("cleanUpCycle"));
-		Integer timeout = Integer.parseInt(configs.get("timeout"));
-		Integer browserTimeout = Integer.parseInt(configs.get("browserTimeout"));
-		Integer maxSession = Integer.parseInt(configs.get("maxSession"));
+		boolean throwOnCapabilityNotPresent = Boolean.valueOf(configs.get("throwOnCapabilityNotPresent"));
+		int nodePolling = 0;
+		if (StringUtils.isNotEmpty(configs.get("nodePolling"))) {
+		     nodePolling = Integer.parseInt(configs.get("nodePolling"));
+		}
+		int cleanUpCycle = 0;
+		if (StringUtils.isNotEmpty(configs.get("cleanUpCycle"))) {
+		    cleanUpCycle = Integer.parseInt(configs.get("cleanUpCycle"));
+		}
+		int timeout = 0; 
+		if (StringUtils.isNotEmpty(configs.get("timeout"))) {
+		    timeout = Integer.parseInt(configs.get("timeout"));
+        }
+		int browserTimeout = 0;
+		if (StringUtils.isNotEmpty(configs.get("browserTimeout"))) {
+		    browserTimeout = Integer.parseInt(configs.get("browserTimeout"));
+        }
+		int maxSession = 0;
+		if (StringUtils.isNotEmpty(configs.get("maxSession"))) {
+		    maxSession = Integer.parseInt(configs.get("maxSession"));
+        }
 		
 		try {
 			HubConfiguration hubConfig = new HubConfiguration();
@@ -378,13 +400,18 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 			File pomFile = new File(baseDir  + File.separator + "pom.xml");
 			PomProcessor processor = new PomProcessor(pomFile);
 			String funcDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
-			File jsonFile = new File(baseDir + funcDir + File.separator + "hubconfig.json");
+			File configFile = new File(baseDir + funcDir + File.separator + "hubconfig.json");
+			Gson gson = new Gson();
+            BufferedReader reader = new BufferedReader(new FileReader(configFile));
+            HubConfiguration hubConfiguration = gson.fromJson(reader, HubConfiguration.class);
+            int portNumber = hubConfiguration.getPort();
 			PluginUtils pluginutil = new PluginUtils();
-			String portNumber = pluginutil.findPortNumber(baseDir, jsonFile);
-			pluginutil.stopServer(portNumber, baseDir);
+			pluginutil.stopServer("" + portNumber, baseDir);
 		} catch (PhrescoPomException e) {
 			throw new PhrescoException(e);
-		}
+		} catch (FileNotFoundException e) {
+		    throw new PhrescoException(e);
+        }
 		
 	}
 
@@ -394,35 +421,52 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 		MavenProject project = mavenProjectInfo.getProject();
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
 		String hubHost = configs.get("hubHost");
-		Integer maxSession = Integer.parseInt(configs.get("maxSession"));
+		Integer maxSession = 0;
+		if (StringUtils.isNotEmpty(configs.get("maxSession"))) {
+		    maxSession = Integer.parseInt(configs.get("maxSession"));
+		}
 		String seleniumProtocol = configs.get("seleniumProtocol");
-		Integer nodeport = Integer.parseInt(configs.get("nodeport"));
+		int nodeport = 0;
+		if (StringUtils.isNotEmpty(configs.get("nodeport"))) {
+		    nodeport = Integer.parseInt(configs.get("nodeport"));
+		}
 		String host = configs.get("host");
-		boolean register = Boolean.parseBoolean(configs.get("register"));
-		Integer registerCycle = Integer.parseInt(configs.get("registerCycle"));
-		Integer hubPort = Integer.parseInt(configs.get("hubPort"));
+		boolean register = Boolean.valueOf(configs.get("register"));
+		int registerCycle = 0;
+		if (StringUtils.isNotEmpty(configs.get("registerCycle"))) {
+		    registerCycle = Integer.parseInt(configs.get("registerCycle"));
+		}
+		int hubPort = 0;
+		if (StringUtils.isNotEmpty(configs.get("hubPort"))) {
+		    hubPort = Integer.parseInt(configs.get("hubPort"));
+		}
 		String proxy = configs.get("proxy");
 		String browserInfo = configs.get("browserInfo");
 		
 		try {
 			NodeConfiguration nodeConfiguration = new NodeConfiguration();
-			NodeCapability nodeCapability = new NodeCapability();
+			List<NodeCapability> nodeCapabilities = new ArrayList<NodeCapability>();
 			StringReader reader = new StringReader(browserInfo);
 			Properties props = new Properties();
 			props.load(reader); // properties read from the reader 
 			Set<String> propertyNames = props.stringPropertyNames();
 			for (String key : propertyNames) {
+			    NodeCapability nodeCapability = new NodeCapability();
 				nodeCapability.setBrowserName(key);
-				nodeCapability.setMaxInstances(Integer.parseInt(props.getProperty(key)));
+				if (StringUtils.isNotEmpty(props.getProperty(key))) {
+				    nodeCapability.setMaxInstances(Integer.parseInt(props.getProperty(key)));
+				}
+				nodeCapabilities.add(nodeCapability);
 				nodeCapability.setSeleniumProtocol(seleniumProtocol);
 			}
-			nodeConfiguration.setCapabilities(Collections.singletonList(nodeCapability));
+			nodeConfiguration.setCapabilities(nodeCapabilities);
 
 			NodeConfig nodeConfig = new NodeConfig();
 			nodeConfig.setProxy(proxy);
 			nodeConfig.setMaxSession(maxSession);
 			nodeConfig.setPort(nodeport);
-			nodeConfig.setHost(host);
+			InetAddress thisIp = InetAddress.getLocalHost();
+			nodeConfig.setHost(thisIp.getHostAddress());
 			nodeConfig.setRegister(register);
 			nodeConfig.setRegisterCycle(registerCycle);
 			nodeConfig.setHubPort(hubPort);
@@ -450,13 +494,17 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 			File pomFile = new File(baseDir  + File.separator + "pom.xml");
 			PomProcessor processor = new PomProcessor(pomFile);
 			String funcDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
-			File jsonFile = new File(baseDir + funcDir + File.separator + "nodeconfig.json");
+			File configFile = new File(baseDir + funcDir + File.separator + "nodeconfig.json");
+			Gson gson = new Gson();
+			BufferedReader reader = new BufferedReader(new FileReader(configFile));
+            NodeConfiguration nodeConfiguration = gson.fromJson(reader, NodeConfiguration.class);
+            int portNumber = nodeConfiguration.getConfiguration().getPort();
 			PluginUtils pluginutil = new PluginUtils();
-			String portNumber = pluginutil.findPortNumber(baseDir, jsonFile);
-			pluginutil.stopServer(portNumber, baseDir);
+			pluginutil.stopServer("" + portNumber, baseDir);
 		} catch (PhrescoPomException e) {
 			throw new PhrescoException(e);
-		}
-		
+		} catch (FileNotFoundException e) {
+		    throw new PhrescoException(e);
+        }
 	}
 }
