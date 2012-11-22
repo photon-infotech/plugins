@@ -25,6 +25,8 @@ public class RunAndroidTest implements PluginConstants {
 			StringBuilder sb = new StringBuilder();
 			sb.append(MVN_CMD);
 			sb.append(STR_SPACE);
+			sb.append(MVN_PHASE_CLEAN);
+			sb.append(STR_SPACE);
 			sb.append(MVN_PHASE_INSTALL);
 			Map<String, String> configs = MojoUtil.getAllValues(configuration);
 			String deviceValue = configs.get(DEVICES);
@@ -42,10 +44,12 @@ public class RunAndroidTest implements PluginConstants {
 				}
 				if(parameter.getKey().equalsIgnoreCase(deviceValue)) {
 					sb.append(STR_SPACE);
-					sb.append("-Dandroid.divice="+ otherDiviceValue +"");
+					sb.append(HYPHEN_D + ANDROID_DEVICE + EQUAL + otherDiviceValue);
 				}
 			}
-			sb.append("-Dandroid.emulator.avd=default");
+			sb.append(STR_SPACE);
+			sb.append(HYPHEN_D + ANDROID_EMULATOR + EQUAL + DEFAULT);
+			
 			Commandline commandline = new Commandline(sb.toString());
 			String baseDir = mavenProjectInfo.getBaseDir().getPath();
 			if (StringUtils.isNotEmpty(workingDir)) {
@@ -55,7 +59,6 @@ public class RunAndroidTest implements PluginConstants {
 			InputStream is = new BufferedInputStream(pb.getInputStream());
 			int singleByte = 0;
 			while ((singleByte = is.read()) != -1) {
-				//output.write(buffer, 0, bytesRead);
 				System.out.write(singleByte);
 			}
 		} catch (CommandLineException e) {

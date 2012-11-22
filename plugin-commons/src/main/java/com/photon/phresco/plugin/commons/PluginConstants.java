@@ -57,6 +57,9 @@ public interface PluginConstants {
 	 String MVN_PHASE_VALDATE			= "validate";
 	 String MVN_PHASE_INSTALL			= "install";
 	 String JAVA_LIB_PATH				= "java.library.path";
+	 String MVN_PHASE_CODE_VALDATE		= "codevalidate";
+	 String MVN_PHASE_XCODE_PACKAGE		= "xcodebuild";
+	 String MVN_PHASE_DEPLOY			= "deploy";
     
 	// Constants for Php maven plugin
 	 
@@ -237,6 +240,7 @@ public interface PluginConstants {
 	 String DEVICES						= "devices";
 	 String ANDROID_BUILD_COMMAND		= "mvn install";
 	 String ANDROID_DEPLOY_COMMAND		= "mvn android:deploy";
+	 String ANDROID_TEST_COMMAND 		= "mvn clean install";
 	 String SKIP_TEST					= "skipTest";
 	 String ANDROID_VERSION				= "android.version";
 	 String ANDROID_DEVICE				= "android.device";

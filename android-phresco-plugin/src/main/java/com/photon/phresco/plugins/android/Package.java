@@ -63,8 +63,10 @@ public class Package implements PluginConstants {
 		}
 		
 		//signing
-//		sb.append(STR_SPACE);
-//		sb.append("-Psign");
+		if (StringUtils.isNotEmpty(signing)) {
+			sb.append(STR_SPACE);
+			sb.append("-P" + signing);
+		}
 		
 		//skipTest impl
 		List<Parameter> parameters = config.getParameters().getParameter();
