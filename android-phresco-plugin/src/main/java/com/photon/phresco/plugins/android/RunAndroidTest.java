@@ -50,6 +50,7 @@ public class RunAndroidTest implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(HYPHEN_D + ANDROID_EMULATOR + EQUAL + DEFAULT);
 			
+			System.out.println("Command " + sb.toString());
 			Commandline commandline = new Commandline(sb.toString());
 			String baseDir = mavenProjectInfo.getBaseDir().getPath();
 			if (StringUtils.isNotEmpty(workingDir)) {
