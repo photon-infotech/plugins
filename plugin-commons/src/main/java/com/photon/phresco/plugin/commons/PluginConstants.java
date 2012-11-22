@@ -235,10 +235,15 @@ public interface PluginConstants {
 	 String SIGNING 					= "signing";
 	 String SDK_VERSION 				= "sdk";
 	 String DEVICES						= "devices";
-	 String BUILD_COMMAND				= "mvn install";
+	 String ANDROID_BUILD_COMMAND		= "mvn install";
+	 String ANDROID_DEPLOY_COMMAND		= "mvn android:deploy";
 	 String SKIP_TEST					= "skipTest";
 	 String ANDROID_VERSION				= "android.version";
+	 String ANDROID_DEVICE				= "android.device";
+	 String ANDROID_EMULATOR			= "android.emulator.avd";
 	 String PROGUARD_SKIP				= "android.proguard.skip";
+	 String SERIAL_NUMBER				= "serialNumber";
+	 String DEFAULT						= "default";
 	 
 	 //Constants for dynamic parameter
 	 String BUILD_NAME 					= "buildName";

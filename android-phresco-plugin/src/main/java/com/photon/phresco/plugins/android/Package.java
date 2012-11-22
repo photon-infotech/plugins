@@ -38,7 +38,7 @@ public class Package implements PluginConstants {
 		
 		log.info("Project is Building...");
 		StringBuilder sb = new StringBuilder();
-		sb.append(BUILD_COMMAND);
+		sb.append(ANDROID_BUILD_COMMAND);
 		
 		sb.append(STR_SPACE);
 		sb.append(HYPHEN_D + ANDROID_VERSION + EQUAL + sdkVersion);
