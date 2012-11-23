@@ -47,6 +47,12 @@
 			<version>${mongodb.java.driver.version}</version>
 	</dependency>
     
+	<dependency>
+		<groupId>mysql</groupId>
+		<artifactId>mysql-connector-java</artifactId>
+		<version>${mysqljava.driver.version}</version>
+	</dependency>
+	
     <dependency>
             <groupId>com.photon.phresco.framework</groupId>
             <artifactId>phresco-framework</artifactId>

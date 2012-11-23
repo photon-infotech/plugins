@@ -27,6 +27,7 @@ import org.apache.maven.plugin.logging.Log;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
+import com.photon.phresco.util.Constants;
 
 public class Stop implements PluginConstants {
 
@@ -43,9 +44,9 @@ public class Stop implements PluginConstants {
 
 	private void stopNodeJS() throws MojoExecutionException {
 		try {
-			if (System.getProperty(OS_NAME).startsWith(WINDOWS_PLATFORM)) {
+			if (System.getProperty(Constants.OS_NAME).startsWith(Constants.WINDOWS_PLATFORM)) {
 				Runtime.getRuntime().exec("cmd /X /C taskkill /F /IM node.exe");
-			} else if (System.getProperty(OS_NAME).startsWith("Mac")) {
+			} else if (System.getProperty(Constants.OS_NAME).startsWith("Mac")) {
 				Runtime.getRuntime().exec("killall node");
 			} else {
 				Runtime.getRuntime().exec("pkill node");

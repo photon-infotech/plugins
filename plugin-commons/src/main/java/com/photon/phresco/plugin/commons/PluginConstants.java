@@ -171,8 +171,6 @@ public interface PluginConstants {
      String WORDPRESS_SQL_DIR			 = "/source/sql/";
 	 String WORDPRESS_SQL_FILE			 = "/site.sql";
 	 
-	 String OS_NAME						= "os.name";
-	 String WINDOWS_PLATFORM			= "Windows";
 	 String LOG_FILE_DIRECTORY			=  DO_NOT_CHECKIN_FOLDER + "/log";
 	 String COMPILE_LOG_FILE			= "/sourcecompile.log";
 	 String RUN_AGS_LOG_FILE			= "/runagainstsource.log";
@@ -320,4 +318,6 @@ public interface PluginConstants {
 	String KEY_RAMP_UP_PERIOD		= "rampUpPeriod";
 	String KEY_LOOP_COUNT			= "loopCount";
 	String ADD_HEADER				= "addHeader";
+	String EXECUTE_SQL			    = "executeSql";
+	String FETCH_SQL                = "fetchSql";
 }
