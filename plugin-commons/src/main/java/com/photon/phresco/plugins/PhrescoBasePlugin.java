@@ -397,10 +397,10 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 	public void stopHub(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		try {
 			File baseDir = mavenProjectInfo.getBaseDir();
-			File pomFile = new File(baseDir  + File.separator + "pom.xml");
+			File pomFile = new File(baseDir  + File.separator + Constants.POM_NAME);
 			PomProcessor processor = new PomProcessor(pomFile);
 			String funcDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
-			File configFile = new File(baseDir + funcDir + File.separator + "hubconfig.json");
+			File configFile = new File(baseDir + funcDir + File.separator + Constants.HUB_CONFIG_JSON);
 			Gson gson = new Gson();
             BufferedReader reader = new BufferedReader(new FileReader(configFile));
             HubConfiguration hubConfiguration = gson.fromJson(reader, HubConfiguration.class);
@@ -430,7 +430,6 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 		if (StringUtils.isNotEmpty(configs.get("nodeport"))) {
 		    nodeport = Integer.parseInt(configs.get("nodeport"));
 		}
-		String host = configs.get("host");
 		boolean register = Boolean.valueOf(configs.get("register"));
 		int registerCycle = 0;
 		if (StringUtils.isNotEmpty(configs.get("registerCycle"))) {
@@ -491,10 +490,10 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 	public void stopNode(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		try {
 			File baseDir = mavenProjectInfo.getBaseDir();
-			File pomFile = new File(baseDir  + File.separator + "pom.xml");
+			File pomFile = new File(baseDir  + File.separator + Constants.POM_NAME);
 			PomProcessor processor = new PomProcessor(pomFile);
 			String funcDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
-			File configFile = new File(baseDir + funcDir + File.separator + "nodeconfig.json");
+			File configFile = new File(baseDir + funcDir + File.separator + Constants.NODE_CONFIG_JSON);
 			Gson gson = new Gson();
 			BufferedReader reader = new BufferedReader(new FileReader(configFile));
             NodeConfiguration nodeConfiguration = gson.fromJson(reader, NodeConfiguration.class);

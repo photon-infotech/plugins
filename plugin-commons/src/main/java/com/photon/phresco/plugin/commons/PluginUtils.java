@@ -468,7 +468,7 @@ public class PluginUtils {
 		BufferedWriter out = null;
 		FileWriter fileWriter = null;
 		try {
-			File hubConfigFile = new File(baseDir + funcDir + File.separator + "hubconfig.json");
+			File hubConfigFile = new File(baseDir + funcDir + File.separator + Constants.HUB_CONFIG_JSON);
 			Gson gson = new Gson();
 			String infoJSON = gson.toJson(hubConfig);
 			fileWriter = new FileWriter(hubConfigFile);
@@ -488,7 +488,7 @@ public class PluginUtils {
 		BufferedWriter out = null;
 		FileWriter fileWriter = null;
 		try {
-			File hubConfigFile = new File(baseDir + funcDir + File.separator + "nodeconfig.json");
+			File hubConfigFile = new File(baseDir + funcDir + File.separator + Constants.NODE_CONFIG_JSON);
 			Gson gson = new Gson();
 			String infoJSON = gson.toJson(nodeConfiguration);
 			fileWriter = new FileWriter(hubConfigFile);
@@ -505,11 +505,11 @@ public class PluginUtils {
 	public void startNode(File baseDir) throws PhrescoException {
 		FileOutputStream fos = null;
 		try {
-			File LogDir = new File(baseDir + File.separator + "do_not_checkin/log");
+			File LogDir = new File(baseDir + File.separator + Constants.DO_NOT_CHECKIN_DIRY + File.separator + Constants.LOG_DIRECTORY);
 			if (!LogDir.exists()) {
 				LogDir.mkdirs();
 			}
-			File logFile  = new File(LogDir + "/node.log");
+			File logFile  = new File(LogDir + Constants.SLASH + Constants.NODE_LOG);
 			StringBuilder sb = new StringBuilder();
 			sb.append("java -Dwebdriver.chrome.driver=test/functional/chromedriver/chromedriver.exe");
 			sb.append(" -jar test/functional/lib/selenium-server-standalone-2.25.0.jar");
@@ -524,11 +524,11 @@ public class PluginUtils {
 	public void startHub(File baseDir) throws PhrescoException {
 		FileOutputStream fos = null;
 		try {
-			File LogDir = new File(baseDir + File.separator + "do_not_checkin/log");
+			File LogDir = new File(baseDir + File.separator + Constants.DO_NOT_CHECKIN_DIRY + File.separator + Constants.LOG_DIRECTORY);
 			if (!LogDir.exists()) {
 				LogDir.mkdirs();
 			}
-			File logFile  = new File(LogDir + "/hub.log");
+			File logFile  = new File(LogDir + Constants.SLASH + Constants.HUB_LOG);
 			StringBuilder sb = new StringBuilder();
 			sb.append("java -jar ");
 			sb.append("test/functional/lib/selenium-server-standalone-2.25.0.jar");
@@ -585,38 +585,6 @@ public class PluginUtils {
 			throw new PhrescoException(e);
 		} finally {
 			Utility.closeStream(bufferedReader);
-		}
-	}
-
-	public String findPortNumber(File baseDir, File jsonFile) throws PhrescoException {
-		Integer portNumber = null;
-		JsonReader reader = null;
-		try {
-			reader = new JsonReader(new FileReader(jsonFile.getPath()));
-			reader.beginObject();
-			while (reader.hasNext()) {
-				String name = reader.nextName();
-				if (name.equals("port")) {
-					portNumber = reader.nextInt();
-				} else {
-					reader.skipValue(); // avoid some unhandle events
-				}
-			}
-			reader.endObject();
-			return Integer.toString(portNumber);
-
-		} catch (FileNotFoundException e) {
-			throw new PhrescoException(e);
-		} catch (IOException e) {
-			throw new PhrescoException(e);
-		} finally {
-			try {
-				if (reader != null) {
-					reader.close();
-				}
-			} catch (IOException e) {
-				throw new PhrescoException(e);
-			}
 		}
 	}
 }
