@@ -80,6 +80,8 @@ import com.photon.phresco.configuration.Configuration;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.filter.FileListFilter;
 import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.HubConfiguration;
+import com.photon.phresco.util.NodeConfiguration;
 import com.photon.phresco.util.Utility;
 
 public class PluginUtils {

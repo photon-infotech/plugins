@@ -49,11 +49,7 @@ import com.photon.phresco.api.ConfigManager;
 import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.impl.ConfigManagerImpl;
-import com.photon.phresco.plugin.commons.HubConfiguration;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
-import com.photon.phresco.plugin.commons.NodeCapability;
-import com.photon.phresco.plugin.commons.NodeConfig;
-import com.photon.phresco.plugin.commons.NodeConfiguration;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
@@ -62,6 +58,10 @@ import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Para
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands.MavenCommand;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.HubConfiguration;
+import com.photon.phresco.util.NodeCapability;
+import com.photon.phresco.util.NodeConfig;
+import com.photon.phresco.util.NodeConfiguration;
 import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.util.PomProcessor;
 
