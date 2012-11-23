@@ -8,8 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.JAXBException;
-
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
@@ -50,6 +48,7 @@ public class Deploy implements PluginConstants {
 	private String context;
 	private Map<String, String> serverVersionMap = new HashMap<String, String>();
 	private Log log;
+	private String sqlPath;
 	
 	public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -58,6 +57,8 @@ public class Deploy implements PluginConstants {
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
         buildNumber = configs.get(BUILD_NUMBER);
+        importSql = Boolean.parseBoolean(configs.get(EXECUTE_SQL));
+        sqlPath = configs.get(FETCH_SQL);
         
 		try {
 			init();
@@ -138,16 +139,8 @@ public class Deploy implements PluginConstants {
 	private void createDb() throws MojoExecutionException, PhrescoException {
 		DatabaseUtil util = new DatabaseUtil();
 		try {
-			if (importSql) {
-				List<com.photon.phresco.configuration.Configuration> dbConfigurations = getConfiguration(Constants.SETTINGS_TEMPLATE_DB);
-				for (com.photon.phresco.configuration.Configuration dbConfiguration : dbConfigurations) {
-					String databaseType = dbConfiguration.getProperties().getProperty(Constants.DB_TYPE);
-					util.getSqlFilePath(dbConfiguration, baseDir, databaseType);
-				}
-			}
-		} catch (PhrescoException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
-		} catch (ConfigurationException e) {
+			util.fetchSqlConfiguration(sqlPath, importSql, baseDir, environmentName);
+		} catch (Exception e) {
 			throw new PhrescoException(e);
 		}
 	}

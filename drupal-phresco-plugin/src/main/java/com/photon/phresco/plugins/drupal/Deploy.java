@@ -38,6 +38,7 @@ public class Deploy implements PluginConstants {
 	private File buildFile;
 	private File tempDir;
 	private Log log;
+	private String sqlPath;
 	
 	public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -45,6 +46,8 @@ public class Deploy implements PluginConstants {
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
         buildNumber = configs.get(BUILD_NUMBER);
+        importSql = Boolean.parseBoolean(configs.get(EXECUTE_SQL));
+        sqlPath = configs.get(FETCH_SQL);
         
 		try {
 			init();
@@ -98,21 +101,14 @@ public class Deploy implements PluginConstants {
 				"Invalid Usage. Please see the Usage of Deploy Goal");
 	}
 	
-	private void createDb() throws MojoExecutionException {
+	private void createDb() throws MojoExecutionException, PhrescoException {
 		DatabaseUtil util = new DatabaseUtil();
 		try {
-			if (importSql) {
-				List<com.photon.phresco.configuration.Configuration> configurations = getConfiguration(Constants.SETTINGS_TEMPLATE_DB);
-				for (com.photon.phresco.configuration.Configuration configuration : configurations) {
-					String databaseType = configuration.getProperties().getProperty(Constants.DB_TYPE);
-					util.getSqlFilePath(configuration, baseDir, databaseType);
-				}
-			}
+			util.fetchSqlConfiguration(sqlPath, importSql, baseDir, environmentName);
 		} catch (Exception e) {
-			throw new MojoExecutionException(e.getMessage(), e);
+			throw new PhrescoException(e);
 		}
 	}
-
 	
 	private void packDrupal() throws MojoExecutionException {
 		BufferedReader bufferedReader = null;

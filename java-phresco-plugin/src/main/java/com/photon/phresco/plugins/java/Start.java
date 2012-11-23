@@ -19,7 +19,6 @@
  */
 package com.photon.phresco.plugins.java;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -57,14 +56,13 @@ public class Start implements PluginConstants {
 	private String environmentName;
 	private MavenProject project;
 	private String serverPort;
-	private String serverHost;
-	private String serverProtocol;
 	private String serverContext;
 	private File baseDir;
 	private String projectCode;
 	private Log log;
 	private String sourceDir;
 	private boolean importSql; // only declared, value not passed
+	private String sqlPath;
 
 	public void start(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -75,13 +73,15 @@ public class Start implements PluginConstants {
 		environmentName = configs.get(ENVIRONMENT_NAME);
 		// port = configs.get(Constants.SERVER_PORT);
 		// context = configs.get(Constants.SERVER_CONTEXT);
+		importSql = Boolean.parseBoolean(configs.get(EXECUTE_SQL));
+	    sqlPath = configs.get(FETCH_SQL);
 		try {
 			if (environmentName != null) {
 				updateFinalName();
 				configure();
 				storeEnvName();
 			}
-			// createDb();
+		    createDb();
 			executePhase();
 		} catch (MojoExecutionException e) {
 			throw new PhrescoException(e);
@@ -92,8 +92,6 @@ public class Start implements PluginConstants {
 		try {
 			List<com.photon.phresco.configuration.Configuration> configuration = getConfiguration(Constants.SETTINGS_TEMPLATE_SERVER);
 			for (com.photon.phresco.configuration.Configuration serverConfiguration : configuration) {
-				serverHost = serverConfiguration.getProperties().getProperty(Constants.SERVER_HOST);
-				serverProtocol = serverConfiguration.getProperties().getProperty(Constants.SERVER_PROTOCOL);
 				serverPort = serverConfiguration.getProperties().getProperty(Constants.SERVER_PORT);
 				serverContext = serverConfiguration.getProperties().getProperty(Constants.SERVER_CONTEXT);
 			}
@@ -141,18 +139,12 @@ public class Start implements PluginConstants {
 		}
 	}
 
-	private void createDb() throws MojoExecutionException {
+	private void createDb() throws MojoExecutionException, PhrescoException {
 		DatabaseUtil util = new DatabaseUtil();
 		try {
-			if (importSql) {
-				List<com.photon.phresco.configuration.Configuration> configuration = getConfiguration(Constants.SETTINGS_TEMPLATE_DB);
-				for (com.photon.phresco.configuration.Configuration dbConfiguration : configuration) {
-					String databaseType = dbConfiguration.getProperties().getProperty(Constants.DB_TYPE);
-					util.getSqlFilePath(dbConfiguration, getProjectHome(), databaseType);
-				}
-			}
-		} catch (PhrescoException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
+			util.fetchSqlConfiguration(sqlPath, importSql, baseDir, environmentName);
+		} catch (Exception e) {
+			throw new PhrescoException(e);
 		}
 	}
 

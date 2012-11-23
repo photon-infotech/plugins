@@ -37,7 +37,6 @@ import org.apache.maven.project.MavenProject;
 import com.google.gson.Gson;
 import com.photon.phresco.api.ConfigManager;
 import com.photon.phresco.configuration.ConfigurationInfo;
-import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.plugin.commons.DatabaseUtil;
@@ -57,6 +56,7 @@ public class Start implements PluginConstants {
 	private boolean importSql; // value need passed
 	private String environmentName;
 	private Log log;
+	private String sqlPath;
 
 	public void start(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -64,10 +64,12 @@ public class Start implements PluginConstants {
 		project = mavenProjectInfo.getProject();
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
 		environmentName = configs.get(ENVIRONMENT_NAME);
+		importSql = Boolean.parseBoolean(configs.get(EXECUTE_SQL));
+	    sqlPath = configs.get(FETCH_SQL);
 		try {
 			configure();
 			storeEnvName();
-			// createDb();
+			createDb();
 			startNodeJS();
 		} catch (MojoExecutionException e) {
 			throw new PhrescoException(e);
@@ -89,25 +91,12 @@ public class Start implements PluginConstants {
 		}
 	}
 
-	private void createDb() throws MojoExecutionException {
+	private void createDb() throws MojoExecutionException, PhrescoException {
 		DatabaseUtil util = new DatabaseUtil();
 		try {
-			if (importSql) {
-				ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(new File(baseDir.getPath()
-						+ File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator
-						+ Constants.CONFIGURATION_INFO_FILE));
-				List<com.photon.phresco.configuration.Configuration> configurations = configManager.getConfigurations(
-						environmentName, Constants.SETTINGS_TEMPLATE_DB);
-				for (com.photon.phresco.configuration.Configuration dbConfiguration : configurations) {
-					String databaseType = dbConfiguration.getProperties().getProperty(Constants.DB_TYPE);
-					util.getSqlFilePath(dbConfiguration, baseDir, databaseType);
-				}
-			}
-		} catch (PhrescoException e) {
-			log.info("Server startup failed");
-			throw new MojoExecutionException(e.getMessage());
-		} catch (ConfigurationException e) {
-			throw new MojoExecutionException(e.getMessage());
+			util.fetchSqlConfiguration(sqlPath, importSql, baseDir, environmentName);
+		} catch (Exception e) {
+			throw new PhrescoException(e);
 		}
 	}
 

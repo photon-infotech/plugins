@@ -297,4 +297,6 @@ public interface PluginConstants {
 	String KEY_RAMP_UP_PERIOD		= "rampUpPeriod";
 	String KEY_LOOP_COUNT			= "loopCount";
 	String ADD_HEADER				= "addHeader";
+	String EXECUTE_SQL			    = "executeSql";
+	String FETCH_SQL                = "fetchSql";
 }

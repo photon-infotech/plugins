@@ -1,6 +1,7 @@
 package com.photon.phresco.plugins.php;
 
 import org.apache.maven.plugin.logging.Log;
+import org.codehaus.jettison.json.JSONException;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
@@ -22,6 +23,10 @@ public class PHPPlugin extends PhrescoBasePlugin {
 	@Override
     public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
         Deploy deploy = new Deploy();
-        deploy.deploy(configuration, mavenProjectInfo, getLog());
+        try {
+			deploy.deploy(configuration, mavenProjectInfo, getLog());
+		} catch (JSONException e) {
+			throw new PhrescoException(e);
+		}
     }
 }

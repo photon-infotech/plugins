@@ -16,8 +16,6 @@ import com.photon.phresco.commons.model.BuildInfo;
 import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
-import com.photon.phresco.framework.api.ProjectAdministrator;
-import com.photon.phresco.framework.model.SettingsInfo;
 import com.photon.phresco.plugin.commons.DatabaseUtil;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
@@ -25,9 +23,9 @@ import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.ArchiveUtil;
+import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
-import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 
 public class Deploy implements PluginConstants {
 
@@ -40,16 +38,18 @@ public class Deploy implements PluginConstants {
 	private File buildDir;
 	private File tempDir;
 	private File binariesDir;
-	private String serverHost;
 	private String context;
-	private String serverport;
 	private Log log;
+	private String sqlPath;
+	
 	public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
         buildNumber = configs.get(BUILD_NAME);
+        importSql = Boolean.parseBoolean(configs.get(EXECUTE_SQL));
+	    sqlPath = configs.get(FETCH_SQL);
         
         try {
 			init();
@@ -78,8 +78,6 @@ public class Deploy implements PluginConstants {
 			List<com.photon.phresco.configuration.Configuration> configurations = getConfiguration(Constants.SETTINGS_TEMPLATE_SERVER);
 			for (com.photon.phresco.configuration.Configuration configuration : configurations) {
 				context = configuration.getProperties().getProperty(Constants.SERVER_CONTEXT);
-				serverHost = configuration.getProperties().getProperty(Constants.SERVER_HOST);
-				serverport = configuration.getProperties().getProperty(Constants.SERVER_PORT);
 				break;
 			}
 			tempDir = new File(buildDir.getPath() + TEMP_DIR + File.separator
@@ -152,21 +150,13 @@ public class Deploy implements PluginConstants {
 		}
 	}
 
-	private void createDb() throws MojoExecutionException {
+	private void createDb() throws MojoExecutionException, PhrescoException {
+		DatabaseUtil util = new DatabaseUtil();
 		try {
-			DatabaseUtil utils = new DatabaseUtil();
-			if (importSql) {
-				List<com.photon.phresco.configuration.Configuration> configurations = getConfiguration(Constants.SETTINGS_TEMPLATE_DB);
-				for (com.photon.phresco.configuration.Configuration configuration : configurations) {
-					String databaseType = configuration.getProperties().getProperty(Constants.DB_TYPE);
-					utils.getSqlFilePath(configuration, baseDir, databaseType);
-					utils.updateSqlQuery(configuration, serverHost, context, serverport);
-				}
-				
-			}
+			util.fetchSqlConfiguration(sqlPath, importSql, baseDir, environmentName);
 		} catch (Exception e) {
-			throw new MojoExecutionException(e.getMessage(), e);
-		} 
+			throw new PhrescoException(e);
+		}
 	}
 	
 	private void deploy() throws MojoExecutionException {

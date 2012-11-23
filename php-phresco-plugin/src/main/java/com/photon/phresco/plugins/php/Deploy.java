@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -30,20 +31,21 @@ public class Deploy implements PluginConstants {
 	private File baseDir;
 	private String buildNumber;
 	private String environmentName;
-	private String projectCode;
 	private boolean importSql;
 	private File buildDir;
 	private File buildFile;
 	private File tempDir;
 	private Log log;
+	private String sqlPath;
 	
-    public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
+    public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException, JSONException {
     	this.log = log;
     	baseDir = mavenProjectInfo.getBaseDir();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
         buildNumber = configs.get(BUILD_NUMBER);
-        projectCode = mavenProjectInfo.getProjectCode();
+        importSql = Boolean.parseBoolean(configs.get(EXECUTE_SQL));
+        sqlPath = configs.get(FETCH_SQL);
     	try { 
 			init();
 			createDb();
@@ -87,19 +89,12 @@ public class Deploy implements PluginConstants {
 				"Invalid Usage. Please see the Usage of Deploy Goal");
 	}
 
-	private void createDb() throws MojoExecutionException {
+	private void createDb() throws MojoExecutionException, PhrescoException {
 		DatabaseUtil util = new DatabaseUtil();
 		try {
-			if (importSql) {
-				List<com.photon.phresco.configuration.Configuration> configuration = getConfiguration(Constants.SETTINGS_TEMPLATE_DB);
-				for (com.photon.phresco.configuration.Configuration config : configuration) {
-					String databaseType = config.getProperties().getProperty(Constants.DB_TYPE);
-					util.getSqlFilePath(config, baseDir, databaseType);
-				}
-			}
-		} catch (PhrescoException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
-		} catch (ConfigurationException e) {
+			util.fetchSqlConfiguration(sqlPath, importSql, baseDir, environmentName);
+		} catch (Exception e) {
+			throw new PhrescoException(e);
 		}
 	}
 
