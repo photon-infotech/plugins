@@ -1,30 +1,48 @@
 package com.photon.phresco.plugins.android;
 
+import java.io.*;
 import java.util.*;
 
+import javax.xml.parsers.*;
+
 import org.apache.commons.lang.*;
-import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugin.logging.*;
+import org.apache.maven.project.*;
+import org.w3c.dom.*;
 
 import com.photon.phresco.exception.*;
-import com.photon.phresco.plugin.commons.MavenProjectInfo;
-import com.photon.phresco.plugin.commons.PluginConstants;
-import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
-import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.*;
-import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands.*;
-import com.photon.phresco.plugins.util.MojoUtil;
-import com.photon.phresco.util.Utility;
+import com.photon.phresco.plugin.commons.*;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands.MavenCommand;
+import com.photon.phresco.plugins.util.*;
+import com.photon.phresco.util.*;
+import com.phresco.pom.android.*;
+import com.phresco.pom.model.*;
+import com.phresco.pom.model.PluginExecution.Goals;
+import com.phresco.pom.util.*;
 
 public class Package implements PluginConstants {
-
-	public void pack(Configuration config, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
+	private Log log;
+	private String baseDir;
+	private MavenProject project;
+	public void pack(com.photon.phresco.plugins.model.Mojos.Mojo.Configuration config, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
+		this.log = log;
+		baseDir = mavenProjectInfo.getBaseDir().getPath();
+		project = mavenProjectInfo.getProject();
+		
 		Map<String, String> configs = MojoUtil.getAllValues(config);
 		String environmentName = configs.get(ENVIRONMENT_NAME);
 		String buildName = configs.get(BUILD_NAME);
 		String buildNumber = configs.get(BUILD_NUMBER);
 		String sdkVersion = configs.get(SDK_VERSION);
 		String proguard = configs.get(PROGUARD);
-		String signing = configs.get(SIGNING);
 		String skipTest = configs.get(SKIP_TEST);
+		
+		String signing = configs.get(SIGNING);
+		String keystore = configs.get(KEYSTORE);
+		String storepass = configs.get(STOREPASS);
+		String keypass = configs.get(KEYPASS);
+		String alias = configs.get(ALIAS);
 		
 		if (StringUtils.isEmpty(environmentName)) {
 			System.out.println("Environment Name is empty . ");
@@ -34,6 +52,12 @@ public class Package implements PluginConstants {
 		if (StringUtils.isEmpty(sdkVersion)) {
 			System.out.println("sdkVersion is empty . ");
 			throw new PhrescoException("sdkVersion is empty . ");
+		}
+		
+		Boolean isSigning = Boolean.valueOf(signing);
+		log.info("isSigning . " + isSigning);
+		if (isSigning) {
+			updateAllPOMWithProfile(keystore, storepass, keypass, alias);
 		}
 		
 		log.info("Project is Building...");
@@ -63,10 +87,10 @@ public class Package implements PluginConstants {
 		}
 		
 		//signing
-//		if (StringUtils.isNotEmpty(signing)) {
-//			sb.append(STR_SPACE);
-//			sb.append("-P" + signing);
-//		}
+		if (isSigning) {
+			sb.append(STR_SPACE);
+			sb.append(PSIGN);
+		}
 		
 		//skipTest impl
 		List<Parameter> parameters = config.getParameters().getParameter();
@@ -84,5 +108,126 @@ public class Package implements PluginConstants {
 		
 		log.info("Command " + sb.toString());
 		Utility.executeStreamconsumer(sb.toString());
+	}
+	
+	private void updateAllPOMWithProfile(String keystore, String storepass, String keypass, String alias) throws PhrescoException {
+		log.info("baseDir " + baseDir);
+		List<String> pomsTobeUpdated = new ArrayList<String>();
+		pomsTobeUpdated.add("");
+		pomsTobeUpdated.add(Constants.POM_PROP_KEY_UNITTEST_DIR);
+		pomsTobeUpdated.add(Constants.POM_PROP_KEY_FUNCTEST_DIR);
+		pomsTobeUpdated.add(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR);
+		
+		List<String> projPoms = new ArrayList<String>(pomsTobeUpdated.size());
+		for (String pomTobeUpdated : pomsTobeUpdated) {
+			// get root dir
+			StringBuilder sb = new StringBuilder(baseDir);
+			// get pom path
+			String property = project.getProperties().getProperty(pomTobeUpdated);
+			if (StringUtils.isNotEmpty(property)) {
+				sb.append(property);
+			}
+			// pom file
+			sb.append(File.separatorChar);
+			sb.append(POM_XML);
+			projPoms.add(sb.toString());
+		}
+		
+		for (String projPom : projPoms) {
+			log.info("pom updating for " + projPom);
+			createAndroidProfile(projPom, keystore, storepass, keypass, alias);
+		}
+	}
+	
+	private String createAndroidProfile(String filePath, String keystore, String storepass, String keypass, String alias) throws PhrescoException {
+		log.info("Entering Method Build.createAndroidProfile() " + filePath);
+		try {
+			if (StringUtils.isEmpty(keystore)) {
+				throw new PhrescoException("keystore value is empty "); 
+			}
+			
+			if (StringUtils.isEmpty(storepass)) {
+				throw new PhrescoException("storepass value is empty "); 
+			}
+			
+			if (StringUtils.isEmpty(keypass)) {
+				throw new PhrescoException("keypass value is empty "); 
+			}
+			
+			if (StringUtils.isEmpty(alias)) {
+				throw new PhrescoException("alias value is empty "); 
+			}
+			
+			boolean hasSigning = false;
+
+			File pomPath = new File(filePath);
+
+			AndroidPomProcessor processor = new AndroidPomProcessor(pomPath);
+			hasSigning = processor.hasSigning();
+			String profileId = PROFILE_ID;
+			String defaultGoal = GOAL_INSTALL;
+			Plugin plugin = new Plugin();
+			plugin.setGroupId(ANDROID_PROFILE_GROUP_ID);
+			plugin.setArtifactId(ANDROID_PROFILE_ARTIFACT_ID);
+			plugin.setVersion(ANDROID_PROFILE_VERSION);
+
+			PluginExecution execution = new PluginExecution();
+			execution.setId(ANDROID_EXECUTION_ID);
+			Goals goal = new Goals();
+			goal.getGoal().add(GOAL_SIGN);
+			execution.setGoals(goal);
+			execution.setPhase(PHASE_PACKAGE);
+			execution.setInherited(TRUE);
+
+			AndroidProfile androidProfile = new AndroidProfile();
+			androidProfile.setKeystore(keystore);
+			androidProfile.setStorepass(storepass);
+			androidProfile.setKeypass(keypass);
+			androidProfile.setAlias(alias);
+			androidProfile.setVerbose(true);
+			androidProfile.setVerify(true);
+
+			DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
+			DocumentBuilder docBuilder = dbfac.newDocumentBuilder();
+			Document doc = docBuilder.newDocument();
+
+			List<Element> executionConfig = new ArrayList<Element>();
+			executionConfig.add(doc.createElement(ELEMENT_ARCHIVE_DIR));
+			Element removeExistSignature = doc.createElement(ELEMENT_REMOVE_EXIST_SIGN);
+			Element includeElement = doc.createElement(ELEMENT_INCLUDES);
+			Element doNotCheckInBuildInclude = doc.createElement(ELEMENT_INCLUDE);
+			doNotCheckInBuildInclude.setTextContent(ELEMENT_BUILD);
+			Element doNotCheckinTargetInclude = doc.createElement(ELEMENT_INCLUDE);
+			doNotCheckinTargetInclude.setTextContent(ELEMENT_TARGET);
+			includeElement.appendChild(doNotCheckInBuildInclude);
+			includeElement.appendChild(doNotCheckinTargetInclude);
+			executionConfig.add(includeElement);
+			removeExistSignature.setTextContent(TRUE);
+			executionConfig.add(removeExistSignature);
+
+			// verboss
+			Element verbos = doc.createElement(ELEMENT_VERBOS);
+			verbos.setTextContent(TRUE);
+			executionConfig.add(verbos);
+			// verify
+			Element verify = doc.createElement(ELEMENT_VERIFY);
+			verbos.setTextContent(TRUE);
+			executionConfig.add(verify);
+
+			com.phresco.pom.model.PluginExecution.Configuration configValues = new com.phresco.pom.model.PluginExecution.Configuration();
+			configValues.getAny().addAll(executionConfig);
+			execution.setConfiguration(configValues);
+			List<Element> additionalConfigs = new ArrayList<Element>();
+			processor.setProfile(profileId, defaultGoal, plugin, androidProfile, execution, null, additionalConfigs);
+			processor.save();
+			if (hasSigning) {
+				log.info("Signing info updated successfully ");
+			} else {
+				log.info("Signing info created successfully ");
+			}
+		} catch (Exception e) {
+			throw new PhrescoException(e); 
+		}
+		return SUCCESS;
 	}
 }

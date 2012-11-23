@@ -285,6 +285,7 @@ public interface PluginConstants {
 	 String DEVICE_TYPE 				= "deviceType";
 	 String SIM_VERSION 				= "sdkVersion";
 	 String FAMILY 						= "family";
+	 String PSIGN 						= "-Psign";
 	 
 	 //Constants for Time Formatter
 	 String TIME_STAMP_FOR_BUILD_NAME 	= "dd-MMM-yyyy-HH-mm-ss";
