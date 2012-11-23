@@ -97,7 +97,7 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 		generateMavenCommand(mavenProjectInfo, Constants.POM_PROP_KEY_FUNCTEST_DIR);
 	}
 
-	public void runPerformanceTest() throws PhrescoException {
+	public void runPerformanceTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		// TODO Auto-generated method stub
 
 	}

@@ -20,7 +20,7 @@ public interface PhrescoPlugin {
     
     void runFunctionalTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
-    void runPerformanceTest() throws PhrescoException;
+    void runPerformanceTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
     void startHub(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     

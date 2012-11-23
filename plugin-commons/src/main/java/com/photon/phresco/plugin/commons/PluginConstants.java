@@ -238,6 +238,7 @@ public interface PluginConstants {
 	 String SIGNING 					= "signing";
 	 String SDK_VERSION 				= "sdk";
 	 String DEVICES						= "devices";
+	 String DEVICES_LIST				= "deviceList";
 	 String ANDROID_BUILD_COMMAND		= "mvn install";
 	 String ANDROID_DEPLOY_COMMAND		= "mvn android:deploy";
 	 String ANDROID_TEST_COMMAND 		= "mvn clean install";
