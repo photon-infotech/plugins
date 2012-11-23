@@ -46,6 +46,8 @@ public interface PluginConstants {
      String LOAD_TEST_CONFIG_FILE		= "phresco-env-config.csv";
      String HYPHEN_D					= "-D";
      String EQUAL						= "=";
+     String TRUE 						= "true";
+     String POM_XML 					= "pom.xml";
 	
 	//Constants for Maven commands
      String MVN_CMD 					= "mvn";
@@ -249,6 +251,26 @@ public interface PluginConstants {
 	 String PROGUARD_SKIP				= "android.proguard.skip";
 	 String SERIAL_NUMBER				= "serialNumber";
 	 String DEFAULT						= "default";
+	 String PROFILE_ID					= "sign";
+	 String GOAL_INSTALL 				= "install";
+	 String GOAL_SIGN 					= "sign";
+	 String ANDROID_PROFILE_PLUGIN_GROUP_ID = "org.apache.maven.plugins";
+	 String ANDROID_PROFILE_PLUGIN_ARTIFACT_ID = "maven-jarsigner-plugin";
+	 String ANDROID_PROFILE_PLUGIN_VERSION = "1.2";
+	 String PHASE_PACKAGE 				= "package";
+	 String ANDROID_EXECUTION_ID 		= "signing";
+	 String ELEMENT_ARCHIVE_DIR 		= "archiveDirectory";
+	 String ELEMENT_REMOVE_EXIST_SIGN 	= "removeExistingSignatures";
+	 String ELEMENT_INCLUDES 			= "includes";
+	 String ELEMENT_INCLUDE 			= "include";
+	 String ELEMENT_BUILD 				= "do_not_checkin/build/*.apk";
+	 String ELEMENT_TARGET 				= "do_not_checkin/target/*.apk";
+	 String ELEMENT_VERBOS 				= "verbose";
+	 String ELEMENT_VERIFY 				= "verify";
+	 String ALIAS 						= "alias";
+	 String KEYPASS 					= "keypass";
+	 String STOREPASS 					= "storepass";
+	 String KEYSTORE 					= "keystore";
 	 
 	 //Constants for dynamic parameter
 	 String BUILD_NAME 					= "buildName";
