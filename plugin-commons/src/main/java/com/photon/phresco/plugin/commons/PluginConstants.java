@@ -254,9 +254,9 @@ public interface PluginConstants {
 	 String PROFILE_ID					= "sign";
 	 String GOAL_INSTALL 				= "install";
 	 String GOAL_SIGN 					= "sign";
-	 String ANDROID_PROFILE_PLUGIN_GROUP_ID = "org.apache.maven.plugins";
-	 String ANDROID_PROFILE_PLUGIN_ARTIFACT_ID = "maven-jarsigner-plugin";
-	 String ANDROID_PROFILE_PLUGIN_VERSION = "1.2";
+	 String ANDROID_PROFILE_GROUP_ID 	= "org.apache.maven.plugins";
+	 String ANDROID_PROFILE_ARTIFACT_ID = "maven-jarsigner-plugin";
+	 String ANDROID_PROFILE_VERSION 	= "1.2";
 	 String PHASE_PACKAGE 				= "package";
 	 String ANDROID_EXECUTION_ID 		= "signing";
 	 String ELEMENT_ARCHIVE_DIR 		= "archiveDirectory";
