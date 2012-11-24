@@ -114,7 +114,7 @@
             <version>${json.version}</version>
         </dependency>
         
-<!--         iext -->
+		<!--  itext -->
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>itextpdf</artifactId>

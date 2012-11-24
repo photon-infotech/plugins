@@ -47,8 +47,18 @@ public interface PluginConstants {
      String HYPHEN_D					= "-D";
      String EQUAL						= "=";
      String TRUE 						= "true";
+     String PDF 						= "pdf";
+     String XML 						= "xml";
      String POM_XML 					= "pom.xml";
-	
+     String STATIC_ANALYSIS_REPORT 		= "static-analysis-report";
+     String INDEX_HTML 					= "index.html";
+     String ARCHIVES 					= "archives";
+     String DOT 						= ".";
+     String COLON 						= ":";
+     String JAVA 						= "java";
+     String WEB 						= "web";
+     String JS 							= "js";
+     
 	//Constants for Maven commands
      String MVN_CMD 					= "mvn";
      String MVN_PHASE_VALIDATE			= "validate";
@@ -270,6 +280,65 @@ public interface PluginConstants {
 	 String STOREPASS 					= "storepass";
 	 String KEYSTORE 					= "keystore";
 	 
+	 // Constants report plugin
+	 String ATTR_TIME 					= "time";
+	 String ATTR_TESTS 					= "tests";
+	 String ATTR_NAME 					= "name";
+	 String ATTR_FILE 					= "file";
+	 String ATTR_FAILURES 				= "failures";
+	 String ATTR_ERRORS 				= "errors";
+	 String ATTR_ASSERTIONS 			= "assertions";
+	 String ATTR_CLASS 					= "class";
+	 String ATTR_CLASSNAME 				= "classname";
+	 String ATTR_LINE 					= "line";
+	 String ATTR_TYPE 					= "type";
+	 String ATTR_RESULT 				= "result";
+	 String ATTR_JM_THREAD_NAME 		= "tn";
+	 String ATTR_JM_LABEL 				= "lb";
+	 String ATTR_JM_SUCCESS_FLAG 		= "s";
+	 String ATTR_JM_TIMESTAMP 			= "ts";
+	 String ATTR_JM_LATENCY_TIME 		= "lt";
+	 String ATTR_JM_TIME 				= "t";
+	 String ATTR_JM_BYTES	 			= "by";
+	 String ATTR_JM_RESPONSE_CODE 		= "rc";
+	 String ATTR_ID 					= "id";
+	 String FUNCTIONAL 					= "functional";
+	 String UNIT 						= "unit";
+	 String LOAD 						= "load";
+	 String PERFORMACE 					= "performance";
+     String ELEMENT_FAILURE 			= "failure";
+     String ELEMENT_ERROR 				= "error";
+     String NAME_FILTER_PREFIX 			= "[@name='";
+     String NAME_FILTER_SUFIX 			= "']";
+//	 String REPORTS_JASPER 				= "reports/jasper/";
+     String XPATH_SINGLE_TESTSUITE 		= "/testsuites/testsuite";
+     String XPATH_MULTIPLE_TESTSUITE 	= "/testsuites/testsuite/testsuite";
+     String XPATH_TESTCASE 				= "/testcase";
+     String XPATH_TEST_RESULT 			= "/testResults/*";
+     String XPATH_TESTSUTE_TESTCASE 	= "/testsuite/testcase";
+     String PERFORMANCE_TEST_REPORTS 	= "performanceTestReports";
+     String PERFORMANCE_SPECIAL_HANDLE 	= "performanceSpecialHandle";
+     String LOAD_TEST_RESULTS 			= "loadTestResults";
+     String LOAD_TEST_REPORTS 			= "loadTestReports";
+     String FUNCTIONAL_TEST_REPORTS 	= "functionalTestReports";
+     String UNIT_TEST_REPORTS 			= "unitTestReports";
+     String FUNCTIONAL_SURE_FIRE_REPORTS = "functionalSureFireReports";
+     String JMETER_TEST_RESULTS_FOR_ANDROID = "jmeterTestResultsForAndroid";
+     String JMETER_TEST_RESULTS 		= "jmeterTestResults";
+     String DATE_TIME_FORMAT 			= "dd-MMM-yyyy HH:mm:ss";
+     String REQ_TITLE_EXCEPTION 		= "Exception";
+     String REQ_TITLE_ERROR 			= "Error";
+     String CUMULATIVE 					= "cumulativeReports";
+     String SONAR_LANGUAGE_PROFILE = "sonar.language";
+     String SONAR_BRANCH   = "sonar.branch";
+     String SONAR_SOURCE = "source"; 
+     String FUNCTIONALTEST = "functional";
+     String REPORT_ELEMENT_NODE_JS = "ReportElementNodeJs";
+     String REPORT_ELEMENT_JS_WEB = "reportElementJsWeb";
+     String REPORT_ELEMENT_SRC_FUNC = "reportElementSrcFunc";
+     String REPORT_ELEMENT_JAVA_FUNC = "reportElementJavaFunc";
+     String REPORT_ELEMENT_SHAREPOINT_SRC_FUNC = "reportElementSharepointSrcFunc";
+     
 	 //Constants for dynamic parameter
 	 String BUILD_NAME 					= "buildName";
 	 String ENVIRONMENT_NAME 			= "environmentName";
