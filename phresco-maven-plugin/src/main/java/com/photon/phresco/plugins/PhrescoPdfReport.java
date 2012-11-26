@@ -42,10 +42,10 @@ public class PhrescoPdfReport extends PhrescoAbstractMojo implements PluginConst
 		try {
 			if (isGoalAvailable(baseDir, PDF_REPORT) && getPluginName(baseDir, PDF_REPORT) != null) {
 				PhrescoPlugin plugin = getPlugin(getPluginName(baseDir, PDF_REPORT));
-		        plugin.validate(getConfiguration(baseDir, PDF_REPORT), getMavenProjectInfo(project));
+		        plugin.generateReport(getConfiguration(baseDir, PDF_REPORT), getMavenProjectInfo(project));
 			} else {
 				PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());
-		        plugin.validate(getConfiguration(baseDir, PDF_REPORT), getMavenProjectInfo(project));
+		        plugin.generateReport(getConfiguration(baseDir, PDF_REPORT), getMavenProjectInfo(project));
 			}
 	    } catch (PhrescoException e) {
 	        throw new MojoExecutionException(e.getMessage(), e);
