@@ -11,17 +11,7 @@ import java.io.OutputStream;
 import java.math.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,7 +30,7 @@ import net.sf.jasperreports.engine.data.JRBeanArrayDataSource;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.util.JRLoader;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -129,7 +119,10 @@ public class GenerateReport implements PluginConstants {
 				generateUnitAndFunctionalReport(sureFireReports);
 			// Report generation for performance
 			} else if (PERFORMACE.equals(testType)) {
-				if(showDeviceReport) {
+				boolean deviceReportAvail = isDeviceReportAvail();
+				System.out.println("device report available ====> " + deviceReportAvail);
+				showDeviceReport = deviceReportAvail;
+				if(showDeviceReport) { //showDeviceReport
 //					//android technology reports 
 					List<AndroidPerfReport> jmeterTestResultsForAndroid = getJmeterTestResultsForAndroid();
 					generateAndroidPerformanceReport(jmeterTestResultsForAndroid);
@@ -168,7 +161,11 @@ public class GenerateReport implements PluginConstants {
 			List<AndroidPerfReport> jmeterTestResultsForAndroid = null;
 			ArrayList<JmeterTypeReport> jmeterTestResults = null;
 			System.out.println("showDeviceReport ==>  "+ showDeviceReport);
-			if(showDeviceReport) {
+			boolean deviceReportAvail = isDeviceReportAvail();
+			System.out.println("device report available ====> " + deviceReportAvail);
+			showDeviceReport = deviceReportAvail;
+			
+			if(showDeviceReport) { //showDeviceReport
 				jmeterTestResultsForAndroid = getJmeterTestResultsForAndroid();
 				System.out.println(JMETER_TEST_RESULTS_FOR_ANDROID + jmeterTestResultsForAndroid);
 			} else {
@@ -188,7 +185,7 @@ public class GenerateReport implements PluginConstants {
 			cumulativeReportparams.put(UNIT_TEST_REPORTS, Arrays.asList(unitTestSureFireReports));
 			cumulativeReportparams.put(FUNCTIONAL_TEST_REPORTS, Arrays.asList(functionalSureFireReports));
 			
-			if(showDeviceReport) {
+			if(deviceReportAvail) {
 				cumulativeReportparams.put(PERFORMANCE_SPECIAL_HANDLE, true);
 				cumulativeReportparams.put(PERFORMANCE_TEST_REPORTS,jmeterTestResultsForAndroid);
 			} else {
@@ -794,8 +791,11 @@ public class GenerateReport implements PluginConstants {
         List<AndroidPerfReport> androidPerfFilesWithDatas = new ArrayList<AndroidPerfReport>(); //kalees
         for (String testResultFile : testResultFiles) {
         	Document document = getDocumentOfFile(performanceReportDir, testResultFile);
-        	
+
+        	System.out.println("android perfromance test ");
         	Map<String, String> deviceNamesWithId = getDeviceNames(document);
+        	System.out.println("android perfromance test " + deviceNamesWithId.size());
+        	
             Set st = deviceNamesWithId.entrySet();
             Iterator it = st.iterator();
             List<JmeterReport> androidDeviceWithDatas = new ArrayList<JmeterReport>();
@@ -820,6 +820,22 @@ public class GenerateReport implements PluginConstants {
 			}
 		}
         return androidPerfFilesWithDatas;
+	}
+	
+	public boolean isDeviceReportAvail() throws Exception {
+        // List of performance test types
+        String performanceReportDir = baseDir + mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR);
+        List<String> testResultFiles = getTestResultFiles(performanceReportDir);
+		
+		// List of performance test reports
+        for (String testResultFile : testResultFiles) {
+        	Document document = getDocumentOfFile(performanceReportDir, testResultFile);
+        	Map<String, String> deviceNamesWithId = getDeviceNames(document);
+        	if (MapUtils.isNotEmpty(deviceNamesWithId)) {
+        		return true;
+        	}
+		}
+        return false;
 	}
 	
 	// unit and functional test report
@@ -855,6 +871,7 @@ public class GenerateReport implements PluginConstants {
 		
 		String reportFilePath = "";
 		reportFilePath = baseDir.getAbsolutePath();
+		
 		if (UNIT.equals(testType)) {
 			String unitTestDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_RPT_DIR);
 			if (StringUtils.isNotEmpty(unitTestDir)) {
@@ -865,8 +882,8 @@ public class GenerateReport implements PluginConstants {
 			if (StringUtils.isNotEmpty(functionalTestDir)) {
 				reportFilePath = reportFilePath + functionalTestDir ;
 			}
-			
 		}
+		
 		System.out.println("reportFilePath " + reportFilePath);
 		List<String> testResultFiles = getTestResultFiles(reportFilePath);
 		ArrayList<TestSuite> testSuiteWithTestCase  = null;
@@ -1445,18 +1462,20 @@ public class GenerateReport implements PluginConstants {
     }
 
 	public static Map<String, String> getDeviceNames(Document document)  throws Exception {
-		NodeList nodeList = org.apache.xpath.XPathAPI.selectNodeList(document, "/*/*");
+		NodeList nodeList = org.apache.xpath.XPathAPI.selectNodeList(document, "/*/deviceInfo");
 		Map<String, String> deviceList = new LinkedHashMap<String, String>(100);
-		for (int i = 0; i < nodeList.getLength(); i++) {
-			Node node = nodeList.item(i);
-			NamedNodeMap nameNodeMap = node.getAttributes();
-			String deviceId = "";
-			String deviceName = "";
-			Node idAttr = nameNodeMap.getNamedItem(ATTR_ID);
-			deviceId = idAttr.getNodeValue();
-			Node nameAttr = nameNodeMap.getNamedItem(ATTR_NAME);
-			deviceName = nameAttr.getNodeValue();
-			deviceList.put(deviceId, deviceName);
+		if (MapUtils.isNotEmpty(deviceList)) {
+			for (int i = 0; i < nodeList.getLength(); i++) {
+				Node node = nodeList.item(i);
+				NamedNodeMap nameNodeMap = node.getAttributes();
+				String deviceId = "";
+				String deviceName = "";
+				Node idAttr = nameNodeMap.getNamedItem(ATTR_ID);
+				deviceId = idAttr.getNodeValue();
+				Node nameAttr = nameNodeMap.getNamedItem(ATTR_NAME);
+				deviceName = nameAttr.getNodeValue();
+				deviceList.put(deviceId, deviceName);
+			}
 		}
 		return deviceList;
 	}
@@ -1497,14 +1516,16 @@ public class GenerateReport implements PluginConstants {
 			this.log = log;
 	        baseDir = mavenProjectInfo.getBaseDir();
 	        mavenProject = mavenProjectInfo.getProject();
-	        projectCode = mavenProject.getName();
-	        System.out.println("projectCode ====<> " + projectCode);
 	        
 	        Map<String, String> configs = MojoUtil.getAllValues(config);
 	        String reportType = configs.get("reportType");
 	        String testType = configs.get("testType");
 	        this.testType = testType;
 	        this.reportType = reportType;
+	        this.projName = baseDir.getName();
+	        this.projectCode = mavenProject.getName();
+	        System.out.println("projectCode ====<> " + projectCode);
+	        
 	        if (StringUtils.isEmpty(reportType)) {
 	        	throw new PhrescoException("Report type is empty ");
 	        }
@@ -1518,9 +1539,9 @@ public class GenerateReport implements PluginConstants {
 	        	isClangReport = true;
 	        }
 	        
-	        if ("All".equals(testType)) {
-	        	System.out.println("all report generation started ... ");
+	        if ("All".equalsIgnoreCase(testType)) {
 	        	// all report
+	        	System.out.println("all report generation started ... ");
 	        	cumalitiveTestReport();
 	        } else {
 	        	// specified type report
