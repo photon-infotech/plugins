@@ -555,7 +555,7 @@ public class GenerateReport implements PluginConstants {
 				sonarReport.setLackOfCohesionMethods(resrc.getMeasure(metrickey[29]).getFormattedValue());
 				sonarReport.setResponseForCode(resrc.getMeasure(metrickey[30]).getFormattedValue());
 				sonarReport.setClassComplexity(resrc.getMeasure(metrickey[32]).getFormattedValue());
-				sonarReport.setShowDivElement(REPORT_ELEMENT_JAVA_FUNC);
+				sonarReport.setShowDivElement(REPORT_ELEMENT_JAVA_FUNC); // TODO handle this
 				
 //			} else if ((TechnologyTypes.SHAREPOINT.equals(techId)) && (SONAR_SOURCE.equals(report) || FUNCTIONAL.equals(report))) {
 				
@@ -1511,6 +1511,14 @@ public class GenerateReport implements PluginConstants {
 	        Map<String, String> configs = MojoUtil.getAllValues(config);
 	        String reportType = configs.get("reportType");
 	        String testType = configs.get("testType");
+	        
+	        if (StringUtils.isEmpty(reportType)) {
+	        	throw new PhrescoException("Report type is empty ");
+	        }
+	        
+	        if (StringUtils.isEmpty(testType)) {
+	        	throw new PhrescoException("Test Type is empty ");
+	        }
 	        
 	        String clangReportPath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_VALIDATE_REPORT);
 	        if (StringUtils.isNotEmpty(clangReportPath)) {
