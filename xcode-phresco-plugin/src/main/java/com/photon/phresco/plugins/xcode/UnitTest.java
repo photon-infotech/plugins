@@ -22,6 +22,7 @@ public class UnitTest implements PluginConstants {
 		boolean unitTest = Boolean.valueOf(configs.get("unittest"));
 		// get command from plugin info
 		String unitTestType = configs.get("unitTestType");
+		String projectType = configs.get("projectType");
 		
 		if (StringUtils.isEmpty(sdk)) {
 			System.out.println("SDK is empty . ");
@@ -49,6 +50,11 @@ public class UnitTest implements PluginConstants {
 		
 		sb.append(STR_SPACE);
 		sb.append("-Dunittest=" + unitTest);
+		
+		if (StringUtils.isNotEmpty(projectType)) {
+			sb.append(STR_SPACE);
+			sb.append("-DprojectType=" + projectType);
+		}
 		
 		List<Parameter> parameters = config.getParameters().getParameter();
 		for (Parameter parameter : parameters) {
