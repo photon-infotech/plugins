@@ -64,6 +64,8 @@ import com.photon.phresco.plugin.commons.*;
 import com.photon.phresco.plugins.model.Mojos.Mojo.*;
 import com.photon.phresco.plugins.util.*;
 import com.photon.phresco.util.*;
+import com.phresco.pom.model.*;
+import com.phresco.pom.model.Model.*;
 import com.phresco.pom.util.*;
 
 public class GenerateReport implements PluginConstants {
@@ -181,6 +183,7 @@ public class GenerateReport implements PluginConstants {
 			cumulativeReportparams.put("projectCode", projectCode);
 			cumulativeReportparams.put("projectName", projName);
 			cumulativeReportparams.put("techName", techName);
+			System.out.println("reportType for all report generation => " + reportType);
 			cumulativeReportparams.put("reportsDataType", reportType);
 			cumulativeReportparams.put(UNIT_TEST_REPORTS, Arrays.asList(unitTestSureFireReports));
 			cumulativeReportparams.put(FUNCTIONAL_TEST_REPORTS, Arrays.asList(functionalSureFireReports));
@@ -196,20 +199,21 @@ public class GenerateReport implements PluginConstants {
 			
 			// TODO : sonar
 			//Sonar details
-//			List<SonarReport> sonarReports = new ArrayList<SonarReport>();
+			List<SonarReport> sonarReports = new ArrayList<SonarReport>();
 //			FrameworkUtil frameworkUtil = FrameworkUtil.getInstance();
 //        	List<String> sonarTechReports = frameworkUtil.getSonarProfiles(projectCode);
-//    		if(CollectionUtils.isEmpty(sonarTechReports)) {
-//    			sonarTechReports.add(SONAR_SOURCE);
-//    		}
-//        	sonarTechReports.add(FUNCTIONAL);
-//        	for (String sonarTechReport : sonarTechReports) {
-//				SonarReport srcSonarReport = generateSonarReport(sonarTechReport);
-//				if(srcSonarReport != null) {
-//					sonarReports.add(srcSonarReport);
-//				}
-//			}
-//			cumulativeReportparams.put("sonarReport", sonarReports);
+			List<String> sonarTechReports = getSonarProfiles(baseDir + File.separator + POM_XML);
+    		if(CollectionUtils.isEmpty(sonarTechReports)) {
+    			sonarTechReports.add(SONAR_SOURCE);
+    		}
+        	sonarTechReports.add(FUNCTIONAL);
+        	for (String sonarTechReport : sonarTechReports) {
+				SonarReport srcSonarReport = generateSonarReport(sonarTechReport);
+				if(srcSonarReport != null) {
+					sonarReports.add(srcSonarReport);
+				}
+			}
+			cumulativeReportparams.put("sonarReport", sonarReports);
 			
 			generateCumulativeTestReport(cumulativeReportparams);
 		} catch (Exception e) {
@@ -456,18 +460,19 @@ public class GenerateReport implements PluginConstants {
 		SonarReport sonarReport = new SonarReport();
 		// TODO : sonar
     	String technology = null;
-		String serverUrl = "";
+		String serverUrl = "http://localhost:8080/sonar";
 		try {
 			// TODO : sonar
 //			serverUrl = frameworkUtil.getSonarURL();
 			StringBuilder builder = new StringBuilder(baseDir.getAbsolutePath());
-//            if (StringUtils.isNotEmpty(report) && FUNCTIONALTEST.equals(report)) {
+            if (StringUtils.isNotEmpty(report) && FUNCTIONALTEST.equals(report)) {
 //                frameworkUtil = FrameworkUtil.getInstance();
-//                builder.append(mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR));
-//            }
+                builder.append(mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR));
+            }
             
             builder.append(File.separatorChar);
         	builder.append(POM_XML);
+        	System.out.println("Sonar pom path => " + builder.toString());
         	File pomPath = new File(builder.toString());
         	
         	PomProcessor processor = new PomProcessor(pomPath);
@@ -486,6 +491,8 @@ public class GenerateReport implements PluginConstants {
         	
         	String artifact = sbuild.toString();
 			Sonar sonar = new Sonar(new HttpClient4Connector(new Host(serverUrl)));
+			System.out.println("serverUrl => " + serverUrl);
+			System.out.println("artifact => " + artifact);
 			
 			//metric key parameters for sonar 
 			String metrickey[] = {"ncloc", "lines", "files", "comment_lines_density" , "comment_lines", "duplicated_lines_density", "duplicated_lines", 
@@ -496,6 +503,7 @@ public class GenerateReport implements PluginConstants {
 					"directories", "class_complexity", "comment_blank_lines", "coverage", "uncovered_lines"};
 			
 			Resource resrc = sonar.find(ResourceQuery.createForMetrics(artifact, metrickey));
+			System.out.println("metrickey[0]).getFormattedValue() => " + resrc.getMeasure(metrickey[0]).getFormattedValue());
 				sonarReport.setNonCommentLinesOfCode(resrc.getMeasure(metrickey[0]).getFormattedValue());
 				sonarReport.setLines(resrc.getMeasure(metrickey[1]).getFormattedValue());
 				sonarReport.setFiles(resrc.getMeasure(metrickey[2]).getFormattedValue());
@@ -1553,8 +1561,43 @@ public class GenerateReport implements PluginConstants {
 		}
 	}
 	
-	public static void main(String[] args) {
-		System.out.println("main");
+	public List<String> getSonarProfiles(String pomPath) throws PhrescoException {
+		List<String> sonarTechReports = new ArrayList<String>(6);
+		try {
+			File pomFile = new File(pomPath);
+			PomProcessor pomProcessor = new PomProcessor(pomFile);
+			Model model = pomProcessor.getModel();
+			System.out.print("model... " + model);
+			Profiles modelProfiles = model.getProfiles();
+			if (modelProfiles == null) {
+				return sonarTechReports;
+			}
+			System.out.print("model Profiles... " + modelProfiles);
+			List<Profile> profiles = modelProfiles.getProfile();
+			if (profiles == null) {
+				return sonarTechReports;
+			}
+			System.out.print("profiles... " + profiles);
+			for (Profile profile : profiles) {
+				System.out.print("profile...  " + profile);
+				if (profile.getProperties() != null) {
+					List<Element> any = profile.getProperties().getAny();
+					int size = any.size();
+					
+					for (int i = 0; i < size; ++i) {
+						boolean tagExist = 	any.get(i).getTagName().equals(SONAR_LANGUAGE);
+						if (tagExist){
+							System.out.print("profile.getId()... " + profile.getId());
+							sonarTechReports.add(profile.getId());
+						}
+					}
+				}
+			}
+			System.out.print("return from getSonarProfiles");
+		} catch (Exception e) {
+			throw new PhrescoException(e);
+		}
+		return sonarTechReports;
 	}
 }
 

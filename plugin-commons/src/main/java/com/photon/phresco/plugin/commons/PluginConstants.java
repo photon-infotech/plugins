@@ -58,6 +58,7 @@ public interface PluginConstants {
      String JAVA 						= "java";
      String WEB 						= "web";
      String JS 							= "js";
+     String SONAR_LANGUAGE 				= "sonar.language";
      
 	//Constants for Maven commands
      String MVN_CMD 					= "mvn";
