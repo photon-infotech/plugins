@@ -86,6 +86,12 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 		String basedir = project.getBasedir().getPath();
 		Map<String, String> configValues = MojoUtil.getAllValues(configuration);
 		String environmentName = configValues.get(ENVIRONMENT_NAME);
+		String testAgainst = configValues.get("testAgainst");
+		if(testAgainst.equals("build")) {
+                environmentName = configValues.get("buildEnvironmentName");
+        } else if (testAgainst.equals("server")) {
+                environmentName = configValues.get(ENVIRONMENT_NAME);
+        }
 		String browserValue = configValues.get(BROWSER);
 		String resolutionValue = configValues.get(RESOLUTION);
 		File selectedEnvFile = new File(basedir + File.separator + DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE);
