@@ -324,21 +324,21 @@ public class PluginUtils {
 	 
 	 public void getConfiguration(Configuration configuration) {
 			String type = configuration.getType();
-			if (type.equals("Server")) {
+			if (type.equalsIgnoreCase("Server")) {
 				host = configuration.getProperties().getProperty(Constants.SERVER_HOST);
 				port = configuration.getProperties().getProperty(Constants.SERVER_PORT);
 				protocol = configuration.getProperties().getProperty(Constants.SERVER_PROTOCOL);
 				serverContext = configuration.getProperties().getProperty(Constants.SERVER_CONTEXT);
 			}
 
-			if (type.equals("WebService")) {
+			if (type.equalsIgnoreCase("WebService")) {
 				host = configuration.getProperties().getProperty(Constants.WEB_SERVICE_HOST);
 				port = configuration.getProperties().getProperty(Constants.WEB_SERVICE_PORT);
 				protocol = configuration.getProperties().getProperty(Constants.WEB_SERVICE_PROTOCOL);
 				serverContext = configuration.getProperties().getProperty(Constants.WEB_SERVICE_CONTEXT);
 			}
 
-			if (type.equals("Database")) {
+			if (type.equalsIgnoreCase("Database")) {
 				host = configuration.getProperties().getProperty(Constants.DB_HOST);
 				port = configuration.getProperties().getProperty(Constants.DB_PORT);
 				protocol = configuration.getProperties().getProperty(Constants.DB_PROTOCOL);
