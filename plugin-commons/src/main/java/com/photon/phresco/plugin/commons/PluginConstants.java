@@ -354,6 +354,10 @@ public interface PluginConstants {
 	 String SIM_VERSION 				= "sdkVersion";
 	 String FAMILY 						= "family";
 	 String PSIGN 						= "-Psign";
+	 String TEST_AGAINST				= "testAgainst";
+	 String SERVER						= "server";
+	 String BUILD						= "build";
+	 String BUILD_ENVIRONMENT_NAME		= "buildEnvironmentName";
 	 
 	 //Constants for Time Formatter
 	 String TIME_STAMP_FOR_BUILD_NAME 	= "dd-MMM-yyyy-HH-mm-ss";
