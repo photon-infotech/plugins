@@ -33,8 +33,8 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
         }
     }
     
-    protected Configuration getConfiguration(File baseDir, String goal) throws PhrescoException {
-        MojoProcessor processor = new MojoProcessor(new File(baseDir, PHRESCO_PLUGIN_INFO_XML));
+    protected Configuration getConfiguration(String infoFile, String goal) throws PhrescoException {
+        MojoProcessor processor = new MojoProcessor(new File(infoFile));
         return processor.getConfiguration(goal);
     }
     
@@ -46,13 +46,13 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
         return mavenProjectInfo;
     }
     
-    protected String getPluginName(File baseDir, String goal) throws PhrescoException {
-    	MojoProcessor processor = new MojoProcessor(new File(baseDir, PHRESCO_PLUGIN_INFO_XML));
+    protected String getPluginName(String infoFile, String goal) throws PhrescoException {
+    	MojoProcessor processor = new MojoProcessor(new File(infoFile));
     	return processor.getImplementationClassName(goal);
     }
     
-    protected boolean isGoalAvailable(File baseDir, String goal) throws PhrescoException {
-    	MojoProcessor processor = new MojoProcessor(new File(baseDir, PHRESCO_PLUGIN_INFO_XML));
+    protected boolean isGoalAvailable(String infoFile, String goal) throws PhrescoException {
+    	MojoProcessor processor = new MojoProcessor(new File(infoFile));
     	return processor.isGoalAvailable(goal);
 	}
 }

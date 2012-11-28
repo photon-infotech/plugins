@@ -36,6 +36,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -137,7 +139,7 @@ public class DatabaseUtil {
 			con = DriverManager.getConnection(connectionProtocol, userName, password);
 			con.setAutoCommit(false);
 			for (String sqlFile : filepaths) {
-				fis = new FileInputStream(basedir.getPath() + sqlFile);
+				fis = new FileInputStream(basedir.getPath()+ sqlFile);
 				Scanner s = new Scanner(fis);
 				s.useDelimiter("(;(\r)?\n)|(--\n)");
 				st = con.createStatement();
@@ -190,6 +192,9 @@ public class DatabaseUtil {
 	public void  fetchSqlConfiguration(String sqlPath, Boolean importSql, File baseDir, String environmentName) throws PhrescoException {
 		String dbType;
 		String version;
+		if (StringUtils.isEmpty(sqlPath)) {
+			return ;
+		}
 		try {
 			ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(new File(baseDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE));
 			JsonParser parser = new JsonParser();

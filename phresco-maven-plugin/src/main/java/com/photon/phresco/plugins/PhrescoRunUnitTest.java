@@ -37,12 +37,13 @@ public class PhrescoRunUnitTest extends PhrescoAbstractMojo {
     
     public void execute() throws MojoExecutionException, MojoFailureException {
     	try {
-    		if (isGoalAvailable(baseDir, UNIT_TEST) && getPluginName(baseDir, UNIT_TEST) != null) {
-				PhrescoPlugin plugin = getPlugin(getPluginName(baseDir, UNIT_TEST));
-		        plugin.runUnitTest(getConfiguration(baseDir, UNIT_TEST), getMavenProjectInfo(project));
+    		String infoFile = baseDir + File.separator + Constants.UNIT_TEST_INFO_FILE;
+    		if (isGoalAvailable(infoFile, UNIT_TEST) && getPluginName(infoFile, UNIT_TEST) != null) {
+				PhrescoPlugin plugin = getPlugin(getPluginName(infoFile, UNIT_TEST));
+		        plugin.runUnitTest(getConfiguration(infoFile, UNIT_TEST), getMavenProjectInfo(project));
 			} else {
 				PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());
-		        plugin.runUnitTest(getConfiguration(baseDir, UNIT_TEST),getMavenProjectInfo(project));
+		        plugin.runUnitTest(getConfiguration(infoFile, UNIT_TEST),getMavenProjectInfo(project));
 			}
     	} catch (PhrescoException e) {
     		throw new MojoExecutionException(e.getMessage(), e);
