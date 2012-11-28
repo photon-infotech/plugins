@@ -28,6 +28,7 @@ import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoProcessor;
+import com.photon.phresco.util.Constants;
 
 /**
  * Phresco Maven Plugin for executing ci prebuild step command of the plugins
@@ -64,10 +65,11 @@ public class PhrescoCIPreBuildStep extends PhrescoAbstractMojo {
         getLog().info("Hello Phresco");
         getLog().info(baseDir.getPath());
         try {
+        	String infoFile = baseDir + File.separator + Constants.CI_INFO_FILE;
         	if (StringUtils.isEmpty(jobName)) {
         		throw new MojoExecutionException("job name is empty. Pass job name.");
         	}
-            PhrescoPlugin plugin = getPlugin(getPluginName(baseDir, PRE_BUILD_STEP));
+            PhrescoPlugin plugin = getPlugin(getPluginName(infoFile, PRE_BUILD_STEP));
             plugin.performCIPreBuildStep(jobName, getMavenProjectInfo(project));
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);

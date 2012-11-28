@@ -42,7 +42,8 @@ public class PhrescoStop extends PhrescoAbstractMojo {
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
-			PhrescoPlugin plugin = getPlugin(getPluginName(baseDir, STOP));
+			String infoFile = baseDir + File.separator + Constants.STOP_INFO_FILE;
+			PhrescoPlugin plugin = getPlugin(getPluginName(infoFile, STOP));
 			plugin.stopServer(getMavenProjectInfo(project));
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage(), e);

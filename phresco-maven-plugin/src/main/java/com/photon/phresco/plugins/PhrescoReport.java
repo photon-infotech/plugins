@@ -23,6 +23,7 @@ import org.apache.maven.project.*;
 
 import com.photon.phresco.exception.*;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
+import com.photon.phresco.util.Constants;
 
 /**
  * Phresco Maven Plugin for executing ci prebuild step command of the plugins
@@ -52,9 +53,10 @@ public class PhrescoReport extends PhrescoAbstractMojo {
         getLog().info("Hello Phresco");
         getLog().info(baseDir.getPath());
         try {
+        	String infoFile = baseDir + File.separator + Constants.REPORT_INFO_FILE;
         	getLog().info("Report generation started ");
-            PhrescoPlugin plugin = getPlugin(getPluginName(baseDir, REPORT));
-            plugin.generateReport(getConfiguration(baseDir, REPORT), getMavenProjectInfo(project));
+            PhrescoPlugin plugin = getPlugin(getPluginName(infoFile, REPORT));
+            plugin.generateReport(getConfiguration(infoFile, REPORT), getMavenProjectInfo(project));
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
