@@ -394,4 +394,15 @@ public interface PluginConstants {
 	String ADD_HEADER				= "addHeader";
 	String EXECUTE_SQL			    = "executeSql";
 	String FETCH_SQL                = "fetchSql";
+	
+	 /**
+     * 
+     * Functional-test selenium type
+     */
+    
+    String FUNCTIONAL_TEST_SELENIUM_TYPE = "phresco.functionalTest.selenium.tool";
+    String WEBDRIVER = "webdriver";
+    String GRID = "grid";
+    String HYPEN = "-";
+	
 }
