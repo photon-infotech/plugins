@@ -116,7 +116,7 @@ public class Start implements PluginConstants {
 			sb.append(NODE_SERVER_FILE);
 			sb.append(STR_SPACE);
 			sb.append(environmentName);
-			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath() + PHP_SOURCE_DIR);
+			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath() + File.separator + PROJECT_FOLDER);
 			File file = new File(baseDir.getPath() + LOG_FILE_DIRECTORY);
 			if (!file.exists()) {
 				file.mkdirs();

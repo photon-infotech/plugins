@@ -76,14 +76,12 @@ public interface PluginConstants {
     
 	// Constants for Php maven plugin
 	 
-	 String PHP_SOURCE_DIR				= "/source";
      String PHP_TEST_CONFIG_FILE 		= "/test/functional/src/test/php/phresco/tests/" + CONFIG_FILE;
      String PHP_SOURCE_CONFIG_FILE 		= "/source/config/" + CONFIG_FILE;
 	 String PHP_SQL_DIR				    = "/source/sql/";
 	 String PHP_SQL_FILE				= "/site.sql";
     
     //Constants for Drupal Plugin
-     String DRUPAL_SOURCE_DIR			= "/source/sites";
      String DRUPAL_TEST_CONFIG_FILE 	= "/test/functional/src/test/php/phresco/tests/" + CONFIG_FILE;
      String DRUPAL_SOURCE_CONFIG_FILE	= "/source/sites/default/config/" + CONFIG_FILE;
      String DRUPAL_SQL_DIR				= "/source/sql/";

@@ -59,7 +59,7 @@ public class Package implements PluginConstants {
 
     private void init() throws MojoExecutionException  {
         try {
-            srcDir = new File(baseDir.getPath() + File.separator + PHP_SOURCE_DIR);
+            srcDir = new File(baseDir.getPath() + File.separator + PROJECT_FOLDER);
             buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
             if (!buildDir.exists()) {
                 buildDir.mkdirs();
