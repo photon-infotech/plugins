@@ -114,7 +114,7 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 			MavenProject project = mavenProjectInfo.getProject();
 			String basedir = project.getBasedir().getPath();
 			Map<String, String> configs = MojoUtil.getAllValues(configuration);
-			String testAgainstType = configs.get("testAginest");
+			String testAgainstType = configs.get("testAgainst");
 			String testName = configs.get(KEY_TEST_NAME);
 			String environmentName = configs.get(ENVIRONMENT_NAME);
 			String type = configs.get(testAgainstType);
