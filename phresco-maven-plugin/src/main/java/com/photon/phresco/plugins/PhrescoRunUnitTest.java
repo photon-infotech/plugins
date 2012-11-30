@@ -5,6 +5,7 @@ import java.io.File;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
+import org.apache.regexp.recompile;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
@@ -37,13 +38,13 @@ public class PhrescoRunUnitTest extends PhrescoAbstractMojo {
     
     public void execute() throws MojoExecutionException, MojoFailureException {
     	try {
-    		String infoFile = baseDir + File.separator + Constants.UNIT_TEST_INFO_FILE;
-    		if (isGoalAvailable(infoFile, UNIT_TEST) && getPluginName(infoFile, UNIT_TEST) != null) {
-				PhrescoPlugin plugin = getPlugin(getPluginName(infoFile, UNIT_TEST));
-		        plugin.runUnitTest(getConfiguration(infoFile, UNIT_TEST), getMavenProjectInfo(project));
+    		File infoFile = new File(baseDir + File.separator + Constants.UNIT_TEST_INFO_FILE);
+    		if (infoFile.exists() && isGoalAvailable(infoFile.getPath(), UNIT_TEST) && getPluginName(infoFile.getPath(), UNIT_TEST) != null) {
+				PhrescoPlugin plugin = getPlugin(getPluginName(infoFile.getPath(), UNIT_TEST));
+		        plugin.runUnitTest(getConfiguration(infoFile.getPath(), UNIT_TEST), getMavenProjectInfo(project));
 			} else {
 				PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());
-		        plugin.runUnitTest(getConfiguration(infoFile, UNIT_TEST),getMavenProjectInfo(project));
+		        plugin.runUnitTest(null,getMavenProjectInfo(project));
 			}
     	} catch (PhrescoException e) {
     		throw new MojoExecutionException(e.getMessage(), e);
