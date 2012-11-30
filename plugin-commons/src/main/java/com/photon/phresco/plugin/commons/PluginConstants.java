@@ -328,16 +328,15 @@ public interface PluginConstants {
      String REQ_TITLE_EXCEPTION 		= "Exception";
      String REQ_TITLE_ERROR 			= "Error";
      String CUMULATIVE 					= "cumulativeReports";
-     String SONAR_LANGUAGE_PROFILE = "sonar.language";
-     String SONAR_BRANCH   = "sonar.branch";
-     String SONAR_SOURCE = "source"; 
-     String FUNCTIONALTEST = "functional";
-     String REPORT_ELEMENT_NODE_JS = "ReportElementNodeJs";
-     String REPORT_ELEMENT_JS_WEB = "reportElementJsWeb";
-     String REPORT_ELEMENT_SRC_FUNC = "reportElementSrcFunc";
-     String REPORT_ELEMENT_JAVA_FUNC = "reportElementJavaFunc";
-     String REPORT_ELEMENT_SHAREPOINT_SRC_FUNC = "reportElementSharepointSrcFunc";
-     
+     String SONAR_LANGUAGE_PROFILE 		= "sonar.language";
+     String SONAR_BRANCH   				= "sonar.branch";
+     String SONAR_SOURCE 				= "source"; 
+     String FUNCTIONALTEST 				= "functional";
+     String REPORT_TYPE 				= "reportType";
+     String DIR_TYPE 					= "dir_type";
+     String TEST_TYPE 					= "testType";
+     String UTF_8 						= "utf-8";
+ 	
 	 //Constants for dynamic parameter
 	 String BUILD_NAME 					= "buildName";
 	 String ENVIRONMENT_NAME 			= "environmentName";
