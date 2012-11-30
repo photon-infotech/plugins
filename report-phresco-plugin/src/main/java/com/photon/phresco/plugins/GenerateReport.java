@@ -517,7 +517,6 @@ public class GenerateReport implements PluginConstants {
 			
 			Resource resrc = sonar.find(ResourceQuery.createForMetrics(artifact, metrickey));
 			BeanUtils bu = new BeanUtils();
-			System.out.println("resrc => " + resrc);
 			if (resrc != null) {
 				sonarReport = new SonarReport();
 				for (int i = 0; i < metrickey.length; i++) {
@@ -531,137 +530,6 @@ public class GenerateReport implements PluginConstants {
 				sonarReport.setReportType(report);
 				sonarReport.setTechnology(technology);
 			}
-			
-//			System.out.println("metrickey[0]).getFormattedValue() => " + resrc.getMeasure(metrickey[0]));
-//			System.out.println("metrickey[0]).getFormattedValue() formatted => " + resrc.getMeasure(metrickey[0]).getFormattedValue());
-//			
-//				sonarReport.setNonCommentLinesOfCode(resrc.getMeasure(metrickey[0]).getFormattedValue());
-//				
-//				sonarReport.setLines(resrc.getMeasure(metrickey[1]).getFormattedValue());
-//			
-//				System.out.println("metrickey[1]).getFormattedValue() => " + resrc.getMeasure(metrickey[1]));
-//				System.out.println("metrickey[1]).getFormattedValue() => " + resrc.getMeasure(metrickey[1]).getFormattedValue());
-//				
-//				sonarReport.setFiles(resrc.getMeasure(metrickey[2]).getFormattedValue());
-//				
-//				System.out.println("metrickey[2]).getFormattedValue() => " + resrc.getMeasure(metrickey[2]));
-//				System.out.println("metrickey[2]).getFormattedValue() => " + resrc.getMeasure(metrickey[2]).getFormattedValue());
-//				
-//				sonarReport.setCommentLinesDensity(resrc.getMeasure(metrickey[3]).getFormattedValue());
-//				
-//				System.out.println("metrickey[3]).getFormattedValue() => " + resrc.getMeasure(metrickey[3]));
-//				System.out.println("metrickey[3]).getFormattedValue() => " + resrc.getMeasure(metrickey[3]).getFormattedValue());
-//				
-//				sonarReport.setCommentLines(resrc.getMeasure(metrickey[4]).getFormattedValue());
-//				
-//				System.out.println("metrickey[4]).getFormattedValue() => " + resrc.getMeasure(metrickey[4]));
-//				System.out.println("metrickey[4]).getFormattedValue() => " + resrc.getMeasure(metrickey[4]).getFormattedValue());
-//				
-//				sonarReport.setDuplicatedLinesDensity(resrc.getMeasure(metrickey[5]).getFormattedValue());
-//				
-//				System.out.println("metrickey[5]).getFormattedValue() => " + resrc.getMeasure(metrickey[5]));
-//				System.out.println("metrickey[5]).getFormattedValue() => " + resrc.getMeasure(metrickey[5]).getFormattedValue());
-//				
-//				sonarReport.setDuplicatedLines(resrc.getMeasure(metrickey[6]).getFormattedValue());
-//				
-//				System.out.println("metrickey[6]).getFormattedValue() => " + resrc.getMeasure(metrickey[6]));
-//				System.out.println("metrickey[6]).getFormattedValue() => " + resrc.getMeasure(metrickey[6]).getFormattedValue());
-//				
-//				sonarReport.setDuplicatedBlocks(resrc.getMeasure(metrickey[7]).getFormattedValue());
-//				
-//				System.out.println("metrickey[7]).getFormattedValue() => " + resrc.getMeasure(metrickey[7]));
-//				System.out.println("metrickey[7]).getFormattedValue() => " + resrc.getMeasure(metrickey[7]).getFormattedValue());
-//				
-//				sonarReport.setDuplicatedFiles(resrc.getMeasure(metrickey[8]).getFormattedValue());
-//				
-//				System.out.println("metrickey[8]).getFormattedValue() => " + resrc.getMeasure(metrickey[8]));
-//				System.out.println("metrickey[8]).getFormattedValue() => " + resrc.getMeasure(metrickey[8]).getFormattedValue());
-//				
-////			if (!WEB.equals(report)) { 
-//				sonarReport.setFunctionComplexity(resrc.getMeasure(metrickey[9]).getFormattedValue());
-//				System.out.println("metrickey[9]).getFormattedValue() => " + resrc.getMeasure(metrickey[9]));
-//				System.out.println("metrickey[9]).getFormattedValue() => " + resrc.getMeasure(metrickey[9]).getFormattedValue());
-//				
-////			}
-//				sonarReport.setFileComplexity(resrc.getMeasure(metrickey[10]).getFormattedValue());
-//				System.out.println("metrickey[10]).getFormattedValue() => " + resrc.getMeasure(metrickey[10]));
-//				System.out.println("metrickey[10]).getFormattedValue() => " + resrc.getMeasure(metrickey[10]).getFormattedValue());
-//				
-//				sonarReport.setViolationsDensity(resrc.getMeasure(metrickey[11]).getFormattedValue());
-//				System.out.println("metrickey[11]).getFormattedValue() => " + resrc.getMeasure(metrickey[11]));
-//				System.out.println("metrickey[11]).getFormattedValue() => " + resrc.getMeasure(metrickey[11]).getFormattedValue());
-//				
-//				sonarReport.setBlockerViolations(resrc.getMeasure(metrickey[12]).getFormattedValue());
-//				System.out.println("metrickey[12]).getFormattedValue() => " + resrc.getMeasure(metrickey[12]));
-//				System.out.println("metrickey[12]).getFormattedValue() => " + resrc.getMeasure(metrickey[12]).getFormattedValue());
-//				
-//				sonarReport.setCriticalViolations(resrc.getMeasure(metrickey[13]).getFormattedValue());
-//				System.out.println("metrickey[13]).getFormattedValue() => " + resrc.getMeasure(metrickey[13]));
-//				System.out.println("metrickey[13]).getFormattedValue() => " + resrc.getMeasure(metrickey[13]).getFormattedValue());
-//				
-//				sonarReport.setMajorViolations(resrc.getMeasure(metrickey[14]).getFormattedValue());
-//				System.out.println("metrickey[14]).getFormattedValue() => " + resrc.getMeasure(metrickey[14]));
-//				System.out.println("metrickey[14]).getFormattedValue() => " + resrc.getMeasure(metrickey[14]).getFormattedValue());
-//				
-//				sonarReport.setMinorViolations(resrc.getMeasure(metrickey[15]).getFormattedValue());
-//				System.out.println("metrickey[15]).getFormattedValue() => " + resrc.getMeasure(metrickey[15]));
-//				System.out.println("metrickey[15]).getFormattedValue() => " + resrc.getMeasure(metrickey[15]).getFormattedValue());
-//				
-//				sonarReport.setInfoViolations(resrc.getMeasure(metrickey[16]).getFormattedValue());
-//				System.out.println("metrickey[16]).getFormattedValue() => " + resrc.getMeasure(metrickey[16]));
-//				System.out.println("metrickey[16]).getFormattedValue() => " + resrc.getMeasure(metrickey[16]).getFormattedValue());
-//				
-//				sonarReport.setWeightedViolations(resrc.getMeasure(metrickey[17]).getFormattedValue());
-//				System.out.println("metrickey[17]).getFormattedValue() => " + resrc.getMeasure(metrickey[17]));
-//				System.out.println("metrickey[17]).getFormattedValue() => " + resrc.getMeasure(metrickey[17]).getFormattedValue());
-//			
-////			if ((TechnologyTypes.HTML5_WIDGET.equals(techId) || TechnologyTypes.HTML5_MOBILE_WIDGET.equals(techId) 
-////					|| TechnologyTypes.HTML5.equals(techId) || TechnologyTypes.HTML5_JQUERY_MOBILE_WIDGET.equals(techId) 
-////					|| TechnologyTypes.HTML5_MULTICHANNEL_JQUERY_WIDGET.equals(techId) || TechnologyTypes.JAVA_WEBSERVICE.equals(techId) 
-////					|| TechnologyTypes.NODE_JS_WEBSERVICE.equals(techId)) && (JAVA.equals(report) || FUNCTIONAL.equals(report))) {
-//				
-//				sonarReport.setClasses(resrc.getMeasure(metrickey[18]).getFormattedValue());
-//				sonarReport.setFunctions(resrc.getMeasure(metrickey[19]).getFormattedValue());
-//				sonarReport.setStatements(resrc.getMeasure(metrickey[20]).getFormattedValue());
-//				sonarReport.setPackages(resrc.getMeasure(metrickey[21]).getFormattedValue());
-//				sonarReport.setAccessors(resrc.getMeasure(metrickey[22]).getFormattedValue());
-//				sonarReport.setPublicDocumentedApiDensity((resrc.getMeasure(metrickey[23]).getFormattedValue()));
-//				sonarReport.setPublicUndocumentedApi(resrc.getMeasure(metrickey[24]).getFormattedValue());
-//				sonarReport.setPackageTangleIndex(resrc.getMeasure(metrickey[25]).getFormattedValue());
-//				sonarReport.setPackageCycles(resrc.getMeasure(metrickey[26]).getFormattedValue());
-//				sonarReport.setPackageFeedbackEdges(resrc.getMeasure(metrickey[27]).getFormattedValue());
-//				sonarReport.setPackageTangles(resrc.getMeasure(metrickey[28]).getFormattedValue());
-//				sonarReport.setLackOfCohesionMethods(resrc.getMeasure(metrickey[29]).getFormattedValue());
-//				sonarReport.setResponseForCode(resrc.getMeasure(metrickey[30]).getFormattedValue());
-//				sonarReport.setClassComplexity(resrc.getMeasure(metrickey[32]).getFormattedValue());
-//				sonarReport.setShowDivElement(REPORT_ELEMENT_JAVA_FUNC); // TODO handle this
-//				
-////			} else if ((TechnologyTypes.SHAREPOINT.equals(techId)) && (SONAR_SOURCE.equals(report) || FUNCTIONAL.equals(report))) {
-//				
-//				sonarReport.setClasses(resrc.getMeasure(metrickey[18]).getFormattedValue());
-//				sonarReport.setFunctions(resrc.getMeasure(metrickey[19]).getFormattedValue());
-//				sonarReport.setStatements(resrc.getMeasure(metrickey[20]).getFormattedValue());
-//				sonarReport.setAccessors(resrc.getMeasure(metrickey[22]).getFormattedValue());
-//				sonarReport.setPublicDocumentedApiDensity((resrc.getMeasure(metrickey[23]).getFormattedValue()));
-//				sonarReport.setPublicUndocumentedApi(resrc.getMeasure(metrickey[24]).getFormattedValue());
-//				sonarReport.setCoverage(resrc.getMeasure(metrickey[34]).getFormattedValue());
-//				sonarReport.setUncoveredLines(resrc.getMeasure(metrickey[35]).getFormattedValue());
-//				sonarReport.setShowDivElement(REPORT_ELEMENT_SHAREPOINT_SRC_FUNC);
-//				
-////			} else if ((SONAR_SOURCE.equals(report) || FUNCTIONAL.equals(report)) && !TechnologyTypes.NODE_JS_WEBSERVICE.equals(techId)) {
-//				sonarReport.setClasses(resrc.getMeasure(metrickey[18]).getFormattedValue());
-//				sonarReport.setFunctions(resrc.getMeasure(metrickey[19]).getFormattedValue());
-//				sonarReport.setShowDivElement(REPORT_ELEMENT_SRC_FUNC);
-////			} else if (JS.equals(report) || WEB.equals(report)) {
-//				System.out.println("metrickey[31]).getFormattedValue() => " + resrc.getMeasure(metrickey[31]));
-//				System.out.println("metrickey[31]).getFormattedValue() => " + resrc.getMeasure(metrickey[31]).getFormattedValue());
-//				sonarReport.setDirectories(resrc.getMeasure(metrickey[31]).getFormattedValue());
-//				sonarReport.setShowDivElement(REPORT_ELEMENT_JS_WEB);
-//				
-////			} else if (TechnologyTypes.NODE_JS_WEBSERVICE.equals(techId) && (SONAR_SOURCE.equals(report))) {
-//				sonarReport.setCommentBlankLines(resrc.getMeasure(metrickey[33]).getFormattedValue());
-//				sonarReport.setShowDivElement(REPORT_ELEMENT_NODE_JS);
-////			}
 			return sonarReport;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -889,9 +757,7 @@ public class GenerateReport implements PluginConstants {
         for (String testResultFile : testResultFiles) {
         	Document document = getDocumentOfFile(performanceReportDir, testResultFile);
 
-        	System.out.println("android perfromance test ");
         	Map<String, String> deviceNamesWithId = getDeviceNames(document);
-        	System.out.println("android perfromance test " + deviceNamesWithId.size());
         	
             Set st = deviceNamesWithId.entrySet();
             Iterator it = st.iterator();
@@ -922,7 +788,6 @@ public class GenerateReport implements PluginConstants {
 	public boolean isDeviceReportAvail() throws Exception {
         // List of performance test types
         String performanceReportDir = baseDir + mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_RPT_DIR);
-        System.out.println("performance dir => " + performanceReportDir);
         List<String> testResultFiles = getTestResultFiles(performanceReportDir);
 		
 		// List of performance test reports
@@ -1146,30 +1011,6 @@ public class GenerateReport implements PluginConstants {
             //sb.append(XPATH_TESTCASE);
 
             NodeList nodelist = org.apache.xpath.XPathAPI.selectNodeList(doc, sb.toString());
-            
-            // For tehnologies like php and drupal duoe to plugin change xml testcase path modified
-            if (nodelist.getLength() == 0) {
-                StringBuilder sbMulti = new StringBuilder();
-                sbMulti.append(testSuitePath);
-                sbMulti.append(NAME_FILTER_PREFIX);
-                sbMulti.append(testSuiteName);
-                sbMulti.append(NAME_FILTER_SUFIX);
-                sbMulti.append(XPATH_TESTSUTE_TESTCASE);
-                nodelist = org.apache.xpath.XPathAPI.selectNodeList(doc, sbMulti.toString());
-            }
-            
-            // For technology sharepoint
-            if (nodelist.getLength() == 0) {
-                StringBuilder sbMulti = new StringBuilder(); //testsuites/testsuite[@name='yyy']/testcase
-                sbMulti.append(XPATH_MULTIPLE_TESTSUITE);
-                sbMulti.append(NAME_FILTER_PREFIX);
-                sbMulti.append(testSuiteName);
-                sbMulti.append(NAME_FILTER_SUFIX);
-                //sbMulti.append(XPATH_TESTCASE);
-                sbMulti.append(testCasePath);
-                nodelist = org.apache.xpath.XPathAPI.selectNodeList(doc, sbMulti.toString());
-            }
-
             List<TestCase> testCases = new ArrayList<TestCase>();
 
             int failureTestCases = 0;
@@ -1622,7 +1463,6 @@ public class GenerateReport implements PluginConstants {
 	        this.reportType = reportType;
 	        this.projName = baseDir.getName();
 	        this.projectCode = mavenProject.getName();
-	        System.out.println("projectCode ====<> " + projectCode);
 	        
 	        if (StringUtils.isEmpty(reportType)) {
 	        	throw new PhrescoException("Report type is empty ");
