@@ -30,6 +30,7 @@ import net.sf.jasperreports.engine.data.JRBeanArrayDataSource;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.util.JRLoader;
 
+import org.apache.commons.beanutils.*;
 import org.apache.commons.collections.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -41,8 +42,8 @@ import org.htmlcleaner.TagNode;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.connectors.HttpClient4Connector;
+import org.sonar.wsclient.services.*;
 import org.sonar.wsclient.services.Resource;
-import org.sonar.wsclient.services.ResourceQuery;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -65,6 +66,8 @@ import com.photon.phresco.plugins.model.Mojos.Mojo.*;
 import com.photon.phresco.plugins.util.*;
 import com.photon.phresco.util.*;
 import com.phresco.pom.model.*;
+import com.phresco.pom.model.Model;
+import com.phresco.pom.model.Profile;
 import com.phresco.pom.model.Model.*;
 import com.phresco.pom.util.*;
 
@@ -121,6 +124,7 @@ public class GenerateReport implements PluginConstants {
 				generateUnitAndFunctionalReport(sureFireReports);
 			// Report generation for performance
 			} else if (PERFORMACE.equals(testType)) {
+				System.out.println("performance is device report check !!! ");
 				boolean deviceReportAvail = isDeviceReportAvail();
 				System.out.println("device report available ====> " + deviceReportAvail);
 				showDeviceReport = deviceReportAvail;
@@ -457,7 +461,7 @@ public class GenerateReport implements PluginConstants {
 	
 	 public SonarReport generateSonarReport(String report) throws PhrescoException {
 		System.out.println("Entering Method PhrescoReportGeneration.generateSonarReport()");
-		SonarReport sonarReport = new SonarReport();
+		SonarReport sonarReport = null;
 		// TODO : sonar
     	String technology = null;
 		String serverUrl = "http://localhost:8080/sonar";
@@ -494,6 +498,7 @@ public class GenerateReport implements PluginConstants {
 			System.out.println("serverUrl => " + serverUrl);
 			System.out.println("artifact => " + artifact);
 			
+			System.out.println("technology => " + technology);
 			//metric key parameters for sonar 
 			String metrickey[] = {"ncloc", "lines", "files", "comment_lines_density" , "comment_lines", "duplicated_lines_density", "duplicated_lines", 
 					"duplicated_blocks", "duplicated_files", "function_complexity", "file_complexity", "violations_density", "blocker_violations", 
@@ -502,77 +507,161 @@ public class GenerateReport implements PluginConstants {
 					"statements","packages", "accessors", "public_documented_api_density", "public_undocumented_api","package_tangle_index","package_cycles", "package_feedback_edges", "package_tangles", "lcom4", "rfc",
 					"directories", "class_complexity", "comment_blank_lines", "coverage", "uncovered_lines"};
 			
+			String methodkey[] = {"nonCommentLinesOfCode", "lines", "files", "commentLinesDensity" , "commentLines", "duplicatedLinesDensity", "duplicatedLines", 
+					"duplicatedBlocks", "duplicatedFiles", "functionComplexity", "fileComplexity", "violationsDensity", "blockerViolations", 
+					"criticalViolations", "majorViolations", "minorViolations", "infoViolations", "weightedViolations",
+					"classes", "functions",
+					"statements","packages", "accessors", "publicDocumentedApiDensity", "publicUndocumentedApi","packageTangleIndex","packageCycles", "packageFeedbackEdges", "packageTangles", "lackOfCohesionMethods", "responseForCode",
+					"directories", "classComplexity", "commentBlankLines", "coverage", "uncoveredLines"};
+			
+			
 			Resource resrc = sonar.find(ResourceQuery.createForMetrics(artifact, metrickey));
-			System.out.println("metrickey[0]).getFormattedValue() => " + resrc.getMeasure(metrickey[0]).getFormattedValue());
-				sonarReport.setNonCommentLinesOfCode(resrc.getMeasure(metrickey[0]).getFormattedValue());
-				sonarReport.setLines(resrc.getMeasure(metrickey[1]).getFormattedValue());
-				sonarReport.setFiles(resrc.getMeasure(metrickey[2]).getFormattedValue());
-				sonarReport.setCommentLinesDensity(resrc.getMeasure(metrickey[3]).getFormattedValue());
-				sonarReport.setCommentLines(resrc.getMeasure(metrickey[4]).getFormattedValue());
-				sonarReport.setDuplicatedLinesDensity(resrc.getMeasure(metrickey[5]).getFormattedValue());
-				sonarReport.setDuplicatedLines(resrc.getMeasure(metrickey[6]).getFormattedValue());
-				sonarReport.setDuplicatedBlocks(resrc.getMeasure(metrickey[7]).getFormattedValue());
-				sonarReport.setDuplicatedFiles(resrc.getMeasure(metrickey[8]).getFormattedValue());
-//			if (!WEB.equals(report)) { 
+			BeanUtils bu = new BeanUtils();
+			System.out.println("resrc => " + resrc);
+			if (resrc != null) {
+				sonarReport = new SonarReport();
+				for (int i = 0; i < metrickey.length; i++) {
+					Measure measure = resrc.getMeasure(metrickey[i]);
+					if (measure != null) {
+						String formattedValue = resrc.getMeasure(metrickey[i]).getFormattedValue();
+						System.out.println(methodkey[i] + " " + formattedValue);
+						bu.setProperty(sonarReport, methodkey[i], formattedValue);
+					}
+				}
+				sonarReport.setReportType(report);
+				sonarReport.setTechnology(technology);
+			}
+			
+//			System.out.println("metrickey[0]).getFormattedValue() => " + resrc.getMeasure(metrickey[0]));
+//			System.out.println("metrickey[0]).getFormattedValue() formatted => " + resrc.getMeasure(metrickey[0]).getFormattedValue());
+//			
+//				sonarReport.setNonCommentLinesOfCode(resrc.getMeasure(metrickey[0]).getFormattedValue());
+//				
+//				sonarReport.setLines(resrc.getMeasure(metrickey[1]).getFormattedValue());
+//			
+//				System.out.println("metrickey[1]).getFormattedValue() => " + resrc.getMeasure(metrickey[1]));
+//				System.out.println("metrickey[1]).getFormattedValue() => " + resrc.getMeasure(metrickey[1]).getFormattedValue());
+//				
+//				sonarReport.setFiles(resrc.getMeasure(metrickey[2]).getFormattedValue());
+//				
+//				System.out.println("metrickey[2]).getFormattedValue() => " + resrc.getMeasure(metrickey[2]));
+//				System.out.println("metrickey[2]).getFormattedValue() => " + resrc.getMeasure(metrickey[2]).getFormattedValue());
+//				
+//				sonarReport.setCommentLinesDensity(resrc.getMeasure(metrickey[3]).getFormattedValue());
+//				
+//				System.out.println("metrickey[3]).getFormattedValue() => " + resrc.getMeasure(metrickey[3]));
+//				System.out.println("metrickey[3]).getFormattedValue() => " + resrc.getMeasure(metrickey[3]).getFormattedValue());
+//				
+//				sonarReport.setCommentLines(resrc.getMeasure(metrickey[4]).getFormattedValue());
+//				
+//				System.out.println("metrickey[4]).getFormattedValue() => " + resrc.getMeasure(metrickey[4]));
+//				System.out.println("metrickey[4]).getFormattedValue() => " + resrc.getMeasure(metrickey[4]).getFormattedValue());
+//				
+//				sonarReport.setDuplicatedLinesDensity(resrc.getMeasure(metrickey[5]).getFormattedValue());
+//				
+//				System.out.println("metrickey[5]).getFormattedValue() => " + resrc.getMeasure(metrickey[5]));
+//				System.out.println("metrickey[5]).getFormattedValue() => " + resrc.getMeasure(metrickey[5]).getFormattedValue());
+//				
+//				sonarReport.setDuplicatedLines(resrc.getMeasure(metrickey[6]).getFormattedValue());
+//				
+//				System.out.println("metrickey[6]).getFormattedValue() => " + resrc.getMeasure(metrickey[6]));
+//				System.out.println("metrickey[6]).getFormattedValue() => " + resrc.getMeasure(metrickey[6]).getFormattedValue());
+//				
+//				sonarReport.setDuplicatedBlocks(resrc.getMeasure(metrickey[7]).getFormattedValue());
+//				
+//				System.out.println("metrickey[7]).getFormattedValue() => " + resrc.getMeasure(metrickey[7]));
+//				System.out.println("metrickey[7]).getFormattedValue() => " + resrc.getMeasure(metrickey[7]).getFormattedValue());
+//				
+//				sonarReport.setDuplicatedFiles(resrc.getMeasure(metrickey[8]).getFormattedValue());
+//				
+//				System.out.println("metrickey[8]).getFormattedValue() => " + resrc.getMeasure(metrickey[8]));
+//				System.out.println("metrickey[8]).getFormattedValue() => " + resrc.getMeasure(metrickey[8]).getFormattedValue());
+//				
+////			if (!WEB.equals(report)) { 
 //				sonarReport.setFunctionComplexity(resrc.getMeasure(metrickey[9]).getFormattedValue());
-//			}
-				sonarReport.setFileComplexity(resrc.getMeasure(metrickey[10]).getFormattedValue());
-				sonarReport.setViolationsDensity(resrc.getMeasure(metrickey[11]).getFormattedValue());
-				sonarReport.setBlockerViolations(resrc.getMeasure(metrickey[12]).getFormattedValue());
-				sonarReport.setCriticalViolations(resrc.getMeasure(metrickey[13]).getFormattedValue());
-				sonarReport.setMajorViolations(resrc.getMeasure(metrickey[14]).getFormattedValue());
-				sonarReport.setMinorViolations(resrc.getMeasure(metrickey[15]).getFormattedValue());
-				sonarReport.setInfoViolations(resrc.getMeasure(metrickey[16]).getFormattedValue());
-				sonarReport.setWeightedViolations(resrc.getMeasure(metrickey[17]).getFormattedValue());
-			
-//			if ((TechnologyTypes.HTML5_WIDGET.equals(techId) || TechnologyTypes.HTML5_MOBILE_WIDGET.equals(techId) 
-//					|| TechnologyTypes.HTML5.equals(techId) || TechnologyTypes.HTML5_JQUERY_MOBILE_WIDGET.equals(techId) 
-//					|| TechnologyTypes.HTML5_MULTICHANNEL_JQUERY_WIDGET.equals(techId) || TechnologyTypes.JAVA_WEBSERVICE.equals(techId) 
-//					|| TechnologyTypes.NODE_JS_WEBSERVICE.equals(techId)) && (JAVA.equals(report) || FUNCTIONAL.equals(report))) {
-				
-				sonarReport.setClasses(resrc.getMeasure(metrickey[18]).getFormattedValue());
-				sonarReport.setFunctions(resrc.getMeasure(metrickey[19]).getFormattedValue());
-				sonarReport.setStatements(resrc.getMeasure(metrickey[20]).getFormattedValue());
-				sonarReport.setPackages(resrc.getMeasure(metrickey[21]).getFormattedValue());
-				sonarReport.setAccessors(resrc.getMeasure(metrickey[22]).getFormattedValue());
-				sonarReport.setPublicDocumentedApiDensity((resrc.getMeasure(metrickey[23]).getFormattedValue()));
-				sonarReport.setPublicUndocumentedApi(resrc.getMeasure(metrickey[24]).getFormattedValue());
-				sonarReport.setPackageTangleIndex(resrc.getMeasure(metrickey[25]).getFormattedValue());
-				sonarReport.setPackageCycles(resrc.getMeasure(metrickey[26]).getFormattedValue());
-				sonarReport.setPackageFeedbackEdges(resrc.getMeasure(metrickey[27]).getFormattedValue());
-				sonarReport.setPackageTangles(resrc.getMeasure(metrickey[28]).getFormattedValue());
-				sonarReport.setLackOfCohesionMethods(resrc.getMeasure(metrickey[29]).getFormattedValue());
-				sonarReport.setResponseForCode(resrc.getMeasure(metrickey[30]).getFormattedValue());
-				sonarReport.setClassComplexity(resrc.getMeasure(metrickey[32]).getFormattedValue());
-				sonarReport.setShowDivElement(REPORT_ELEMENT_JAVA_FUNC); // TODO handle this
-				
-//			} else if ((TechnologyTypes.SHAREPOINT.equals(techId)) && (SONAR_SOURCE.equals(report) || FUNCTIONAL.equals(report))) {
-				
-				sonarReport.setClasses(resrc.getMeasure(metrickey[18]).getFormattedValue());
-				sonarReport.setFunctions(resrc.getMeasure(metrickey[19]).getFormattedValue());
-				sonarReport.setStatements(resrc.getMeasure(metrickey[20]).getFormattedValue());
-				sonarReport.setAccessors(resrc.getMeasure(metrickey[22]).getFormattedValue());
-				sonarReport.setPublicDocumentedApiDensity((resrc.getMeasure(metrickey[23]).getFormattedValue()));
-				sonarReport.setPublicUndocumentedApi(resrc.getMeasure(metrickey[24]).getFormattedValue());
-				sonarReport.setCoverage(resrc.getMeasure(metrickey[34]).getFormattedValue());
-				sonarReport.setUncoveredLines(resrc.getMeasure(metrickey[35]).getFormattedValue());
-				sonarReport.setShowDivElement(REPORT_ELEMENT_SHAREPOINT_SRC_FUNC);
-				
-//			} else if ((SONAR_SOURCE.equals(report) || FUNCTIONAL.equals(report)) && !TechnologyTypes.NODE_JS_WEBSERVICE.equals(techId)) {
-				sonarReport.setClasses(resrc.getMeasure(metrickey[18]).getFormattedValue());
-				sonarReport.setFunctions(resrc.getMeasure(metrickey[19]).getFormattedValue());
-				sonarReport.setShowDivElement(REPORT_ELEMENT_SRC_FUNC);
-//			} else if (JS.equals(report) || WEB.equals(report)) {
-				sonarReport.setDirectories(resrc.getMeasure(metrickey[31]).getFormattedValue());
-				sonarReport.setShowDivElement(REPORT_ELEMENT_JS_WEB);
-				
-//			} else if (TechnologyTypes.NODE_JS_WEBSERVICE.equals(techId) && (SONAR_SOURCE.equals(report))) {
-				sonarReport.setCommentBlankLines(resrc.getMeasure(metrickey[33]).getFormattedValue());
-				sonarReport.setShowDivElement(REPORT_ELEMENT_NODE_JS);
-//			}
-			
-			sonarReport.setReportType(report);
-			sonarReport.setTechnology(technology);
+//				System.out.println("metrickey[9]).getFormattedValue() => " + resrc.getMeasure(metrickey[9]));
+//				System.out.println("metrickey[9]).getFormattedValue() => " + resrc.getMeasure(metrickey[9]).getFormattedValue());
+//				
+////			}
+//				sonarReport.setFileComplexity(resrc.getMeasure(metrickey[10]).getFormattedValue());
+//				System.out.println("metrickey[10]).getFormattedValue() => " + resrc.getMeasure(metrickey[10]));
+//				System.out.println("metrickey[10]).getFormattedValue() => " + resrc.getMeasure(metrickey[10]).getFormattedValue());
+//				
+//				sonarReport.setViolationsDensity(resrc.getMeasure(metrickey[11]).getFormattedValue());
+//				System.out.println("metrickey[11]).getFormattedValue() => " + resrc.getMeasure(metrickey[11]));
+//				System.out.println("metrickey[11]).getFormattedValue() => " + resrc.getMeasure(metrickey[11]).getFormattedValue());
+//				
+//				sonarReport.setBlockerViolations(resrc.getMeasure(metrickey[12]).getFormattedValue());
+//				System.out.println("metrickey[12]).getFormattedValue() => " + resrc.getMeasure(metrickey[12]));
+//				System.out.println("metrickey[12]).getFormattedValue() => " + resrc.getMeasure(metrickey[12]).getFormattedValue());
+//				
+//				sonarReport.setCriticalViolations(resrc.getMeasure(metrickey[13]).getFormattedValue());
+//				System.out.println("metrickey[13]).getFormattedValue() => " + resrc.getMeasure(metrickey[13]));
+//				System.out.println("metrickey[13]).getFormattedValue() => " + resrc.getMeasure(metrickey[13]).getFormattedValue());
+//				
+//				sonarReport.setMajorViolations(resrc.getMeasure(metrickey[14]).getFormattedValue());
+//				System.out.println("metrickey[14]).getFormattedValue() => " + resrc.getMeasure(metrickey[14]));
+//				System.out.println("metrickey[14]).getFormattedValue() => " + resrc.getMeasure(metrickey[14]).getFormattedValue());
+//				
+//				sonarReport.setMinorViolations(resrc.getMeasure(metrickey[15]).getFormattedValue());
+//				System.out.println("metrickey[15]).getFormattedValue() => " + resrc.getMeasure(metrickey[15]));
+//				System.out.println("metrickey[15]).getFormattedValue() => " + resrc.getMeasure(metrickey[15]).getFormattedValue());
+//				
+//				sonarReport.setInfoViolations(resrc.getMeasure(metrickey[16]).getFormattedValue());
+//				System.out.println("metrickey[16]).getFormattedValue() => " + resrc.getMeasure(metrickey[16]));
+//				System.out.println("metrickey[16]).getFormattedValue() => " + resrc.getMeasure(metrickey[16]).getFormattedValue());
+//				
+//				sonarReport.setWeightedViolations(resrc.getMeasure(metrickey[17]).getFormattedValue());
+//				System.out.println("metrickey[17]).getFormattedValue() => " + resrc.getMeasure(metrickey[17]));
+//				System.out.println("metrickey[17]).getFormattedValue() => " + resrc.getMeasure(metrickey[17]).getFormattedValue());
+//			
+////			if ((TechnologyTypes.HTML5_WIDGET.equals(techId) || TechnologyTypes.HTML5_MOBILE_WIDGET.equals(techId) 
+////					|| TechnologyTypes.HTML5.equals(techId) || TechnologyTypes.HTML5_JQUERY_MOBILE_WIDGET.equals(techId) 
+////					|| TechnologyTypes.HTML5_MULTICHANNEL_JQUERY_WIDGET.equals(techId) || TechnologyTypes.JAVA_WEBSERVICE.equals(techId) 
+////					|| TechnologyTypes.NODE_JS_WEBSERVICE.equals(techId)) && (JAVA.equals(report) || FUNCTIONAL.equals(report))) {
+//				
+//				sonarReport.setClasses(resrc.getMeasure(metrickey[18]).getFormattedValue());
+//				sonarReport.setFunctions(resrc.getMeasure(metrickey[19]).getFormattedValue());
+//				sonarReport.setStatements(resrc.getMeasure(metrickey[20]).getFormattedValue());
+//				sonarReport.setPackages(resrc.getMeasure(metrickey[21]).getFormattedValue());
+//				sonarReport.setAccessors(resrc.getMeasure(metrickey[22]).getFormattedValue());
+//				sonarReport.setPublicDocumentedApiDensity((resrc.getMeasure(metrickey[23]).getFormattedValue()));
+//				sonarReport.setPublicUndocumentedApi(resrc.getMeasure(metrickey[24]).getFormattedValue());
+//				sonarReport.setPackageTangleIndex(resrc.getMeasure(metrickey[25]).getFormattedValue());
+//				sonarReport.setPackageCycles(resrc.getMeasure(metrickey[26]).getFormattedValue());
+//				sonarReport.setPackageFeedbackEdges(resrc.getMeasure(metrickey[27]).getFormattedValue());
+//				sonarReport.setPackageTangles(resrc.getMeasure(metrickey[28]).getFormattedValue());
+//				sonarReport.setLackOfCohesionMethods(resrc.getMeasure(metrickey[29]).getFormattedValue());
+//				sonarReport.setResponseForCode(resrc.getMeasure(metrickey[30]).getFormattedValue());
+//				sonarReport.setClassComplexity(resrc.getMeasure(metrickey[32]).getFormattedValue());
+//				sonarReport.setShowDivElement(REPORT_ELEMENT_JAVA_FUNC); // TODO handle this
+//				
+////			} else if ((TechnologyTypes.SHAREPOINT.equals(techId)) && (SONAR_SOURCE.equals(report) || FUNCTIONAL.equals(report))) {
+//				
+//				sonarReport.setClasses(resrc.getMeasure(metrickey[18]).getFormattedValue());
+//				sonarReport.setFunctions(resrc.getMeasure(metrickey[19]).getFormattedValue());
+//				sonarReport.setStatements(resrc.getMeasure(metrickey[20]).getFormattedValue());
+//				sonarReport.setAccessors(resrc.getMeasure(metrickey[22]).getFormattedValue());
+//				sonarReport.setPublicDocumentedApiDensity((resrc.getMeasure(metrickey[23]).getFormattedValue()));
+//				sonarReport.setPublicUndocumentedApi(resrc.getMeasure(metrickey[24]).getFormattedValue());
+//				sonarReport.setCoverage(resrc.getMeasure(metrickey[34]).getFormattedValue());
+//				sonarReport.setUncoveredLines(resrc.getMeasure(metrickey[35]).getFormattedValue());
+//				sonarReport.setShowDivElement(REPORT_ELEMENT_SHAREPOINT_SRC_FUNC);
+//				
+////			} else if ((SONAR_SOURCE.equals(report) || FUNCTIONAL.equals(report)) && !TechnologyTypes.NODE_JS_WEBSERVICE.equals(techId)) {
+//				sonarReport.setClasses(resrc.getMeasure(metrickey[18]).getFormattedValue());
+//				sonarReport.setFunctions(resrc.getMeasure(metrickey[19]).getFormattedValue());
+//				sonarReport.setShowDivElement(REPORT_ELEMENT_SRC_FUNC);
+////			} else if (JS.equals(report) || WEB.equals(report)) {
+//				System.out.println("metrickey[31]).getFormattedValue() => " + resrc.getMeasure(metrickey[31]));
+//				System.out.println("metrickey[31]).getFormattedValue() => " + resrc.getMeasure(metrickey[31]).getFormattedValue());
+//				sonarReport.setDirectories(resrc.getMeasure(metrickey[31]).getFormattedValue());
+//				sonarReport.setShowDivElement(REPORT_ELEMENT_JS_WEB);
+//				
+////			} else if (TechnologyTypes.NODE_JS_WEBSERVICE.equals(techId) && (SONAR_SOURCE.equals(report))) {
+//				sonarReport.setCommentBlankLines(resrc.getMeasure(metrickey[33]).getFormattedValue());
+//				sonarReport.setShowDivElement(REPORT_ELEMENT_NODE_JS);
+////			}
 			return sonarReport;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -756,7 +845,7 @@ public class GenerateReport implements PluginConstants {
         // List of performance test types
         ArrayList<JmeterTypeReport> jmeterTypeReports = new ArrayList<JmeterTypeReport>();
         for(String perType: testResultsTypes) {
-            String performanceReportDir = baseDir + mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR);
+            String performanceReportDir = baseDir + mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_RPT_DIR);
             
             if (StringUtils.isNotEmpty(performanceReportDir) && StringUtils.isNotEmpty(perType)) {
                 Pattern p = Pattern.compile("dir_type");
@@ -792,7 +881,7 @@ public class GenerateReport implements PluginConstants {
 	
 	public List<AndroidPerfReport> getJmeterTestResultsForAndroid() throws Exception {
         // List of performance test types
-        String performanceReportDir = baseDir + mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR);
+        String performanceReportDir = baseDir + mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_RPT_DIR);
         List<String> testResultFiles = getTestResultFiles(performanceReportDir);
 		
 		// List of performance test reports
@@ -832,7 +921,8 @@ public class GenerateReport implements PluginConstants {
 	
 	public boolean isDeviceReportAvail() throws Exception {
         // List of performance test types
-        String performanceReportDir = baseDir + mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR);
+        String performanceReportDir = baseDir + mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_RPT_DIR);
+        System.out.println("performance dir => " + performanceReportDir);
         List<String> testResultFiles = getTestResultFiles(performanceReportDir);
 		
 		// List of performance test reports
@@ -1471,19 +1561,19 @@ public class GenerateReport implements PluginConstants {
 
 	public static Map<String, String> getDeviceNames(Document document)  throws Exception {
 		NodeList nodeList = org.apache.xpath.XPathAPI.selectNodeList(document, "/*/deviceInfo");
+		System.out.println("nodeList => " + nodeList.getLength());
 		Map<String, String> deviceList = new LinkedHashMap<String, String>(100);
-		if (MapUtils.isNotEmpty(deviceList)) {
-			for (int i = 0; i < nodeList.getLength(); i++) {
-				Node node = nodeList.item(i);
-				NamedNodeMap nameNodeMap = node.getAttributes();
-				String deviceId = "";
-				String deviceName = "";
-				Node idAttr = nameNodeMap.getNamedItem(ATTR_ID);
-				deviceId = idAttr.getNodeValue();
-				Node nameAttr = nameNodeMap.getNamedItem(ATTR_NAME);
-				deviceName = nameAttr.getNodeValue();
-				deviceList.put(deviceId, deviceName);
-			}
+		for (int i = 0; i < nodeList.getLength(); i++) {
+			Node node = nodeList.item(i);
+			NamedNodeMap nameNodeMap = node.getAttributes();
+			String deviceId = "";
+			String deviceName = "";
+			Node idAttr = nameNodeMap.getNamedItem(ATTR_ID);
+			deviceId = idAttr.getNodeValue();
+			System.out.println("deviceId => " + deviceId);
+			Node nameAttr = nameNodeMap.getNamedItem(ATTR_NAME);
+			deviceName = nameAttr.getNodeValue();
+			deviceList.put(deviceId, deviceName);
 		}
 		return deviceList;
 	}
