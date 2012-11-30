@@ -60,9 +60,7 @@ public class Package implements PluginConstants {
 	
 	private void init() throws MojoExecutionException {
 		try {
-			//File f = new File(baseDir, DRUPAL_SOURCE_DIR);
-			
-			srcDir = new File(baseDir.getPath() + File.separator + DRUPAL_SOURCE_DIR);
+			srcDir = new File(baseDir.getPath() + File.separator + PROJECT_FOLDER);
 			buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
 			if (!buildDir.exists()) {
 				buildDir.mkdir();

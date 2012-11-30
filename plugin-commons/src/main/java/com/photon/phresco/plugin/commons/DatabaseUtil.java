@@ -231,31 +231,28 @@ public class DatabaseUtil {
 	public void getSqlFilePath(Configuration dbConfiguration, File basedir,	String databaseType, String sqlJson) throws PhrescoException {
 		List<String> filepaths = new ArrayList<String>();
 		try {
-			File jsonFile = new File(basedir.getPath() + File.separator	+ Constants.DOT_PHRESCO_FOLDER + File.separator +  Constants.PHRESCO_PLUGIN_INFO_XML);
-			if (jsonFile.exists()) {
-				Gson gson = new Gson();
-				Type mapObjectType = new TypeToken<Map<String, List<String>>>() {}.getType();
-				String json = gson.toJson(sqlJson);
-				String jsonPath = json.replace("\\", "").replaceAll("^\"|\"$","");
-				Map<String, List<String>> dbMap = gson.fromJson(jsonPath, mapObjectType);
-				Iterator<Entry<String, List<String>>> iterator = dbMap.entrySet().iterator();
-				List<String> paths = new ArrayList<String>();
-				while (iterator.hasNext()) {
-					Entry<String, List<String>> entry = iterator.next();
-					if (entry.getKey().equals(databaseType)) {
-						filepaths = entry.getValue();
-						String version = dbConfiguration.getProperties().getProperty(Constants.DB_VERSION);
-						String dbType = dbConfiguration.getProperties().getProperty(Constants.DB_TYPE);
-						String pathVersion = "" ;
-						for (String sourcePath : filepaths) {
-							pathVersion = sourcePath.substring(sourcePath.indexOf(dbType), sourcePath.lastIndexOf("/"));
-							pathVersion = (pathVersion.substring(pathVersion.indexOf("/")).substring(1));
-							if (pathVersion.equals(version)) {
-								paths.add(sourcePath);
-							}
+			Gson gson = new Gson();
+			Type mapObjectType = new TypeToken<Map<String, List<String>>>() {}.getType();
+			String json = gson.toJson(sqlJson);
+			String jsonPath = json.replace("\\", "").replaceAll("^\"|\"$","");
+			Map<String, List<String>> dbMap = gson.fromJson(jsonPath, mapObjectType);
+			Iterator<Entry<String, List<String>>> iterator = dbMap.entrySet().iterator();
+			List<String> paths = new ArrayList<String>();
+			while (iterator.hasNext()) {
+				Entry<String, List<String>> entry = iterator.next();
+				if (entry.getKey().equals(databaseType)) {
+					filepaths = entry.getValue();
+					String version = dbConfiguration.getProperties().getProperty(Constants.DB_VERSION);
+					String dbType = dbConfiguration.getProperties().getProperty(Constants.DB_TYPE);
+					String pathVersion = "" ;
+					for (String sourcePath : filepaths) {
+						pathVersion = sourcePath.substring(sourcePath.indexOf(dbType), sourcePath.lastIndexOf("/"));
+						pathVersion = (pathVersion.substring(pathVersion.indexOf("/")).substring(1));
+						if (pathVersion.equals(version)) {
+							paths.add(sourcePath);
 						}
-						executeSql(dbConfiguration, basedir, paths);
 					}
+					executeSql(dbConfiguration, basedir, paths);
 				}
 			}
 		} catch (JsonIOException e) {
