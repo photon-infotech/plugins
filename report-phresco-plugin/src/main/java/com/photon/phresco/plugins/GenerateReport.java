@@ -86,15 +86,8 @@ public class GenerateReport implements PluginConstants {
 	private String projName = null;
     private String reportType = null;
 	private boolean isClangReport;
-	// TODO : for android tech
 	private boolean showDeviceReport;
 	
-	private String skipTest = null;
-    private String codeTechnology = null;
-    private String report = null;
-    private String validateAgainst = null;
-	private String target = null;
-
     //test suite details
 	private float noOfTstSuiteTests = 0;
     private float noOfTstSuiteFailures = 0;
@@ -113,10 +106,6 @@ public class GenerateReport implements PluginConstants {
 	public void generatePdfReport()  throws PhrescoException {
 		System.out.println("Entering Method PhrescoReportGeneration.generatePdfReport()");
 		try {
-//			testType = tstType;
-//			projectCode = project.getProjectInfo().getCode();
-//			projectName = project.getProjectInfo().getName();
-//			reportDatasType = reportDataType;
 			// Report generation for unit and functional
 			if (UNIT.equals(testType) || FUNCTIONAL.equals(testType)) {
 				//crisp and detail view report generation
@@ -201,11 +190,8 @@ public class GenerateReport implements PluginConstants {
 			}
 			cumulativeReportparams.put(LOAD_TEST_REPORTS, loadTestResults);
 			
-			// TODO : sonar
 			//Sonar details
 			List<SonarReport> sonarReports = new ArrayList<SonarReport>();
-//			FrameworkUtil frameworkUtil = FrameworkUtil.getInstance();
-//        	List<String> sonarTechReports = frameworkUtil.getSonarProfiles(projectCode);
 			List<String> sonarTechReports = getSonarProfiles(baseDir + File.separator + POM_XML);
     		if(CollectionUtils.isEmpty(sonarTechReports)) {
     			sonarTechReports.add(SONAR_SOURCE);
@@ -466,11 +452,8 @@ public class GenerateReport implements PluginConstants {
     	String technology = null;
 		String serverUrl = "http://localhost:8080/sonar";
 		try {
-			// TODO : sonar
-//			serverUrl = frameworkUtil.getSonarURL();
 			StringBuilder builder = new StringBuilder(baseDir.getAbsolutePath());
             if (StringUtils.isNotEmpty(report) && FUNCTIONALTEST.equals(report)) {
-//                frameworkUtil = FrameworkUtil.getInstance();
                 builder.append(mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR));
             }
             
@@ -487,7 +470,7 @@ public class GenerateReport implements PluginConstants {
         	sbuild.append(groupId);
         	sbuild.append(COLON);
         	sbuild.append(artifactId);
-        	// TODO : sonar
+        	
         	if (StringUtils.isNotEmpty(report) && !SONAR_SOURCE.equals(report)) {
         		sbuild.append(COLON);
         		sbuild.append(report);
@@ -498,7 +481,6 @@ public class GenerateReport implements PluginConstants {
 			System.out.println("serverUrl => " + serverUrl);
 			System.out.println("artifact => " + artifact);
 			
-			System.out.println("technology => " + technology);
 			//metric key parameters for sonar 
 			String metrickey[] = {"ncloc", "lines", "files", "comment_lines_density" , "comment_lines", "duplicated_lines_density", "duplicated_lines", 
 					"duplicated_blocks", "duplicated_files", "function_complexity", "file_complexity", "violations_density", "blocker_violations", 
@@ -513,7 +495,6 @@ public class GenerateReport implements PluginConstants {
 					"classes", "functions",
 					"statements","packages", "accessors", "publicDocumentedApiDensity", "publicUndocumentedApi","packageTangleIndex","packageCycles", "packageFeedbackEdges", "packageTangles", "lackOfCohesionMethods", "responseForCode",
 					"directories", "classComplexity", "commentBlankLines", "coverage", "uncoveredLines"};
-			
 			
 			Resource resrc = sonar.find(ResourceQuery.createForMetrics(artifact, metrickey));
 			BeanUtils bu = new BeanUtils();
@@ -1131,7 +1112,7 @@ public class GenerateReport implements PluginConstants {
 		if(StringUtils.isNotEmpty(deviceId)) {
 			device = "deviceInfo[@id='" + deviceId + "']";
 		}
-		// TODO handle it
+
 		if(showDeviceReport) {
 			xpath = "/*/" + device + "/*";
 		}
