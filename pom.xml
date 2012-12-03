@@ -3,14 +3,14 @@
     <!-- <parent>
         <groupId>com.photon.phresco</groupId>
         <artifactId>phresco-parent</artifactId>
-        <version>2.0.0.26001-SNAPSHOT</version>
+        <version>2.0.0.26002-SNAPSHOT</version>
         <relativePath>../</relativePath>
     </parent> -->
     
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.photon.phresco.plugins</groupId>
     <artifactId>phresco-plugins-root</artifactId>
-	<version>2.0.0.26001-SNAPSHOT</version>
+	<version>2.0.0.26002-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Phresco Plugins</name>
 	<url>http://www.phresco.org</url>
@@ -26,11 +26,11 @@
         <module>xcode-phresco-plugin</module>
         <module>nodejs-phresco-plugin</module>    
         <module>wordpress-phresco-plugin</module>   
-        <module>jstest-maven-plugin</module>       
+        <module>jstest-maven-plugin</module>    
         <module>js-testrunner-plugin</module>         
         <module>javascript-maven-plugin</module>
         <module>plugin-commons</module>        
-        <module>jslint-maven-plugin</module>        
+        <module>jslint-maven-plugin</module>  
 		<!-- <module>js-import-maven-plugin</module>  -->
 		<module>windows-phone-phresco-plugin</module>
 		<module>blackberry-phresco-plugin</module>
