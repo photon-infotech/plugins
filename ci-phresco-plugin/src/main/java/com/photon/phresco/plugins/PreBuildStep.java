@@ -76,7 +76,7 @@ public class PreBuildStep  implements PluginConstants {
 		sb.append(File.separator);
 		sb.append(DOT_PHRESCO_FOLDER);
 		sb.append(File.separator);
-		sb.append(PLUGIN_INFO_FILE);
+		sb.append(PHASE_PACKAGE_INFO);
 		File pluginInfoFile = new File(sb.toString());
 		log.info("getPhrescoPluginInfoFile method fiel path  ... " + sb.toString());
 		if (!pluginInfoFile.exists()) {
@@ -84,6 +84,24 @@ public class PreBuildStep  implements PluginConstants {
 		}
 		return pluginInfoFile;
 	}
+	
+//	public String getPhrescoPluginInfoFilePath(String goal) throws PhrescoException {
+//		StringBuilder sb = new StringBuilder(getApplicationHome());
+//		sb.append(File.separator);
+//		sb.append(FOLDER_DOT_PHRESCO);
+//		sb.append(File.separator);
+//		sb.append(PHRESCO_HYPEN);
+//		if (PHASE_FUNCTIONAL_TEST_WEBDRIVER.equals(goal) || PHASE_FUNCTIONAL_TEST_GRID.equals(goal)) {
+//			sb.append(PHASE_FUNCTIONAL_TEST);
+//		} else if (PHASE_RUNGAINST_SRC_START.equals(goal)|| PHASE_RUNGAINST_SRC_STOP.equals(goal) ) {
+//			sb.append(PHASE_RUNAGAINST_SOURCE);
+//		}
+//		else {
+//			sb.append(goal);
+//		}
+//		sb.append(INFO_XML);
+//		return sb.toString();
+//	}
 	
 	private ApplicationInfo getApplicationInfo(File projectInfoFile) throws MojoExecutionException {
 		log.info("getApplicationInfo method called  ... " + projectInfoFile);

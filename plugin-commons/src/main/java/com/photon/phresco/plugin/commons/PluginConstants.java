@@ -401,5 +401,7 @@ public interface PluginConstants {
     String WEBDRIVER = "webdriver";
     String GRID = "grid";
     String HYPEN = "-";
+    
+    String PHASE_PACKAGE_INFO = "phresco-package-info.xml";
 	
 }
