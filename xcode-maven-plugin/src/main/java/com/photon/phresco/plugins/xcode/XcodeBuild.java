@@ -796,10 +796,12 @@ public class XcodeBuild extends AbstractMojo {
 		}
 		
 		if (libProjet && xcodeProjet) {
-			throw new MojoExecutionException("Project type can not be predicted...whether it is library project or app project ");
+			getLog().info("App project is having library dependency . ");
+			return APP_PROJECT;
 		}
 		
 		if (libProjet) {
+			getLog().info("Library project found . ");
 			return LIB_PROJECT;
 		}
 		
