@@ -46,7 +46,7 @@ import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.model.WP8PackageInfo;
 import com.photon.phresco.plugins.util.MojoUtil;
-import com.photon.phresco.plugins.util.PluginsUtil;
+import com.photon.phresco.plugins.util.PluginPackageUtil;
 import com.photon.phresco.util.ArchiveUtil;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 import com.photon.phresco.util.Utility;
@@ -75,7 +75,7 @@ public class Package implements PluginConstants {
 	private WP8PackageInfo packageInfo;
 	private File rootDir;
 	private Log log;
-	private PluginsUtil util;
+	private PluginPackageUtil util;
 	
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		
@@ -88,7 +88,7 @@ public class Package implements PluginConstants {
         platform = configs.get(PLATFORM);
         config = configs.get(CONFIG);
         type = configs.get(WINDOWS_PLATFORM_TYPE);
-        util = new PluginsUtil();
+        util = new PluginPackageUtil();
         
 		try {
 			init();

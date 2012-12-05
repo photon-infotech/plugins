@@ -32,7 +32,7 @@ import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoUtil;
-import com.photon.phresco.plugins.util.PluginsUtil;
+import com.photon.phresco.plugins.util.PluginPackageUtil;
 import com.photon.phresco.util.ArchiveUtil;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 import com.photon.phresco.util.Constants;
@@ -62,7 +62,7 @@ public class Package implements PluginConstants{
 	private Date currentDate;
 	private String context;
 	private Log log;
-	private PluginsUtil util;
+	private PluginPackageUtil util;
 	private String sourceDir;
 	
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
@@ -75,7 +75,7 @@ public class Package implements PluginConstants{
         buildNumber = configs.get(BUILD_NUMBER);
         jarName = configs.get(JAR_NAME);
         mainClassName = configs.get(MAIN_CLASS_NAME);
-        util = new PluginsUtil();
+        util = new PluginPackageUtil();
         
 		try { 
 			init();

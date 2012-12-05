@@ -21,7 +21,7 @@ public class PreBuildStep  implements PluginConstants {
     private MavenProject project;
     private File baseDir;
     private Log log;
-    private PluginsUtil util;
+    private PluginPackageUtil util;
     
 	public void performCIPreBuildStep(String jobName, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		log.debug("CI prebuild step execution reached " + jobName);
