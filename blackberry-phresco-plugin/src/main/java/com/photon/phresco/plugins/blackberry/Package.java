@@ -47,7 +47,7 @@ import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoUtil;
-import com.photon.phresco.plugins.util.PluginsUtil;
+import com.photon.phresco.plugins.util.PluginPackageUtil;
 import com.photon.phresco.util.ArchiveUtil;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 import com.photon.phresco.util.Utility;
@@ -79,7 +79,7 @@ public class Package implements PluginConstants {
 	// private ArrayList<String> configUrls;
 	private String jsonString;
 	private Log log;
-	private PluginsUtil util;
+	private PluginPackageUtil util;
 	
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException { 
 		this.log = log;
@@ -88,7 +88,7 @@ public class Package implements PluginConstants {
         environmentName = configs.get(ENVIRONMENT_NAME);
         buildName = configs.get(BUILD_NAME);
         buildNumber = configs.get(BUILD_NUMBER);
-        util = new PluginsUtil();
+        util = new PluginPackageUtil();
         
         try {
 			init();
