@@ -49,7 +49,7 @@ public class GenerateReport implements PluginConstants {
 	private MavenProject mavenProject;
 	private File baseDir;
 	private Log log;
-	private PluginsUtil util;
+	private PluginPackageUtil util;
 
 	private static final String INDEX = "index";
 	private static final String XHTML = "xhtml";

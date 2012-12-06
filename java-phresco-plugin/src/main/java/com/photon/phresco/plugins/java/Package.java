@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -31,8 +32,11 @@ import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+import com.photon.phresco.plugins.params.model.Assembly.FileSets.FileSet;
+import com.photon.phresco.plugins.params.model.Assembly.FileSets.FileSet.Excludes;
 import com.photon.phresco.plugins.util.MojoUtil;
-import com.photon.phresco.plugins.util.PluginsUtil;
+import com.photon.phresco.plugins.util.PluginPackageUtil;
+import com.photon.phresco.plugins.util.WarConfigProcessor;
 import com.photon.phresco.util.ArchiveUtil;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 import com.photon.phresco.util.Constants;
@@ -62,7 +66,7 @@ public class Package implements PluginConstants{
 	private Date currentDate;
 	private String context;
 	private Log log;
-	private PluginsUtil util;
+	private PluginPackageUtil util;
 	private String sourceDir;
 	
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
@@ -75,13 +79,29 @@ public class Package implements PluginConstants{
         buildNumber = configs.get(BUILD_NUMBER);
         jarName = configs.get(JAR_NAME);
         mainClassName = configs.get(MAIN_CLASS_NAME);
-        util = new PluginsUtil();
-        
+        util = new PluginPackageUtil();
+        String packMinifiedFilesValue = configs.get(PACK_MINIFIED_FILES);
+        File warConfigFile = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + WAR_CONFIG_FILE);
 		try { 
 			init();
 			if (environmentName != null) {
 				updateFinalName();
 				configure();
+			}
+			if(StringUtils.isNotEmpty(packMinifiedFilesValue)) {
+				boolean packMinifiedFiles = Boolean.parseBoolean(packMinifiedFilesValue);
+				WarConfigProcessor configProcessor = new WarConfigProcessor(warConfigFile);
+				if(packMinifiedFiles) {
+					emptyFileSetExclude(configProcessor, EXCLUDE_FILE);
+				} else {
+					List<String> excludes = new ArrayList<String>();
+					excludes.add("/js/**/*-min.js");
+					excludes.add("/js/**/*.min.js");
+					excludes.add("/css/**/*-min.css");
+					excludes.add("/css/**/*.min.css");
+					setFileSetExcludes(configProcessor, EXCLUDE_FILE, excludes);
+				}
+				configProcessor.save();
 			}
 			executeMvnPackage();
 			boolean buildStatus = build();
@@ -89,7 +109,35 @@ public class Package implements PluginConstants{
 			cleanUp();
 		} catch (MojoExecutionException e) {
 			throw new PhrescoException(e);
+		} catch (JAXBException e) {
+			throw new PhrescoException();
+		} catch (IOException e) {
+			throw new PhrescoException();
 		}	
+	}
+	
+	private void setFileSetExcludes(WarConfigProcessor configProcessor, String FileSetId, List<String> exclues) throws PhrescoException {
+		try {
+			FileSet fileSet = configProcessor.getFileSet(FileSetId);
+			if(fileSet.getExcludes() == null) {
+				Excludes excludes = new Excludes();
+				fileSet.setExcludes(excludes);
+			}
+			for (String exclue : exclues) {
+				fileSet.getExcludes().getExclude().add(exclue);
+			}
+		} catch (JAXBException e) {
+			throw new PhrescoException();
+		} 
+	}
+	
+	private void emptyFileSetExclude(WarConfigProcessor configProcessor, String FileSetId) throws PhrescoException {
+		try {
+			FileSet fileSet = configProcessor.getFileSet(FileSetId);
+			fileSet.setExcludes(null);
+		} catch (JAXBException e) {
+			throw new PhrescoException();
+		}
 	}
 	
 	private void init() throws MojoExecutionException {

@@ -4,7 +4,7 @@
  <parent>
         <groupId>com.photon.phresco.plugins</groupId>
         <artifactId>phresco-plugins-root</artifactId>
-        <version>2.0.0.27001-SNAPSHOT</version>
+        <version>2.0.0.27002-SNAPSHOT</version>
         <relativePath>../</relativePath>
     </parent>
 
@@ -18,7 +18,7 @@
 	<artifactId>jstest-maven-plugin</artifactId>
 	<packaging>maven-plugin</packaging>
 	<name>JsTest Maven Plugin</name>
-	<version>2.0.0.27001-SNAPSHOT</version>
+	<version>2.0.0.27002-SNAPSHOT</version>
 
 	<licenses>
 		<license>
@@ -60,9 +60,9 @@
 			<version>1.9.4</version>
 		</dependency>
 		<dependency>
-			<groupId>net.awired</groupId>
+			<groupId>net.awired.jscoverage</groupId>
 			<artifactId>jscoverage</artifactId>
-			<version>0.22</version>
+			<version>0.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.plexus</groupId>
@@ -95,10 +95,10 @@
 			<version>1.1.1</version>
 		</dependency>
 		<dependency>
-			<groupId>org.seleniumhq.selenium</groupId>
-			<artifactId>selenium-java</artifactId>
-			<version>2.25.0</version>
-		</dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>2.25.11</version>
+        </dependency> 
 		<!-- <dependency>
 			<groupId>net.sourceforge.htmlunit</groupId>
 			<artifactId>htmlunit</artifactId>

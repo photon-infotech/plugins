@@ -60,6 +60,7 @@ public interface PluginConstants {
      String JS 							= "js";
      String SONAR_LANGUAGE 				= "sonar.language";
      String CI_INFO_FILE				= "cijob.info";
+     String WAR_CONFIG_FILE				= "war-config.xml";
      
 	//Constants for Maven commands
      String MVN_CMD 					= "mvn";
@@ -356,6 +357,8 @@ public interface PluginConstants {
 	 String SERVER						= "server";
 	 String BUILD						= "build";
 	 String BUILD_ENVIRONMENT_NAME		= "buildEnvironmentName";
+	 String PACK_MINIFIED_FILES			= "packMinifiedFiles";
+	 String EXCLUDE_FILE				= "excludeFile";
 	 
 	 //Constants for Time Formatter
 	 String TIME_STAMP_FOR_BUILD_NAME 	= "dd-MMM-yyyy-HH-mm-ss";

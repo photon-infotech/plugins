@@ -20,13 +20,13 @@ import com.photon.phresco.commons.model.BuildInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
 
-public class PluginsUtil implements PluginConstants {
+public class PluginPackageUtil implements PluginConstants {
 	
 	private String zipName;
 
 	private List<BuildInfo> buildInfoList;
 	
-	public PluginsUtil() {
+	public PluginPackageUtil() {
 		buildInfoList = new ArrayList<BuildInfo>();
 	}
 	
