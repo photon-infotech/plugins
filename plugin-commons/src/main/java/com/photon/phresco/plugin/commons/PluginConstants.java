@@ -59,6 +59,7 @@ public interface PluginConstants {
      String WEB 						= "web";
      String JS 							= "js";
      String SONAR_LANGUAGE 				= "sonar.language";
+     String CI_INFO_FILE				= "cijob.info";
      
 	//Constants for Maven commands
      String MVN_CMD 					= "mvn";
@@ -379,8 +380,10 @@ public interface PluginConstants {
 	String BB_OTA_INSTALL = "OTAInstall";
 	
 	 //Constants for Jenkins
-	String JENKINS_HOME = "JENKINS_HOME";
-	String WORKSPACE_DIR = "workspace";
+	String JENKINS_HOME 			= "JENKINS_HOME";
+	String WORKSPACE_DIR 			= "workspace";
+	String PHRESCO_HYPEN 			= "phresco-";	
+	String INFO_XML 				= "-info.xml";
 	
 	//Load Test Parameter Keys
 	String KEY_LOAD					= "load";

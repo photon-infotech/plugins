@@ -216,7 +216,7 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 		// TODO Auto-generated method stub
 	}
 	
-	public void performCIPreBuildStep(String jobName, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+	public void performCIPreBuildStep(String jobName, String goal, String phase, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		// TODO Auto-generated method stub
 	}
 	

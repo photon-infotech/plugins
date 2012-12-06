@@ -1,8 +1,11 @@
 package com.photon.phresco.plugins;
 
 import java.io.*;
+import java.lang.reflect.*;
 import java.util.*;
 
+import org.apache.commons.beanutils.*;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.*;
 import org.apache.maven.plugin.logging.*;
@@ -10,11 +13,16 @@ import org.apache.maven.project.*;
 import org.codehaus.plexus.util.*;
 
 import com.google.gson.*;
+import com.google.gson.reflect.*;
 import com.photon.phresco.commons.model.*;
 import com.photon.phresco.exception.*;
+import com.photon.phresco.framework.model.*;
 import com.photon.phresco.plugin.commons.*;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.*;
 import com.photon.phresco.plugins.util.*;
 import com.photon.phresco.util.*;
+import com.phresco.pom.util.*;
 
 public class PreBuildStep  implements PluginConstants {
 	
@@ -23,9 +31,9 @@ public class PreBuildStep  implements PluginConstants {
     private Log log;
     private PluginsUtil util;
     
-	public void performCIPreBuildStep(String jobName, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
-		log.debug("CI prebuild step execution reached " + jobName);
-		log.info("CI prebuild step execution started " + jobName);
+	public void performCIPreBuildStep(String jobName, String goal, String phase, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
+		log.info("CI prebuild step execution reached " + jobName);
+		log.info("goal is  " + goal);
 		try {
 	        this.log = log;
 	        baseDir = mavenProjectInfo.getBaseDir();
@@ -55,18 +63,51 @@ public class PreBuildStep  implements PluginConstants {
 			if (StringUtils.isEmpty(appDirName)) {
 				throw new MojoExecutionException("appDirName is empty");
 			}
-			File phrescoPluginInfoFile = getPhrescoPluginInfoFile(appDirName);
+			
+			// get job name and get the ciJob object from CIJob file and update it in phrescoPackage file using mojo
+			CIJob job = getJob(appInfo, jobName);
+			if (job == null) {
+				throw new PhrescoException("Job object is empty ");
+			}
+			
+			File phrescoPluginInfoFile = getPhrescoPluginInfoFileInJenkins(jobName, phase);
 			log.info("phresco Plugin Info File in phresco projects workspace ... " + phrescoPluginInfoFile.getCanonicalPath());
 			
-			FileUtils.copyFileToDirectory(phrescoPluginInfoFile, jenkinsJobDir);
+			MojoProcessor mojo = new MojoProcessor(phrescoPluginInfoFile);
+			
+			if (Constants.PHASE_FUNCTIONAL_TEST.equals(phase)) {
+				File pomFile = new File(baseDir, POM_XML);
+				log.info("Pom path " + pomFile.getPath());
+				PomProcessor pm = new PomProcessor(pomFile);
+				String seleniumTool = pm.getProperty(Constants.POM_PROP_KEY_FUNCTEST_SELENIUM_TOOL);
+				if (StringUtils.isNotEmpty(seleniumTool)) {
+					phase = phase + Constants.STR_HYPHEN + seleniumTool;
+				}
+			}
+			
+			log.info("phase " + phase);
+			Configuration configuration = mojo.getConfiguration(phase);
+			List<Parameter> parameters = configuration.getParameters().getParameter();
+			BeanUtils bu = new BeanUtils();
+			
+			if (CollectionUtils.isNotEmpty(parameters)) {
+				for (Parameter parameter : parameters) {
+					log.info("Storing parameter Key " + parameter.getKey());
+					String paramValue = bu.getProperty(job, parameter.getKey());
+					log.info("Storing paramValue " + paramValue);
+					parameter.setValue(paramValue);					
+				}
+			}
+			mojo.save();
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new PhrescoException(e);
 		}
 	}
 	
-	// it get plugininfo file from phresco workspace
-	private File getPhrescoPluginInfoFile(String appDirName)  throws MojoExecutionException {
-		log.info("getPhrescoPluginInfoFile method called  ... " + appDirName);
+	
+	public File getPhrescoPluginInfoFile(String appDirName, String goal) throws MojoExecutionException {
+		log.info("getPhrescoPluginInfoFile goal  ... " + goal);
 		String projectHome = Utility.getProjectHome();
 		if (StringUtils.isEmpty(projectHome)) {
 			throw new MojoExecutionException("Phresco project home not found ");
@@ -76,7 +117,9 @@ public class PreBuildStep  implements PluginConstants {
 		sb.append(File.separator);
 		sb.append(DOT_PHRESCO_FOLDER);
 		sb.append(File.separator);
-		sb.append(PHASE_PACKAGE_INFO);
+		sb.append(PHRESCO_HYPEN);
+		sb.append(goal);
+		sb.append(INFO_XML);
 		File pluginInfoFile = new File(sb.toString());
 		log.info("getPhrescoPluginInfoFile method fiel path  ... " + sb.toString());
 		if (!pluginInfoFile.exists()) {
@@ -84,24 +127,6 @@ public class PreBuildStep  implements PluginConstants {
 		}
 		return pluginInfoFile;
 	}
-	
-//	public String getPhrescoPluginInfoFilePath(String goal) throws PhrescoException {
-//		StringBuilder sb = new StringBuilder(getApplicationHome());
-//		sb.append(File.separator);
-//		sb.append(FOLDER_DOT_PHRESCO);
-//		sb.append(File.separator);
-//		sb.append(PHRESCO_HYPEN);
-//		if (PHASE_FUNCTIONAL_TEST_WEBDRIVER.equals(goal) || PHASE_FUNCTIONAL_TEST_GRID.equals(goal)) {
-//			sb.append(PHASE_FUNCTIONAL_TEST);
-//		} else if (PHASE_RUNGAINST_SRC_START.equals(goal)|| PHASE_RUNGAINST_SRC_STOP.equals(goal) ) {
-//			sb.append(PHASE_RUNAGAINST_SOURCE);
-//		}
-//		else {
-//			sb.append(goal);
-//		}
-//		sb.append(INFO_XML);
-//		return sb.toString();
-//	}
 	
 	private ApplicationInfo getApplicationInfo(File projectInfoFile) throws MojoExecutionException {
 		log.info("getApplicationInfo method called  ... " + projectInfoFile);
@@ -120,6 +145,35 @@ public class PreBuildStep  implements PluginConstants {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 		return null;
+	}
+	
+	public File getPhrescoPluginInfoFileInJenkins(String jobName, String phase) throws MojoExecutionException {
+		log.info("getPhrescoPluginInfoFileInJenkins method called ... ");
+		try {
+			String jenkinsHomePath = System.getenv(JENKINS_HOME);
+			if (StringUtils.isEmpty(jenkinsHomePath)) {
+				throw new MojoExecutionException("Jenkins Home not found in environemt variable ");
+			}
+			StringBuilder builder = new StringBuilder(jenkinsHomePath);
+			builder.append(File.separator);
+	        builder.append(WORKSPACE_DIR);
+	        builder.append(File.separator);
+	        builder.append(jobName);
+	        builder.append(File.separator);
+	        builder.append(DOT_PHRESCO_FOLDER);
+	        builder.append(File.separator);
+	        builder.append(PHRESCO_HYPEN);
+	        builder.append(phase);
+	        builder.append(INFO_XML);
+			File pluginInfoFile = new File(builder.toString());
+			log.info("getPhrescoPluginInfoFile method fiel path  ... " + builder.toString());
+			if (!pluginInfoFile.exists()) {
+				throw new MojoExecutionException("Plugin info file not found in jenkins workspace for jobaname ... " + jobName + " Searched in... " + builder.toString());
+			}
+			return pluginInfoFile;
+		} catch (Exception e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		}
 	}
 	
 	private String getJenkinsJobDirPath(String jobName) throws MojoExecutionException {
@@ -144,4 +198,57 @@ public class PreBuildStep  implements PluginConstants {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
+	
+	 public CIJob getJob(ApplicationInfo appInfo, String jobName) throws PhrescoException {
+		 try {
+			 log.info("Search for jobName => " + jobName);
+			 if (StringUtils.isEmpty(jobName)) {
+				 throw new PhrescoException("job name is empty");
+			 }
+			 List<CIJob> jobs = getJobs(appInfo);
+			 if(CollectionUtils.isEmpty(jobs)) {
+				 throw new PhrescoException("job list is empty!!!!!!!!");
+			 }
+			 log.info("Job list found!!!!!");
+			 for (CIJob job : jobs) {
+				 log.info("job list job Names => " + job.getName());
+				 if (job.getName().equals(jobName)) {
+					 return job;
+				 }
+			 }
+		 } catch (Exception e) {
+			 throw new PhrescoException(e);
+		 }
+		 return null;
+	 }
+	 
+	 public List<CIJob> getJobs(ApplicationInfo appInfo) throws PhrescoException {
+		 log.info("GetJobs Called!");
+		 try {
+			 Gson gson = new Gson();
+			 String ciJobPath = getCIJobPath(appInfo);
+			 File ciJobFile = new File(ciJobPath);
+			 if (!ciJobFile.isFile()) {
+				 throw new PhrescoException("Ci job info file is not available to get the jobs .");
+			 }
+			 BufferedReader br = new BufferedReader(new FileReader(getCIJobPath(appInfo)));
+			 Type type = new TypeToken<List<CIJob>>(){}.getType();
+			 List<CIJob> jobs = gson.fromJson(br, type);
+			 br.close();
+			 return jobs;
+		 } catch (Exception e) {
+			 log.info("CI job info file reading failed ");
+			 throw new PhrescoException(e);
+		 }
+	 }
+	 
+	 private String getCIJobPath(ApplicationInfo appInfo) {
+		 StringBuilder builder = new StringBuilder(Utility.getProjectHome());
+		 builder.append(appInfo.getAppDirName());
+		 builder.append(File.separator);
+		 builder.append(DOT_PHRESCO_FOLDER);
+		 builder.append(File.separator);
+		 builder.append(CI_INFO_FILE);
+		 return builder.toString();
+	 }
 }

@@ -59,18 +59,34 @@ public class PhrescoCIPreBuildStep extends PhrescoAbstractMojo {
 	 * this job name is passed from jenkins
 	 */
 	private String jobName;
+	
+	/**
+	 * @parameter expression ="${goal}"
+	 * 
+	 * this goal is passed from jenkins
+	 */
+	private String goal;
+	
+	/**
+	 * @parameter expression ="${phase}"
+	 * 
+	 * this phase is passed from jenkins
+	 */
+	private String phase;
     
     public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().info("Form Phresco PhrescoCIPreBuildStep Plugin");
-        getLog().info("Hello Phresco");
         getLog().info(baseDir.getPath());
+        getLog().info("Phase " + phase);
+        getLog().info("goal " + goal);
         try {
         	String infoFile = baseDir + File.separator + Constants.CI_INFO_FILE;
         	if (StringUtils.isEmpty(jobName)) {
         		throw new MojoExecutionException("job name is empty. Pass job name.");
         	}
+        	
             PhrescoPlugin plugin = getPlugin(getPluginName(infoFile, PRE_BUILD_STEP));
-            plugin.performCIPreBuildStep(jobName, getMavenProjectInfo(project));
+            plugin.performCIPreBuildStep(jobName, goal, phase, getMavenProjectInfo(project));
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }

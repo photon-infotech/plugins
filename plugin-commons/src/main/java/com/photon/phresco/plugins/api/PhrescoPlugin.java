@@ -32,7 +32,7 @@ public interface PhrescoPlugin {
     
     void runLoadTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
-    void performCIPreBuildStep(String jobName, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
+    void performCIPreBuildStep(String jobName, String goal, String phase, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
     public void generateReport(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
 }
