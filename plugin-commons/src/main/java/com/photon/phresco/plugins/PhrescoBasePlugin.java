@@ -114,6 +114,7 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 			MavenProject project = mavenProjectInfo.getProject();
 			String basedir = project.getBasedir().getPath();
 			Map<String, String> configs = MojoUtil.getAllValues(configuration);
+			Map<String, String> headersMap = new HashMap<String, String>(2);
 			String testAgainstType = configs.get("testAgainst");
 			String testName = configs.get(KEY_TEST_NAME);
 			String environmentName = configs.get(ENVIRONMENT_NAME);
@@ -122,13 +123,14 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 			String rampUpPeriod = configs.get(KEY_RAMP_UP_PERIOD);
 			String loopCount = configs.get(KEY_LOOP_COUNT);
 			String str = configs.get(ADD_HEADER);
+			if(StringUtils.isNotEmpty(str)) {
 			StringReader reader = new StringReader(str);
 			Properties props = new Properties();
 			props.load(reader);
 			Set<String> propertyNames = props.stringPropertyNames();
-			Map<String, String> headersMap = new HashMap<String, String>(2);
 			for (String key : propertyNames) {
 				headersMap.put(key, props.getProperty(key));
+			}
 			}
 			ConfigManager configManager = new ConfigManagerImpl(new File(basedir + File.separator + DOT_PHRESCO_FOLDER + File.separator + CONFIG_FILE));
 			com.photon.phresco.configuration.Configuration config = configManager.getConfiguration(environmentName, testAgainstType, type);
