@@ -230,6 +230,7 @@ public interface PluginConstants {
 	 
 	 //Xcode plugin constants
 	 String WAXSIM_HOME 				= "WAXSIM_HOME";
+	 String OCUNIT2JUNIT_HOME 			= "OCUNIT2JUNIT_HOME";
 	 String XCODE_CODE_VALIDATOR_COMMAND= "mvn xcode:codevalidate";
 	 String XCODE_BUILD_COMMAND			= "mvn xcode:xcodebuild";
 	 String XCODE_DEPLOY_COMMAND		= "mvn xcode:deploy";

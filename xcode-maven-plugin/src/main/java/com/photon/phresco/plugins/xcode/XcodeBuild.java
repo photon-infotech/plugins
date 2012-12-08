@@ -62,7 +62,17 @@ import com.photon.phresco.util.IosSdkUtil.MacSdkType;
  * @goal xcodebuild
  * @phase compile
  */
-public class XcodeBuild extends AbstractMojo {
+public class XcodeBuild extends AbstractMojo implements PluginConstants {
+
+	private static final String SHELL_SPACE = "\\ ";
+
+	private static final String XCODEBUILD = "xcodebuild";
+
+	private static final String C = "-c";
+
+	private static final String BIN_SH = "/bin/sh";
+
+	private static final String OCUNIT2JUNITCMD = " 2>&1 | ";
 
 	private static final String APP_PROJECT = "appProject";
 
@@ -283,8 +293,9 @@ public class XcodeBuild extends AbstractMojo {
 				getLog().info("Creating app file deliverables ");
 				getLog().info("xcode archiving started ");
 				createdSYM();
-				createApp(); 
-			} else {
+				createApp();
+				// packaging is not found exception should not be thrown for unit test. Unit test just executes commands , it should not expect file like packaging cmd
+			} else if (!unittest) {
 				throw new MojoExecutionException("Packaging is not defined!");
 			}
 		} catch (IOException e) {
@@ -449,11 +460,14 @@ public class XcodeBuild extends AbstractMojo {
 	}
 	
 	private void executeAppCreateCommads() throws IOException, InterruptedException, MojoExecutionException {
-		ProcessBuilder pb = new ProcessBuilder(xcodeCommandLine.getAbsolutePath());
+//		ProcessBuilder pb = new ProcessBuilder(xcodeCommandLine.getAbsolutePath());
+		ProcessBuilder pb = new ProcessBuilder(BIN_SH, C);
 		// Include errors in output
 		pb.redirectErrorStream(true);
 
-		List<String> commands = pb.command();
+//		List<String> commands = pb.command();
+		List<String> commands = new ArrayList<String>();
+		commands.add(XCODEBUILD);
 		if (xcodeProject != null) {
 			// based on project type , it should be changed to -workspace
 			if (PACKAGING_XCODE_WORLSAPCE.equals(projectType)) {
@@ -484,9 +498,9 @@ public class XcodeBuild extends AbstractMojo {
 			commands.add(sdk);
 		}
 
-		commands.add("OBJROOT=" + buildDirectory);
-		commands.add("SYMROOT=" + buildDirectory);
-		commands.add("DSTROOT=" + buildDirectory);
+		commands.add("OBJROOT=" + buildDirectory.toString().replace(STR_SPACE, SHELL_SPACE));
+		commands.add("SYMROOT=" + buildDirectory.toString().replace(STR_SPACE, SHELL_SPACE));
+		commands.add("DSTROOT=" + buildDirectory.toString().replace(STR_SPACE, SHELL_SPACE));
 
 		if(StringUtils.isNotBlank(gccpreprocessor)) {
 			commands.add("GCC_PREPROCESSOR_DEFINITIONS="+gccpreprocessor);
@@ -503,7 +517,24 @@ public class XcodeBuild extends AbstractMojo {
 
 		commands.add(CMD_BUILD);
 		
-		getLog().info("List of commands" + pb.command());
+		if (unittest) {
+			getLog().info("OCunit2Junit Home... " + System.getenv(OCUNIT2JUNIT_HOME));
+			String OCunit2Junit_home = System.getenv(OCUNIT2JUNIT_HOME);
+			if(StringUtils.isEmpty(OCunit2Junit_home)) {
+				throw new MojoExecutionException("OCunit2Junit Home is not found!");
+			}
+			commands.add(OCUNIT2JUNITCMD);
+			commands.add(OCunit2Junit_home);
+		}
+		
+		getLog().info("List of commands " + pb.command() + " " + commands);
+		
+		StringBuilder sb = new StringBuilder();
+		for(String command : commands){
+		    sb.append(command + " ");
+		}
+		pb.command().add(sb.toString());
+		
 		// pb.command().add("install");
 		pb.directory(new File(basedir));
 		Process child = pb.start();
