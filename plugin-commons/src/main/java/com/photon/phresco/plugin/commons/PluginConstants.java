@@ -351,6 +351,7 @@ public interface PluginConstants {
 	 String BROWSER						= "browser";
 	 String RESOLUTION					= "resolution";
 	 String DEVICE_TYPE 				= "deviceType";
+	 String TRIGGER_SIMULATOR			= "triggerSimulator";
 	 String SIM_VERSION 				= "sdkVersion";
 	 String FAMILY 						= "family";
 	 String PSIGN 						= "-Psign";

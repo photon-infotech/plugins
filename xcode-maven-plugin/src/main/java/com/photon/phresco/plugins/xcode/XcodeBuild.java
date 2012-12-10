@@ -524,7 +524,7 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 				throw new MojoExecutionException("OCunit2Junit Home is not found!");
 			}
 			commands.add(OCUNIT2JUNITCMD);
-			commands.add(OCunit2Junit_home);
+			commands.add(OCunit2Junit_home.replace(STR_SPACE, SHELL_SPACE));
 		}
 		
 		getLog().info("List of commands " + pb.command() + " " + commands);
