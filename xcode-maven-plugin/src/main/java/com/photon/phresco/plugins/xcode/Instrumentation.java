@@ -131,13 +131,29 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		getLog().info("Instrumentation command" + command);
-		try {	
-			if(SdkVerifier.isAvailable("iphonesimulator5.1")) {
-				template = "/Applications/Xcode.app/Contents" + template;
+		try {
+			List<String> traceTemplates = new ArrayList<String>(4);
+			traceTemplates.add("/Developer/Platforms/iPhoneOS.platform/Developer/Library/Instruments/PlugIns/AutomationInstrument.bundle/Contents/Resources/Automation.tracetemplate");
+			traceTemplates.add("/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/Instruments/PlugIns/AutomationInstrument.bundle/Contents/Resources/Automation.tracetemplate");
+			traceTemplates.add("/Applications/Xcode.app/Contents/Applications/Instruments.app/Contents/PlugIns/AutomationInstrument.bundle/Contents/Resources/Automation.tracetemplate");
+			
+			for (String traceTemplate : traceTemplates) {
+				File traceTemplateFile = new File(traceTemplate);
+				if (traceTemplateFile.isFile()) {
+					getLog().info("Template found at " + traceTemplate);
+					template = traceTemplate;
+				}
 			}
-		} catch (IOException e2) {
-            throw new MojoExecutionException("Template not found");
-        } catch (InterruptedException e2) {
+			
+			if (StringUtils.isEmpty(template)) {
+				throw new MojoExecutionException("Template not found");
+			}
+//			if (SdkVerifier.isAvailable("iphonesimulator5.1")) {
+//				template = "/Applications/Xcode.app/Contents" + template;
+//			} else if (SdkVerifier.isAvailable("iphonesimulator6.0")) {
+//				template = "/Applications/Xcode.app/Contents/Applications/Instruments.app/Contents/PlugIns/AutomationInstrument.bundle/Contents/Resources/Automation.tracetemplate";	
+//			}
+        } catch (Exception e2) {
         	throw new MojoExecutionException("Template interrupted!");
         }
 		
