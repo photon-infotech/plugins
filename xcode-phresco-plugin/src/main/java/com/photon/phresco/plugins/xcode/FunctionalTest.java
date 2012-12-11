@@ -21,10 +21,10 @@ public class FunctionalTest implements PluginConstants {
 		}
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("mvn xcode:instruments");
+		sb.append(XCODE_FUNCTIONAL_COMMAND);
 		
 		sb.append(STR_SPACE);
-		sb.append("-DbuildNumber=" + buildNumber);
+		sb.append(HYPHEN_D + BUILD_NUMBER + EQUAL + buildNumber);
 		
 		System.out.println("Functional test Command " + sb.toString());
 		Utility.executeStreamconsumer(sb.toString());

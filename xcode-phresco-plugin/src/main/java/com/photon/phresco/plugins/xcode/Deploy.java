@@ -34,6 +34,7 @@ public class Deploy implements PluginConstants {
 			String family = configs.get(FAMILY);
 			String simVersion = configs.get(SIM_VERSION);
 			String deviceType = configs.get(DEVICE_TYPE);
+			String triggerSimulator = configs.get(TRIGGER_SIMULATOR);
 			
 			if (StringUtils.isEmpty(buildNumber)) {
 				System.out.println("Build number is empty for deployment . ");
@@ -50,17 +51,17 @@ public class Deploy implements PluginConstants {
 			
 			if (StringUtils.isNotEmpty(buildNumber)) {
 				sb.append(STR_SPACE);
-				sb.append("-DbuildNumber=" + buildNumber);
+				sb.append(HYPHEN_D + BUILD_NUMBER + EQUAL + buildNumber);
 			}
 			
 			if (StringUtils.isNotEmpty(family)) {
 				sb.append(STR_SPACE);
-				sb.append("-Dfamily=" + family);
+				sb.append(HYPHEN_D + FAMILY + EQUAL + family);
 			}
 			
 			if (StringUtils.isNotEmpty(simVersion)) {
 				sb.append(STR_SPACE);
-				sb.append("-Dsimulator.version=" + simVersion);
+				sb.append(HYPHEN_D + SIMULATOR_VERSION + EQUAL + simVersion);
 			}
 			
 			List<Parameter> parameters = config.getParameters().getParameter();
@@ -75,6 +76,9 @@ public class Deploy implements PluginConstants {
 					}
 				}
 			}
+			
+			sb.append(STR_SPACE);
+			sb.append(HYPHEN_D + TRIGGER_SIMULATOR + EQUAL + triggerSimulator);
 			
 			System.out.println("Command " + sb.toString());
 			Commandline cl = new Commandline(sb.toString());

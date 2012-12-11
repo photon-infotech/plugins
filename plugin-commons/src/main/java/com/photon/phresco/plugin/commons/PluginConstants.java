@@ -74,6 +74,7 @@ public interface PluginConstants {
 	 String JAVA_LIB_PATH				= "java.library.path";
 	 String MVN_PHASE_CODE_VALDATE		= "codevalidate";
 	 String MVN_PHASE_XCODE_PACKAGE		= "xcodebuild";
+	 String MVN_PHASE_XCODE_FUN_TEST	= "instruments";
 	 String MVN_PHASE_DEPLOY			= "deploy";
     
 	// Constants for Php maven plugin
@@ -234,6 +235,8 @@ public interface PluginConstants {
 	 String XCODE_CODE_VALIDATOR_COMMAND= "mvn xcode:codevalidate";
 	 String XCODE_BUILD_COMMAND			= "mvn xcode:xcodebuild";
 	 String XCODE_DEPLOY_COMMAND		= "mvn xcode:deploy";
+	 String XCODE_FUNCTIONAL_COMMAND	= "mvn xcode:instruments";
+	 String MODE						= "mode";
 	 String TARGET						= "target";
 	 String PROJECT_TYPE				= "projectType";
 	 String SCHEME						= "scheme";
@@ -242,7 +245,11 @@ public interface PluginConstants {
 	 String TARGET_NAME					= "targetName";
 	 String CONFIGURATION				= "configuration";
 	 String ENCRYPT						= "encrypt";
-	 String PLIST_FILE					= "plistfile";
+	 String PLIST_FILE					= "plistFile";
+	 String TRIGGER_SIMULATOR			= "triggerSimulator";
+	 String FAMILY 						= "family";
+	 String UNIT_TEST_TYPE				= "unitTestType";
+	 String UNIT_TEST					= "unittest";
 	 
 	 //Constants for Android
 	 
@@ -351,9 +358,7 @@ public interface PluginConstants {
 	 String BROWSER						= "browser";
 	 String RESOLUTION					= "resolution";
 	 String DEVICE_TYPE 				= "deviceType";
-	 String TRIGGER_SIMULATOR			= "triggerSimulator";
 	 String SIM_VERSION 				= "sdkVersion";
-	 String FAMILY 						= "family";
 	 String PSIGN 						= "-Psign";
 	 String TEST_AGAINST				= "testAgainst";
 	 String SERVER						= "server";
@@ -408,6 +413,7 @@ public interface PluginConstants {
     String FUNCTIONAL_TEST_SELENIUM_TYPE = "phresco.functionalTest.selenium.tool";
     String WEBDRIVER = "webdriver";
     String GRID = "grid";
+    String UIAUTOMATION = "UIAutomation";
     String HYPEN = "-";
     
     String PHASE_PACKAGE_INFO = "phresco-package-info.xml";

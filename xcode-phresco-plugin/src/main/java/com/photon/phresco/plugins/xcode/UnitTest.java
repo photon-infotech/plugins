@@ -17,12 +17,12 @@ public class UnitTest implements PluginConstants {
 
 	public void unitTest(Configuration config) throws PhrescoException {
 		Map<String, String> configs = MojoUtil.getAllValues(config);
-		String sdk = configs.get("sdk");
-		String target = configs.get("target");
-		boolean unitTest = Boolean.valueOf(configs.get("unittest"));
+		String sdk = configs.get(SDK);
+		String target = configs.get(TARGET);
+		boolean unitTest = Boolean.valueOf(configs.get(UNIT_TEST));
 		// get command from plugin info
-		String unitTestType = configs.get("unitTestType");
-		String projectType = configs.get("projectType");
+		String unitTestType = configs.get(UNIT_TEST_TYPE);
+		String projectType = configs.get(PROJECT_TYPE);
 		
 		if (StringUtils.isEmpty(sdk)) {
 			System.out.println("SDK is empty . ");
@@ -40,25 +40,25 @@ public class UnitTest implements PluginConstants {
 		}
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("mvn xcode:xcodebuild");
+		sb.append(XCODE_BUILD_COMMAND);
 		
 		sb.append(STR_SPACE);
-		sb.append("-Dsdk=" + sdk);
+		sb.append(HYPHEN_D + SDK + EQUAL + sdk);
 		
 		sb.append(STR_SPACE);
-		sb.append("-DtargetName=" + target);
+		sb.append(HYPHEN_D + TARGET_NAME + EQUAL + target);
 		
 		sb.append(STR_SPACE);
-		sb.append("-Dunittest=" + unitTest);
+		sb.append(HYPHEN_D + UNIT_TEST + EQUAL + unitTest);
 		
 		if (StringUtils.isNotEmpty(projectType)) {
 			sb.append(STR_SPACE);
-			sb.append("-DprojectType=" + projectType);
+			sb.append(HYPHEN_D + PROJECT_TYPE + EQUAL + projectType);
 		}
 		
 		List<Parameter> parameters = config.getParameters().getParameter();
 		for (Parameter parameter : parameters) {
-			if ("unitTestType".equals(parameter.getKey())) {
+			if (UNIT_TEST_TYPE.equals(parameter.getKey())) {
 				List<MavenCommand> mavenCommands = parameter.getMavenCommands().getMavenCommand();
 				for (MavenCommand mavenCommand : mavenCommands) {
 					if (mavenCommand.getKey().equals(unitTestType)) {
