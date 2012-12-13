@@ -113,10 +113,10 @@ public class PluginUtils {
 		}
 	}
 
-	public List<String> csvToList(String environmentName) {
+	public List<String> csvToList(String csvString) {
 		List<String> envs = new ArrayList<String>();
-		if (StringUtils.isNotEmpty(environmentName)) {
-			String[] temp = environmentName.split(",");
+		if (StringUtils.isNotEmpty(csvString)) {
+			String[] temp = csvString.split(",");
 			for (int i = 0; i < temp.length; i++) {
 				envs.add(temp[i]);
 			}

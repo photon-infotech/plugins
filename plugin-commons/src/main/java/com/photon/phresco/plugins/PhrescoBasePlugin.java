@@ -375,7 +375,8 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 			hubConfig.setHost(thisIp.getHostAddress());
 			hubConfig.setPort(port);
 			hubConfig.setNewSessionWaitTimeout(newSessionTimeout);
-			hubConfig.setServlets(servlets);
+			PluginUtils pluginUtils = new PluginUtils();
+			hubConfig.setServlets(pluginUtils.csvToList(servlets));
 			if (StringUtils.isNotEmpty(prioritizer)) {
 				hubConfig.setPrioritizer(prioritizer);
 			}
@@ -389,10 +390,9 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 			File pomFile = project.getFile();
 			PomProcessor processor = new PomProcessor(pomFile);
 			String funcDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
-			PluginUtils plugniutil = new PluginUtils();
-			plugniutil.updateHubConfigInfo(baseDir, funcDir, hubConfig);
+			pluginUtils.updateHubConfigInfo(baseDir, funcDir, hubConfig);
 			log.info("Starting the Hub...");
-			plugniutil.startHub(baseDir);
+			pluginUtils.startHub(baseDir);
 		} catch (PhrescoPomException e) {
 			throw new PhrescoException(e);
 		} catch (UnknownHostException e) {
