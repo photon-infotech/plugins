@@ -64,6 +64,8 @@ import com.photon.phresco.util.IosSdkUtil.MacSdkType;
  */
 public class XcodeBuild extends AbstractMojo implements PluginConstants {
 
+	private static final String TEST_AFTER_BUILD_YES = "TEST_AFTER_BUILD=YES";
+
 	private static final String SHELL_SPACE = "\\ ";
 
 	private static final String XCODEBUILD = "xcodebuild";
@@ -493,6 +495,11 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 			commands.add(configuration);
 		}
 
+		// if it is unit test, we have to set TEST_AFTER_BUILD=YES in build settings
+		if (unittest) {
+			commands.add(TEST_AFTER_BUILD_YES);
+		}
+		
 		if (StringUtils.isNotBlank(sdk)) {
 			commands.add(SDK);
 			commands.add(sdk);
@@ -517,6 +524,7 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 
 		commands.add(CMD_BUILD);
 		
+		// All the reports are generated using the ruby file
 		if (unittest) {
 			getLog().info("OCunit2Junit Home... " + System.getenv(OCUNIT2JUNIT_HOME));
 			String OCunit2Junit_home = System.getenv(OCUNIT2JUNIT_HOME);
