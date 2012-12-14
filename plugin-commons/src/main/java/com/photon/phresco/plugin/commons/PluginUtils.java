@@ -31,17 +31,13 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Type;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -71,8 +67,6 @@ import org.xml.sax.SAXException;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
-import com.photon.phresco.commons.FrameworkConstants;
 import com.photon.phresco.commons.model.BuildInfo;
 import com.photon.phresco.configuration.ConfigReader;
 import com.photon.phresco.configuration.ConfigWriter;
@@ -83,6 +77,8 @@ import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.HubConfiguration;
 import com.photon.phresco.util.NodeConfiguration;
 import com.photon.phresco.util.Utility;
+import com.phresco.pom.exception.PhrescoPomException;
+import com.phresco.pom.util.PomProcessor;
 
 public class PluginUtils {
 	
@@ -209,7 +205,6 @@ public class PluginUtils {
 
 	public BuildInfo getBuildInfo(int buildNumber) throws MojoExecutionException {
 		File currentDirectory = new File(".");
-		System.out.println("currentDirectory.getPath() in pluginUils is " + currentDirectory.getPath());
 		File buildInfoFile = new File(currentDirectory.getPath() + PluginConstants.BUILD_DIRECTORY + PluginConstants.BUILD_INFO_FILE);
 		if (!buildInfoFile.exists()) {
 			throw new MojoExecutionException("Build info is not available!");
@@ -235,7 +230,6 @@ public class PluginUtils {
 	
 	 public List<BuildInfo> getBuildInfo(File path) throws IOException {
 		 if (!path.exists()) {
-			 System.out.println("build info file doesnot exist!!!");
 			 return new ArrayList<BuildInfo>(1);
 		 }
 
@@ -509,35 +503,73 @@ public class PluginUtils {
 			if (!LogDir.exists()) {
 				LogDir.mkdirs();
 			}
+			File pomPath = new File(baseDir + File.separator + Constants.POM_NAME);
+            PomProcessor processor = new PomProcessor(pomPath);
+            String functionalTestDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
+            
 			File logFile  = new File(LogDir + Constants.SLASH + Constants.NODE_LOG);
-			StringBuilder sb = new StringBuilder();
-			sb.append("java -Dwebdriver.chrome.driver=test/functional/chromedriver/chromedriver.exe");
-			sb.append(" -jar test/functional/lib/selenium-server-standalone-2.25.0.jar");
-			sb.append(" -role node -nodeConfig test/functional/nodeconfig.json");
+			StringBuilder sb = new StringBuilder()
+			.append("java -Dwebdriver.chrome.driver=")
+			.append(functionalTestDir.substring(1, functionalTestDir.length()))
+			.append("/chromedriver/chromedriver.exe -jar ")
+			.append(functionalTestDir.substring(1, functionalTestDir.length()))
+			.append("/lib/selenium-server-standalone-2.26.0.jar")
+			.append(" -role node -nodeConfig ")
+			.append(functionalTestDir.substring(1, functionalTestDir.length()))
+	        .append("/nodeconfig.json");
 			fos = new FileOutputStream(logFile, false);
 			Utility.executeStreamconsumer(sb.toString(), fos);
 		} catch (FileNotFoundException e) {
 			throw new PhrescoException(e);
-		}
+		} catch (PhrescoPomException e) {
+		    throw new PhrescoException(e);
+        }
 	}
 	
 	public void startHub(File baseDir) throws PhrescoException {
-		FileOutputStream fos = null;
-		try {
-			File LogDir = new File(baseDir + File.separator + Constants.DO_NOT_CHECKIN_DIRY + File.separator + Constants.LOG_DIRECTORY);
-			if (!LogDir.exists()) {
-				LogDir.mkdirs();
-			}
-			File logFile  = new File(LogDir + Constants.SLASH + Constants.HUB_LOG);
-			StringBuilder sb = new StringBuilder();
-			sb.append("java -jar ");
-			sb.append("test/functional/lib/selenium-server-standalone-2.25.0.jar");
-			sb.append(" -role hub -hubConfig test/functional/hubconfig.json");
-			fos = new FileOutputStream(logFile, false);
-			Utility.executeStreamconsumer(sb.toString(), fos);
-		} catch (FileNotFoundException e) {
-			throw new PhrescoException(e);
-		}
+	    FileOutputStream fos = null;
+	    try {
+	        File pomPath = new File(baseDir + File.separator + Constants.POM_NAME);
+            PomProcessor processor = new PomProcessor(pomPath);
+            String functionalTestDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
+            StringBuilder builder = new StringBuilder();
+            builder.append(baseDir)
+            .append(functionalTestDir);
+            
+	        executeValidatePhase(builder.toString());
+	        File LogDir = new File(baseDir + File.separator + Constants.DO_NOT_CHECKIN_DIRY + File.separator + Constants.LOG_DIRECTORY);
+	        if (!LogDir.exists()) {
+	            LogDir.mkdirs();
+	        }
+	        File logFile  = new File(LogDir + Constants.SLASH + Constants.HUB_LOG);
+	        StringBuilder sb = new StringBuilder()
+	        .append("java -jar ")
+	        .append(functionalTestDir.substring(1, functionalTestDir.length()))
+	        .append("/lib/selenium-server-standalone-2.26.0.jar")
+	        .append(" -role hub -hubConfig ")
+	        .append(functionalTestDir.substring(1, functionalTestDir.length()))
+	        .append("/hubconfig.json");
+	        fos = new FileOutputStream(logFile, false);
+	        Utility.executeStreamconsumer(sb.toString(), fos);
+	    } catch (FileNotFoundException e) {
+	        throw new PhrescoException(e);
+	    } catch (PhrescoPomException e) {
+	        throw new PhrescoException(e);
+        }
+	}
+	
+	private void executeValidatePhase(String workingDir) throws PhrescoException {
+	    try {
+	        BufferedReader breader = Utility.executeCommand("mvn validate", workingDir);
+	        String line = null;
+	        while ((line = breader.readLine()) != null) {
+	            if (line.startsWith("[ERROR]")) {
+	                System.out.println(line);
+	            }
+	        }
+	    } catch (IOException e) {
+	        throw new PhrescoException(e);
+	    }
 	}
 	
 	public void stopServer(String portNo, File baseDir) throws PhrescoException {
