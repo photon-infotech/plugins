@@ -270,7 +270,7 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 
 //    public static void main(String[] args) {
 //        try {
-//            new Instrumentation().generateXMLReport("/Users/kal/Notes/XCOde-Plist/Automation Results-DD-old.plist");
+//            new Instrumentation().generateXMLReport("/Users/kal/Notes/XCOde-Plist/Issue.plist");
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //        }
@@ -328,7 +328,7 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 						startTime = endTime;
 						child1.setAttribute(XMLConstants.TIME, differ+"");
 						testSuite.appendChild(child1);
-					} else if (key.equals(XMLConstants.LOGTYPE) && con.getValue().equals(XMLConstants.ERROR)) {
+					} else if (key.equals(XMLConstants.LOGTYPE) && (con.getValue().equals(XMLConstants.ERROR) || con.getValue().equals(XMLConstants.FAIL))) {
 						fail++;total++;
 						Element child1 = doc.createElement(XMLConstants.TESTCASE_NAME);
 						child1.setAttribute(XMLConstants.NAME,(String) config.getRoot().getChild(1).getValue());
@@ -348,10 +348,19 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 						startTime = endTime;
 						child1.setAttribute(XMLConstants.TIME, differ+"");
 						//adding error element
-						Element errorElem = doc.createElement(XMLConstants.FAILURE);
-						errorElem.setAttribute(XMLConstants.TYPE, "Exception");
-						errorElem.setTextContent(errorTextNodes);
-						child1.appendChild(errorElem);
+						
+						if (con.getValue().equals(XMLConstants.ERROR)) {
+							Element errorElem = doc.createElement(XMLConstants.ELEM_ERROR);
+							errorElem.setAttribute(XMLConstants.TYPE, "Exception");
+							errorElem.setTextContent(errorTextNodes);
+							child1.appendChild(errorElem);
+						} else {
+							Element failureElem = doc.createElement(XMLConstants.ELEM_FAILURE);
+							failureElem.setAttribute(XMLConstants.TYPE, "Failure");
+							failureElem.setTextContent(errorTextNodes);
+							child1.appendChild(failureElem);
+						}
+						
 						testSuite.appendChild(child1);
 					}
 				}
@@ -370,7 +379,7 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 			Transformer trans = transfac.newTransformer();
 			trans.setOutputProperty(OutputKeys.INDENT, YES);
 
-//			File file = new File("/Users/kal/Notes/XCOde-Plist/DDOld.xml");
+//			File file = new File("/Users/kaleeswaran/Notes/XCOde-Plist/DRIssue.xml");
 			getLog().info("functional xml file generated ... ");
 			File file = new File(project.getBasedir().getAbsolutePath()+File.separator+xmlResult);
 			Writer bw = new BufferedWriter(new FileWriter(file));
