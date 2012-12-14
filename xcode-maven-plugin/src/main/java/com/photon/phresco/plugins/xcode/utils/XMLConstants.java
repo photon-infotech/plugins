@@ -14,13 +14,19 @@ public interface XMLConstants {
 	
 	String FAILURE = "failure";
 	
+	String ELEM_FAILURE = "failure";
+	
 	String SUCCESS = "success";
 	
 	String LOGTYPE = "LogType";
 
 	String PASS = "Pass";
 	
+	String FAIL = "Fail";
+	
 	String ERROR = "Error";
+	
+	String ELEM_ERROR = "error";
 	
 	String TIME = "time";
 	
