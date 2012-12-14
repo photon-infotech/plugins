@@ -197,7 +197,6 @@ public class Package implements PluginConstants{
 				}
 			}
 			 sourceDir = pomprocessor.getProperty(POM_PROP_KEY_SOURCE_DIR);
-			 System.out.println("source dir :: " + sourceDir);
 			if (StringUtils.isEmpty(context)) {
 				return;
 			}
@@ -282,7 +281,6 @@ public class Package implements PluginConstants{
 			modulePath = File.separatorChar + moduleName;
 		}
 		File sourceConfigXML = new File(baseDir + modulePath + sourceDir + FORWARD_SLASH +  CONFIG_FILE);
-		  System.out.println("src config path ::: " + sourceConfigXML.getPath());
 		File parentFile = sourceConfigXML.getParentFile();
 		if (parentFile.exists()) {
 			PluginUtils pu = new PluginUtils();
