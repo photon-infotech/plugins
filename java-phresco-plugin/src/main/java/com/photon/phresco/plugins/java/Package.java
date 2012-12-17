@@ -91,9 +91,8 @@ public class Package implements PluginConstants{
 			if(StringUtils.isNotEmpty(packMinifiedFilesValue)) {
 				boolean packMinifiedFiles = Boolean.parseBoolean(packMinifiedFilesValue);
 				WarConfigProcessor configProcessor = new WarConfigProcessor(warConfigFile);
-				if(packMinifiedFiles) {
-					emptyFileSetExclude(configProcessor, EXCLUDE_FILE);
-				} else {
+				emptyFileSetExclude(configProcessor, EXCLUDE_FILE);
+				if(!packMinifiedFiles) {
 					List<String> excludes = new ArrayList<String>();
 					excludes.add("/js/**/*-min.js");
 					excludes.add("/js/**/*.min.js");
