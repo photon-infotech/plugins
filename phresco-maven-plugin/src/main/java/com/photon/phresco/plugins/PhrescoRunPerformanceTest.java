@@ -36,13 +36,13 @@ public class PhrescoRunPerformanceTest extends PhrescoAbstractMojo {
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
-			String infoFile = baseDir + File.separator + Constants.PERFORMENCE_TEST_INFO_FILE;
+			String infoFile = baseDir + File.separator + Constants.PERFORMANCE_TEST_INFO_FILE;
     		if (isGoalAvailable(infoFile, PERFORMANCE_TEST) && getPluginName(infoFile, PERFORMANCE_TEST) != null) {
 				PhrescoPlugin plugin = getPlugin(getPluginName(infoFile, PERFORMANCE_TEST));
-		        plugin.runFunctionalTest(getConfiguration(infoFile, PERFORMANCE_TEST), getMavenProjectInfo(project));
+		        plugin.runPerformanceTest(getConfiguration(infoFile, PERFORMANCE_TEST), getMavenProjectInfo(project));
 			} else {
 				PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());
-		        plugin.runFunctionalTest(getConfiguration(infoFile, PERFORMANCE_TEST), getMavenProjectInfo(project));
+		        plugin.runPerformanceTest(getConfiguration(infoFile, PERFORMANCE_TEST), getMavenProjectInfo(project));
 			}
     	} catch (PhrescoException e) {
     		throw new MojoExecutionException(e.getMessage(), e);

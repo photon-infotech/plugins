@@ -67,6 +67,7 @@ import org.xml.sax.SAXException;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.photon.phresco.commons.FrameworkConstants;
 import com.photon.phresco.commons.model.BuildInfo;
 import com.photon.phresco.configuration.ConfigReader;
 import com.photon.phresco.configuration.ConfigWriter;
@@ -338,6 +339,197 @@ public class PluginUtils {
 				protocol = configuration.getProperties().getProperty(Constants.DB_PROTOCOL);
 				serverContext = "/";
 			}
+		}
+	 
+	 public void adaptPerformanceJmx(String jmxFileLocation, List<String> name, List<String> context,
+			 List<String> contextType, List<String> contextPostData, List<String> encodingType, int noOfUsers,
+			 int rampUpPeriod, int loopCount, Map<String, String> headersMap) throws Exception {
+		 File jmxFile = null;
+		 File jmxDir = new File(jmxFileLocation);
+		 if(jmxDir.isDirectory()){
+			 FilenameFilter filter = new FileListFilter("", "jmx");
+			 File[] jmxFiles = jmxDir.listFiles(filter);
+			 jmxFile = jmxFiles[0];
+		 }
+
+		 Document document = getDocument(jmxFile);
+		 appendThreadProperties(document, noOfUsers, rampUpPeriod, loopCount);
+		 NodeList nodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/HTTPSamplerProxy");
+		 if (nodelist != null && nodelist.getLength() > 0) {
+			 NodeList headerManagerNodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/HeaderManager");
+
+			 Node hashTree = nodelist.item(0).getParentNode();
+			 hashTree = removeAllChilds(hashTree);
+			 hashTree.setTextContent(null);
+
+			 if (headerManagerNodelist != null && headerManagerNodelist.getLength() > 0) {
+				 for(int i = 0; i < headerManagerNodelist.getLength(); i++) {
+					 hashTree.appendChild(headerManagerNodelist.item(i));
+				 }
+				 hashTree.appendChild(document.createElement("hashTree"));
+			 }
+
+			 if (MapUtils.isNotEmpty(headersMap)) {
+				 NodeList headerMngrNodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/HeaderManager/collectionProp");
+				 if (headerMngrNodelist != null && headerMngrNodelist.getLength() > 0) {
+					 createHeaderElementProp(document, headersMap, headerMngrNodelist.item(0));
+				 } else {
+					 Node appendHeaderManager = appendHeaderManager(document, headersMap);
+					 hashTree.appendChild(appendHeaderManager);
+					 hashTree.appendChild(document.createElement("hashTree"));
+				 }
+			 }
+
+			 for (int j = 0; j < name.size(); j++) {
+				 Node appendHttpSamplerProxy = appendHttpSamplerProxy(document, hashTree, name.get(j), "${context}/" + context.get(j), contextType.get(j), contextPostData.get(j), encodingType.get(j));
+				 hashTree.appendChild(appendHttpSamplerProxy);
+				 hashTree.appendChild(document.createElement("hashTree"));
+			 }
+		 }
+		 saveDocument(jmxFile, document);
+	 }
+	 
+	 private Node appendHttpSamplerProxy(Document document, Node hashTree, String name, String context, String contextType, String contextPostData, String encodingType) {
+			Node httpSamplerProxy = document.createElement("HTTPSamplerProxy");
+			String contentEncoding = null;
+			if(contextType.equals(FrameworkConstants.POST)) {
+				contentEncoding = encodingType;
+			}
+			
+			NamedNodeMap attributes = httpSamplerProxy.getAttributes();
+			attributes.setNamedItem(createAttribute(document, "guiclass", "HttpTestSampleGui"));
+			attributes.setNamedItem(createAttribute(document, "testclass", "HTTPSamplerProxy"));
+			attributes.setNamedItem(createAttribute(document, "testname", name)); //url name
+			attributes.setNamedItem(createAttribute(document, "enabled", "true"));
+
+			appendElementProp(document, httpSamplerProxy, contextType, contextPostData);
+
+			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.domain", null);
+			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.port", null);
+			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.connect_timeout", null);
+			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.response_timeout", null);
+			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.protocol", null);
+			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.contentEncoding", contentEncoding);
+			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.path", context); // server url
+			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.method", contextType);
+
+			appendTypeProp(document, httpSamplerProxy, "boolProp", "HTTPSampler.follow_redirects", "false");
+			appendTypeProp(document, httpSamplerProxy, "boolProp", "HTTPSampler.auto_redirects", "true");
+			appendTypeProp(document, httpSamplerProxy, "boolProp", "HTTPSampler.use_keepalive", "true");
+			appendTypeProp(document, httpSamplerProxy, "boolProp", "HTTPSampler.DO_MULTIPART_POST", "false");
+
+			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.implementation", "Java");
+			appendTypeProp(document, httpSamplerProxy, "boolProp", "HTTPSampler.monitor", "false");
+			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.embedded_url_re", null);
+
+			return httpSamplerProxy;
+		}
+	 
+	 private void appendElementProp(Document document, Node parentNode, String contextType, String contextPostData) { // eleme prop
+			Node elementProp = document.createElement("elementProp");
+			NamedNodeMap attributes = elementProp.getAttributes();
+
+			attributes.setNamedItem(createAttribute(document, "name", "HTTPsampler.Arguments"));
+			attributes.setNamedItem(createAttribute(document, "elementType", "Arguments"));
+			attributes.setNamedItem(createAttribute(document, "guiclass", "HTTPArgumentsPanel"));
+			attributes.setNamedItem(createAttribute(document, "testclass", "Arguments"));
+			attributes.setNamedItem(createAttribute(document, "testname", "User Defined Variables"));
+			attributes.setNamedItem(createAttribute(document, "enabled", "true"));
+			appendCollectionProp(document, elementProp, contextType, contextPostData);
+
+			//parentNode.setTextContent(null);
+			parentNode.appendChild(elementProp);
+		}
+	 
+	 private void appendCollectionProp(Document document, Node elementProp, String contextType, String contextPostData) { // collection append in prop
+		 String argumentValue = null;
+		 if(contextType.equals(FrameworkConstants.POST)) {
+			 argumentValue = contextPostData;
+		 }
+		 Node collectionProp = document.createElement("collectionProp");
+		 NamedNodeMap attributes = collectionProp.getAttributes();
+		 attributes.setNamedItem(createAttribute(document, "name", "Arguments.arguments"));
+
+		 Node subElementProp = document.createElement("elementProp");
+		 NamedNodeMap subElementAttributes = subElementProp.getAttributes();
+		 subElementAttributes.setNamedItem(createAttribute(document, "name", ""));
+		 subElementAttributes.setNamedItem(createAttribute(document, "elementType", "HTTPArgument"));
+		 collectionProp.appendChild(subElementProp);
+		 appendTypeProp(document, subElementProp, "boolProp", "HTTPArgument.always_encode", "false");
+		 appendTypeProp(document, subElementProp, "stringProp", "Argument.value", argumentValue);
+		 appendTypeProp(document, subElementProp, "stringProp", "Argument.metadata", "=");
+		 appendTypeProp(document, subElementProp, "boolProp", "HTTPArgument.use_equals", "true");
+
+		 elementProp.setTextContent(null);
+		 elementProp.appendChild(collectionProp);
+	 }
+	
+	 public void adaptDBPerformanceJmx(String jmxFileLocation, List<String> name, String dataSource, List<String> queryType, List<String> query, int noOfUsers, int rampUpPeriod, int loopCount, String dbUrl, String driver, String userName, String passWord ) throws Exception {
+		 File jmxFile = null;
+		 File jmxDir = new File(jmxFileLocation);
+		 if(jmxDir.isDirectory()){
+			 FilenameFilter filter = new FileListFilter("", "jmx");
+			 File[] jmxFiles = jmxDir.listFiles(filter);
+			 jmxFile = jmxFiles[0];
+		 }
+
+		 Document document = getDocument(jmxFile);
+		 appendThreadProperties(document, noOfUsers, rampUpPeriod, loopCount);
+		 appendJdbcDataSrc(document, dataSource, dbUrl, driver, userName, passWord);
+		 NodeList nodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/JDBCSampler");
+		 if (nodelist != null && nodelist.getLength() > 0) {
+			 Node hashTree = nodelist.item(0).getParentNode();
+			 hashTree = removeAllChilds(hashTree);
+			 hashTree.setTextContent(null);
+
+			 for(int j = 0; j < name.size(); j++) {
+				 Node appendJdbcSampler = appendJdbcSampler(document, hashTree, name.get(j), dataSource, queryType.get(j), query.get(j));
+				 hashTree.appendChild(appendJdbcSampler);
+				 hashTree.appendChild(document.createElement("hashTree"));
+			 }
+		 }
+		 saveDocument(jmxFile, document);
+	 }
+	 
+	 private void appendJdbcDataSrc(Document document, String dataSrc, String dbUrl, String driver,String userName,String passWord) throws Exception {
+		 String dataSource = "jmeterTestPlan/hashTree/hashTree/JDBCDataSource/stringProp[@name='dataSource']";
+		 String url = "jmeterTestPlan/hashTree/hashTree/JDBCDataSource/stringProp[@name='dbUrl']";
+		 String driverName = "jmeterTestPlan/hashTree/hashTree/JDBCDataSource/stringProp[@name='driver']";
+		 String pwd = "jmeterTestPlan/hashTree/hashTree/JDBCDataSource/stringProp[@name='password']";
+		 String user = "jmeterTestPlan/hashTree/hashTree/JDBCDataSource/stringProp[@name='username']";
+		 appendTextContent(document, dataSource, ""+dataSrc);
+		 appendTextContent(document, url, ""+dbUrl);
+		 appendTextContent(document, driverName, ""+driver);
+		 appendTextContent(document, pwd, ""+passWord);
+		 appendTextContent(document, user, ""+userName);
+	 }
+	 
+	 private static Node appendJdbcSampler(Document document, Node hashTree, String name, String dataSource, String queryType, String query) {
+		 Node jdbcSampler = document.createElement("JDBCSampler");
+
+		 NamedNodeMap attributes = jdbcSampler.getAttributes();
+		 attributes.setNamedItem(createAttribute(document, "guiclass", "TestBeanGUI"));
+		 attributes.setNamedItem(createAttribute(document, "testclass", "JDBCSampler"));
+		 attributes.setNamedItem(createAttribute(document, "testname", name)); //url name
+		 attributes.setNamedItem(createAttribute(document, "enabled", "true"));
+
+		 appendTypeProp(document, jdbcSampler, "stringProp", "dataSource", dataSource);
+		 appendTypeProp(document, jdbcSampler, "stringProp", "queryType", queryType);
+		 appendTypeProp(document, jdbcSampler, "stringProp", "query", query);
+		 appendTypeProp(document, jdbcSampler, "stringProp", "queryArguments", null);
+		 appendTypeProp(document, jdbcSampler, "stringProp", "queryArgumentsTypes", null);
+		 appendTypeProp(document, jdbcSampler, "stringProp", "variableNames", null);
+		 appendTypeProp(document, jdbcSampler, "stringProp", "resultVariable", null); 
+
+		 return jdbcSampler;
+	 }
+	 
+	 private Node removeAllChilds(Node hashTree) {
+			NodeList childNodes = hashTree.getChildNodes();
+			for (int i = 0; i < childNodes.getLength(); i++) {
+				hashTree.removeChild(childNodes.item(i));
+			}
+			return hashTree;
 		}
 	 
 	 public void adaptLoadJmx(String jmxFileLocation, int noOfUsers, int rampUpPeriod, int loopCount, Map<String, String> headersMap) throws Exception {

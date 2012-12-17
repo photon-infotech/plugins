@@ -363,6 +363,8 @@ public interface PluginConstants {
 	 String TEST_AGAINST				= "testAgainst";
 	 String SERVER						= "server";
 	 String BUILD						= "build";
+	 String JAR							= "jar";
+	 String JAR_LOCATION 				= "jarLocation";
 	 String BUILD_ENVIRONMENT_NAME		= "buildEnvironmentName";
 	 String PACK_MINIFIED_FILES			= "packMinifiedFiles";
 	 String EXCLUDE_FILE				= "excludeFile";
