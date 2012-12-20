@@ -41,6 +41,7 @@ import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.util.JRLoader;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -202,7 +203,7 @@ public class GenerateReport implements PluginConstants {
 			
 			if(deviceReportAvail) {
 				cumulativeReportparams.put(PERFORMANCE_SPECIAL_HANDLE, true);
-				cumulativeReportparams.put(PERFORMANCE_TEST_REPORTS,jmeterTestResultsForAndroid);
+				cumulativeReportparams.put(PERFORMANCE_TEST_REPORTS, jmeterTestResultsForAndroid);
 			} else {
 				cumulativeReportparams.put(PERFORMANCE_SPECIAL_HANDLE, false);
 				cumulativeReportparams.put(PERFORMANCE_TEST_REPORTS, jmeterTestResults);
@@ -214,33 +215,23 @@ public class GenerateReport implements PluginConstants {
 			String pomPath =  baseDir + File.separator + POM_XML;
 			PomProcessor processor = new PomProcessor(new File(pomPath));
 			String sonarUrl = processor.getProperty("phresco.sonar.server.url");
-				
-				/*if (StringUtils.isNotEmpty(sonarUrl)) {
-					System.out.println("\n inside if is not empty ");
-					List<String> sonarTechReports = getSonarProfiles(pomPath);
-						if (sonarTechReports != null) {
-						System.out.println("\n iside if sonarTechReports ............. " + sonarTechReports);
-							if(CollectionUtils.isEmpty(sonarTechReports)) {
-			    			System.out.println("\n inside if ......collectyion utils ss.............." + sonarTechReports);
-			    			sonarTechReports.add(SONAR_SOURCE);
-			    		}
-			    		System.out.println("\n aftere if ..........." + sonarTechReports);
-			        	sonarTechReports.add(FUNCTIONAL);
-			        	for (String sonarTechReport : sonarTechReports) {
-			        		System.out.println("\n sonarTechReport inside for loop " + sonarTechReport);
-							SonarReport srcSonarReport = generateSonarReport(sonarTechReport);
-							if(srcSonarReport != null) {
-								System.out.println("\n inside src report " + srcSonarReport);
-								sonarReports.add(srcSonarReport);
-							}
-						}
-			        	cumulativeReportparams.put("sonarReport", sonarReports);
-			        	System.out.println("\n at end sonarTechReport...................... " + sonarReports);
-					}
-				}*/
-				
-				
 			
+			if (StringUtils.isNotEmpty(sonarUrl)) {
+				List<String> sonarTechReports = getSonarProfiles(pomPath);
+				if (sonarTechReports != null) {
+					sonarTechReports.add(FUNCTIONAL);
+					if(CollectionUtils.isEmpty(sonarTechReports)) {
+						sonarTechReports.add(SONAR_SOURCE);
+					}
+					for (String sonarTechReport : sonarTechReports) {
+						SonarReport srcSonarReport = generateSonarReport(sonarTechReport);
+						if(srcSonarReport != null) {
+							sonarReports.add(srcSonarReport);
+						}
+					}
+					cumulativeReportparams.put("sonarReport", sonarReports);
+				}
+			}
 			generateCumulativeTestReport(cumulativeReportparams);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -316,7 +307,7 @@ public class GenerateReport implements PluginConstants {
 			} catch (Exception e) {
 				log.error("Delete directory failed");
 			}
-			System.out.println("Cumulative Report generation completed" + outFileNamePDF);
+			System.out.println("Cumulative Report generation completed  " + outFileNamePDF);
 		} catch(Exception e) {
 			e.printStackTrace();
 			log.error("Report generation error ");
@@ -432,7 +423,7 @@ public class GenerateReport implements PluginConstants {
 	    	File codeValidationReportDir = new File(codeValidatePath.toString());
 	        
 	        if(!codeValidationReportDir.exists()) {
-	        	System.out.println("Index file is not available!!!!");
+	        	System.out.println("Index file is not available!!!");
 	        	return;
 	        }
 	        System.out.println("Proceeding with XHTML and pdfs ");
@@ -497,6 +488,7 @@ public class GenerateReport implements PluginConstants {
         	File pomPath = new File(builder.toString());
         	
         	PomProcessor processor = new PomProcessor(pomPath);
+        	serverUrl = processor.getProperty("phresco.sonar.server.url");
         	String groupId = processor.getModel().getGroupId();
         	String artifactId = processor.getModel().getArtifactId();
         	StringBuilder sbuild = new StringBuilder();
