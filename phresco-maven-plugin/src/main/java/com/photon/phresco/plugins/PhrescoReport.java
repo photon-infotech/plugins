@@ -50,7 +50,6 @@ public class PhrescoReport extends PhrescoAbstractMojo {
     
     public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().info("Form Phresco PhrescoCIPreBuildStep Plugin");
-        getLog().info("Hello Phresco");
         getLog().info(baseDir.getPath());
         try {
         	String infoFile = baseDir + File.separator + Constants.REPORT_INFO_FILE;

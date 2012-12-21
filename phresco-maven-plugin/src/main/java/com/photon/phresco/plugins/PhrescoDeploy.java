@@ -45,13 +45,7 @@ public class PhrescoDeploy extends PhrescoAbstractMojo {
 	protected String projectCode;
     
 	public void execute() throws MojoExecutionException, MojoFailureException {
-        getLog().info("Form Phresco Plugin");
-        getLog().info("Hello Phresco");
         getLog().info(baseDir.getPath());
-        //Read the selected info file
-        //Convert it into Java Bean Objects using JAXB
-        //Find the implementation class based on the technology
-        //execute deploy method
         try {
         	String infoFile = baseDir + File.separator + Constants.DEPLOY_INFO_FILE; 
             PhrescoPlugin plugin = getPlugin(getPluginName(infoFile, DEPLOY));

@@ -53,13 +53,7 @@ public class PhrescoPackage extends PhrescoAbstractMojo {
     protected File baseDir;
     
     public void execute() throws MojoExecutionException, MojoFailureException {
-        getLog().info("Form Phresco Plugin");
-        getLog().info("Hello Phresco");
         getLog().info(baseDir.getPath());
-        //Read the selected info file
-        //Convert it into Java Bean Objects using JAXB
-        //Find the implementation class based on the technology
-        //execute package method
         try {
         	String infoFile = baseDir + File.separator + Constants.PACKAGE_INFO_FILE; 
         	PhrescoPlugin plugin = getPlugin(getPluginName(infoFile, PACKAGE));
