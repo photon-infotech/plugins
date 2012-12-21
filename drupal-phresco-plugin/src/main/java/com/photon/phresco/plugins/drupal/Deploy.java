@@ -155,7 +155,7 @@ public class Deploy implements PluginConstants {
 	
 	private void extractBuild() throws MojoExecutionException {
 		try {
-			ArchiveUtil.extractArchive(buildFile.getPath(), tempDir.getPath() + "/sites", ArchiveType.ZIP);
+			ArchiveUtil.extractArchive(buildFile.getPath(), tempDir.getPath(), ArchiveType.ZIP);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getErrorMessage(), e);
 		}
