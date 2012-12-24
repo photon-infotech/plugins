@@ -35,4 +35,12 @@ public interface PhrescoPlugin {
     void performCIPreBuildStep(String jobName, String goal, String phase, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
     public void generateReport(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
+    
+    void themeValidator(MavenProjectInfo mavenProjectInfo) throws PhrescoException;
+    
+    void themeConvertor(MavenProjectInfo mavenProjectInfo) throws PhrescoException;
+    
+    void contentValidator(MavenProjectInfo mavenProjectInfo) throws PhrescoException;
+    
+    void contentConvertor(MavenProjectInfo mavenProjectInfo) throws PhrescoException;
 }

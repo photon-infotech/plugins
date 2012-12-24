@@ -78,7 +78,13 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 	}
 
 	public void runUnitTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		generateMavenCommand(mavenProjectInfo, Constants.POM_PROP_KEY_UNITTEST_DIR);
+		File baseDir = mavenProjectInfo.getBaseDir();
+		MavenProject project = mavenProjectInfo.getProject();
+		String workingDirectory = project.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_DIR);
+		if(StringUtils.isEmpty(workingDirectory)) {
+			workingDirectory = "";
+		}
+		generateMavenCommand(mavenProjectInfo, baseDir.getPath() + workingDirectory);
 	}
 
 	public void runFunctionalTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
@@ -88,6 +94,9 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 		String environmentName = configValues.get(ENVIRONMENT_NAME);
 		String testAgainst = configValues.get(TEST_AGAINST);
 		String functionalTestDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
+		if(StringUtils.isEmpty(functionalTestDir)) { 
+			functionalTestDir = "";
+		}
 		String jarLocation = "";
 		if(testAgainst.equals(BUILD)) {
 			environmentName = configValues.get(BUILD_ENVIRONMENT_NAME);
@@ -108,7 +117,7 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 			File resultConfigXml = new File(basedir + resultConfigFileDir);
 			adaptTestConfig(selectedEnvFile, resultConfigXml, environmentName, browserValue, resolutionValue);
 		}
-		generateMavenCommand(mavenProjectInfo, Constants.POM_PROP_KEY_FUNCTEST_DIR);
+		generateMavenCommand(mavenProjectInfo, basedir + functionalTestDir);
 	}
 
 	private String getJarLocation(String basedir) {
@@ -137,62 +146,63 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 			String rampUpPeriod = configs.get(KEY_RAMP_UP_PERIOD);
 			String loopCount = configs.get(KEY_LOOP_COUNT);
 			String str = configs.get(ADD_HEADER);
-//			if(StringUtils.isNotEmpty(str)) {
-//				StringReader reader = new StringReader(str);
-//				Properties props = new Properties();
-//				props.load(reader);
-//				Set<String> propertyNames = props.stringPropertyNames();
-//				for (String key : propertyNames) {
-//					headersMap.put(key, props.getProperty(key));
-//				}
-//			}
+			//			if(StringUtils.isNotEmpty(str)) {
+			//				StringReader reader = new StringReader(str);
+			//				Properties props = new Properties();
+			//				props.load(reader);
+			//				Set<String> propertyNames = props.stringPropertyNames();
+			//				for (String key : propertyNames) {
+			//					headersMap.put(key, props.getProperty(key));
+			//				}
+			//			}
 			ConfigManager configManager = new ConfigManagerImpl(new File(basedir + File.separator + DOT_PHRESCO_FOLDER + File.separator + CONFIG_FILE));
 			com.photon.phresco.configuration.Configuration config = configManager.getConfiguration(environmentName, testAgainstType, configurationsName);
-			String performancePath = project.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR) + File.separator + testAgainstType;
-			if(StringUtils.isNotEmpty(performancePath)) {
-				pluginUtils.changeTestName(basedir + File.separator + performancePath + File.separator, testName);
+			String performanceTestDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR) + File.separator + testAgainstType;
+			if(StringUtils.isNotEmpty(performanceTestDir)) {
+				pluginUtils.changeTestName(basedir + File.separator + performanceTestDir + File.separator, testName);
+				String testConfigFilePath = basedir + File.separator + performanceTestDir + File.separator + "tests";
+				pluginUtils.adaptTestConfig(testConfigFilePath + File.separator , config);
+
+				//Testing Purpose needs to dynamic
+				List<String> name = new ArrayList<String>();
+				name.add("photon");
+				name.add("phresco");
+				String dataSource = "dataSource";
+				List<String> queryType = new ArrayList<String>();
+				queryType.add("queryType1");
+				queryType.add("queryType2");
+				List<String> query = new ArrayList<String>();
+				query.add("select * from db");
+				query.add("select table table name");
+				String dbUrl = "http://localhost:27007/mongodb";
+				String driver = "driver";
+				String userName = "userName";
+				String passWord = "passWord";
+
+				List<String> context = new ArrayList<String>();
+				context.add("context1");
+				context.add("context2");
+				List<String> contextType = new ArrayList<String>();
+				contextType.add("contextType1");
+				contextType.add("contextType2");
+				List<String> contextPostData = new ArrayList<String>();
+				contextPostData.add("contextPostData1");
+				contextPostData.add("contextPostData2");
+				List<String> encodingType = new ArrayList<String>();
+				encodingType.add("encodingType1");
+				encodingType.add("encodingType2");
+				headersMap.put("key1111", "value1111");
+				headersMap.put("key2222", "value2222");
+				// End Testing ******************************
+
+				if(testAgainstType.equalsIgnoreCase("dataBase")) {
+					pluginUtils.adaptDBPerformanceJmx(testConfigFilePath, name, dataSource, queryType, query, Integer.parseInt(noOfUsers), Integer.parseInt(rampUpPeriod), Integer.parseInt(loopCount), dbUrl, driver, userName, passWord);
+				} else {
+					pluginUtils.adaptPerformanceJmx(testConfigFilePath, name, context, contextType, contextPostData, encodingType, Integer.parseInt(noOfUsers), Integer.parseInt(rampUpPeriod), Integer.parseInt(loopCount), headersMap);
+				}
 			}
-			String testConfigFilePath = basedir + File.separator + performancePath + File.separator + "tests";
-			pluginUtils.adaptTestConfig(testConfigFilePath + File.separator , config);
-			
-			//Testing Purpose needs to dynamic
-			List<String> name = new ArrayList<String>();
-			name.add("photon");
-			name.add("phresco");
-			String dataSource = "dataSource";
-			List<String> queryType = new ArrayList<String>();
-			queryType.add("queryType1");
-			queryType.add("queryType2");
-			List<String> query = new ArrayList<String>();
-			query.add("select * from db");
-			query.add("select table table name");
-			String dbUrl = "http://localhost:27007/mongodb";
-			String driver = "driver";
-			String userName = "userName";
-			String passWord = "passWord";
-			
-			List<String> context = new ArrayList<String>();
-			context.add("context1");
-			context.add("context2");
-			List<String> contextType = new ArrayList<String>();
-			contextType.add("contextType1");
-			contextType.add("contextType2");
-			List<String> contextPostData = new ArrayList<String>();
-			contextPostData.add("contextPostData1");
-			contextPostData.add("contextPostData2");
-			List<String> encodingType = new ArrayList<String>();
-			encodingType.add("encodingType1");
-			encodingType.add("encodingType2");
-			headersMap.put("key1111", "value1111");
-			headersMap.put("key2222", "value2222");
-			// End Testing ******************************
-			
-			if(testAgainstType.equalsIgnoreCase("dataBase")) {
-				pluginUtils.adaptDBPerformanceJmx(testConfigFilePath, name, dataSource, queryType, query, Integer.parseInt(noOfUsers), Integer.parseInt(rampUpPeriod), Integer.parseInt(loopCount), dbUrl, driver, userName, passWord);
-			} else {
-				pluginUtils.adaptPerformanceJmx(testConfigFilePath, name, context, contextType, contextPostData, encodingType, Integer.parseInt(noOfUsers), Integer.parseInt(rampUpPeriod), Integer.parseInt(loopCount), headersMap);
-			}
-			
+			generateMavenCommand(mavenProjectInfo, basedir + performanceTestDir);
+
 		} catch (IOException e) {
 			throw new PhrescoException(e);
 		} catch (ConfigurationException e) {
@@ -218,24 +228,25 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 			String loopCount = configs.get(KEY_LOOP_COUNT);
 			String str = configs.get(ADD_HEADER);
 			if(StringUtils.isNotEmpty(str)) {
-			StringReader reader = new StringReader(str);
-			Properties props = new Properties();
-			props.load(reader);
-			Set<String> propertyNames = props.stringPropertyNames();
-			for (String key : propertyNames) {
-				headersMap.put(key, props.getProperty(key));
-			}
+				StringReader reader = new StringReader(str);
+				Properties props = new Properties();
+				props.load(reader);
+				Set<String> propertyNames = props.stringPropertyNames();
+				for (String key : propertyNames) {
+					headersMap.put(key, props.getProperty(key));
+				}
 			}
 			ConfigManager configManager = new ConfigManagerImpl(new File(basedir + File.separator + DOT_PHRESCO_FOLDER + File.separator + CONFIG_FILE));
 			com.photon.phresco.configuration.Configuration config = configManager.getConfiguration(environmentName, testAgainstType, type);
-			String performancePath = project.getProperties().getProperty(Constants.POM_PROP_KEY_LOADTEST_DIR);
-			if(StringUtils.isNotEmpty(performancePath)) {
-				pluginUtils.changeTestName(basedir + File.separator + performancePath + File.separator, testName);
+			String loadTestDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_LOADTEST_DIR);
+			if(StringUtils.isNotEmpty(loadTestDir)) {
+				pluginUtils.changeTestName(basedir + loadTestDir + File.separator, testName);
+				String testConfigFilePath = basedir + File.separator + loadTestDir + File.separator + "tests";
+				pluginUtils.adaptTestConfig(testConfigFilePath + File.separator , config);
+				pluginUtils.adaptLoadJmx(testConfigFilePath + File.separator, Integer.parseInt(noOfUsers), Integer.parseInt(rampUpPeriod), Integer.parseInt(loopCount), headersMap);
 			}
-			String testConfigFilePath = basedir + File.separator + performancePath + File.separator + "tests";
-			pluginUtils.adaptTestConfig(testConfigFilePath + File.separator , config);
-			pluginUtils.adaptLoadJmx(testConfigFilePath + File.separator, Integer.parseInt(noOfUsers), Integer.parseInt(rampUpPeriod), Integer.parseInt(loopCount), headersMap);
-			generateMavenCommand(mavenProjectInfo, Constants.POM_PROP_KEY_LOADTEST_DIR);
+			generateMavenCommand(mavenProjectInfo, basedir + File.separator + loadTestDir);
+
 		} catch (ConfigurationException e) {
 			throw new PhrescoException(e);
 		} catch (Exception e) {
@@ -320,17 +331,13 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 		// TODO Auto-generated method stub
 	}
 	
-	private void generateMavenCommand(MavenProjectInfo mavenProjectInfo, String propertyTagName) throws PhrescoException {
+	private void generateMavenCommand(MavenProjectInfo mavenProjectInfo, String workingDirectory) throws PhrescoException {
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append(TEST_COMMAND);
-			MavenProject project = mavenProjectInfo.getProject();
-			String baseDir = project.getBasedir().getPath();
-			String workingDirectory = project.getProperties().getProperty(propertyTagName);
 			Commandline cl = new Commandline(sb.toString());
-
 			if (StringUtils.isNotEmpty(workingDirectory)) {
-				cl.setWorkingDirectory(baseDir + File.separator + workingDirectory);
+				cl.setWorkingDirectory(workingDirectory);
 			}
 			Process pb = cl.execute();
 			// Consume subprocess output and write to stdout for debugging
@@ -620,5 +627,29 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 		} catch (FileNotFoundException e) {
 		    throw new PhrescoException(e);
         }
+	}
+
+	@Override
+	public void themeValidator(MavenProjectInfo mavenProjectInfo)
+			throws PhrescoException {
+		
+	}
+
+	@Override
+	public void themeConvertor(MavenProjectInfo mavenProjectInfo)
+			throws PhrescoException {
+		
+	}
+
+	@Override
+	public void contentValidator(MavenProjectInfo mavenProjectInfo)
+			throws PhrescoException {
+		
+	}
+
+	@Override
+	public void contentConvertor(MavenProjectInfo mavenProjectInfo)
+			throws PhrescoException {
+		
 	}
 }
