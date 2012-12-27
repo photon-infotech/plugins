@@ -28,8 +28,19 @@ public class RunAndroidTest implements PluginConstants {
 			sb.append(MVN_PHASE_CLEAN);
 			sb.append(STR_SPACE);
 			sb.append(MVN_PHASE_INSTALL);
+			
 			Map<String, String> configs = MojoUtil.getAllValues(configuration);
 			String deviceValue = configs.get(DEVICES);
+			String signing = configs.get(SIGNING);
+			
+			Boolean isSigning = Boolean.valueOf(signing);
+			System.out.println("isSigning . " + isSigning);
+			//signing
+			if (isSigning) {
+				sb.append(STR_SPACE);
+				sb.append(PSIGN);
+			}
+			
 			String otherDiviceValue = configs.get(deviceValue);
 			List<Parameter> parameters = configuration.getParameters().getParameter();
 			for (Parameter parameter : parameters) {

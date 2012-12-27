@@ -19,6 +19,7 @@ public class PerformanceTest implements PluginConstants {
 		try {
 			Map<String, String> configs = MojoUtil.getAllValues(configuration);
 			String deviceList= configs.get(DEVICES_LIST);
+			String signing = configs.get(SIGNING);
 			
 			if (StringUtils.isEmpty(deviceList)) {
 				System.out.println("Device list is empty . ");
@@ -31,6 +32,14 @@ public class PerformanceTest implements PluginConstants {
 			sb.append(MVN_PHASE_CLEAN);
 			sb.append(STR_SPACE);
 			sb.append(MVN_PHASE_INSTALL);
+			
+			Boolean isSigning = Boolean.valueOf(signing);
+			System.out.println("isSigning . " + isSigning);
+			//signing
+			if (isSigning) {
+				sb.append(STR_SPACE);
+				sb.append(PSIGN);
+			}
 			
 			sb.append(STR_SPACE);
 			sb.append(HYPHEN_D + DEVICES_LIST + EQUAL + deviceList);
