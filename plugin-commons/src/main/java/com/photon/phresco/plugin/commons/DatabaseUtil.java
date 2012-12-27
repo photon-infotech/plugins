@@ -125,7 +125,7 @@ public class DatabaseUtil {
 		String userName = dbConfiguration.getProperties().getProperty(Constants.DB_USERNAME);
 		String password = dbConfiguration.getProperties().getProperty(Constants.DB_PASSWORD);
 		String databaseName = dbConfiguration.getProperties().getProperty(Constants.DB_NAME);
-		String databaseType = dbConfiguration.getProperties().getProperty(Constants.DB_TYPE);
+		String databaseType = dbConfiguration.getProperties().getProperty(Constants.DB_TYPE).toLowerCase();
 		String connectionProtocol = findConnectionProtocol(databaseType, host, port, databaseName);
 		Connection con = null;
 		FileInputStream fis = null;
@@ -211,7 +211,7 @@ public class DatabaseUtil {
 					if (importSql) {
 						List<com.photon.phresco.configuration.Configuration> configuration =configManager.getConfigurations(environmentName, Constants.SETTINGS_TEMPLATE_DB);
 						for (com.photon.phresco.configuration.Configuration config : configuration) {
-							String databaseType = config.getProperties().getProperty(Constants.DB_TYPE);
+							String databaseType = config.getProperties().getProperty(Constants.DB_TYPE).toLowerCase();
 							String databaseVersion = config.getProperties().getProperty(Constants.DB_VERSION);
 							if (databaseType.equals(dbType) && databaseVersion.equals(version)) {
 								getSqlFilePath(config, baseDir, databaseType, sqlPath);
@@ -243,7 +243,7 @@ public class DatabaseUtil {
 				if (entry.getKey().equals(databaseType)) {
 					filepaths = entry.getValue();
 					String version = dbConfiguration.getProperties().getProperty(Constants.DB_VERSION);
-					String dbType = dbConfiguration.getProperties().getProperty(Constants.DB_TYPE);
+					String dbType = dbConfiguration.getProperties().getProperty(Constants.DB_TYPE).toLowerCase();
 					String pathVersion = "" ;
 					for (String sourcePath : filepaths) {
 						pathVersion = sourcePath.substring(sourcePath.indexOf(dbType), sourcePath.lastIndexOf("/"));
