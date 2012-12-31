@@ -47,6 +47,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
+import org.apache.pdfbox.util.*;
 import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.PrettyXmlSerializer;
@@ -64,6 +65,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.tool.xml.XMLWorkerHelper;
 import com.lowagie.text.pdf.PdfContentByte;
@@ -293,7 +295,8 @@ public class GenerateReport implements PluginConstants {
 				            	System.out.println("Code validation report files ... " + codeReportPdf);
 					            pdfs.add(codeReportPdf.getAbsolutePath());
 							}
-				            concatPDFs(pdfs, outFinalFileNamePDF, true);
+				            mergePdf(pdfs, outFinalFileNamePDF);
+//				            concatPDFs(pdfs, outFinalFileNamePDF, true);
 			            }
 		            }
 				} catch (PhrescoException e) {
@@ -329,6 +332,25 @@ public class GenerateReport implements PluginConstants {
 			}
 		}
 		
+	}
+	
+	// merge pdfs
+	public void mergePdf(List<String> PDFFiles,  String outputPDFFile) throws PhrescoException {
+		try {
+			  // Get the byte streams from any source (maintain order)
+			  List<InputStream> sourcePDFs = new ArrayList<InputStream>();
+			  for (String PDFFile : PDFFiles) {
+				  sourcePDFs.add(new FileInputStream(new File(PDFFile)));
+			  }
+			  // initialize the Merger utility and add pdfs to be merged
+			  PDFMergerUtility mergerUtility = new PDFMergerUtility();
+			  mergerUtility.addSources(sourcePDFs);
+			  // set the destination pdf name and merge input pdfs
+			  mergerUtility.setDestinationFileName(outputPDFFile);
+			  mergerUtility.mergeDocuments();
+		} catch (Exception e) {
+			throw new PhrescoException(e);
+		}
 	}
 	
 	//Merge the PDF's
@@ -458,9 +480,14 @@ public class GenerateReport implements PluginConstants {
 		        File pdfPath = new File(tempOutFileNameIphoneSonarPDF);
 		        com.itextpdf.text.Document pdfDocument = null;
 		        PdfWriter pdfWriter = null;
-		        pdfDocument = new com.itextpdf.text.Document();
+		        pdfDocument = new com.itextpdf.text.Document(com.itextpdf.text.PageSize.A2); // TODO : issue need to be fixed in html
+//		        pdfDocument = new com.itextpdf.text.Document();
 		        pdfWriter = PdfWriter.getInstance(pdfDocument, new FileOutputStream(pdfPath));
 		        pdfDocument.open();
+		        
+		        // Adding heading for the pdf
+		        Font catFont = new Font(Font.FontFamily.TIMES_ROMAN, 25, Font.BOLD);
+		        pdfDocument.add(new Paragraph("XCode Target : " + targetFile.getParentFile().getName(), catFont));
 		        
 		        XMLWorkerHelper.getInstance().parseXHtml(pdfWriter, (com.itextpdf.text.Document) pdfDocument,
 		                new FileInputStream(xhtmlpath), null);
