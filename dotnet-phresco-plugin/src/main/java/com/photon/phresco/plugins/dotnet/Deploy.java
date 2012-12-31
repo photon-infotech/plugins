@@ -71,12 +71,10 @@ public class Deploy implements PluginConstants {
 
 			PluginUtils pu = new PluginUtils();
 			BuildInfo buildInfo = pu.getBuildInfo(Integer.parseInt(buildNumber));
-			log.info("Build Name " + buildInfo);
 
 			buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
 			targetDir = new File(project.getBuild().getDirectory());
 			buildFile = new File(buildDir.getPath() + File.separator + buildInfo.getBuildName());
-			log.info("buildFile path " + buildFile.getPath());
 
 			List<com.photon.phresco.configuration.Configuration> configurations = getConfiguration(Constants.SETTINGS_TEMPLATE_SERVER);
 			for (com.photon.phresco.configuration.Configuration configuration : configurations) {
@@ -115,11 +113,10 @@ public class Deploy implements PluginConstants {
 			while ((line = in.readLine()) != null) {
 				if (line.contains(siteName)) {
 					listApp();
-				} else {
-					executeAddSite();
-					executeAddApp();
-				}
+				} 
 			}
+			executeAddSite();
+			executeAddApp();
 		} catch (CommandLineException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		} catch (IOException e) {
@@ -144,8 +141,6 @@ public class Deploy implements PluginConstants {
 							"Application Already Exists in Site . Please configure new Application or delete the already existing one ");
 				}
 			}
-			executeAddSite();
-			executeAddApp();
 		} catch (CommandLineException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		} catch (IOException e) {
@@ -155,6 +150,7 @@ public class Deploy implements PluginConstants {
 
 	private void executeAddSite() throws MojoExecutionException {
 		BufferedReader in = null;
+		log.info("Creation of Site executed...");
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append("APPCMD add site /name:");
@@ -191,6 +187,7 @@ public class Deploy implements PluginConstants {
 
 	private void executeAddApp() throws MojoExecutionException {
 		BufferedReader in = null;
+		log.info("Creation of Application executed...");
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append("APPCMD add app /site.name:");

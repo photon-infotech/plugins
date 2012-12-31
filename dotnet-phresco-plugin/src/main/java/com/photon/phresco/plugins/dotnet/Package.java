@@ -53,8 +53,6 @@ public class Package implements PluginConstants {
         buildName = configs.get(BUILD_NAME);
         buildNumber = configs.get(BUILD_NUMBER);
         util = new PluginPackageUtil();
-        
-		log.info("Plugin Development is in Progress ...");
 		try {
 			init();
 			boolean buildStatus = build();
@@ -66,8 +64,7 @@ public class Package implements PluginConstants {
 	
 	private void init() throws MojoExecutionException {
 		try {
-			
-			srcDir = new File(baseDir.getPath() + File.separator + "source/src");
+			srcDir = new File(project.getBuild().getSourceDirectory());
 			buildDir = new File(baseDir.getPath() + PluginConstants.BUILD_DIRECTORY);
 			if (!buildDir.exists()) {
 				buildDir.mkdirs();
@@ -167,7 +164,7 @@ public class Package implements PluginConstants {
 	class CsFileNameFilter implements FilenameFilter {
 
 		public boolean accept(File dir, String name) {
-			return name.endsWith(".csproj");
+			return name.endsWith(PluginConstants.WP_SLN);
 		}
 	}
 }
