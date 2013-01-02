@@ -10,6 +10,8 @@ package com.photon.phresco.plugins.params.model;
 
 import javax.xml.bind.annotation.XmlRegistry;
 
+import com.photon.phresco.plugins.model.Assembly;
+
 
 /**
  * This object contains factory methods for each 
