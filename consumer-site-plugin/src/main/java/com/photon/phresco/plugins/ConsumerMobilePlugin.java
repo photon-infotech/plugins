@@ -30,11 +30,11 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 			fileFolderValidatorHandler.validateFilePresence();
 			fileFolderValidatorHandler.validateFileDimensions();
 		} catch (ZipException e) {
-			e.printStackTrace();
+			throw new PhrescoException(e);
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new PhrescoException(e);
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new PhrescoException(e);
 		}
 	
 	}

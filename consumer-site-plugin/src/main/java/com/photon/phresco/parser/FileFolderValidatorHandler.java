@@ -32,15 +32,14 @@ public class FileFolderValidatorHandler {
 			doc = builder.build(new File(loc+UtilConstant.manifestFileName));
 		} catch (JDOMException e) {
 			e.printStackTrace();
-			throw new Exception(e.getMessage());
+//			throw new Exception(e.getMessage());
 		} catch (IOException e) {
 			e.printStackTrace();
-			throw new Exception(e.getMessage());
+//			throw new Exception(e.getMessage());
 		}
 	}
 
-	public String[] validateFolderStructure() throws MojoExecutionException {
-		try {
+	public String[] validateFolderStructure() throws MojoExecutionException, JDOMException {
 			List<Element> validationList = ((List<Element>) XPath.selectNodes(
 					doc, "//validations/validation"));
 			for (Element validation : validationList) {
@@ -96,14 +95,10 @@ public class FileFolderValidatorHandler {
 					}
 				}
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
+			return new String[]{};
 	}
 
-	public String[] validateFilePresence() throws MojoExecutionException {
-		try {
+	public String[] validateFilePresence() throws MojoExecutionException, JDOMException {
 			List<Element> validationList = ((List<Element>) XPath.selectNodes(
 					doc, "//validations/validation"));
 			for (Element validation : validationList) {
@@ -218,14 +213,11 @@ public class FileFolderValidatorHandler {
 					}
 				}
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
+		return new String[]{};
 	}
 
-	public String[] validateFileDimensions() throws MojoExecutionException {
-		try {
+	public String[] validateFileDimensions() throws MojoExecutionException, IOException, JDOMException {
+//		try {
 			List<Element> validationList = ((List<Element>) XPath.selectNodes(
 					doc, "//validations/validation"));
 			for (Element validation : validationList) {
@@ -465,10 +457,8 @@ public class FileFolderValidatorHandler {
 					}
 				}
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
+//		}
+			return new String[]{};
 	}
 
 	private void checkIfFolderExists(String stringFile, String required)
@@ -484,8 +474,7 @@ public class FileFolderValidatorHandler {
 		}
 	}
 
-	private void checkImageWidth(String filename, int expectedWidth) {
-		try {
+	private void checkImageWidth(String filename, int expectedWidth)  throws MojoExecutionException, IOException {
 			BufferedImage bimg = ImageIO.read(new File(loc + filename));
 			int width = bimg.getWidth();
 			System.out.println("width " + width + " expectedWidth  "
@@ -496,13 +485,10 @@ public class FileFolderValidatorHandler {
 			} else {
 				System.out.println(filename + " has exact width");
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		
 	}
 
-	private void checkImageHeight(String filename, int expectedHeight) {
-		try {
+	private void checkImageHeight(String filename, int expectedHeight) throws MojoExecutionException, IOException{
 			BufferedImage bimg = ImageIO.read(new File(loc + filename));
 			int height = bimg.getHeight();
 			if (height != expectedHeight) {
@@ -511,8 +497,5 @@ public class FileFolderValidatorHandler {
 			} else {
 				System.out.println(filename + " has exact height");
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 }
