@@ -197,6 +197,9 @@ public interface PluginConstants {
 	 String WP_STR_SEMICOLON 		 	= ";";
 	 String WINDOWS_STR_BACKSLASH   	= "\\";
 	 String WP_STR_DOUBLEQUOTES 		= "\"";
+	 String WP_SOURCE					= "src";
+	 String WP8							= "wp8";
+	 String WP7							= "wp7";
 	 
 	 String WP_SLN 						= ".sln";
 	 String WP_CSPROJ 					= ".csproj";
