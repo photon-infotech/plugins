@@ -35,6 +35,7 @@
 package com.photon.maven.plugins.android.standalonemojos;
 
 import static com.photon.maven.plugins.android.common.AndroidExtension.APK;
+import static com.photon.maven.plugins.android.common.AndroidExtension.APKLIB;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -47,8 +48,10 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.codehaus.plexus.archiver.zip.ZipArchiver;
@@ -57,7 +60,11 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.photon.maven.plugins.android.AbstractAndroidMojo;
 import com.photon.phresco.commons.model.BuildInfo;
+import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.PluginUtils;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+import com.photon.phresco.plugins.util.MojoProcessor;
+import com.photon.phresco.plugins.util.MojoUtil;
 
 
 /**
@@ -120,14 +127,28 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-
+		File outputFile = null, destFile = null;
+		String techId;
 		try {
+			getLog().info("Base Dir === "  + baseDir.getAbsolutePath());
+			
 			buildInfoList = new ArrayList<BuildInfo>(); // initialization
 //			srcDir = new File(baseDir.getPath() + File.separator + sourceDirectory);
 			buildDir = new File(baseDir.getPath() + buildDirectory);
 			if (!buildDir.exists()) {
 				buildDir.mkdir();
 				getLog().info("Build directory created..." + buildDir.getPath());
+			}
+			
+			File projectHome = new File(baseDir.getPath() + File.separator + ".phresco" + File.separator + "phresco-package-info.xml");
+			MojoProcessor processor = new MojoProcessor(projectHome);
+			Configuration configuration = processor.getConfiguration("package");
+			Map<String, String> configs = MojoUtil.getAllValues(configuration);
+			techId = configs.get("techId");
+			if (StringUtils.isNotEmpty(techId)) {
+				outputFile = new File(project.getBuild().getDirectory(), project.getBuild().getFinalName() + '.' + APKLIB);
+			} else {
+				outputFile = new File(project.getBuild().getDirectory(), project.getBuild().getFinalName() + '.' + APK);
 			}
 			buildInfoFile = new File(buildDir.getPath() + "/build.info");
 
@@ -136,22 +157,24 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 			currentDate = Calendar.getInstance().getTime();
 		} catch (IOException e) {
 			throw new MojoFailureException("APK could not initialize " + e.getLocalizedMessage());
+		} catch (PhrescoException e) {
+			throw new MojoFailureException("APK could not initialize " + e.getLocalizedMessage());
 		}
-		
-		// Initialize apk build configuration
-		File outputFile = new File(project.getBuild().getDirectory(), project.getBuild().getFinalName() + '.' + APK);
-
 		
 		if (outputFile.exists()) {
 
 			try {
 				getLog().info("APK created.. Copying to Build directory.....");
 				String buildName = project.getBuild().getFinalName() + '_' + getTimeStampForBuildName(currentDate);
-				File destFile = new File(buildDir, buildName + '.' + APK);
+				
+				if (StringUtils.isNotEmpty(techId)) {
+					destFile = new File(buildDir, buildName + '.' + APKLIB);
+				} else {
+					destFile = new File(buildDir, buildName + '.' + APK);
+				}
 				FileUtils.copyFile(outputFile, destFile);
 				getLog().info("copied to..." + destFile.getName());
 				apkFileName = destFile.getName();
-
 				getLog().info("Creating deliverables.....");
 				ZipArchiver zipArchiver = new ZipArchiver();
 				File inputFile = new File(apkFileName);
@@ -163,6 +186,7 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 				deliverable = deliverableZip.getName();
 				getLog().info("Deliverables available at " + deliverableZip.getName());
 				writeBuildInfo(true);
+				
 			} catch (IOException e) {
 				throw new MojoExecutionException("Error in writing output...");
 			}
