@@ -5,13 +5,13 @@
   <parent>
     <artifactId>phresco-plugins-root</artifactId>
     <groupId>com.photon.phresco.plugins</groupId>
-    <version>2.0.0.30002-SNAPSHOT</version>
+    <version>2.0.0.31001-SNAPSHOT</version>
 	<relativePath>../</relativePath>
   </parent>
   
   <groupId>com.photon.phresco.plugins</groupId>
   <artifactId>consumer-site-plugin</artifactId>
-  <version>2.0.0.30002-SNAPSHOT</version>
+  <version>2.0.0.31001-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>consumer-site-plugin</name>
@@ -45,5 +45,11 @@
 		<artifactId>drupal-phresco-plugin</artifactId>
 		<version>${phresco-commons-version}</version>
 	</dependency>
+	<dependency>
+		<groupId>org.jdom</groupId>
+		<artifactId>jdom</artifactId>
+		<version>2.0.2</version>
+	</dependency>
+
   </dependencies>
 </project>

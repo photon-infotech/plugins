@@ -1,8 +1,12 @@
 package com.photon.phresco.plugins;
 
+import java.io.IOException;
+import java.util.zip.ZipException;
+
 import org.apache.maven.plugin.logging.Log;
 
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.parser.FileFolderValidatorHandler;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugins.drupal.DrupalPlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
@@ -15,6 +19,23 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 
 	public void themeValidator(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		log.info("Theme validation is being done");
+		try {
+//			new ValidatorExtractionHander()
+//					.extractPackage(
+//							new File(
+//									UtilConstant.zipFileLocation+UtilConstant.zipFileName),
+//							new File(UtilConstant.zipFileLocation));
+			FileFolderValidatorHandler fileFolderValidatorHandler = new FileFolderValidatorHandler(mavenProjectInfo);
+			fileFolderValidatorHandler.validateFolderStructure();
+			fileFolderValidatorHandler.validateFilePresence();
+			fileFolderValidatorHandler.validateFileDimensions();
+		} catch (ZipException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	
 	}
 

@@ -351,7 +351,7 @@ public interface PluginConstants {
 	 String BUILD_NAME 					= "buildName";
 	 String ENVIRONMENT_NAME 			= "environmentName";
 	 String WINDOWS_PLATFORM_TYPE		= "type";
-	 String CONFIG 						= "config";
+	 String CONFIG 						= "configuration";
 	 String PLATFORM 					= "platform";
 	 String DOT_ZIP 					= ".zip";
 	 String BUILD_NUMBER 				= "buildNumber";
