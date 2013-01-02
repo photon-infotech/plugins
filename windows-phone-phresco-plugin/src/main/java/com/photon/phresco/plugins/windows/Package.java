@@ -29,9 +29,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.commons.io.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.Commandline;
@@ -112,7 +112,7 @@ public class Package implements PluginConstants {
 
 	private void init() throws MojoExecutionException {
 		try {
-			if (StringUtils.isEmpty(environmentName) || StringUtils.isEmpty(type)) {
+			if (StringUtils.isEmpty(environmentName) || StringUtils.isEmpty(type) || (!type.equals(WP7) && !type.equals(WP8))) {
 				callUsage();
 			}
 			
@@ -180,7 +180,7 @@ public class Package implements PluginConstants {
 	private void getProjectRoot() throws MojoExecutionException {
 		try {
 			// Get the source/<ProjectRoot> folder
-			rootDir = new File(baseDir.getPath() + sourceDirectory + File.separator + WP_PROJECT_ROOT);
+			rootDir = new File(baseDir.getPath() + sourceDirectory + File.separator + WP_SOURCE + File.separator + WP_PROJECT_ROOT);
 		} catch (Exception e) {
 			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
@@ -324,7 +324,7 @@ public class Package implements PluginConstants {
 				tempDir = new File(tempFilePath);
 			} else if(type.equalsIgnoreCase("wp7")) {
 				String packageFolder = solutionFile[0].getName().substring(0, solutionFile[0].getName().length() - 4);
-				tempDir = new File(baseDir + sourceDirectory + File.separator  + packageFolder + WP7_BIN_FOLDER + WP7_RELEASE_FOLDER);	
+				tempDir = new File(baseDir + sourceDirectory + File.separator + WP_SOURCE + File.separator + packageFolder + WP7_BIN_FOLDER + WP7_RELEASE_FOLDER);	
 			}
 			ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
 		} catch (PhrescoException e) {

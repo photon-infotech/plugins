@@ -244,6 +244,7 @@
                         com.photon.maven.plugins.android.generation2:android-maven-plugin:apklib
                     </package>
                     <install>
+						com.photon.maven.plugins.android.generation2:android-maven-plugin:updatebuildinfo,
                         org.apache.maven.plugins:maven-install-plugin:install
                     </install>
                     <deploy>org.apache.maven.plugins:maven-deploy-plugin:deploy</deploy>

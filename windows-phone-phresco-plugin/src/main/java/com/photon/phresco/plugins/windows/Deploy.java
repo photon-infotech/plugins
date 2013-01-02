@@ -84,7 +84,7 @@ public class Deploy implements PluginConstants {
 	private void init() throws MojoExecutionException {
 		try {
 
-			if (StringUtils.isEmpty(buildName) || StringUtils.isEmpty(environmentName) || StringUtils.isEmpty(type)) {
+			if (StringUtils.isEmpty(buildName) || StringUtils.isEmpty(environmentName) || StringUtils.isEmpty(type) || (!type.equals(WP7) && !type.equals(WP8))) {
 				callUsage();
 			}
 			if(type.equalsIgnoreCase(WP8_PLATFORM)) {
@@ -126,7 +126,7 @@ public class Deploy implements PluginConstants {
 //			projectRootFolder = solutionFile[0].getName().substring(0, solutionFile[0].getName().length() - 4);
 			
 			// Get the source/<ProjectRoot> folder
-			rootDir = new File(baseDir.getPath() + sourceDirectory + File.separator + WP_PROJECT_ROOT);
+			rootDir = new File(baseDir.getPath() + sourceDirectory + File.separator + WP_SOURCE + File.separator +  WP_PROJECT_ROOT);
 		} catch (Exception e) {
 			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
