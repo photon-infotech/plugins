@@ -182,8 +182,8 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 				File deliverableZip = new File(buildDir, buildName + ".zip");
 				zipArchiver.setDestFile(deliverableZip);
 				zipArchiver.createArchive();
-
-				deliverable = deliverableZip.getName();
+				
+				deliverable = deliverableZip.getPath();
 				getLog().info("Deliverables available at " + deliverableZip.getName());
 				writeBuildInfo(true);
 				

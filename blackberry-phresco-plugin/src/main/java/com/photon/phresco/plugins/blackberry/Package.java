@@ -88,6 +88,7 @@ public class Package implements PluginConstants {
         environmentName = configs.get(ENVIRONMENT_NAME);
         buildName = configs.get(BUILD_NAME);
         buildNumber = configs.get(BUILD_NUMBER);
+        keyPass = configs.get(KEY_PASSWORD);    
         util = new PluginPackageUtil();
         
         try {
@@ -225,10 +226,12 @@ public class Package implements PluginConstants {
 			sb.append(BB_BBWP_HOME);
 			sb.append(STR_SPACE);
 			sb.append(tempZipName);
-			sb.append(STR_SPACE);
-			sb.append("-g");
-			sb.append(STR_SPACE);
-			sb.append(keyPass);
+			if (keyPass != null) {
+				sb.append(STR_SPACE);
+				sb.append("-g");
+				sb.append(STR_SPACE);
+				sb.append(keyPass); 
+			}
 			sb.append(STR_SPACE);
 			sb.append("-o");
 			sb.append(STR_SPACE);
