@@ -40,7 +40,7 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 	}
 
 	public void themeConvertor(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		log.info("Theme conversion is being done");
+		log.info("Theme conversion will merge the package into theme");
 		
 	}
 
