@@ -30,20 +30,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Scanner;
-
-import org.apache.commons.lang.StringUtils;
+import java.util.Set;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.mongodb.DB;
@@ -189,72 +182,41 @@ public class DatabaseUtil {
 		}
 	}
 
-	public void  fetchSqlConfiguration(String sqlPath, Boolean importSql, File baseDir, String environmentName) throws PhrescoException {
-		String dbType;
-		String version;
-		if (StringUtils.isEmpty(sqlPath)) {
-			return ;
-		}
-		try {
-			ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(new File(baseDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE));
-			JsonParser parser = new JsonParser();
-			JsonElement parse = parser.parse(sqlPath);
-			JsonObject jsonObject = parse.getAsJsonObject();
-			for ( Entry<String, JsonElement> entry : jsonObject.entrySet()) {
-				dbType = entry.getKey();
-				JsonElement value = entry.getValue();
-				JsonArray paths = value.getAsJsonArray();
-				for (JsonElement jsonElement : paths) {
-					version = jsonElement.getAsString();
-					version = version.substring(version.indexOf(dbType), version.lastIndexOf("/"));
-					version = (version.substring(version.indexOf("/")).substring(1));
-					if (importSql) {
-						List<com.photon.phresco.configuration.Configuration> configuration =configManager.getConfigurations(environmentName, Constants.SETTINGS_TEMPLATE_DB);
-						for (com.photon.phresco.configuration.Configuration config : configuration) {
-							String databaseType = config.getProperties().getProperty(Constants.DB_TYPE).toLowerCase();
-							String databaseVersion = config.getProperties().getProperty(Constants.DB_VERSION);
-							if (databaseType.equals(dbType) && databaseVersion.equals(version)) {
-								getSqlFilePath(config, baseDir, databaseType, sqlPath);
-							}
-						}
-					}
-				}
+	public void fetchSqlConfiguration(String sqlPath, Boolean importSql, File baseDir, String environmentName) throws PhrescoException, ConfigurationException {
+		ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(new File(baseDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE));
+		if (importSql) {
+			List<com.photon.phresco.configuration.Configuration> configuration = configManager.getConfigurations(environmentName, Constants.SETTINGS_TEMPLATE_DB);
+			for (com.photon.phresco.configuration.Configuration config : configuration) {
+				getSqlFilePath(config, baseDir, sqlPath);
 			}
-		} catch (PhrescoException e) {
-			throw new PhrescoException(e);
-		} catch (ConfigurationException e) {
-			throw new PhrescoException(e);
-
 		}
 	}
 	
-	public void getSqlFilePath(Configuration dbConfiguration, File basedir,	String databaseType, String sqlJson) throws PhrescoException {
-		List<String> filepaths = new ArrayList<String>();
+	public void getSqlFilePath(Configuration dbConfiguration, File basedir,	String sqlJson) throws PhrescoException {
 		try {
 			Gson gson = new Gson();
 			Type mapObjectType = new TypeToken<Map<String, List<String>>>() {}.getType();
 			String json = gson.toJson(sqlJson);
 			String jsonPath = json.replace("\\", "").replaceAll("^\"|\"$","");
 			Map<String, List<String>> dbMap = gson.fromJson(jsonPath, mapObjectType);
-			Iterator<Entry<String, List<String>>> iterator = dbMap.entrySet().iterator();
-			List<String> paths = new ArrayList<String>();
-			while (iterator.hasNext()) {
-				Entry<String, List<String>> entry = iterator.next();
-				if (entry.getKey().equals(databaseType)) {
-					filepaths = entry.getValue();
-					String version = dbConfiguration.getProperties().getProperty(Constants.DB_VERSION);
-					String dbType = dbConfiguration.getProperties().getProperty(Constants.DB_TYPE).toLowerCase();
-					String pathVersion = "" ;
-					for (String sourcePath : filepaths) {
-						pathVersion = sourcePath.substring(sourcePath.indexOf(dbType), sourcePath.lastIndexOf("/"));
-						pathVersion = (pathVersion.substring(pathVersion.indexOf("/")).substring(1));
-						if (pathVersion.equals(version)) {
-							paths.add(sourcePath);
+			Set<String> dbTypes = dbMap.keySet();
+			List<String> sqlPathsToExe = new ArrayList<String>();
+			String configDbType = dbConfiguration.getProperties().getProperty(Constants.DB_TYPE).toLowerCase();
+			for (String dbType : dbTypes) {
+				if (dbType.equals(configDbType)) {
+					List<String> sqlPaths = dbMap.get(dbType);
+					for (String sqlPath : sqlPaths) {
+						String configVersion = dbConfiguration.getProperties().getProperty(Constants.DB_VERSION);
+						String dbVersion = sqlPath.substring(sqlPath.indexOf(dbType), sqlPath.lastIndexOf("/"));
+						dbVersion = (dbVersion.substring(dbVersion.indexOf("/")).substring(1));
+						if (dbVersion.equals(configVersion)) {
+							sqlPathsToExe.add(sqlPath);
 						}
 					}
-					executeSql(dbConfiguration, basedir, paths);
 				}
+				executeSql(dbConfiguration, basedir, sqlPathsToExe);
 			}
+			
 		} catch (JsonIOException e) {
 			throw new PhrescoException(e);
 		} catch (JsonSyntaxException e) {
