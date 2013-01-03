@@ -35,6 +35,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
@@ -99,7 +100,7 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 		}
 		String jarLocation = "";
 		if(testAgainst.equals(BUILD)) {
-			environmentName = configValues.get(BUILD_ENVIRONMENT_NAME);
+			environmentName = configValues.get(ENVIRONMENT_NAME);
 			jarLocation = getJarLocation(basedir);
 		} else if (testAgainst.equals(SERVER)) {
 			environmentName = configValues.get(ENVIRONMENT_NAME);
@@ -123,10 +124,12 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 	private String getJarLocation(String basedir) {
 		File jarFile = new File(basedir + DO_NOT_CHECKIN_FOLDER + File.separator + TARGET);
 		File[] listFiles = jarFile.listFiles();
-		for (File file : listFiles) {
-			if(file.getPath().endsWith(".jar")) {
-				return file.getPath();
-			}
+		if (!ArrayUtils.isEmpty(listFiles)) {
+		    for (File file : listFiles) {
+		        if (file.getPath().endsWith(".jar")) {
+		            return file.getPath();
+		        }
+		    }
 		}
 		return "";
 	}
@@ -374,7 +377,6 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 				processor.save();
 			}
 		} catch (PhrescoPomException e) {
-			e.printStackTrace();
 			throw new PhrescoException(e);
 		}		
 	}
