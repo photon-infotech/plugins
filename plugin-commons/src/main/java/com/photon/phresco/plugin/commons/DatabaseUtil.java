@@ -249,7 +249,7 @@ public class DatabaseUtil {
 			String username = dbConfiguration.getProperties().getProperty(Constants.DB_USERNAME);
 			String password = dbConfiguration.getProperties().getProperty(Constants.DB_PASSWORD);
 			String database = dbConfiguration.getProperties().getProperty(Constants.DB_NAME);
-			String databasetype = dbConfiguration.getProperties().getProperty(Constants.DB_TYPE);
+			String databasetype = dbConfiguration.getProperties().getProperty(Constants.DB_TYPE).toLowerCase();
 			String dbUrl = "jdbc:" + databasetype + "://" + host + ":" + port;
 			String url = dbUrl + PluginConstants.FORWARD_SLASH + database;
 			conn = DriverManager.getConnection(url, username, password);

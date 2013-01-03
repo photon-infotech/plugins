@@ -39,6 +39,8 @@ public class Deploy implements PluginConstants {
 	private File tempDir;
 	private File binariesDir;
 	private String context;
+	private String serverHost;
+	private String serverport;
 	private Log log;
 	private String sqlPath;
 	
@@ -78,6 +80,8 @@ public class Deploy implements PluginConstants {
 			List<com.photon.phresco.configuration.Configuration> configurations = getConfiguration(Constants.SETTINGS_TEMPLATE_SERVER);
 			for (com.photon.phresco.configuration.Configuration configuration : configurations) {
 				context = configuration.getProperties().getProperty(Constants.SERVER_CONTEXT);
+				serverHost = configuration.getProperties().getProperty(Constants.SERVER_HOST);
+				serverport = configuration.getProperties().getProperty(Constants.SERVER_PORT);
 				break;
 			}
 			tempDir = new File(buildDir.getPath() + TEMP_DIR + File.separator
@@ -154,6 +158,10 @@ public class Deploy implements PluginConstants {
 		DatabaseUtil util = new DatabaseUtil();
 		try {
 			util.fetchSqlConfiguration(sqlPath, importSql, baseDir, environmentName);
+			List<com.photon.phresco.configuration.Configuration> configurations = getConfiguration(Constants.SETTINGS_TEMPLATE_DB);
+			for (com.photon.phresco.configuration.Configuration configuration : configurations) {
+				util.updateSqlQuery(configuration, serverHost, context, serverport);
+			}
 		} catch (Exception e) {
 			throw new PhrescoException(e);
 		}
