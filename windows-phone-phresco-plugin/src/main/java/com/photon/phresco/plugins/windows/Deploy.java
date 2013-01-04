@@ -32,9 +32,11 @@ import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.Commandline;
 
+import com.photon.phresco.commons.model.BuildInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
+import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.model.WP8PackageInfo;
 import com.photon.phresco.plugins.util.MojoUtil;
@@ -58,6 +60,7 @@ public class Deploy implements PluginConstants {
 	private WP8PackageInfo packageInfo;
 	private Log log;
 	private String buildName;
+	private String buildNumber;
 
 	public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -65,6 +68,7 @@ public class Deploy implements PluginConstants {
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
         buildName = configs.get(BUILD_NAME);
+        buildNumber = configs.get(BUILD_NUMBER);
         type = configs.get(WINDOWS_PLATFORM_TYPE);
         
 		try {
@@ -84,16 +88,17 @@ public class Deploy implements PluginConstants {
 	private void init() throws MojoExecutionException {
 		try {
 
-			if (StringUtils.isEmpty(buildName) || StringUtils.isEmpty(environmentName) || StringUtils.isEmpty(type) || (!type.equals(WP7) && !type.equals(WP8))) {
+			if (StringUtils.isEmpty(buildNumber) || StringUtils.isEmpty(environmentName) || StringUtils.isEmpty(type) || (!type.equals(WP7) && !type.equals(WP8))) {
 				callUsage();
 			}
 			if(type.equalsIgnoreCase(WP8_PLATFORM)) {
 				getSolutionFile();
 				packageInfo = new WP8PackageInfo(rootDir);
 			}
-			
+			PluginUtils utils = new PluginUtils();
+			BuildInfo buildInfo = utils.getBuildInfo(Integer.parseInt(buildNumber));
 			buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
-			buildFile = new File(buildDir.getPath() + File.separator + buildName);
+			buildFile = new File(buildDir.getPath() + File.separator + buildInfo.getBuildName());
 			tempDir = new File(buildDir.getPath() + File.separator + buildFile.getName().substring(0, buildFile.getName().length() - 4));
 			tempDir.mkdirs();
 			temp = new File(tempDir.getPath());	
