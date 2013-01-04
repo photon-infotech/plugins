@@ -62,10 +62,7 @@ public class Deploy implements PluginConstants {
 			if (StringUtils.isEmpty(buildNumber) || StringUtils.isEmpty(environmentName)) {
 				callUsage();
 			}
-			
 			log.info("Build id is " + buildNumber);
-			log.info("Project Code " + baseDir.getName());
-			
 			PluginUtils pu = new PluginUtils();
 			BuildInfo buildInfo = pu.getBuildInfo(Integer.parseInt(buildNumber));
 			log.info("Build Name " + buildInfo);
@@ -102,7 +99,6 @@ public class Deploy implements PluginConstants {
 		try {
 			String context = "";
 			List<com.photon.phresco.configuration.Configuration> configuration = getConfiguration(Constants.SETTINGS_TEMPLATE_SERVER);
-			System.out.println(configuration);
 			for (com.photon.phresco.configuration.Configuration config : configuration) {
 				context = config.getProperties().getProperty(Constants.SERVER_CONTEXT);
 				break;
