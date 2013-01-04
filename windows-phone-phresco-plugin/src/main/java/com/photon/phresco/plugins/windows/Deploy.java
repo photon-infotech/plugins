@@ -70,6 +70,7 @@ public class Deploy implements PluginConstants {
         buildName = configs.get(BUILD_NAME);
         buildNumber = configs.get(BUILD_NUMBER);
         type = configs.get(WINDOWS_PLATFORM_TYPE);
+        target =  configs.get(TARGET);
         
 		try {
 			init();
@@ -174,6 +175,8 @@ public class Deploy implements PluginConstants {
 			sb.append(STR_SPACE);
 			
 			sb.append(WP7_INSTALL);
+			
+			log.info("command = " + sb.toString());
 			
 			Commandline cl = new Commandline(sb.toString());
 			cl.setWorkingDirectory(tempDir);
