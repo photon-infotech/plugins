@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import net.sf.json.JSON;
@@ -46,6 +47,10 @@ import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.PossibleValues;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.PossibleValues.Value;
+import com.photon.phresco.plugins.util.MojoProcessor;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.plugins.util.PluginPackageUtil;
 import com.photon.phresco.util.ArchiveUtil;
@@ -80,6 +85,7 @@ public class Package implements PluginConstants {
 	private String jsonString;
 	private Log log;
 	private PluginPackageUtil util;
+	private String target;
 	
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException { 
 		this.log = log;
@@ -88,9 +94,19 @@ public class Package implements PluginConstants {
         environmentName = configs.get(ENVIRONMENT_NAME);
         buildName = configs.get(BUILD_NAME);
         buildNumber = configs.get(BUILD_NUMBER);
-        keyPass = configs.get(KEY_PASSWORD);    
+        target = configs.get(TARGET);
+        File packageInfoPath = new File(baseDir + File.separator + DOT_PHRESCO_FOLDER + File.separator+ PHASE_PACKAGE_INFO);
+        MojoProcessor processor = new MojoProcessor(packageInfoPath);
+        Parameter parameter = processor.getParameter(PHASE_PACKAGE, TARGET);
+        PossibleValues possibleValues = parameter.getPossibleValues();
+        List<Value> possibleValue = possibleValues.getValue();
+        for (Value possibleVal : possibleValue) {
+        	if (possibleVal.getKey().equals(target)) {
+        		String dependencyValue = possibleVal.getDependency();
+    			keyPass = configs.get(dependencyValue);
+        	}
+		}
         util = new PluginPackageUtil();
-        
         try {
 			init();
 			convertXMLToJSON();
@@ -237,7 +253,7 @@ public class Package implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(tempZipName.substring(0, tempZipName.length() - 4));
 
-			//getLog().info("Build command: " + sb.toString());
+			log.info("Build command: " + sb.toString());
 
 			Commandline cl = new Commandline(sb.toString());
 			cl.setWorkingDirectory(baseDir.getPath() + sourceDirectory);
