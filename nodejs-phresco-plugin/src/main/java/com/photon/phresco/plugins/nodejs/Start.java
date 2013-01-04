@@ -180,6 +180,7 @@ public class Start implements PluginConstants {
 	private static boolean isConnectionAlive(String protocol, String host, int port) {
 		boolean isAlive = true;
 		try {
+			Thread.sleep(3000);
 			URL url = new URL(protocol, host, port, "");
 			URLConnection connection = url.openConnection();
 			connection.connect();

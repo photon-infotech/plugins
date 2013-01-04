@@ -158,9 +158,11 @@ public class Deploy implements PluginConstants {
 		DatabaseUtil util = new DatabaseUtil();
 		try {
 			util.fetchSqlConfiguration(sqlPath, importSql, baseDir, environmentName);
-			List<com.photon.phresco.configuration.Configuration> configurations = getConfiguration(Constants.SETTINGS_TEMPLATE_DB);
-			for (com.photon.phresco.configuration.Configuration configuration : configurations) {
-				util.updateSqlQuery(configuration, serverHost, context, serverport);
+			if(importSql) {
+				List<com.photon.phresco.configuration.Configuration> configurations = getConfiguration(Constants.SETTINGS_TEMPLATE_DB);
+				for (com.photon.phresco.configuration.Configuration configuration : configurations) {
+					util.updateSqlQuery(configuration, serverHost, context, serverport);
+				}
 			}
 		} catch (Exception e) {
 			throw new PhrescoException(e);
