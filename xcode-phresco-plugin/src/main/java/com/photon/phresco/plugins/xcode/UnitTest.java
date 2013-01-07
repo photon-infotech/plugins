@@ -15,6 +15,8 @@ import com.photon.phresco.util.Utility;
 
 public class UnitTest implements PluginConstants {
 
+	private static final String TEST = "test";
+
 	public void unitTest(Configuration config) throws PhrescoException {
 		Map<String, String> configs = MojoUtil.getAllValues(config);
 		String sdk = configs.get(SDK);
@@ -68,6 +70,9 @@ public class UnitTest implements PluginConstants {
 				}
 			}
 		}
+		
+		sb.append(STR_SPACE);
+		sb.append(TEST);
 		System.out.println("UnitTest Command " + sb.toString());
 		Utility.executeStreamconsumer(sb.toString());
 	}
