@@ -34,7 +34,6 @@
 		<!-- <module>js-import-maven-plugin</module>  -->
 		<module>windows-phone-phresco-plugin</module>
 		<module>blackberry-phresco-plugin</module>
-		<module>blackberry-maven-plugin</module>
     	<module>ci-phresco-plugin</module>
     	<module>xcode-maven-plugin</module>
     	<module>android-maven-plugin</module>
