@@ -207,6 +207,7 @@ public class Package implements PluginConstants {
 			sb.append(WP_STR_PROPERTY);
 			sb.append(WP_STR_COLON);
 			sb.append(WP_STR_CONFIGURATION + "=" + config);
+			log.info("Command = "+ sb.toString());
 			Commandline cl = new Commandline(sb.toString());
 			cl.setWorkingDirectory(baseDir.getPath() + sourceDirectory);
 			Process process = cl.execute();
@@ -247,6 +248,7 @@ public class Package implements PluginConstants {
 			sb.append(WP_STR_CONFIGURATION + "=" + config);
 			sb.append(WP_STR_SEMICOLON);
 			sb.append(WP_STR_PLATFORM + "=" + WP_STR_DOUBLEQUOTES + platform + WP_STR_DOUBLEQUOTES);
+			log.info("Command = "+ sb.toString());
 			Commandline cl = new Commandline(sb.toString());
 			cl.setWorkingDirectory(baseDir.getPath() + sourceDirectory);
 			Process process = cl.execute();

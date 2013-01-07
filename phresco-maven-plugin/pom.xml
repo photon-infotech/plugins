@@ -153,6 +153,12 @@
   </dependency>
   
   <dependency>
+	  <groupId>com.photon.phresco.plugins</groupId>
+	  <artifactId>sitecore-phresco-plugin</artifactId>
+	  <version>${phresco-commons-version}</version>
+  </dependency>
+  
+  <dependency>
 	<groupId>org.jdom</groupId>
 	<artifactId>jdom</artifactId>
 	<version>2.0.2</version>
