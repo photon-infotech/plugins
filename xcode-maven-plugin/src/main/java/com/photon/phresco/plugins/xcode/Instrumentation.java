@@ -75,7 +75,7 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 	
 	/**
 	 * This should be either device or template
-	 * @parameter expression="${deviceid}"
+	 * @parameter expression="${deviceId}"
 	 */
 	private String deviceid;
 	
@@ -184,7 +184,7 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 				public void run() {
 					ProcessBuilder pb = new ProcessBuilder(command);
 					//device takes the highest priority
-					if(StringUtils.isNotBlank(deviceid)) {
+					if(StringUtils.isNotEmpty(deviceid)) {
 						pb.command().add("-w");
 						pb.command().add(deviceid);
 					}
@@ -250,7 +250,6 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 			
 
 	private void preparePlistResult() throws MojoExecutionException {
-
 		try {
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			Document xmldoc = dbf.newDocumentBuilder().parse(
@@ -264,7 +263,8 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 			transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, "file://localhost/System/Library/DTDs/PropertyList.dtd");
 			transformer.transform(domSource , out);
 		} catch (Exception e) { 
-			getLog().error(e);
+//			getLog().error(e.getLocalizedMessage());
+			throw new MojoExecutionException(e.getLocalizedMessage());
 		}
 	}
 
@@ -276,7 +276,7 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 //        }
 //    }
 	
-	private void generateXMLReport(String location) {
+	private void generateXMLReport(String location) throws MojoExecutionException {
 		getLog().info("xml generation started");
 		try {
 			String startTime = "";
@@ -388,7 +388,8 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 			trans.transform(source, result);
 
 		} catch (Exception e) {
-			getLog().error(e);
+//			getLog().error(e.getLocalizedMessage());
+			throw new MojoExecutionException(e.getLocalizedMessage());
 		}
 	}
 

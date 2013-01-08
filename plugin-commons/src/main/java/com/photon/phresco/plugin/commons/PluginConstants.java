@@ -358,6 +358,7 @@ public interface PluginConstants {
 	 String PLATFORM 					= "platform";
 	 String DOT_ZIP 					= ".zip";
 	 String BUILD_NUMBER 				= "buildNumber";
+	 String DEVICE_ID	 				= "deviceId";
 	 String BROWSER						= "browser";
 	 String RESOLUTION					= "resolution";
 	 String DEVICE_TYPE 				= "deviceType";
