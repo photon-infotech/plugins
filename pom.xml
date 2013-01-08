@@ -37,7 +37,6 @@
     	<module>ci-phresco-plugin</module>
     	<module>xcode-maven-plugin</module>
     	<module>android-maven-plugin</module>
-		<module>consumer-site-plugin</module>
 		<module>phresco-maven-plugin</module>
 		<module>report-phresco-plugin</module>
   </modules>
