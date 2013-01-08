@@ -127,7 +127,7 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		File outputFile = null, destFile = null;
+		File outputFile = null, destFile = null , projectHome = null;
 		String techId;
 		try {
 			getLog().info("Base Dir === "  + baseDir.getAbsolutePath());
