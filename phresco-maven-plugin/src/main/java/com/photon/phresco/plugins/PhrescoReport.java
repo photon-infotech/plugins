@@ -54,7 +54,7 @@ public class PhrescoReport extends PhrescoAbstractMojo {
         try {
         	String infoFile = baseDir + File.separator + Constants.REPORT_INFO_FILE;
         	getLog().info("Report generation started ");
-            PhrescoPlugin plugin = getPlugin(getPluginName(infoFile, REPORT));
+            PhrescoPlugin plugin = getPlugin(getDependency(infoFile, REPORT));
             plugin.generateReport(getConfiguration(infoFile, REPORT), getMavenProjectInfo(project));
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);

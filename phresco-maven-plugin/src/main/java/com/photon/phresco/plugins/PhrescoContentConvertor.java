@@ -35,8 +35,8 @@ public class PhrescoContentConvertor extends PhrescoAbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
     	try {
     		File infoFile = new File(baseDir + File.separator + ".phresco/phresco-content-info.xml");
-    		if (infoFile.exists() && isGoalAvailable(infoFile.getPath(), "content-convertor") && getPluginName(infoFile.getPath(), "content-convertor") != null) {
-				PhrescoPlugin plugin = getPlugin(getPluginName(infoFile.getPath(), "content-convertor"));
+    		if (infoFile.exists() && isGoalAvailable(infoFile.getPath(), "content-convertor") && getDependency(infoFile.getPath(), "content-convertor") != null) {
+				PhrescoPlugin plugin = getPlugin(getDependency(infoFile.getPath(), "content-convertor"));
 		        plugin.contentConvertor(getMavenProjectInfo(project));
 			} else {
 				PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());

@@ -41,8 +41,8 @@ public class PhrescoPdfReport extends PhrescoAbstractMojo implements PluginConst
 		getLog().info("Executing pdf report generation ");
 		try {
 			String infoFile = baseDir + File.separator + Constants.PDF_REPORT_INFO_FILE;
-			if (isGoalAvailable(infoFile, PDF_REPORT) && getPluginName(infoFile, PDF_REPORT) != null) {
-				PhrescoPlugin plugin = getPlugin(getPluginName(infoFile, PDF_REPORT));
+			if (isGoalAvailable(infoFile, PDF_REPORT) && getDependency(infoFile, PDF_REPORT) != null) {
+				PhrescoPlugin plugin = getPlugin(getDependency(infoFile, PDF_REPORT));
 		        plugin.generateReport(getConfiguration(infoFile, PDF_REPORT), getMavenProjectInfo(project));
 			} else {
 				PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());
