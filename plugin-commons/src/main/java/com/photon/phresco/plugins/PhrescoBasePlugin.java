@@ -654,4 +654,10 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 			throws PhrescoException {
 		
 	}
+
+	@Override
+	public void compile(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		// TODO Auto-generated method stub
+		
+	}
 }

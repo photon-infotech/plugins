@@ -57,6 +57,7 @@ public class PhrescoPackage extends PhrescoAbstractMojo {
         try {
         	String infoFile = baseDir + File.separator + Constants.PACKAGE_INFO_FILE; 
         	PhrescoPlugin plugin = getPlugin(getPluginName(infoFile, PACKAGE));
+        	plugin.compile(getMavenProjectInfo(project));
             plugin.pack(getConfiguration(infoFile, PACKAGE), getMavenProjectInfo(project));
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);

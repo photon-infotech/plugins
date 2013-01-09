@@ -1,6 +1,10 @@
 package com.photon.phresco.plugins.dotnet;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.apache.maven.plugin.logging.Log;
+import org.codehaus.plexus.util.FileUtils;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
@@ -18,6 +22,19 @@ public class DotnetPlugin extends PhrescoBasePlugin {
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		Package pack = new Package();
 		pack.pack(configuration, mavenProjectInfo, log);
+	}
+	
+	@Override
+	public void compile(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		try {
+			File targetDir = new File(mavenProjectInfo.getBaseDir() + "/do_not_checkin/target");
+			if (targetDir.exists()) {
+				FileUtils.deleteDirectory(targetDir);
+				log.info("Target Folder Deleted Successfully");
+			}
+		} catch (IOException e) {
+			throw new PhrescoException(e);
+		}
 	}
 
 	@Override
