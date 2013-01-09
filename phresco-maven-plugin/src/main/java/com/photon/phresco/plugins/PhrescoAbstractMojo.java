@@ -21,6 +21,7 @@ import com.photon.phresco.commons.model.ArtifactGroup;
 import com.photon.phresco.commons.model.ArtifactInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
+import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Implementation.Dependency;
@@ -86,7 +87,7 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 		for (ArtifactGroup plugin : plugins) {
 			List<ArtifactInfo> versions = plugin.getVersions();
 			for (ArtifactInfo artifactInfo : versions) {
-				Artifact artifact = new DefaultArtifact(plugin.getGroupId(), plugin.getArtifactId(), plugin.getPackaging(), artifactInfo.getVersion());
+				Artifact artifact = new DefaultArtifact(plugin.getGroupId(), plugin.getArtifactId(), PluginConstants.PACKAGING_TYPE_JAR, artifactInfo.getVersion());
 				artifacts.add(artifact);
 			}
 		}
