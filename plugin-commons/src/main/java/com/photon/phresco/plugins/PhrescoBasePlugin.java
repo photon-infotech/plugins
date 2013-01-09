@@ -49,6 +49,10 @@ import com.google.gson.Gson;
 import com.photon.phresco.api.ConfigManager;
 import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.framework.model.ContextUrls;
+import com.photon.phresco.framework.model.DbContextUrls;
+import com.photon.phresco.framework.model.Headers;
+import com.photon.phresco.framework.model.PerformanceDetails;
 import com.photon.phresco.impl.ConfigManagerImpl;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
@@ -140,68 +144,51 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 			MavenProject project = mavenProjectInfo.getProject();
 			String basedir = project.getBasedir().getPath();
 			Map<String, String> configs = MojoUtil.getAllValues(configuration);
-			Map<String, String> headersMap = new HashMap<String, String>(2);
-			String testAgainstType = configs.get("testAgainst");
+			String testAgainstType = configs.get(TEST_AGAINST);
 			String testName = configs.get(KEY_TEST_NAME);
 			String environmentName = configs.get(ENVIRONMENT_NAME);
-			String configurationsName = configs.get("configurations");
+			String configurationsName = configs.get(KEY_CONFIGURATION);
 			String noOfUsers = configs.get(KEY_NO_OF_USERS);
 			String rampUpPeriod = configs.get(KEY_RAMP_UP_PERIOD);
 			String loopCount = configs.get(KEY_LOOP_COUNT);
-			String str = configs.get(ADD_HEADER);
-			//			if(StringUtils.isNotEmpty(str)) {
-			//				StringReader reader = new StringReader(str);
-			//				Properties props = new Properties();
-			//				props.load(reader);
-			//				Set<String> propertyNames = props.stringPropertyNames();
-			//				for (String key : propertyNames) {
-			//					headersMap.put(key, props.getProperty(key));
-			//				}
-			//			}
 			ConfigManager configManager = new ConfigManagerImpl(new File(basedir + File.separator + DOT_PHRESCO_FOLDER + File.separator + CONFIG_FILE));
 			com.photon.phresco.configuration.Configuration config = configManager.getConfiguration(environmentName, testAgainstType, configurationsName);
 			String performanceTestDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR) + File.separator + testAgainstType;
 			if(StringUtils.isNotEmpty(performanceTestDir)) {
 				pluginUtils.changeTestName(basedir + File.separator + performanceTestDir + File.separator, testName);
-				String testConfigFilePath = basedir + File.separator + performanceTestDir + File.separator + "tests";
+				String testConfigFilePath = basedir + File.separator + performanceTestDir + File.separator + TESTS_FOLDER;
 				pluginUtils.adaptTestConfig(testConfigFilePath + File.separator , config);
-
-				//Testing Purpose needs to dynamic
-				List<String> name = new ArrayList<String>();
-				name.add("photon");
-				name.add("phresco");
-				String dataSource = "dataSource";
-				List<String> queryType = new ArrayList<String>();
-				queryType.add("queryType1");
-				queryType.add("queryType2");
-				List<String> query = new ArrayList<String>();
-				query.add("select * from db");
-				query.add("select table table name");
-				String dbUrl = "http://localhost:27007/mongodb";
-				String driver = "driver";
-				String userName = "userName";
-				String passWord = "passWord";
-
-				List<String> context = new ArrayList<String>();
-				context.add("context1");
-				context.add("context2");
-				List<String> contextType = new ArrayList<String>();
-				contextType.add("contextType1");
-				contextType.add("contextType2");
-				List<String> contextPostData = new ArrayList<String>();
-				contextPostData.add("contextPostData1");
-				contextPostData.add("contextPostData2");
-				List<String> encodingType = new ArrayList<String>();
-				encodingType.add("encodingType1");
-				encodingType.add("encodingType2");
-				headersMap.put("key1111", "value1111");
-				headersMap.put("key2222", "value2222");
-				// End Testing ******************************
-
-				if(testAgainstType.equalsIgnoreCase("dataBase")) {
-					pluginUtils.adaptDBPerformanceJmx(testConfigFilePath, name, dataSource, queryType, query, Integer.parseInt(noOfUsers), Integer.parseInt(rampUpPeriod), Integer.parseInt(loopCount), dbUrl, driver, userName, passWord);
+				String jsonFile = basedir + File.separator + performanceTestDir + File.separator + testName + Constants.DOT_JSON;
+				BufferedReader bufferedReader = new BufferedReader(new FileReader(jsonFile));
+				Gson gson = new Gson();
+				PerformanceDetails fromJson = gson.fromJson(bufferedReader, PerformanceDetails.class);
+				List<ContextUrls> contextUrls = fromJson.getContextUrls();
+				List<DbContextUrls> dbContextUrls = fromJson.getDbContextUrls();
+				if(TEST_AGAINST_DB.equalsIgnoreCase(testAgainstType)) {
+					String host = config.getProperties().getProperty(Constants.DB_HOST);
+					String port = config.getProperties().getProperty(Constants.DB_PORT);
+					String dbname = config.getProperties().getProperty(Constants.DB_NAME);
+					String type = config.getProperties().getProperty(Constants.DB_TYPE);
+					String userName = config.getProperties().getProperty(Constants.DB_USERNAME);
+					String passWord = config.getProperties().getProperty(Constants.DB_PASSWORD);
+					String dbUrl = "";
+					String driver = "";
+					if(type.contains(Constants.MYSQL_DB)) {
+						dbUrl = "jdbc:mysql://" +host +":" +port+"/"+dbname;
+						driver = "com.mysql.jdbc.Driver";
+					} else if(type.contains(Constants.ORACLE_DB)) {
+						dbUrl = "jdbc:oracle:thin:@"+host +":" +port+":"+dbname;
+						driver = "oracle.jdbc.driver.OracleDriver";
+					} else if(type.contains(Constants.MSSQL_DB)) {
+						dbUrl = "jdbc:sqlserver://"+host +":" +port+";databaseName="+dbname;
+						driver = "com.microsoft.jdbc.sqlserver.SQLServerDriver";
+					} else if(type.contains(Constants.DB2_DB)) {
+						dbUrl = "jdbc:db2://"+host +":" +port+"/"+dbname;
+						driver = "com.ibm.db2.jcc.DB2Driver";
+					}
+					pluginUtils.adaptDBPerformanceJmx(testConfigFilePath, dbContextUrls, configurationsName, Integer.parseInt(noOfUsers), Integer.parseInt(rampUpPeriod), Integer.parseInt(loopCount), dbUrl, driver, userName, passWord);
 				} else {
-					pluginUtils.adaptPerformanceJmx(testConfigFilePath, name, context, contextType, contextPostData, encodingType, Integer.parseInt(noOfUsers), Integer.parseInt(rampUpPeriod), Integer.parseInt(loopCount), headersMap);
+					pluginUtils.adaptPerformanceJmx(testConfigFilePath, contextUrls, Integer.parseInt(noOfUsers), Integer.parseInt(rampUpPeriod), Integer.parseInt(loopCount));
 				}
 			}
 			generateMavenCommand(mavenProjectInfo, basedir + performanceTestDir);
@@ -222,7 +209,7 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 			String basedir = project.getBasedir().getPath();
 			Map<String, String> configs = MojoUtil.getAllValues(configuration);
 			Map<String, String> headersMap = new HashMap<String, String>(2);
-			String testAgainstType = configs.get("testAgainst");
+			String testAgainstType = configs.get(TEST_AGAINST);
 			String testName = configs.get(KEY_TEST_NAME);
 			String environmentName = configs.get(ENVIRONMENT_NAME);
 			String type = configs.get(testAgainstType);
