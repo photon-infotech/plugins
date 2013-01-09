@@ -127,7 +127,7 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		File outputFile = null, destFile = null;
+		File outputFile = null, destFile = null , projectHome = null;
 		String techId;
 		try {
 			getLog().info("Base Dir === "  + baseDir.getAbsolutePath());
@@ -139,11 +139,18 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 				buildDir.mkdir();
 				getLog().info("Build directory created..." + buildDir.getPath());
 			}
-			
-			File projectHome = new File(baseDir.getPath() + File.separator + ".phresco" + File.separator + "phresco-package-info.xml");
+			if (baseDir.getPath().endsWith("unit") || baseDir.getPath().endsWith("functional") || baseDir.getPath().endsWith("performance")) {
+				projectHome = new File(baseDir.getParentFile().getParentFile() + File.separator + ".phresco" + File.separator + "phresco-package-info.xml");
+			} else {
+				projectHome = new File(baseDir.getPath() + File.separator + ".phresco" + File.separator + "phresco-package-info.xml");
+			}
 			MojoProcessor processor = new MojoProcessor(projectHome);
 			Configuration configuration = processor.getConfiguration("package");
 			Map<String, String> configs = MojoUtil.getAllValues(configuration);
+			if (baseDir.getPath().endsWith("unit") || baseDir.getPath().endsWith("functional") || baseDir.getPath().endsWith("performance")) {
+				buildDir = baseDir.getParentFile().getParentFile();
+			}
+			
 			techId = configs.get("techId");
 			if (StringUtils.isNotEmpty(techId)) {
 				outputFile = new File(project.getBuild().getDirectory(), project.getBuild().getFinalName() + '.' + APKLIB);
