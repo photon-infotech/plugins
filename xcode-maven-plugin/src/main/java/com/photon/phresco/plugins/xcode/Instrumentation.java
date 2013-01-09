@@ -24,9 +24,11 @@ import java.util.*;
 
 import javax.xml.parsers.*;
 import javax.xml.transform.*;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.dom.*;
 import javax.xml.transform.stream.*;
 
+import org.apache.commons.collections.*;
 import org.apache.commons.configuration.HierarchicalConfiguration.Node;
 import org.apache.commons.configuration.plist.*;
 import org.apache.commons.configuration.tree.*;
@@ -53,6 +55,8 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 	private static final String LOG_TYPE = "LogType";
 
 	private static final String TIMESTAMP = "Timestamp";
+	private static final String DEVICE_DEPLOY = "deviceDeploy";
+	private static final String CAN_CREATE_IPA = "canCreateIpa";
 	
 	/**
 	 * @parameter experssion="${command}" default-value="instruments"
@@ -166,6 +170,16 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 		BuildInfo buildInfo = pu.getBuildInfo(Integer.parseInt(buildNumber));
 		appPath = buildInfo.getBuildName();
 		getLog().info("Application.path = " + appPath);
+		
+		// if the build is build for device, pass as param
+        Map<String, Boolean> options = buildInfo.getOptions();
+        if (options != null) {
+        	boolean createIpa = MapUtils.getBooleanValue(buildInfo.getOptions(), CAN_CREATE_IPA);
+        	boolean deviceDeploy = MapUtils.getBooleanValue(buildInfo.getOptions(), DEVICE_DEPLOY);
+        	if (!createIpa && !deviceDeploy) { // if it is simulator build, do not pass -w
+        		deviceid = "";
+        	}
+        }
 		
 		try {
 			outputFolder = project.getBasedir().getAbsolutePath();
