@@ -37,8 +37,8 @@ public class PhrescoRunLoadTest extends PhrescoAbstractMojo {
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
 			String infoFile = baseDir + File.separator + Constants.LOAD_TEST_INFO_FILE;
-    		if (isGoalAvailable(infoFile, LOAD_TEST) && getPluginName(infoFile, LOAD_TEST) != null) {
-				PhrescoPlugin plugin = getPlugin(getPluginName(infoFile, LOAD_TEST));
+    		if (isGoalAvailable(infoFile, LOAD_TEST) && getDependency(infoFile, LOAD_TEST) != null) {
+				PhrescoPlugin plugin = getPlugin(getDependency(infoFile, LOAD_TEST));
 		        plugin.runLoadTest(getConfiguration(infoFile, LOAD_TEST), getMavenProjectInfo(project));
 			} else {
 				PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());

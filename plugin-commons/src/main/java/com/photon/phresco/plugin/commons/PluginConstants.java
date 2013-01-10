@@ -423,6 +423,11 @@ public interface PluginConstants {
     String UIAUTOMATION = "UIAutomation";
     String HYPEN = "-";
     
+  //Performance Test Parameter Keys
+    String KEY_CONFIGURATION = "configurations";
+    String TESTS_FOLDER = "tests";
+    String TEST_AGAINST_DB = "dataBase";
+    
     String PHASE_PACKAGE_INFO = "phresco-package-info.xml";
 	
 }

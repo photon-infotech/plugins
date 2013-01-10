@@ -36,8 +36,8 @@ public class PhrescoContentValidator extends PhrescoAbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
     	try {
     		File infoFile = new File(baseDir + File.separator + ".phresco/phresco-content-info.xml");
-    		if (infoFile.exists() && isGoalAvailable(infoFile.getPath(), "content-validator") && getPluginName(infoFile.getPath(), "content-validator") != null) {
-				PhrescoPlugin plugin = getPlugin(getPluginName(infoFile.getPath(), "content-validator"));
+    		if (infoFile.exists() && isGoalAvailable(infoFile.getPath(), "content-validator") && getDependency(infoFile.getPath(), "content-validator") != null) {
+				PhrescoPlugin plugin = getPlugin(getDependency(infoFile.getPath(), "content-validator"));
 		        plugin.contentValidator(getMavenProjectInfo(project));
 			} else {
 				PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());

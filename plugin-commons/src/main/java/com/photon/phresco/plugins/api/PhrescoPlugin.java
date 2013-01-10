@@ -12,6 +12,8 @@ public interface PhrescoPlugin {
     
     void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
+    void compile(MavenProjectInfo mavenProjectInfo) throws PhrescoException;
+    
     void startServer(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
     void stopServer(MavenProjectInfo mavenProjectInfo) throws PhrescoException;

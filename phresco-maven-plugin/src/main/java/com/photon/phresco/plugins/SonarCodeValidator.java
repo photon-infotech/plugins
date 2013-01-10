@@ -41,8 +41,8 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
 		getLog().info("Executing Code Validation");
 		try {
 			String infoFile = baseDir + File.separator + Constants.VALIDATE_CODE_INFO_FILE;
-			if (isGoalAvailable(infoFile, VALIDATE_CODE) && getPluginName(infoFile, VALIDATE_CODE) != null) {
-				PhrescoPlugin plugin = getPlugin(getPluginName(infoFile, VALIDATE_CODE));
+			if (isGoalAvailable(infoFile, VALIDATE_CODE) && getDependency(infoFile, VALIDATE_CODE) != null) {
+				PhrescoPlugin plugin = getPlugin(getDependency(infoFile, VALIDATE_CODE));
 		        plugin.validate(getConfiguration(infoFile, VALIDATE_CODE), getMavenProjectInfo(project));
 			} else {
 				PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());
