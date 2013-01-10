@@ -68,12 +68,16 @@ import org.xml.sax.SAXException;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.photon.phresco.api.ConfigManager;
 import com.photon.phresco.commons.FrameworkConstants;
 import com.photon.phresco.commons.model.BuildInfo;
 import com.photon.phresco.configuration.ConfigReader;
 import com.photon.phresco.configuration.ConfigWriter;
 import com.photon.phresco.configuration.Configuration;
+import com.photon.phresco.configuration.Environment;
+import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.framework.model.ContextUrls;
 import com.photon.phresco.framework.model.DbContextUrls;
 import com.photon.phresco.framework.model.Headers;
@@ -825,5 +829,28 @@ public class PluginUtils {
 		} finally {
 			Utility.closeStream(bufferedReader);
 		}
+	}
+	
+	public static void checkForConfigurations(File baseDir, String environmentName) throws PhrescoException {
+	    try {
+	        String configFile = baseDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE;
+	        ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(new File(configFile));
+	        PluginUtils pu = new PluginUtils();
+	        List<String> selectedEnvs = pu.csvToList(environmentName);
+	        List<Environment> environments = configManager.getEnvironments();
+	        for (Environment environment : environments) {
+	            if (selectedEnvs.contains(environment.getName())) {
+	                if (CollectionUtils.isEmpty(environment.getConfigurations())) {
+	                    String errMsg = environment.getName() + " environment in " + baseDir.getName() + " doesnot have any configurations";
+	                    System.out.println(errMsg);
+	                    throw new PhrescoException(errMsg);
+	                }
+	            }
+	        }
+	    } catch (PhrescoException e) {
+	        throw new PhrescoException(e);
+	    } catch (ConfigurationException e) {
+	        throw new PhrescoException(e);
+	    }
 	}
 }
