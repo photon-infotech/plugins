@@ -139,6 +139,7 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 				buildDir.mkdir();
 				getLog().info("Build directory created..." + buildDir.getPath());
 			}
+			buildInfoFile = new File(buildDir.getPath() + "/build.info");
 			if (baseDir.getPath().endsWith("unit") || baseDir.getPath().endsWith("functional") || baseDir.getPath().endsWith("performance")) {
 				projectHome = new File(baseDir.getParentFile().getParentFile() + File.separator + ".phresco" + File.separator + "phresco-package-info.xml");
 			} else {
@@ -149,6 +150,7 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 			Map<String, String> configs = MojoUtil.getAllValues(configuration);
 			if (baseDir.getPath().endsWith("unit") || baseDir.getPath().endsWith("functional") || baseDir.getPath().endsWith("performance")) {
 				buildDir = baseDir.getParentFile().getParentFile();
+				buildInfoFile = new File(baseDir.getPath() + buildDirectory + "/build.info");
 			}
 			
 			techId = configs.get("techId");
@@ -157,7 +159,7 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 			} else {
 				outputFile = new File(project.getBuild().getDirectory(), project.getBuild().getFinalName() + '.' + APK);
 			}
-			buildInfoFile = new File(buildDir.getPath() + "/build.info");
+			
 
 			nextBuildNo = generateNextBuildNo();
 
@@ -174,11 +176,16 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 				getLog().info("APK created.. Copying to Build directory.....");
 				String buildName = project.getBuild().getFinalName() + '_' + getTimeStampForBuildName(currentDate);
 				
+				if (baseDir.getPath().endsWith("unit") || baseDir.getPath().endsWith("functional") || baseDir.getPath().endsWith("performance")) {
+					buildDir = new File(baseDir.getPath() + buildDirectory);
+				}
+				
 				if (StringUtils.isNotEmpty(techId)) {
 					destFile = new File(buildDir, buildName + '.' + APKLIB);
 				} else {
 					destFile = new File(buildDir, buildName + '.' + APK);
 				}
+				
 				FileUtils.copyFile(outputFile, destFile);
 				getLog().info("copied to..." + destFile.getName());
 				apkFileName = destFile.getName();
