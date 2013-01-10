@@ -121,7 +121,10 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
     
     protected Dependency getDependency(String infoFile, String goal) throws PhrescoException {
     	MojoProcessor processor = new MojoProcessor(new File(infoFile));
-    	return processor.getImplementationDependency(goal);
+    	if (processor.getImplementationDependency(goal) != null) {
+    		return processor.getImplementationDependency(goal).getDependency();
+		}
+		return null;
     }
     
     protected boolean isGoalAvailable(String infoFile, String goal) throws PhrescoException {
