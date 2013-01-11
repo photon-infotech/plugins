@@ -291,6 +291,12 @@ public interface PluginConstants {
 	 String KEYPASS 					= "keypass";
 	 String STOREPASS 					= "storepass";
 	 String KEYSTORE 					= "keystore";
+	 String ARGUMENTS 					= "arguments";
+	 String ARGUMENT					= "argument";
+	 String HYPHEN_SIGALG				= "-sigalg";
+	 String MD5_WITH_RSA				= "MD5withRSA";
+	 String HYPHEN_DIGESTALG			= "-digestalg";
+	 String SHA1						= "SHA1";
 	 
 	 // Constants report plugin
 	 String ATTR_TIME 					= "time";

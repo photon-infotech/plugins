@@ -213,7 +213,21 @@ public class Package implements PluginConstants {
 			Element verify = doc.createElement(ELEMENT_VERIFY);
 			verbos.setTextContent(TRUE);
 			executionConfig.add(verify);
-
+			
+			//arguments
+			List<String> argumentContents = new ArrayList<String>();
+			argumentContents.add(HYPHEN_SIGALG);
+			argumentContents.add(MD5_WITH_RSA);
+			argumentContents.add(HYPHEN_DIGESTALG);
+			argumentContents.add("SHA1");
+			Element arguments = doc.createElement(ARGUMENTS);
+			for (String string : argumentContents) {
+				Element argument = doc.createElement(ARGUMENT);
+				argument.setTextContent(string);
+				arguments.appendChild(argument);
+			}
+			executionConfig.add(arguments);
+			
 			com.phresco.pom.model.PluginExecution.Configuration configValues = new com.phresco.pom.model.PluginExecution.Configuration();
 			configValues.getAny().addAll(executionConfig);
 			execution.setConfiguration(configValues);
