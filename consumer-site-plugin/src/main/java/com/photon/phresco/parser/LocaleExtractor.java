@@ -13,20 +13,22 @@ import org.jdom2.xpath.XPath;
 
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 
-public class LocaleExtractor{
+public class LocaleExtractor {
 
 	private Document loopDoc;
 	private String loc;
 	private SAXBuilder builder;
-	
-	public LocaleExtractor(MavenProjectInfo mavenProjectInfo, String manifestFileName, String phrescoTargetDir) throws Exception {
+
+	public LocaleExtractor(MavenProjectInfo mavenProjectInfo, String manifestFileName, String phrescoTargetDir)
+			throws Exception {
 		try {
 			builder = new SAXBuilder();
 			// disabling xml validation
 			builder.setValidation(false);
 			builder.setIgnoringElementContentWhitespace(true);
 			loc = mavenProjectInfo.getBaseDir() + File.separator + phrescoTargetDir;
-			loopDoc = builder.build(new File(loc+File.separator+"config.xml"));
+			loopDoc = builder.build(new File(loc + File.separator
+					+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.theme.config.name")));
 		} catch (JDOMException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -35,8 +37,7 @@ public class LocaleExtractor{
 	}
 
 	public List<String> getLocaleDirectories() throws JDOMException {
-		List<Element> langAddedList = ((List<Element>) XPath.selectNodes(
-				loopDoc, "//langAdded"));
+		List<Element> langAddedList = ((List<Element>) XPath.selectNodes(loopDoc, "//langAdded"));
 		List<String> stringLocaleDirectories = new ArrayList<String>();
 		List<Element> localeDirectories = new ArrayList<Element>();
 		for (Element langAdded : langAddedList) {

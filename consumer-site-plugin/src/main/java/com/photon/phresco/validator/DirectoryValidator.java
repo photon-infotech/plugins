@@ -22,68 +22,42 @@ public class DirectoryValidator extends BaseValidator {
 
 	private static final String NAME = "name";
 
-	public List<ValidationStatus> validate() throws MojoExecutionException,
-			JDOMException, IOException {
-		List<Element> validationList = ((List<Element>) XPath.selectNodes(doc,
-				"//validations/structure"));
+	public List<ValidationStatus> validate() throws MojoExecutionException, JDOMException, IOException {
+		List<Element> validationList = ((List<Element>) XPath.selectNodes(doc, "//validations/structure"));
 		List<ValidationStatus> validationStatusList = new ArrayList<ValidationStatus>();
 		for (Element validation : validationList) {
 			List<Element> folderList = validation.getChildren("folder");
 			for (Element folder : folderList) { // five nested levels
 				String nameValue = folder.getAttributeValue(NAME);
 				String requiredValue = folder.getAttributeValue("required");
-				validationStatusList.addAll(checkIfFolderExists(File.separator
-						+ nameValue, requiredValue));
+				validationStatusList.addAll(checkIfFolderExists(File.separator + nameValue, requiredValue));
 				List<Element> folderListOne = folder.getChildren("folder");
 				for (Element folderOne : folderListOne) {
 					String nameValueOne = folderOne.getAttributeValue(NAME);
-					String requiredValueOne = folderOne
-							.getAttributeValue("required");
-					validationStatusList.addAll(checkIfFolderExists(
-							File.separator + nameValue + File.separator
-									+ nameValueOne, requiredValueOne));
-					List<Element> folderListTwo = folderOne
-							.getChildren("folder");
+					String requiredValueOne = folderOne.getAttributeValue("required");
+					validationStatusList.addAll(checkIfFolderExists(File.separator + nameValue + File.separator
+							+ nameValueOne, requiredValueOne));
+					List<Element> folderListTwo = folderOne.getChildren("folder");
 					for (Element folderTwo : folderListTwo) {
 						String nameValueTwo = folderTwo.getAttributeValue(NAME);
-						String requiredValueTwo = folderTwo
-								.getAttributeValue("required");
-						validationStatusList.addAll(checkIfFolderExists(
-								File.separator + nameValue + File.separator
-										+ nameValueOne + File.separator
-										+ nameValueTwo, requiredValueTwo));
-						List<Element> folderListThree = folderTwo
-								.getChildren("folder");
+						String requiredValueTwo = folderTwo.getAttributeValue("required");
+						validationStatusList.addAll(checkIfFolderExists(File.separator + nameValue + File.separator
+								+ nameValueOne + File.separator + nameValueTwo, requiredValueTwo));
+						List<Element> folderListThree = folderTwo.getChildren("folder");
 						for (Element folderThree : folderListThree) {
-							String nameValueThree = folderThree
-									.getAttributeValue(NAME);
-							String requiredValueThree = folderThree
-									.getAttributeValue("required");
-							validationStatusList.addAll(checkIfFolderExists(
-									File.separator + nameValue + File.separator
-											+ nameValueOne + File.separator
-											+ nameValueTwo + File.separator
-											+ nameValueThree,
+							String nameValueThree = folderThree.getAttributeValue(NAME);
+							String requiredValueThree = folderThree.getAttributeValue("required");
+							validationStatusList.addAll(checkIfFolderExists(File.separator + nameValue + File.separator
+									+ nameValueOne + File.separator + nameValueTwo + File.separator + nameValueThree,
 									requiredValueThree));
-							List<Element> folderListFour = folderThree
-									.getChildren("folder");
+							List<Element> folderListFour = folderThree.getChildren("folder");
 							for (Element folderFour : folderListFour) {
-								String nameValueFour = folderFour
-										.getAttributeValue(NAME);
-								String requiredValueFour = folderFour
-										.getAttributeValue("required");
-								validationStatusList
-										.addAll(checkIfFolderExists(
-												File.separator + nameValue
-														+ File.separator
-														+ nameValueOne
-														+ File.separator
-														+ nameValueTwo
-														+ File.separator
-														+ nameValueThree
-														+ File.separator
-														+ nameValueFour,
-												requiredValueFour));
+								String nameValueFour = folderFour.getAttributeValue(NAME);
+								String requiredValueFour = folderFour.getAttributeValue("required");
+								validationStatusList.addAll(checkIfFolderExists(File.separator + nameValue
+										+ File.separator + nameValueOne + File.separator + nameValueTwo
+										+ File.separator + nameValueThree + File.separator + nameValueFour,
+										requiredValueFour));
 							}
 						}
 					}
@@ -93,40 +67,35 @@ public class DirectoryValidator extends BaseValidator {
 		return validationStatusList;
 	}
 
-	private List<ValidationStatus> checkIfFolderExists(String stringFile,
-			String required) throws MojoExecutionException, IOException {
+	private List<ValidationStatus> checkIfFolderExists(String stringFile, String required)
+			throws MojoExecutionException, IOException {
 		List<ValidationStatus> validationStatusList = new ArrayList<ValidationStatus>();
 		if (stringFile.indexOf('!') == -1) {
 			File file = new File(loc + stringFile);
 			if (new Boolean(required)) {
 				if (file.exists()) {
-					validationStatusList.add(new ValidationStatus(true,
-							stringFile + " exists"));
+					validationStatusList.add(new ValidationStatus(true, stringFile + " exists"));
 				} else {
-					validationStatusList.add(new ValidationStatus(false,
-							stringFile + " does not Exist"));
+					validationStatusList.add(new ValidationStatus(false, stringFile + " does not Exist"));
 				}
 				return validationStatusList;
 			}
 		} else if (stringFile.indexOf('!') >= 0) {
 			for (String localDirectory : localDirectories) {
 				String replacementStringFile = "";
-				replacementStringFile = stringFile.replace("!languages",
-						localDirectory);
+				replacementStringFile = stringFile.replace("!languages", localDirectory);
 				File file = new File(loc + replacementStringFile);
 				if (new Boolean(required)) {
 					if (file.exists()) {
-						validationStatusList.add(new ValidationStatus(true,
-								replacementStringFile + " exists"));
+						validationStatusList.add(new ValidationStatus(true, replacementStringFile + " exists"));
 					} else {
-						validationStatusList.add(new ValidationStatus(false,
-								replacementStringFile + " does not Exist"));
+						validationStatusList
+								.add(new ValidationStatus(false, replacementStringFile + " does not Exist"));
 					}
 				}
 			}
 		} else {
-			validationStatusList.add(new ValidationStatus(true, stringFile
-					+ " is ignored"));
+			validationStatusList.add(new ValidationStatus(true, stringFile + " is ignored"));
 		}
 		return validationStatusList;
 	}
