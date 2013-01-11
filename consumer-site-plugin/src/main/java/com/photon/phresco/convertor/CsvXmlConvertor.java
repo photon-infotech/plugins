@@ -187,12 +187,17 @@ public class CsvXmlConvertor {
 							+csvoFile.getCurrentFolderPath()+File.separator+ "assets"+File.separator+"images"+File.separator+csvoFile.getImageFileName();
 					File sourceFile = new File(source);
 					destination = mavenProjectInfo.getProject().getBasedir()+File.separator+"source"+
-					File.separator+"sites"+File.separator+"default"+File.separator+csvoFile.getTargetFolder()
+					File.separator+csvoFile.getTargetFolder()
 							+ csvoFile.getImageFileName();
+					System.out.println("1. "+ mavenProjectInfo.getProject().getBasedir()+File.separator+"source"+
+					File.separator+csvoFile.getTargetFolder()
+							+ csvoFile.getImageFileName());
 					File destinationFile = new File(destination);
 					destination = csvoFile.getImageFileName();
+					System.out.println("2. "+mavenProjectInfo.getProject().getBasedir()+File.separator+"source"+
+							File.separator+csvoFile.getTargetFolder());
 					transferFile(mavenProjectInfo.getProject().getBasedir()+File.separator+"source"+
-							File.separator+"sites"+File.separator+"default"+File.separator+csvoFile.getTargetFolder(),sourceFile, destinationFile);
+							File.separator+csvoFile.getTargetFolder(),sourceFile, destinationFile);
 				}
 			}
 		}
