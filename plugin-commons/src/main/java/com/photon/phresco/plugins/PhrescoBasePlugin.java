@@ -67,6 +67,7 @@ import com.photon.phresco.util.HubConfiguration;
 import com.photon.phresco.util.NodeCapability;
 import com.photon.phresco.util.NodeConfig;
 import com.photon.phresco.util.NodeConfiguration;
+import com.photon.phresco.util.Utility;
 import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.util.PomProcessor;
 
@@ -323,22 +324,13 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 	
 	private void generateMavenCommand(MavenProjectInfo mavenProjectInfo, String workingDirectory) throws PhrescoException {
 		try {
+			String line = null;
 			StringBuilder sb = new StringBuilder();
 			sb.append(TEST_COMMAND);
-			Commandline cl = new Commandline(sb.toString());
-			if (StringUtils.isNotEmpty(workingDirectory)) {
-				cl.setWorkingDirectory(workingDirectory);
+			BufferedReader bufferedReader = Utility.executeCommand(sb.toString(),workingDirectory);
+			while ((line = bufferedReader.readLine()) != null) {
+				System.out.println(line); //do not use getLog() here as this line already contains the log type.
 			}
-			Process pb = cl.execute();
-			// Consume subprocess output and write to stdout for debugging
-			InputStream is = new BufferedInputStream(pb.getInputStream());
-			int singleByte = 0;
-			while ((singleByte = is.read()) != -1) {
-				//output.write(buffer, 0, bytesRead);
-				System.out.write(singleByte);
-			}
-		} catch (CommandLineException e) {
-			throw new PhrescoException(e);
 		} catch (IOException e) {
 			throw new PhrescoException(e);
 		}
