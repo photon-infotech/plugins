@@ -20,8 +20,7 @@ public class ValidationManager {
 	IValidator validator;
 	private SAXBuilder builder;
 
-	public ValidationManager(MavenProjectInfo mavenProjectInfo,
-			String manifestFileName, String phrescoTargetDir)
+	public ValidationManager(MavenProjectInfo mavenProjectInfo, String manifestFileName, String phrescoTargetDir)
 			throws IOException, JDOMException {
 		builder = new SAXBuilder();
 		// disabling xml validation
@@ -29,7 +28,7 @@ public class ValidationManager {
 		builder.setIgnoringElementContentWhitespace(true);
 		loc = mavenProjectInfo.getBaseDir() + File.separator + phrescoTargetDir;
 		doc = builder.build(new File(loc + manifestFileName));
-	}	
+	}
 
 	public void addValidator(IValidator validator) {
 		this.validator = validator;
@@ -37,8 +36,7 @@ public class ValidationManager {
 		validator.setLoc(loc);
 	}
 
-	public List<ValidationStatus> validate() throws MojoExecutionException,
-			JDOMException, IOException {
+	public List<ValidationStatus> validate() throws MojoExecutionException, JDOMException, IOException {
 		return validator.validate();
 	}
 

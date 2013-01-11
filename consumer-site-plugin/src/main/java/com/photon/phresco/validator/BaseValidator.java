@@ -15,8 +15,7 @@ public abstract class BaseValidator implements IValidator {
 
 	protected Document doc;
 
-	public abstract List<ValidationStatus> validate()
-			throws MojoExecutionException, JDOMException, IOException;
+	public abstract List<ValidationStatus> validate() throws MojoExecutionException, JDOMException, IOException;
 
 	public String getLoc() {
 		return loc;

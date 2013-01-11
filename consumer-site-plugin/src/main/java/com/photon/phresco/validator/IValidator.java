@@ -10,8 +10,7 @@ import org.jdom2.JDOMException;
 import com.photon.phresco.status.ValidationStatus;
 
 public interface IValidator {
-	public List<ValidationStatus> validate() throws MojoExecutionException,
-			JDOMException, IOException;
+	public List<ValidationStatus> validate() throws MojoExecutionException, JDOMException, IOException;
 
 	public String getLoc();
 
