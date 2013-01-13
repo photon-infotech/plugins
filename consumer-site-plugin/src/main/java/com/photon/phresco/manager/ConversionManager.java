@@ -24,9 +24,10 @@ public class ConversionManager {
 		csvXmlParser = new CsvXmlConvertor(mavenProjectInfo, File.separator + "manifest.xml", mavenProjectInfo
 				.getProject().getProperties().getProperty("phresco.content.target.dir"));
 	}
-	
+
 	public List<CsvFileVO> convert(MavenProjectInfo mavenProjectInfo) throws Exception {
-		List<CsvFileVO> list = csvXmlParser.convert(mavenProjectInfo);
-		return list;
+		List<CsvFileVO> fileVOList = csvXmlParser.convert(mavenProjectInfo);
+		csvXmlParser.transferFiles(fileVOList, mavenProjectInfo);
+		return fileVOList;
 	}
 }

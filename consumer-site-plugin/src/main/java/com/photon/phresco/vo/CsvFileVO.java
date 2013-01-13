@@ -10,10 +10,19 @@ public class CsvFileVO implements Serializable {
 	private String contentType;
 	private String contentTypeName;
 	private String phpFunction;
-	private String imageFileName;
 	private String fieldType;
 	private String currentFolderPath;
 	private String targetFolder;
+	
+	
+
+	private Map<String, String> titleMap = new HashMap<String, String>();
+	private Map<String, String> descriptionMap = new HashMap<String, String>();
+	private Map<String, String> extraMap = new HashMap<String, String>();
+	private Map<String, String> imageMap = new HashMap<String, String>();
+	private Map<String, String> categoryMap = new HashMap<String, String>();
+	private Map<String, String> urlMap = new HashMap<String, String>();
+	private Map<String, String> metadataMap = new HashMap<String, String>();
 	
 	public String getTargetFolder() {
 		return targetFolder;
@@ -38,22 +47,6 @@ public class CsvFileVO implements Serializable {
 	public void setFieldType(String fieldType) {
 		this.fieldType = fieldType;
 	}
-
-	public String getImageFileName() {
-		return imageFileName;
-	}
-
-	public void setImageFileName(String imageFileName) {
-		this.imageFileName = imageFileName;
-	}
-
-	Map<String, String> titleMap = new HashMap<String, String>();
-	Map<String, String> descriptionMap = new HashMap<String, String>();
-	Map<String, String> extraMap = new HashMap<String, String>();
-	Map<String, String> imageMap = new HashMap<String, String>();
-	Map<String, String> categoryMap = new HashMap<String, String>();
-	Map<String, String> urlMap = new HashMap<String, String>();
-	Map<String, String> metadataMap = new HashMap<String, String>();
 
 	public String getLanguage() {
 		return language;

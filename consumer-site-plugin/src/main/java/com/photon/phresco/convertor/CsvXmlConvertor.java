@@ -25,6 +25,7 @@ import au.com.bytecode.opencsv.CSVReader;
 import com.jcraft.jsch.Buffer;
 import com.photon.phresco.parser.LocaleExtractor;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
+import com.photon.phresco.status.ConversionStatus;
 import com.photon.phresco.status.ValidationStatus;
 import com.photon.phresco.validator.IValidator;
 import com.photon.phresco.vo.ColumnVO;
@@ -41,7 +42,9 @@ public class CsvXmlConvertor {
 
 	public CsvXmlConvertor(MavenProjectInfo mavenProjectInfo, String manifestFileName, String phrescoTargetDir)
 			throws IOException, Exception {
+		System.setProperty("javax.xml.parsers.SAXParserFactory", "com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl");
 		builder = new SAXBuilder();
+		
 		// disabling xml validation
 		builder.setValidation(false);
 		builder.setIgnoringElementContentWhitespace(true);
@@ -53,7 +56,8 @@ public class CsvXmlConvertor {
 
 	}
 
-	public List<CsvFileVO> convert(MavenProjectInfo mavenProjectInfo) throws MojoExecutionException, JDOMException, IOException, Exception {
+	public List<CsvFileVO> convert(MavenProjectInfo mavenProjectInfo) throws MojoExecutionException, JDOMException,
+			IOException, Exception {
 		List<Element> structureList = ((List<Element>) XPath.selectNodes(doc, "//validations/structure"));
 		List<CsvFileVO> fileVOList = new ArrayList<CsvFileVO>();
 		for (Element structure : structureList) {
@@ -68,19 +72,18 @@ public class CsvXmlConvertor {
 						String fileTypeValueTwo = fileTwo.getAttributeValue("type");
 						String fileNameValueTwo = fileTwo.getAttributeValue(NAME);
 						fileVOList.addAll(getXMLData(fileTwo, File.separator + nameValue + File.separator
-								+ nameValueOne + File.separator + fileNameValueTwo, nameValueOne, fileTypeValueTwo, File.separator + nameValue + File.separator
-								+ nameValueOne));
+								+ nameValueOne + File.separator + fileNameValueTwo, nameValueOne, fileTypeValueTwo,
+								File.separator + nameValue + File.separator + nameValueOne));
 					}
 				}
 			}
 		}
-		new PHPCreator().createPHPFile(fileVOList,mavenProjectInfo);
-		transferFiles(fileVOList, mavenProjectInfo);
+		new PHPCreator().createPHPFile(fileVOList, mavenProjectInfo);
 		return fileVOList;
 	}
 
-	private List<CsvFileVO> getXMLData(Element file, String stringFile, String parentFolder, String fileType, String currentFolder)
-			throws IOException {
+	private List<CsvFileVO> getXMLData(Element file, String stringFile, String parentFolder, String fileType,
+			String currentFolder) throws IOException {
 		List<CsvFileVO> fileVOList = new ArrayList<CsvFileVO>();
 		if (stringFile.indexOf('!') >= 0) {
 			String replacementStringFile = "";
@@ -101,8 +104,8 @@ public class CsvXmlConvertor {
 		return fileVOList;
 	}
 
-	private List<CsvFileVO> getCSVData(Element file, List<Element> columnList, File csvFile, String parentFile, String currentFolder)
-			throws IOException {
+	private List<CsvFileVO> getCSVData(Element file, List<Element> columnList, File csvFile, String parentFile,
+			String currentFolder) throws IOException {
 		List<String[]> allCsvStringValues = getAllValuesFromCSVFile(csvFile);
 		HashMap<String, ColumnVO> columnVOSet = getColumnData(columnList);
 		String headerArr[] = null;
@@ -129,7 +132,7 @@ public class CsvXmlConvertor {
 					csvFileVO.getTitleMap().put("title", arr[j]);
 				} else if (fieldName.equals("description") && fieldType.equals("argument")
 						&& (arr[j] != null && arr[j].length() > 0)) {
-					csvFileVO.getDescriptionMap().put("description", arr[j]);					
+					csvFileVO.getDescriptionMap().put("description", arr[j]);
 				} else {
 					if (arr[j] != null && arr[j].length() > 0) {
 						if (fieldType.equals("urlmap")) {
@@ -140,7 +143,6 @@ public class CsvXmlConvertor {
 						}
 						if (fieldType.equals("image")) {
 							csvFileVO.getImageMap().put(fieldName, arr[j]);
-							csvFileVO.setImageFileName(arr[j]);
 						}
 						if (fieldType.equals("metadata")) {
 							csvFileVO.getMetadataMap().put(fieldName, arr[j]);
@@ -173,38 +175,37 @@ public class CsvXmlConvertor {
 		CSVReader reader = new CSVReader(new FileReader(csvFile));
 		return reader.readAll();
 	}
-	
-	private void transferFiles(List<CsvFileVO> fileList, MavenProjectInfo mavenProjectInfo) throws MojoExecutionException, JDOMException, IOException {
+
+	public void transferFiles(List<CsvFileVO> fileList, MavenProjectInfo mavenProjectInfo)
+			throws MojoExecutionException, JDOMException, IOException {
 		for (CsvFileVO csvoFile : fileList) {
 			Set<String> keys = csvoFile.getImageMap().keySet();
-			String imageFileName ="";
+			String imageFileName = "";
 			String destination = "";
-			String source ="";
+			String source = "";
 			for (String k : keys) {
 				if (csvoFile.getFieldType().equals("image")) {
 					imageFileName = csvoFile.getImageMap().get(k);
-					source = mavenProjectInfo.getProject().getBasedir()+mavenProjectInfo.getProject().getProperties().getProperty("phresco.content.target.dir")
-							+csvoFile.getCurrentFolderPath()+File.separator+ "assets"+File.separator+"images"+File.separator+csvoFile.getImageFileName();
+					source = mavenProjectInfo.getProject().getBasedir()
+							+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.content.target.dir")
+							+ csvoFile.getCurrentFolderPath() + File.separator + "assets" + File.separator + "images"
+							+ File.separator + imageFileName;
+					destination = mavenProjectInfo.getProject().getBasedir() + File.separator + "source"
+							+ File.separator + csvoFile.getTargetFolder() + imageFileName;
 					File sourceFile = new File(source);
-					destination = mavenProjectInfo.getProject().getBasedir()+File.separator+"source"+
-					File.separator+csvoFile.getTargetFolder()
-							+ csvoFile.getImageFileName();
-					System.out.println("1. "+ mavenProjectInfo.getProject().getBasedir()+File.separator+"source"+
-					File.separator+csvoFile.getTargetFolder()
-							+ csvoFile.getImageFileName());
 					File destinationFile = new File(destination);
-					destination = csvoFile.getImageFileName();
-					System.out.println("2. "+mavenProjectInfo.getProject().getBasedir()+File.separator+"source"+
-							File.separator+csvoFile.getTargetFolder());
-					transferFile(mavenProjectInfo.getProject().getBasedir()+File.separator+"source"+
-							File.separator+csvoFile.getTargetFolder(),sourceFile, destinationFile);
+					System.out.println("source  :  " + source);
+					System.out.println();
+					System.out.println("destination :  " + destination);
+					transferFile(mavenProjectInfo.getProject().getBasedir() + File.separator + "source"
+							+ File.separator + csvoFile.getTargetFolder(), sourceFile, destinationFile);
 				}
 			}
 		}
 	}
 
-	private List<ValidationStatus> transferFile(String destinationDir, File sourceFile, File destinationFile) throws MojoExecutionException,
-			IOException {
+	private List<ConversionStatus> transferFile(String destinationDir, File sourceFile, File destinationFile)
+			throws MojoExecutionException, IOException {
 		new File(destinationDir).mkdirs();
 		FileInputStream fileInputStream = new FileInputStream(sourceFile);
 		FileOutputStream fileOutputStream = new FileOutputStream(destinationFile);

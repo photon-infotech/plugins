@@ -46,24 +46,13 @@ public class PHPCreator {
 			phpFile.append(buildCreateContentLine + "\n");
 		}
 		phpFile.append("?>");
-		System.out.println(mavenProjectInfo.getBaseDir() + File.separator + "source" + File.separator + "sites"
-				+ File.separator + "all" + File.separator + "modules" + File.separator + "jnj_site_build"
-				+ File.separator + "build" + File.separator + "scripts" + File.separator
-				+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.content.php.file.name"));
-		new File(mavenProjectInfo.getBaseDir() + File.separator + "source" + File.separator + "sites" + File.separator
-				+ "all" + File.separator + "modules" + File.separator + "jnj_site_build" + File.separator + "build"
-				+ File.separator + "scripts").mkdir();
-		File file = new File(mavenProjectInfo.getBaseDir() + File.separator + "source" + File.separator + "sites"
-				+ File.separator + "all" + File.separator + "modules" + File.separator + "jnj_site_build"
-				+ File.separator + "build" + File.separator + "scripts" + File.separator
-				+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.content.php.file.name"));
-//		FileWriter fileWriter = new FileWriter(file);
-//		fileWriter.write(phpFile.toString());
-//		fileWriter.flush();
+		new File(mavenProjectInfo.getBaseDir() + File.separator
+				+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.content.php.file.deploy.dir"))
+				.mkdir();
 
-		FileOutputStream fos = new FileOutputStream(mavenProjectInfo.getBaseDir() + File.separator + "source" + File.separator + "sites"
-				+ File.separator + "all" + File.separator + "modules" + File.separator + "jnj_site_build"
-				+ File.separator + "build" + File.separator + "scripts" + File.separator
+		FileOutputStream fos = new FileOutputStream(mavenProjectInfo.getBaseDir() + File.separator
+				+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.content.php.file.deploy.dir")
+				+ File.separator
 				+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.content.php.file.name"));
 		Writer out = new OutputStreamWriter(fos, "UTF8");
 		out.write(phpFile.toString());
