@@ -35,8 +35,8 @@ public class PhrescoThemeConvertor extends PhrescoAbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
     	try {
     		File infoFile = new File(baseDir + File.separator + ".phresco/phresco-theme-info.xml");
-    		if (infoFile.exists() && isGoalAvailable(infoFile.getPath(), "theme-convertor") && getPluginName(infoFile.getPath(), "theme-convertor") != null) {
-    			PhrescoPlugin plugin = getPlugin(getPluginName(infoFile.getPath(), "theme-convertor"));
+    		if (infoFile.exists() && isGoalAvailable(infoFile.getPath(), "theme-convertor") && getDependency(infoFile.getPath(), "theme-convertor") != null) {
+    			PhrescoPlugin plugin = getPlugin(getDependency(infoFile.getPath(), "theme-convertor"));
 		        plugin.themeConvertor(getMavenProjectInfo(project));
 			} else {
 				PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());

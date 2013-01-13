@@ -36,6 +36,7 @@ import java.lang.reflect.Type;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -67,12 +68,19 @@ import org.xml.sax.SAXException;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.photon.phresco.api.ConfigManager;
 import com.photon.phresco.commons.FrameworkConstants;
 import com.photon.phresco.commons.model.BuildInfo;
 import com.photon.phresco.configuration.ConfigReader;
 import com.photon.phresco.configuration.ConfigWriter;
 import com.photon.phresco.configuration.Configuration;
+import com.photon.phresco.configuration.Environment;
+import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.framework.PhrescoFrameworkFactory;
+import com.photon.phresco.framework.model.ContextUrls;
+import com.photon.phresco.framework.model.DbContextUrls;
+import com.photon.phresco.framework.model.Headers;
 import com.photon.phresco.plugin.filter.FileListFilter;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.HubConfiguration;
@@ -341,12 +349,11 @@ public class PluginUtils {
 			}
 		}
 	 
-	 public void adaptPerformanceJmx(String jmxFileLocation, List<String> name, List<String> context,
-			 List<String> contextType, List<String> contextPostData, List<String> encodingType, int noOfUsers,
-			 int rampUpPeriod, int loopCount, Map<String, String> headersMap) throws Exception {
+	 public void adaptPerformanceJmx(String jmxFileLocation, List<ContextUrls> contextUrls, int noOfUsers,
+			 int rampUpPeriod, int loopCount) throws Exception {
 		 File jmxFile = null;
 		 File jmxDir = new File(jmxFileLocation);
-		 if(jmxDir.isDirectory()){
+		 if(jmxDir.isDirectory()) {
 			 FilenameFilter filter = new FileListFilter("", "jmx");
 			 File[] jmxFiles = jmxDir.listFiles(filter);
 			 jmxFile = jmxFiles[0];
@@ -369,21 +376,15 @@ public class PluginUtils {
 				 hashTree.appendChild(document.createElement("hashTree"));
 			 }
 
-			 if (MapUtils.isNotEmpty(headersMap)) {
-				 NodeList headerMngrNodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/HeaderManager/collectionProp");
-				 if (headerMngrNodelist != null && headerMngrNodelist.getLength() > 0) {
-					 createHeaderElementProp(document, headersMap, headerMngrNodelist.item(0));
-				 } else {
-					 Node appendHeaderManager = appendHeaderManager(document, headersMap);
-					 hashTree.appendChild(appendHeaderManager);
-					 hashTree.appendChild(document.createElement("hashTree"));
-				 }
-			 }
-
-			 for (int j = 0; j < name.size(); j++) {
-				 Node appendHttpSamplerProxy = appendHttpSamplerProxy(document, hashTree, name.get(j), "${context}/" + context.get(j), contextType.get(j), contextPostData.get(j), encodingType.get(j));
+			 for (ContextUrls contextUrl : contextUrls) {
+				 Node appendHttpSamplerProxy = appendHttpSamplerProxy(document, hashTree, contextUrl.getName(), "${context}/" + contextUrl.getContext(), contextUrl.getContextType(), contextUrl.getContextPostData(), contextUrl.getEncodingType());
 				 hashTree.appendChild(appendHttpSamplerProxy);
-				 hashTree.appendChild(document.createElement("hashTree"));
+				 List<Headers> headers = contextUrl.getHeaders();
+				 if (CollectionUtils.isNotEmpty(headers)) {
+					 NodeList headerMngrNodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/hashTree/HeaderManager/collectionProp");
+					 Node appendHeaderManager = appendUrlHeaderManager(document, headers);
+					 hashTree.appendChild(appendHeaderManager);
+				 }
 			 }
 		 }
 		 saveDocument(jmxFile, document);
@@ -464,7 +465,7 @@ public class PluginUtils {
 		 elementProp.appendChild(collectionProp);
 	 }
 	
-	 public void adaptDBPerformanceJmx(String jmxFileLocation, List<String> name, String dataSource, List<String> queryType, List<String> query, int noOfUsers, int rampUpPeriod, int loopCount, String dbUrl, String driver, String userName, String passWord ) throws Exception {
+	 public void adaptDBPerformanceJmx(String jmxFileLocation, List<DbContextUrls> dbContextUrls, String dataSource, int noOfUsers, int rampUpPeriod, int loopCount, String dbUrl, String driver, String userName, String passWord ) throws Exception {
 		 File jmxFile = null;
 		 File jmxDir = new File(jmxFileLocation);
 		 if(jmxDir.isDirectory()){
@@ -481,9 +482,9 @@ public class PluginUtils {
 			 Node hashTree = nodelist.item(0).getParentNode();
 			 hashTree = removeAllChilds(hashTree);
 			 hashTree.setTextContent(null);
-
-			 for(int j = 0; j < name.size(); j++) {
-				 Node appendJdbcSampler = appendJdbcSampler(document, hashTree, name.get(j), dataSource, queryType.get(j), query.get(j));
+			 
+			 for (DbContextUrls dbContextUrl : dbContextUrls) {
+				 Node appendJdbcSampler = appendJdbcSampler(document, hashTree, dbContextUrl.getName(), dataSource, dbContextUrl.getQueryType(), dbContextUrl.getQuery());
 				 hashTree.appendChild(appendJdbcSampler);
 				 hashTree.appendChild(document.createElement("hashTree"));
 			 }
@@ -610,6 +611,24 @@ public class PluginUtils {
 		 attributes.setNamedItem(createAttribute(document, "enabled", "true"));
 		 appendHeaderManagerCollectionProp(document, headerManager, headersMap);
 		 return headerManager;
+	 }
+	 
+	 private static Node appendUrlHeaderManager(Document document, List<Headers> headers) {
+		 Element createElement = document.createElement("hashTree");
+		 Node headerManager = document.createElement("HeaderManager");
+		 NamedNodeMap attributes = headerManager.getAttributes();
+		 attributes.setNamedItem(createAttribute(document, "guiclass", "HeaderPanel"));
+		 attributes.setNamedItem(createAttribute(document, "testclass", "HeaderManager"));
+		 attributes.setNamedItem(createAttribute(document, "testname", "HTTP Header Manager"));
+		 attributes.setNamedItem(createAttribute(document, "enabled", "true"));
+		 Map<String, String> headersMap = new HashMap<String, String>();
+		 for (Headers header : headers) {
+			 headersMap.put(header.getKey(), header.getValue());
+		 }
+		 appendHeaderManagerCollectionProp(document, headerManager, headersMap);
+		 createElement.appendChild(headerManager);
+		 createElement.appendChild(document.createElement("hashTree"));
+		 return createElement;
 	 }
 	 
 	 private static void appendHeaderManagerCollectionProp(Document document, Node elementProp, Map<String, String> headersMap) {
@@ -810,5 +829,28 @@ public class PluginUtils {
 		} finally {
 			Utility.closeStream(bufferedReader);
 		}
+	}
+	
+	public static void checkForConfigurations(File baseDir, String environmentName) throws PhrescoException {
+	    try {
+	        String configFile = baseDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE;
+	        ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(new File(configFile));
+	        PluginUtils pu = new PluginUtils();
+	        List<String> selectedEnvs = pu.csvToList(environmentName);
+	        List<Environment> environments = configManager.getEnvironments();
+	        for (Environment environment : environments) {
+	            if (selectedEnvs.contains(environment.getName())) {
+	                if (CollectionUtils.isEmpty(environment.getConfigurations())) {
+	                    String errMsg = environment.getName() + " environment in " + baseDir.getName() + " doesnot have any configurations";
+	                    System.out.println(errMsg);
+	                    throw new PhrescoException(errMsg);
+	                }
+	            }
+	        }
+	    } catch (PhrescoException e) {
+	        throw new PhrescoException(e);
+	    } catch (ConfigurationException e) {
+	        throw new PhrescoException(e);
+	    }
 	}
 }

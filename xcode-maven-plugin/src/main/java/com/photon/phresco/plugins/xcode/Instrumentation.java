@@ -24,9 +24,11 @@ import java.util.*;
 
 import javax.xml.parsers.*;
 import javax.xml.transform.*;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.dom.*;
 import javax.xml.transform.stream.*;
 
+import org.apache.commons.collections.*;
 import org.apache.commons.configuration.HierarchicalConfiguration.Node;
 import org.apache.commons.configuration.plist.*;
 import org.apache.commons.configuration.tree.*;
@@ -53,6 +55,8 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 	private static final String LOG_TYPE = "LogType";
 
 	private static final String TIMESTAMP = "Timestamp";
+	private static final String DEVICE_DEPLOY = "deviceDeploy";
+	private static final String CAN_CREATE_IPA = "canCreateIpa";
 	
 	/**
 	 * @parameter experssion="${command}" default-value="instruments"
@@ -75,7 +79,7 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 	
 	/**
 	 * This should be either device or template
-	 * @parameter expression="${deviceid}"
+	 * @parameter expression="${deviceId}"
 	 */
 	private String deviceid;
 	
@@ -167,6 +171,16 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 		appPath = buildInfo.getBuildName();
 		getLog().info("Application.path = " + appPath);
 		
+		// if the build is build for device, pass as param
+        Map<String, Boolean> options = buildInfo.getOptions();
+        if (options != null) {
+        	boolean createIpa = MapUtils.getBooleanValue(buildInfo.getOptions(), CAN_CREATE_IPA);
+        	boolean deviceDeploy = MapUtils.getBooleanValue(buildInfo.getOptions(), DEVICE_DEPLOY);
+        	if (!createIpa && !deviceDeploy) { // if it is simulator build, do not pass -w
+        		deviceid = "";
+        	}
+        }
+		
 		try {
 			outputFolder = project.getBasedir().getAbsolutePath();
 			File f = new File(outputFolder);
@@ -184,7 +198,7 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 				public void run() {
 					ProcessBuilder pb = new ProcessBuilder(command);
 					//device takes the highest priority
-					if(StringUtils.isNotBlank(deviceid)) {
+					if(StringUtils.isNotEmpty(deviceid)) {
 						pb.command().add("-w");
 						pb.command().add(deviceid);
 					}
@@ -250,7 +264,6 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 			
 
 	private void preparePlistResult() throws MojoExecutionException {
-
 		try {
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			Document xmldoc = dbf.newDocumentBuilder().parse(
@@ -264,7 +277,8 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 			transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, "file://localhost/System/Library/DTDs/PropertyList.dtd");
 			transformer.transform(domSource , out);
 		} catch (Exception e) { 
-			getLog().error(e);
+//			getLog().error(e.getLocalizedMessage());
+			throw new MojoExecutionException(e.getLocalizedMessage());
 		}
 	}
 
@@ -276,7 +290,7 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 //        }
 //    }
 	
-	private void generateXMLReport(String location) {
+	private void generateXMLReport(String location) throws MojoExecutionException {
 		getLog().info("xml generation started");
 		try {
 			String startTime = "";
@@ -388,7 +402,8 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 			trans.transform(source, result);
 
 		} catch (Exception e) {
-			getLog().error(e);
+//			getLog().error(e.getLocalizedMessage());
+			throw new MojoExecutionException(e.getLocalizedMessage());
 		}
 	}
 

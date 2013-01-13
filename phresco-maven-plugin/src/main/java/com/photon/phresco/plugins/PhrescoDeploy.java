@@ -48,7 +48,7 @@ public class PhrescoDeploy extends PhrescoAbstractMojo {
         getLog().info(baseDir.getPath());
         try {
         	String infoFile = baseDir + File.separator + Constants.DEPLOY_INFO_FILE; 
-            PhrescoPlugin plugin = getPlugin(getPluginName(infoFile, DEPLOY));
+            PhrescoPlugin plugin = getPlugin(getDependency(infoFile, DEPLOY));
             plugin.deploy(getConfiguration(infoFile, DEPLOY), getMavenProjectInfo(project));
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);

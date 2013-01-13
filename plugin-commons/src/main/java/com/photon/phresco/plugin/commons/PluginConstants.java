@@ -291,6 +291,12 @@ public interface PluginConstants {
 	 String KEYPASS 					= "keypass";
 	 String STOREPASS 					= "storepass";
 	 String KEYSTORE 					= "keystore";
+	 String ARGUMENTS 					= "arguments";
+	 String ARGUMENT					= "argument";
+	 String HYPHEN_SIGALG				= "-sigalg";
+	 String MD5_WITH_RSA				= "MD5withRSA";
+	 String HYPHEN_DIGESTALG			= "-digestalg";
+	 String SHA1						= "SHA1";
 	 
 	 // Constants report plugin
 	 String ATTR_TIME 					= "time";
@@ -358,6 +364,7 @@ public interface PluginConstants {
 	 String PLATFORM 					= "platform";
 	 String DOT_ZIP 					= ".zip";
 	 String BUILD_NUMBER 				= "buildNumber";
+	 String DEVICE_ID	 				= "deviceId";
 	 String BROWSER						= "browser";
 	 String RESOLUTION					= "resolution";
 	 String DEVICE_TYPE 				= "deviceType";
@@ -421,6 +428,11 @@ public interface PluginConstants {
     String GRID = "grid";
     String UIAUTOMATION = "UIAutomation";
     String HYPEN = "-";
+    
+  //Performance Test Parameter Keys
+    String KEY_CONFIGURATION = "configurations";
+    String TESTS_FOLDER = "tests";
+    String TEST_AGAINST_DB = "dataBase";
     
     String PHASE_PACKAGE_INFO = "phresco-package-info.xml";
 	

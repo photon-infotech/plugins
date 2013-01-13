@@ -14,6 +14,7 @@ public class FunctionalTest implements PluginConstants {
 	public void functionalTest(Configuration config) throws PhrescoException {
 		Map<String, String> configs = MojoUtil.getAllValues(config);
 		String buildNumber = configs.get(BUILD_NUMBER);
+		String deviceId = configs.get(DEVICE_ID);
 		
 		if (StringUtils.isEmpty(buildNumber)) {
 			System.out.println("Build Number is empty . ");
@@ -25,6 +26,11 @@ public class FunctionalTest implements PluginConstants {
 		
 		sb.append(STR_SPACE);
 		sb.append(HYPHEN_D + BUILD_NUMBER + EQUAL + buildNumber);
+		
+		if (StringUtils.isNotEmpty(deviceId)) {
+			sb.append(STR_SPACE);
+			sb.append(HYPHEN_D + DEVICE_ID + EQUAL + deviceId);
+		}
 		
 		System.out.println("Functional test Command " + sb.toString());
 		Utility.executeStreamconsumer(sb.toString());

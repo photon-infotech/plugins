@@ -43,7 +43,7 @@ public class PhrescoStart extends PhrescoAbstractMojo {
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
 			String infoFile = baseDir + File.separator + Constants.START_INFO_FILE;
-			PhrescoPlugin plugin = getPlugin(getPluginName(infoFile, START));
+			PhrescoPlugin plugin = getPlugin(getDependency(infoFile, START));
 			plugin.startServer(getConfiguration(infoFile, START), getMavenProjectInfo(project));
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage(), e);

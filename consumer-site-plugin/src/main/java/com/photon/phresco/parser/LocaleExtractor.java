@@ -22,6 +22,7 @@ public class LocaleExtractor {
 	public LocaleExtractor(MavenProjectInfo mavenProjectInfo, String manifestFileName, String phrescoTargetDir)
 			throws Exception {
 		try {
+			System.setProperty("javax.xml.parsers.SAXParserFactory", "com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl");
 			builder = new SAXBuilder();
 			// disabling xml validation
 			builder.setValidation(false);

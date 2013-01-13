@@ -85,7 +85,7 @@ public class PhrescoCIPreBuildStep extends PhrescoAbstractMojo {
         		throw new MojoExecutionException("job name is empty. Pass job name.");
         	}
         	
-            PhrescoPlugin plugin = getPlugin(getPluginName(infoFile, PRE_BUILD_STEP));
+            PhrescoPlugin plugin = getPlugin(getDependency(infoFile, PRE_BUILD_STEP));
             plugin.performCIPreBuildStep(jobName, goal, phase, getMavenProjectInfo(project));
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);

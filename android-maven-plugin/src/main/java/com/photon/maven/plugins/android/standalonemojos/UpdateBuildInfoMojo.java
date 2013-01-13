@@ -127,7 +127,7 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		File outputFile = null, destFile = null;
+		File outputFile = null, destFile = null , projectHome = null;
 		String techId;
 		try {
 			getLog().info("Base Dir === "  + baseDir.getAbsolutePath());
@@ -139,18 +139,27 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 				buildDir.mkdir();
 				getLog().info("Build directory created..." + buildDir.getPath());
 			}
-			
-			File projectHome = new File(baseDir.getPath() + File.separator + ".phresco" + File.separator + "phresco-package-info.xml");
+			buildInfoFile = new File(buildDir.getPath() + "/build.info");
+			if (baseDir.getPath().endsWith("unit") || baseDir.getPath().endsWith("functional") || baseDir.getPath().endsWith("performance")) {
+				projectHome = new File(baseDir.getParentFile().getParentFile() + File.separator + ".phresco" + File.separator + "phresco-package-info.xml");
+			} else {
+				projectHome = new File(baseDir.getPath() + File.separator + ".phresco" + File.separator + "phresco-package-info.xml");
+			}
 			MojoProcessor processor = new MojoProcessor(projectHome);
 			Configuration configuration = processor.getConfiguration("package");
 			Map<String, String> configs = MojoUtil.getAllValues(configuration);
+			if (baseDir.getPath().endsWith("unit") || baseDir.getPath().endsWith("functional") || baseDir.getPath().endsWith("performance")) {
+				buildDir = baseDir.getParentFile().getParentFile();
+				buildInfoFile = new File(baseDir.getPath() + buildDirectory + "/build.info");
+			}
+			
 			techId = configs.get("techId");
 			if (StringUtils.isNotEmpty(techId)) {
 				outputFile = new File(project.getBuild().getDirectory(), project.getBuild().getFinalName() + '.' + APKLIB);
 			} else {
 				outputFile = new File(project.getBuild().getDirectory(), project.getBuild().getFinalName() + '.' + APK);
 			}
-			buildInfoFile = new File(buildDir.getPath() + "/build.info");
+			
 
 			nextBuildNo = generateNextBuildNo();
 
@@ -167,11 +176,16 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 				getLog().info("APK created.. Copying to Build directory.....");
 				String buildName = project.getBuild().getFinalName() + '_' + getTimeStampForBuildName(currentDate);
 				
+				if (baseDir.getPath().endsWith("unit") || baseDir.getPath().endsWith("functional") || baseDir.getPath().endsWith("performance")) {
+					buildDir = new File(baseDir.getPath() + buildDirectory);
+				}
+				
 				if (StringUtils.isNotEmpty(techId)) {
 					destFile = new File(buildDir, buildName + '.' + APKLIB);
 				} else {
 					destFile = new File(buildDir, buildName + '.' + APK);
 				}
+				
 				FileUtils.copyFile(outputFile, destFile);
 				getLog().info("copied to..." + destFile.getName());
 				apkFileName = destFile.getName();
@@ -264,3 +278,4 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 	}
 
 }
+
