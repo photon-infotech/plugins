@@ -7,21 +7,20 @@ import org.apache.maven.plugin.logging.Log;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
-import com.photon.phresco.plugins.api.PluginConstants;
 
-public abstract class PhrescoAbstractMojo extends AbstractMojo implements PluginConstants {
+public abstract class PhrescoAbstractMojo extends AbstractMojo {
+    
+	public static final String PHRESCO_PLUGIN_SELECTED_INFO_XML = ".phresco/phresco-plugin-info.xml";
     
     public PhrescoPlugin getPlugin(String pluginClassName) throws PhrescoException {
         //Caching not needed since it will be triggered as a new process every time from the maven
-        return constructClass(pluginClassName);
+    	return constructClass(pluginClassName);
     }
 
     private PhrescoPlugin constructClass(String pluginClassName) throws PhrescoException {
-        //TODO: Need to write our own class loader
-        ClassLoader classLoader = this.getClass().getClassLoader();
         try {
             Log log = getLog();
-            Class<PhrescoPlugin> pluginClass = (Class<PhrescoPlugin>) Class.forName(pluginClassName, false, classLoader);
+            Class<PhrescoPlugin> pluginClass = (Class<PhrescoPlugin>) Class.forName(pluginClassName);
             Constructor<PhrescoPlugin> constructor = pluginClass.getDeclaredConstructor(Log.class);
             return constructor.newInstance(log);
         } catch (Exception e) {

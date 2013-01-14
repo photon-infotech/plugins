@@ -148,6 +148,7 @@ public interface PluginConstants {
 	 
 	//Constants for WordPress Plugin
 	//Constants for Drupal Plugin
+	 String WORDPRESS_SOURCE_DIR        = "/source/wordpress/";
      String WORDPRESS_TEST_CONFIG_FILE 	 = "/source/wordpress/config/" + CONFIG_FILE;
      String APACHE_DEFAULT_PORT			 = "80";	
      String WORDPRESS_UPDATE_TABLE       = "update wp_options set option_value='";

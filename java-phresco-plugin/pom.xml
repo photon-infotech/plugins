@@ -1,20 +1,20 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-	
+
 	<parent>
-		<artifactId>phresco-plugins-root</artifactId>
-		<groupId>com.photon.phresco.plugins</groupId>
-		<version>2.0.0.14001-SNAPSHOT</version>
-		<relativePath>../</relativePath>
-  </parent>
-  
-  <groupId>com.photon.phresco.plugins</groupId>
-  <artifactId>php-plugin</artifactId>
+        <groupId>com.photon.phresco.plugins</groupId>
+        <artifactId>phresco-plugins-root</artifactId>
+        <version>2.0.0.14001-SNAPSHOT</version>
+        <relativePath>../</relativePath>
+    </parent>
+    
+  <groupId>java-phresco-plugin</groupId>
+  <artifactId>java-phresco-plugin</artifactId>
   <version>2.0.0.14001-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>php-plugin</name>
+  <name>java-phresco-plugin</name>
   <url>http://maven.apache.org</url>
 
   <properties>
@@ -22,22 +22,16 @@
   </properties>
 
   <dependencies>
-  	
-  	 <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-plugin-api</artifactId>
-      <version>2.0</version>
+  <dependency>
+        <groupId>org.sonatype.sisu</groupId>
+        <artifactId>sisu-inject-plexus</artifactId>
+        <version>${sisu-inject-plexus.version}</version>
     </dependency>
     
-      <dependency>
+  <dependency>
         <groupId>com.photon.phresco.commons</groupId>
         <artifactId>phresco-commons</artifactId>
         <version>${phresco-commons-version}</version>
-    </dependency>
-    <dependency>
-            <groupId>com.photon.phresco</groupId>
-            <artifactId>plugin-commons</artifactId>
-            <version>${phresco-commons-version}</version>
     </dependency>
     
     <dependency>
@@ -45,24 +39,34 @@
         <artifactId>phresco-framework</artifactId>
         <version>${phresco-commons-version}</version>
     </dependency>
-    
+
+    <dependency>
+         <groupId>com.photon.phresco</groupId>
+ 		<artifactId>plugin-commons</artifactId>
+         <version>${phresco-commons-version}</version>
+    </dependency>
+
     <dependency>
         <groupId>com.photon.phresco.framework</groupId>
         <artifactId>phresco-framework-impl</artifactId>
         <version>${phresco-commons-version}</version>
     </dependency>
-    
-    <dependency>
-        <groupId>org.apache.maven</groupId>
-          <artifactId>maven-plugin-api</artifactId>
-          <version>${maven-plugin-api.version}</version>
+	
+	<dependency>
+        <groupId>com.photon.phresco.pom</groupId>
+		<artifactId>phresco-pom</artifactId>
+        <version>${phresco-commons-version}</version>
     </dependency>
     
     <dependency>
-          <groupId>junit</groupId>
-          <artifactId>junit</artifactId>
-          <version>3.8.1</version>
-          <scope>test</scope>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-plugin-api</artifactId>
+        <version>${maven-plugin-api.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>log4j</groupId>
+        <artifactId>log4j</artifactId>
+        <version>${log4j.version}</version>
     </dependency>
     
     <dependency>
@@ -76,10 +80,17 @@
         <artifactId>maven-project</artifactId>
         <version>${maven-project.version}</version>
     </dependency>
+    
     <dependency>
-		<groupId>com.photon.phresco.plugins</groupId>
-		<artifactId>phresco-maven-plugin</artifactId>
-		<version>${phresco-commons-version}</version>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>${commons-io.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

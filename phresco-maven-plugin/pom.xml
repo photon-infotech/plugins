@@ -72,33 +72,24 @@
         <artifactId>maven-project</artifactId>
         <version>${maven-project.version}</version>
     </dependency>
-    
     <dependency>
-        <groupId>mysql</groupId>
-        <artifactId>mysql-connector-java</artifactId>
-        <version>${mysql-connector-java.version}</version>
-    </dependency>
-	
-	<dependency>
-		<groupId>com.microsoft.sqlserver.jdbc.sqlserverdriver</groupId>
-		<artifactId>sqlserverdriver</artifactId>
-		<version>${sqlserverdriver.version}</version>
+		<groupId>java-phresco-plugin</groupId>
+		<artifactId>java-phresco-plugin</artifactId>
+		<version>${phresco-commons-version}</version>
 	</dependency>
-	
 	<dependency>
-		<groupId>oracle.jdbc.oracledriver</groupId>
-		<artifactId>oracledriver</artifactId>
-		<version>${oracledriver.version}</version>
+	  <groupId>com.photon.phresco.plugins</groupId>
+	  <artifactId>php-plugin</artifactId>
+	  <version>${phresco-commons-version}</version>
 	</dependency>
-	
 	<dependency>
-		<groupId>com.ibm.db2.jcc.db2Driver</groupId>
-		<artifactId>db2Driver</artifactId>
-		<version>${db2Driver.version}</version>
+		<groupId>drupal-phresco-plugin</groupId>
+		<artifactId>drupal-phresco-plugin</artifactId>
+		<version>${phresco-commons-version}</version>
 	</dependency>
-    <dependency>
+	<dependency>
 		<groupId>com.photon.phresco.plugins</groupId>
-		<artifactId>php-plugin</artifactId>
+		<artifactId>wordpress-phresco-plugin</artifactId>
 		<version>${phresco-commons-version}</version>
 	</dependency>
   </dependencies>

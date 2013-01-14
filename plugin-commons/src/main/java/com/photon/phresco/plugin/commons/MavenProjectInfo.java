@@ -8,8 +8,17 @@ public class MavenProjectInfo {
     
     private File baseDir;
     private MavenProject project;
+    private String projectCode;
     
-    public File getBaseDir() {
+    public String getProjectCode() {
+		return projectCode;
+	}
+
+	public void setProjectCode(String projectCode) {
+		this.projectCode = projectCode;
+	}
+
+	public File getBaseDir() {
         return baseDir;
     }
     

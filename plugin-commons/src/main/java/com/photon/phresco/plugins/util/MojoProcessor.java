@@ -40,6 +40,14 @@ public class MojoProcessor {
 	    return mojos.getMojo().getConfiguration();
 	}
 	
+	public String getImplementationClassName() {
+		String implementation = mojos.getMojo().getImplementation();
+		if(implementation != null) {
+			return implementation;
+		}
+		return "";
+	}
+	
 	public void save() throws PhrescoException {
         try {
     		JAXBContext jaxbContext = JAXBContext.newInstance(Mojos.class);

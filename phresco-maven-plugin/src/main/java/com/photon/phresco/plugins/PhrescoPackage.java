@@ -50,18 +50,6 @@ public class PhrescoPackage extends PhrescoAbstractMojo {
      */
     protected File baseDir;
     
-    /**
-     * File pointing to the Meta Info
-     * @parameter
-     */
-    private File metaInfoFile = new File(PHRESCO_PLUGIN_META_INFO_XML);
-
-    /**
-     * File pointing to selected Info
-     * @parameter
-     */
-    private File selectedInfoFile = new File(PHRESCO_PLUGIN_SELECTED_INFO_XML);
-    
     public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().info("Form Phresco Plugin");
         getLog().info("Hello Phresco");
@@ -71,7 +59,7 @@ public class PhrescoPackage extends PhrescoAbstractMojo {
         //Find the implementation class based on the technology
         //execute package method
         try {
-            PhrescoPlugin plugin = getPlugin(com.photon.phresco.plugins.impl.PHPPlugin.class.getName());
+            PhrescoPlugin plugin = getPlugin(getPluginName());
             plugin.pack(getConfiguration(), getMavenProjectInfo());
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);
@@ -88,5 +76,9 @@ public class PhrescoPackage extends PhrescoAbstractMojo {
         mavenProjectInfo.setBaseDir(baseDir);
         mavenProjectInfo.setProject(project);
         return mavenProjectInfo;
+    }
+    private String getPluginName() throws PhrescoException {
+    	MojoProcessor processor = new MojoProcessor(new File(baseDir, PHRESCO_PLUGIN_SELECTED_INFO_XML));
+    	return processor.getImplementationClassName();
     }
 }
