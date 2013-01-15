@@ -19,7 +19,7 @@ public class CsvFileVO implements Serializable {
 	private Map<String, String> titleMap = new HashMap<String, String>();
 	private Map<String, String> descriptionMap = new HashMap<String, String>();
 	private Map<String, String> extraMap = new HashMap<String, String>();
-	private Map<String, String> imageMap = new HashMap<String, String>();
+	private Map<String, ImageVO> imageMap = new HashMap<String, ImageVO>();
 	private Map<String, String> categoryMap = new HashMap<String, String>();
 	private Map<String, String> urlMap = new HashMap<String, String>();
 	private Map<String, String> metadataMap = new HashMap<String, String>();
@@ -96,11 +96,11 @@ public class CsvFileVO implements Serializable {
 		this.extraMap = extraMap;
 	}
 
-	public Map<String, String> getImageMap() {
+	public Map<String, ImageVO> getImageMap() {
 		return imageMap;
 	}
 
-	public void setImageMap(Map<String, String> imageMap) {
+	public void setImageMap(Map<String, ImageVO> imageMap) {
 		this.imageMap = imageMap;
 	}
 

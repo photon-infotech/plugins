@@ -16,6 +16,7 @@ import java.util.Set;
 
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.vo.CsvFileVO;
+import com.photon.phresco.vo.ImageVO;
 
 public class PHPCreator {
 
@@ -47,13 +48,11 @@ public class PHPCreator {
 		}
 		phpFile.append("?>");
 		new File(mavenProjectInfo.getBaseDir() + File.separator
-				+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.content.php.file.deploy.dir"))
-				.mkdir();
-
-		FileOutputStream fos = new FileOutputStream(mavenProjectInfo.getBaseDir() + File.separator
+				+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.content.php.file.deploy.dir").replace("/",File.separator)).mkdirs();
+		FileOutputStream fos = new FileOutputStream(new File(mavenProjectInfo.getBaseDir() + File.separator
 				+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.content.php.file.deploy.dir")
 				+ File.separator
-				+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.content.php.file.name"));
+				+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.content.php.file.name")));
 		Writer out = new OutputStreamWriter(fos, "UTF8");
 		out.write(phpFile.toString());
 		out.flush();
@@ -90,11 +89,11 @@ public class PHPCreator {
 				buildCreateContentLine += ",";
 			}
 			buildCreateContentLine += "),array(";
-			map = csvo.getImageMap();
-			keys = map.keySet();
+			Map<String, ImageVO>imageMap = csvo.getImageMap();
+			keys = imageMap.keySet();
 			for (String k : keys) {
 				buildCreateContentLine += "'" + k + "'=>";
-				buildCreateContentLine += "'" + map.get(k).replace("'", "\\'") + "'";
+				buildCreateContentLine += "'" + imageMap.get(k).getFileName().replace("'", "\\'") + "'";
 				buildCreateContentLine += ",";
 			}
 			buildCreateContentLine += "),array(";

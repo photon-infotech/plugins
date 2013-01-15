@@ -27,7 +27,6 @@ public class ConversionManager {
 
 	public List<CsvFileVO> convert(MavenProjectInfo mavenProjectInfo) throws Exception {
 		List<CsvFileVO> fileVOList = csvXmlParser.convert(mavenProjectInfo);
-		csvXmlParser.transferFiles(fileVOList, mavenProjectInfo);
 		return fileVOList;
 	}
 }

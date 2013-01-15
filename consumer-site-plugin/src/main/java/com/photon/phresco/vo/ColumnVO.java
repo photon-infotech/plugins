@@ -8,6 +8,34 @@ public class ColumnVO implements Serializable {
 	private String fieldName;
 	private String fieldType;
 	private String destination;
+	private boolean isEmpty;
+	private int fileNameSize;
+	private String datatype;	
+	
+
+	public String getDatatype() {
+		return datatype;
+	}
+
+	public void setDatatype(String datatype) {
+		this.datatype = datatype;
+	}
+
+	public int getFileNameSize() {
+		return fileNameSize;
+	}
+
+	public void setFileNameSize(int fileNameSize) {
+		this.fileNameSize = fileNameSize;
+	}
+
+	public boolean isEmpty() {
+		return isEmpty;
+	}
+
+	public void setEmpty(boolean isEmpty) {
+		this.isEmpty = isEmpty;
+	}
 
 	public String getDestination() {
 		return destination;
@@ -40,5 +68,4 @@ public class ColumnVO implements Serializable {
 	public void setFieldType(String fieldType) {
 		this.fieldType = fieldType;
 	}
-
 }
