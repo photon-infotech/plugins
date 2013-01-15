@@ -47,12 +47,12 @@ public class PHPCreator {
 			phpFile.append(buildCreateContentLine + "\n");
 		}
 		phpFile.append("?>");
-		new File(mavenProjectInfo.getBaseDir() + File.separator
-				+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.content.php.file.deploy.dir").replace("/",File.separator)).mkdirs();
-		FileOutputStream fos = new FileOutputStream(new File(mavenProjectInfo.getBaseDir() + File.separator
+		new File((mavenProjectInfo.getBaseDir() + File.separator
+				+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.content.php.file.deploy.dir")).replace("/",File.separator)).mkdirs();
+		FileOutputStream fos = new FileOutputStream(new File((mavenProjectInfo.getBaseDir() + File.separator
 				+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.content.php.file.deploy.dir")
 				+ File.separator
-				+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.content.php.file.name").replace("/",File.separator)));
+				+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.content.php.file.name")).replace("/",File.separator)));
 		Writer out = new OutputStreamWriter(fos, "UTF8");
 		out.write(phpFile.toString());
 		out.flush();
