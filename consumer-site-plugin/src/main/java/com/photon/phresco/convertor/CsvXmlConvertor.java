@@ -8,9 +8,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.maven.plugin.MojoExecutionException;
@@ -20,16 +18,12 @@ import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.xpath.XPath;
 
-import sun.util.logging.resources.logging;
-
 import au.com.bytecode.opencsv.CSVReader;
 
-import com.jcraft.jsch.Buffer;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.parser.LocaleExtractor;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.status.ConversionStatus;
-import com.photon.phresco.status.ValidationStatus;
 import com.photon.phresco.validator.IValidator;
 import com.photon.phresco.vo.ColumnVO;
 import com.photon.phresco.vo.CsvFileVO;

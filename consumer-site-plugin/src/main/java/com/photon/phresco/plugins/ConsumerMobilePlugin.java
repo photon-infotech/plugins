@@ -11,6 +11,7 @@ import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.Executor;
 import org.apache.maven.plugin.logging.Log;
 
+import com.photon.phresco.convertor.ThemeConvertor;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.manager.ConversionManager;
 import com.photon.phresco.manager.ValidationManager;
@@ -113,8 +114,11 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 	}
 
 	public void themeConvertor(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		// log.info("Theme conversion is being done");
-
+		try {
+			new ThemeConvertor().convert(mavenProjectInfo);
+		} catch (Exception e) {
+			throw new PhrescoException(e.getMessage());
+		}
 	}
 
 	public void contentValidator(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
