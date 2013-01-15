@@ -10,7 +10,7 @@ public interface PhrescoPlugin {
     
     void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
-    void deploy() throws PhrescoException;
+    void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
     void runAgainstSource() throws PhrescoException;
     

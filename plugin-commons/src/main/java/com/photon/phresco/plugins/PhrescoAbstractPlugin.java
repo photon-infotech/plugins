@@ -1,4 +1,4 @@
-package com.photon.phresco.plugins.impl;
+package com.photon.phresco.plugins;
 
 import org.apache.maven.plugin.logging.Log;
 
@@ -7,9 +7,9 @@ import com.photon.phresco.plugins.api.PhrescoPlugin;
 
 public abstract class PhrescoAbstractPlugin implements PhrescoPlugin {
 
-    Log log;
+    public Log log;
     
-    PhrescoAbstractPlugin(Log log) {
+    public PhrescoAbstractPlugin(Log log) {
         this.log = log;
     }
     

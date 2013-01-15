@@ -2,6 +2,7 @@ package com.photon.phresco.plugins.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -10,6 +11,7 @@ import javax.xml.bind.Unmarshaller;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugins.model.Mojos;
+import com.photon.phresco.plugins.model.Mojos.Mojo;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 
 public class MojoProcessor {
@@ -36,17 +38,30 @@ public class MojoProcessor {
         }
 	}
 	
-	public Configuration getConfiguration() {
-	    return mojos.getMojo().getConfiguration();
+	public Configuration getConfiguration(String goal) {
+		if(mojos.getMojo() != null) {
+			List<Mojo> mojoList = mojos.getMojo();
+			for (Mojo mojo : mojoList) {
+					if(mojo.getGoal().equals(goal)) {
+						return mojo.getConfiguration();
+					}
+			}
+		}
+	    return null;
 	}
 	
-	public String getImplementationClassName() {
-		String implementation = mojos.getMojo().getImplementation();
-		if(implementation != null) {
-			return implementation;
+	public String getImplementationClassName(String goal) {
+		if(mojos.getMojo() != null) {
+			List<Mojo> mojoList = mojos.getMojo();
+			for (Mojo mojo : mojoList) {
+				if(mojo.getGoal().equals(goal)) {
+				return mojo.getImplementation();
+				}
+			}
 		}
 		return "";
 	}
+	
 	
 	public void save() throws PhrescoException {
         try {

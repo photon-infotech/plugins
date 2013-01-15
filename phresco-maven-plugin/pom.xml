@@ -92,5 +92,22 @@
 		<artifactId>wordpress-phresco-plugin</artifactId>
 		<version>${phresco-commons-version}</version>
 	</dependency>
+	<dependency>
+	  <groupId>com.photon.phresco.plugins</groupId>
+	  <artifactId>sharepoint-phresco-plugin</artifactId>
+	  <version>${phresco-commons-version}</version>
+  </dependency>
+  <dependency>
+	  <groupId>com.photon.phresco.plugins</groupId>
+	  <artifactId>nodejs-phresco-plugin</artifactId>
+	  <version>${phresco-commons-version}</version>
+  </dependency>
+  
+  <dependency>
+	  <groupId>com.photon.phresco.plugins</groupId>
+  	  <artifactId>dotnet-phresco-plugin</artifactId>
+	  <version>${phresco-commons-version}</version>
+  </dependency>
+  
   </dependencies>
 </project>
