@@ -50,7 +50,6 @@ public class Package implements PluginConstants {
 		    File baseDir = mavenProjectInfo.getBaseDir();
             Map<String, String> configs = MojoUtil.getAllValues(config);
             environmentName = configs.get(ENVIRONMENT_NAME);
-            PluginUtils.checkForConfigurations(baseDir, environmentName);
             String sdk = configs.get(SDK);
             String target = configs.get(TARGET);
             String configuration = configs.get(MODE);

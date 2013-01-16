@@ -109,9 +109,9 @@ public class Package implements PluginConstants{
 		} catch (MojoExecutionException e) {
 			throw new PhrescoException(e);
 		} catch (JAXBException e) {
-			throw new PhrescoException();
+			throw new PhrescoException(e);
 		} catch (IOException e) {
-			throw new PhrescoException();
+			throw new PhrescoException(e);
 		}	
 	}
 	
@@ -126,7 +126,7 @@ public class Package implements PluginConstants{
 				fileSet.getExcludes().getExclude().add(exclue);
 			}
 		} catch (JAXBException e) {
-			throw new PhrescoException();
+			throw new PhrescoException(e);
 		} 
 	}
 	
@@ -135,7 +135,7 @@ public class Package implements PluginConstants{
 			FileSet fileSet = configProcessor.getFileSet(FileSetId);
 			fileSet.setExcludes(null);
 		} catch (JAXBException e) {
-			throw new PhrescoException();
+			throw new PhrescoException(e);
 		}
 	}
 	
