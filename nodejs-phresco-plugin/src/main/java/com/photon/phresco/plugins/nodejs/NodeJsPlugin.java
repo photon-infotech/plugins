@@ -19,18 +19,14 @@ public class NodeJsPlugin extends PhrescoBasePlugin {
 
 	@Override
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		Package pack = new Package();
-		pack.pack(configuration, mavenProjectInfo, log);
-	}
-	
-	@Override
-	public void compile(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		try {
 			File targetDir = new File(mavenProjectInfo.getBaseDir() + DO_NOT_CHECKIN_FOLDER + File.separator + TARGET);
 			if (targetDir.exists()) {
 				FileUtils.deleteDirectory(targetDir);
 				log.info("Target Folder Deleted Successfully");
 			}
+			Package pack = new Package();
+			pack.pack(configuration, mavenProjectInfo, log);
 		} catch (IOException e) {
 			throw new PhrescoException(e);
 		}

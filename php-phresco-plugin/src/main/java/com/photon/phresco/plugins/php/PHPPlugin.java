@@ -3,7 +3,6 @@ package com.photon.phresco.plugins.php;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.plexus.util.FileUtils;
@@ -21,8 +20,17 @@ public class PHPPlugin extends PhrescoBasePlugin {
 	
 	@Override
     public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-    	Package pack = new Package();
-        pack.pack(configuration, mavenProjectInfo, getLog());
+		try {
+			File targetDir = new File(mavenProjectInfo.getBaseDir() + DO_NOT_CHECKIN_FOLDER + File.separator + TARGET);
+			if (targetDir.exists()) {
+				FileUtils.deleteDirectory(targetDir);
+				log.info("Target Folder Deleted Successfully");
+			}
+			Package pack = new Package();
+			pack.pack(configuration, mavenProjectInfo, getLog());
+		} catch (IOException e) {
+			throw new PhrescoException(e);
+		}
     }
 	
 	@Override
@@ -31,22 +39,6 @@ public class PHPPlugin extends PhrescoBasePlugin {
         try {
 			deploy.deploy(configuration, mavenProjectInfo, getLog());
 		} catch (JSONException e) {
-			throw new PhrescoException(e);
-		}
-	}
-
-	public void compile(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		try {
-			File targetDir = new File(mavenProjectInfo.getBaseDir() + DO_NOT_CHECKIN_FOLDER + File.separator + TARGET);
-			if (targetDir.exists()) {
-				FileUtils.deleteDirectory(targetDir);
-				log.info("Target Folder Deleted Successfully");
-			}
-			PhpCompile phpcompile = new PhpCompile();
-			phpcompile.compile(mavenProjectInfo, getLog());
-		} catch (MojoExecutionException e) {
-			throw new PhrescoException(e);
-		} catch (IOException e) {
 			throw new PhrescoException(e);
 		}
 	}

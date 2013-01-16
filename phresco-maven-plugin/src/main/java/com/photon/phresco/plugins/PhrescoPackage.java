@@ -23,10 +23,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.exception.PhrescoException;
-import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
-import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
-import com.photon.phresco.plugins.util.MojoProcessor;
 import com.photon.phresco.util.Constants;
 
 /**
@@ -57,7 +54,6 @@ public class PhrescoPackage extends PhrescoAbstractMojo {
         try {
         	String infoFile = baseDir + File.separator + Constants.PACKAGE_INFO_FILE; 
         	PhrescoPlugin plugin = getPlugin(getDependency(infoFile, PACKAGE));
-        	plugin.compile(getMavenProjectInfo(project));
             plugin.pack(getConfiguration(infoFile, PACKAGE), getMavenProjectInfo(project));
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);
