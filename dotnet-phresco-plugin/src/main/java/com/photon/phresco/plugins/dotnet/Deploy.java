@@ -41,14 +41,26 @@ public class Deploy implements PluginConstants {
 	private String serverport;
 	private String serverprotocol;
 	private String deploylocation;
+	private String projectCode;
 	private Log log;
-	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) {
+	
+	public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
 		project = mavenProjectInfo.getProject();
+		projectCode = mavenProjectInfo.getProjectCode();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get("environmentName");
         buildName = configs.get("buildName");
+        
+        try {
+			init();
+			extractBuild();
+			sampleListSites();
+		} catch (MojoExecutionException e) {
+			throw new PhrescoException(e);
+		}
+		
 	}
 	
 	private void init() throws MojoExecutionException {
@@ -200,7 +212,7 @@ public class Deploy implements PluginConstants {
 
 	private List<SettingsInfo> getSettingsInfo(String configType) throws PhrescoException {
 		ProjectAdministrator projAdmin = PhrescoFrameworkFactory.getProjectAdministrator();
-		return projAdmin.getSettingsInfos(configType, baseDir.getName(), environmentName);
+		return projAdmin.getSettingsInfos(configType, projectCode, environmentName);
 	}
 
 }

@@ -21,6 +21,7 @@ public class DotnetPlugin extends PhrescoAbstractPlugin {
 
 	public void deploy(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		Deploy deploy = new Deploy();
+		deploy.deploy(configuration, mavenProjectInfo, log);
 	}
-
 }

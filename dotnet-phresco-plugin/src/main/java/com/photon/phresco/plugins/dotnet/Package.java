@@ -84,6 +84,10 @@ public class Package implements PluginConstants {
 			}
 			buildInfoFile = new File(buildDir.getPath() + PluginConstants.BUILD_INFO_FILE);
 			targetDir = new File(project.getBuild().getDirectory());
+			if (!targetDir.exists()) {
+				targetDir.mkdirs();
+				log.info("Target directory created..." + targetDir.getPath());
+			}
 			nextBuildNo = generateNextBuildNo();
 			currentDate = Calendar.getInstance().getTime();
 		} catch (Exception e) {
