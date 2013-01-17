@@ -200,8 +200,8 @@ public class GenerateReport implements PluginConstants {
 			
 			cumulativeReportparams.put(PDF_PROJECT_CODE, projectCode);
 			cumulativeReportparams.put(PROJECT_NAME, projectCode);
-			cumulativeReportparams.put("techName", techName);
-			cumulativeReportparams.put("version", version);
+			cumulativeReportparams.put(TECH_NAME, techName);
+			cumulativeReportparams.put(VERSION, version);
 			
 			log.info("reportType for all report generation => " + reportType);
 			cumulativeReportparams.put(REPORTS_TYPE, reportType);
@@ -583,10 +583,10 @@ public class GenerateReport implements PluginConstants {
 			Map<String, Object> parameters = new HashMap<String,Object>();
 			parameters.put(PDF_PROJECT_CODE, projectCode);
 			parameters.put(PROJECT_NAME, projName);
-			parameters.put("techName", techName);
+			parameters.put(TECH_NAME, techName);
 			parameters.put(TEST_TYPE, testType);
 			parameters.put(REPORTS_TYPE, reportType);
-			parameters.put("version", version);
+			parameters.put(VERSION, version);
 			JRBeanArrayDataSource dataSource = new JRBeanArrayDataSource(new SureFireReport[]{sureFireReports});
 			JasperReport jasperReport = (JasperReport) JRLoader.loadObject(bufferedInputStream);
 			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
@@ -628,10 +628,10 @@ public class GenerateReport implements PluginConstants {
 			Map<String, Object> parameters = new HashMap<String,Object>();
 			parameters.put(PDF_PROJECT_CODE, projectCode);
 			parameters.put(PROJECT_NAME, projName);
-			parameters.put("techName", techName);
+			parameters.put(TECH_NAME, techName);
 			parameters.put(TEST_TYPE, testType);
 			parameters.put(REPORTS_TYPE, reportType);
-			parameters.put("version", version);
+			parameters.put(VERSION, version);
 			JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(jmeterTstResults);
 			reportGenerate(outFileNamePDF, jasperFile, parameters, dataSource);
 		} catch (Exception e) {
@@ -650,10 +650,10 @@ public class GenerateReport implements PluginConstants {
 			Map<String, Object> parameters = new HashMap<String,Object>();
 			parameters.put(PDF_PROJECT_CODE, projectCode);
 			parameters.put(PROJECT_NAME, projName);
-			parameters.put("techName", techName);
+			parameters.put(TECH_NAME, techName);
 			parameters.put(TEST_TYPE, testType);
 			parameters.put(REPORTS_TYPE, reportType);
-			parameters.put("version", version);
+			parameters.put(VERSION, version);
 			JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(androidPerReports);
 			reportGenerate(outFileNamePDF, jasperFile, parameters, dataSource);
 		} catch (Exception e) {
@@ -672,10 +672,10 @@ public class GenerateReport implements PluginConstants {
 			Map<String, Object> parameters = new HashMap<String,Object>();
 			parameters.put(PDF_PROJECT_CODE, projectCode);
 			parameters.put(PROJECT_NAME, projName);
-			parameters.put("techName", techName);
+			parameters.put(TECH_NAME, techName);
 			parameters.put(TEST_TYPE, testType);
 			parameters.put(REPORTS_TYPE, reportType);
-			parameters.put("version", version);
+			parameters.put(VERSION, version);
 			JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(loadTestResults);
 			reportGenerate(outFileNamePDF, jasperFile, parameters, dataSource);
 		} catch (Exception e) {
