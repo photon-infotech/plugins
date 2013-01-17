@@ -174,16 +174,16 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 					String passWord = config.getProperties().getProperty(Constants.DB_PASSWORD);
 					String dbUrl = "";
 					String driver = "";
-					if(type.contains(Constants.MYSQL_DB)) {
+					if(type.equalsIgnoreCase(Constants.MYSQL_DB)) {
 						dbUrl = "jdbc:mysql://" +host +":" +port+"/"+dbname;
 						driver = "com.mysql.jdbc.Driver";
-					} else if(type.contains(Constants.ORACLE_DB)) {
+					} else if(type.equalsIgnoreCase(Constants.ORACLE_DB)) {
 						dbUrl = "jdbc:oracle:thin:@"+host +":" +port+":"+dbname;
 						driver = "oracle.jdbc.driver.OracleDriver";
-					} else if(type.contains(Constants.MSSQL_DB)) {
+					} else if(type.equalsIgnoreCase(Constants.MSSQL_DB)) {
 						dbUrl = "jdbc:sqlserver://"+host +":" +port+";databaseName="+dbname;
 						driver = "com.microsoft.jdbc.sqlserver.SQLServerDriver";
-					} else if(type.contains(Constants.DB2_DB)) {
+					} else if(type.equalsIgnoreCase(Constants.DB2_DB)) {
 						dbUrl = "jdbc:db2://"+host +":" +port+"/"+dbname;
 						driver = "com.ibm.db2.jcc.DB2Driver";
 					}
