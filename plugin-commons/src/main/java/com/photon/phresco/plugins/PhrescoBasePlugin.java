@@ -1,13 +1,11 @@
 package com.photon.phresco.plugins;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.net.InetAddress;
@@ -39,8 +37,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.cli.CommandLineException;
-import org.codehaus.plexus.util.cli.Commandline;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -51,7 +47,6 @@ import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.model.ContextUrls;
 import com.photon.phresco.framework.model.DbContextUrls;
-import com.photon.phresco.framework.model.Headers;
 import com.photon.phresco.framework.model.PerformanceDetails;
 import com.photon.phresco.impl.ConfigManagerImpl;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
@@ -246,56 +241,44 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 	}
 
 	public void validate(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		try {
-			StringBuilder sb = new StringBuilder();
-			sb.append(SONAR_COMMAND);
-			Map<String, String> config = MojoUtil.getAllValues(configuration);
-			MavenProject project = mavenProjectInfo.getProject();
-			String baseDir = project.getBasedir().getPath();
-			Commandline commandline = new Commandline(sb.toString());
-			String value = config.get(SONAR);
-			String string = config.get(value);
-			if(string != null) {
-				List<Parameter> parameters = configuration.getParameters().getParameter();
-				for (Parameter parameter : parameters) {
-					if (parameter.getPluginParameter() != null && parameter.getPluginParameter().equals(PLUGIN_PARAMETER)) {
-						List<MavenCommand> mavenCommands = parameter.getMavenCommands().getMavenCommand();
-						for (MavenCommand mavenCommand : mavenCommands) {
-							if (parameter.getValue().equals(value) || mavenCommand.getKey().equals(string)) {
-								String mavenCommandValue = mavenCommand.getValue();
-								sb.append(STR_SPACE);
-								sb.append(mavenCommandValue);
-								commandline = new Commandline(sb.toString());
-							}
+		StringBuilder sb = new StringBuilder();
+		sb.append(SONAR_COMMAND);
+		Map<String, String> config = MojoUtil.getAllValues(configuration);
+		MavenProject project = mavenProjectInfo.getProject();
+		String workingDir = project.getBasedir().getPath();
+		String value = config.get(SONAR);
+		String string = config.get(value);
+		if(string != null) {
+			List<Parameter> parameters = configuration.getParameters().getParameter();
+			for (Parameter parameter : parameters) {
+				if (parameter.getPluginParameter() != null && parameter.getPluginParameter().equals(PLUGIN_PARAMETER)) {
+					List<MavenCommand> mavenCommands = parameter.getMavenCommands().getMavenCommand();
+					for (MavenCommand mavenCommand : mavenCommands) {
+						if (parameter.getValue().equals(value) || mavenCommand.getKey().equals(string)) {
+							String mavenCommandValue = mavenCommand.getValue();
+							sb.append(STR_SPACE);
+							sb.append(mavenCommandValue);
 						}
 					}
 				}
 			}
+		}
 
-			if(value.equals("functional")) {
-				String workingDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
-				sb.append(STR_SPACE);
-				sb.append("-Dsonar.branch=functional");
-				commandline = new Commandline(sb.toString());
-				if (StringUtils.isNotEmpty(workingDir)) {
-					commandline.setWorkingDirectory(baseDir + workingDir);
-				}
+		if(value.equals("functional")) {
+			workingDir = workingDir + project.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
+			sb.append(STR_SPACE);
+			sb.append("-Dsonar.branch=functional");
+		}
+		BufferedReader reader = Utility.executeCommand(sb.toString(), workingDir);
+		String line = null;
+		try {
+			while ((line = reader.readLine()) != null) {
+				System.out.println(line); //do not use getLog() here as this line already contains the log type.
 			}
-			Process pb = commandline.execute();
-			// Consume subprocess output and write to stdout for debugging
-			InputStream is = new BufferedInputStream(pb.getInputStream());
-			int singleByte = 0;
-			while ((singleByte = is.read()) != -1) {
-				//output.write(buffer, 0, bytesRead);
-				System.out.write(singleByte);
-			}
-		} catch (CommandLineException e) {
-			throw new PhrescoException(e);
 		} catch (IOException e) {
 			throw new PhrescoException(e);
 		}
 	}
-
 
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		// TODO Auto-generated method stub
