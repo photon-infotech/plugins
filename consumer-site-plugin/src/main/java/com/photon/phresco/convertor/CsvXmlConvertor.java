@@ -131,17 +131,17 @@ public class CsvXmlConvertor {
 				Set<String> keys = columnVOSet.keySet();
 				boolean flag = true;
 				for (String k : keys) {
-					if(!Arrays.asList(headerArr).contains(k)){
+					if (!Arrays.asList(headerArr).contains(k)) {
 						flag = false;
 					}
 				}
-				if(flag==false){
+				if (flag == false) {
 					throw new PhrescoException("The column names in file " + csvFile.getAbsolutePath()
-							+ " are not as per manifest file -");
+							+ " are not as per manifest file. Less fields than expected.");
 				}
 				if (columnVO == null) {
 					throw new PhrescoException("The column names in file " + csvFile.getAbsolutePath()
-							+ " are not as per manifest file +");
+							+ " are not as per manifest file. More fields than expected.");
 				}
 				String fieldName = columnVO.getFieldName();
 				String fieldType = columnVO.getFieldType();
@@ -232,13 +232,8 @@ public class CsvXmlConvertor {
 						+ File.separator + imageVO.getFileName();
 				destination = mavenProjectInfo.getProject().getBasedir() + File.separator + "source" + File.separator
 						+ csvoFile.getImageMap().get(k).getDestination() + imageVO.getFileName();
-				System.out.println("csvoFile.getImageMap().get(k).getDestination()   "
-						+ csvoFile.getImageMap().get(k).getDestination());
 				File sourceFile = new File(source);
 				File destinationFile = new File(destination);
-				System.out.println("source  :  " + source);
-				System.out.println();
-				System.out.println("destination :  " + destination);
 				transferFile(mavenProjectInfo.getProject().getBasedir() + File.separator + "source" + File.separator
 						+ csvoFile.getImageMap().get(k).getDestination(), sourceFile, destinationFile);
 			}
@@ -250,6 +245,8 @@ public class CsvXmlConvertor {
 		if (!sourceFile.exists()) {
 			throw new PhrescoException("File " + sourceFile.getAbsolutePath() + " not found");
 		}
+		System.out.println("source : " + sourceFile.getAbsolutePath());
+		System.out.println("destination: " + destinationFile.getAbsolutePath());
 		new File(destinationDir).mkdirs();
 		FileInputStream fileInputStream = new FileInputStream(sourceFile);
 		FileOutputStream fileOutputStream = new FileOutputStream(destinationFile);

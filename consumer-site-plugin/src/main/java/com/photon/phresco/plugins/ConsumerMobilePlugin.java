@@ -26,6 +26,8 @@ import com.photon.phresco.validator.FileValidator;
 import com.photon.phresco.vo.CsvFileVO;
 
 public class ConsumerMobilePlugin extends DrupalPlugin {
+	
+	
 
 	public ConsumerMobilePlugin(Log log) {
 		super(log);
@@ -114,6 +116,7 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 	}
 
 	public void themeConvertor(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		log.info("Theme conversion is being done");		
 		try {
 			new ThemeConvertor().convert(mavenProjectInfo);
 		} catch (Exception e) {
@@ -122,7 +125,7 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 	}
 
 	public void contentValidator(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		log.info("Content validation is being done");
+		log.info("Content validation is being done");		
 		try {
 			LocaleExtractor localeExtractor = new LocaleExtractor(mavenProjectInfo, File.separator
 					+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.content.manifest.name"),
@@ -144,6 +147,7 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 			for (ValidationStatus v : validationStatusDirectoryList) {
 				// must throw exception if folder does not exist otherwise next
 				// validation will not work
+				System.out.println("v.isStatus()------->" + v.isStatus());
 				if (v.isStatus() == false) {
 					throw new PhrescoException(v.getMessage());
 				}
@@ -272,4 +276,8 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 			throw new PhrescoException(e);
 		}
 	}
+	
+	
+	
+	
 }

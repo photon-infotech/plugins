@@ -28,8 +28,9 @@ public class LocaleExtractor {
 			builder.setValidation(false);
 			builder.setIgnoringElementContentWhitespace(true);
 			loc = mavenProjectInfo.getBaseDir() + File.separator + phrescoTargetDir;
-			loopDoc = builder.build(new File(loc + File.separator
+			loopDoc = builder.build(new File(mavenProjectInfo.getProject().getProperties().getProperty("phresco.theme.target.dir")
 					+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.theme.config.name")));
+		System.out.println(manifestFileName);
 		} catch (JDOMException e) {
 			e.printStackTrace();
 		} catch (IOException e) {

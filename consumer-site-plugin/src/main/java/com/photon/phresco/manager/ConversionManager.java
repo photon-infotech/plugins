@@ -8,7 +8,6 @@ import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 
 import com.photon.phresco.convertor.CsvXmlConvertor;
-import com.photon.phresco.convertor.PHPCreator;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.validator.IValidator;
 import com.photon.phresco.vo.CsvFileVO;

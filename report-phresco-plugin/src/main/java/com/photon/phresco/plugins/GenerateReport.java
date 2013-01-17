@@ -103,10 +103,11 @@ public class GenerateReport implements PluginConstants {
 	private static final String XHTML = "xhtml";
 	
 	// TODO: tech name and project code
-	private String techName = "test";
+	private String techName = "";
 	private String projectCode = null;
 	
 	private String testType = null;
+	private String version = null;
 	private String projName = null;
     private String reportType = null;
     private String sonarUrl = null;
@@ -135,6 +136,7 @@ public class GenerateReport implements PluginConstants {
 			if (UNIT.equals(testType) || FUNCTIONAL.equals(testType)) {
 				//crisp and detail view report generation
 				SureFireReport sureFireReports = sureFireReports();
+				System.out.println("test type .... " + testType);
 				generateUnitAndFunctionalReport(sureFireReports);
 			// Report generation for performance
 			} else if (PERFORMACE.equals(testType)) {
@@ -198,7 +200,9 @@ public class GenerateReport implements PluginConstants {
 			
 			cumulativeReportparams.put(PDF_PROJECT_CODE, projectCode);
 			cumulativeReportparams.put(PROJECT_NAME, projectCode);
-			cumulativeReportparams.put("techName", techName);
+			cumulativeReportparams.put(TECH_NAME, techName);
+			cumulativeReportparams.put(VERSION, version);
+			
 			log.info("reportType for all report generation => " + reportType);
 			cumulativeReportparams.put(REPORTS_TYPE, reportType);
 			cumulativeReportparams.put(UNIT_TEST_REPORTS, Arrays.asList(unitTestSureFireReports));
@@ -221,10 +225,10 @@ public class GenerateReport implements PluginConstants {
 				log.info("Sonar Url exists =>" + sonarUrl);
 				List<String> sonarTechReports = getSonarProfiles(pomPath);
 				if (sonarTechReports != null) {
-					sonarTechReports.add(FUNCTIONAL);
 					if(CollectionUtils.isEmpty(sonarTechReports)) {
 						sonarTechReports.add(SONAR_SOURCE);
 					}
+					sonarTechReports.add(FUNCTIONAL);
 					for (String sonarTechReport : sonarTechReports) {
 						SonarReport srcSonarReport = generateSonarReport(sonarTechReport);
 						if(srcSonarReport != null) {
@@ -234,6 +238,7 @@ public class GenerateReport implements PluginConstants {
 					cumulativeReportparams.put("sonarReport", sonarReports);
 				}
 			}
+			log.info("cumulativeReportparams =>" + cumulativeReportparams);
 			generateCumulativeTestReport(cumulativeReportparams);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -279,7 +284,7 @@ public class GenerateReport implements PluginConstants {
 				try {
 					iphoneSonarHtmlToPdf(uuid);
 		            List<String> pdfs = new ArrayList<String>();
-		         // get all pdf from that uui location 
+		         // get all pdf from that uuid location 
 		            String codeValidationPdfs = Utility.getPhrescoTemp() + uuid;
 		            File codeValidationsPdfDir = new File(codeValidationPdfs);
 		            if (codeValidationsPdfDir.exists()) {
@@ -514,7 +519,6 @@ public class GenerateReport implements PluginConstants {
         	File pomPath = new File(builder.toString());
         	
         	PomProcessor processor = new PomProcessor(pomPath);
-//        	serverUrl = processor.getProperty(PHRESCO_SONAR_SERVER_URL);
         	String groupId = processor.getModel().getGroupId();
         	String artifactId = processor.getModel().getArtifactId();
         	StringBuilder sbuild = new StringBuilder();
@@ -527,7 +531,7 @@ public class GenerateReport implements PluginConstants {
         	}
         	
         	String artifact = sbuild.toString();
-			Sonar sonar = new Sonar(new HttpClient4Connector(new Host(sonarUrl)));
+			Sonar sonar = new Sonar(new HttpClient4Connector(new Host("http://localhost:9000")));
 			log.info("sonarUrl => " + sonarUrl);
 			log.info("artifact => " + artifact);
 			
@@ -538,14 +542,13 @@ public class GenerateReport implements PluginConstants {
 					"classes", "functions",
 					"statements","packages", "accessors", "public_documented_api_density", "public_undocumented_api","package_tangle_index","package_cycles", "package_feedback_edges", "package_tangles", "lcom4", "rfc",
 					"directories", "class_complexity", "comment_blank_lines", "coverage", "uncovered_lines"};
-			
+
 			String methodkey[] = {"nonCommentLinesOfCode", "lines", "files", "commentLinesDensity" , "commentLines", "duplicatedLinesDensity", "duplicatedLines", 
 					"duplicatedBlocks", "duplicatedFiles", "functionComplexity", "fileComplexity", "violationsDensity", "blockerViolations", 
 					"criticalViolations", "majorViolations", "minorViolations", "infoViolations", "weightedViolations",
 					"classes", "functions",
 					"statements","packages", "accessors", "publicDocumentedApiDensity", "publicUndocumentedApi","packageTangleIndex","packageCycles", "packageFeedbackEdges", "packageTangles", "lackOfCohesionMethods", "responseForCode",
 					"directories", "classComplexity", "commentBlankLines", "coverage", "uncoveredLines"};
-			
 			Resource resrc = sonar.find(ResourceQuery.createForMetrics(artifact, metrickey));
 			BeanUtils bu = new BeanUtils();
 			if (resrc != null) {
@@ -555,10 +558,9 @@ public class GenerateReport implements PluginConstants {
 					if (measure != null) {
 						String formattedValue = resrc.getMeasure(metrickey[i]).getFormattedValue();
 						bu.setProperty(sonarReport, methodkey[i], formattedValue);
-					}
+					} 
 				}
 				sonarReport.setReportType(report);
-//				sonarReport.setTechnology(technology);
 			}
 			return sonarReport;
 		} catch (Exception e) {
@@ -581,9 +583,10 @@ public class GenerateReport implements PluginConstants {
 			Map<String, Object> parameters = new HashMap<String,Object>();
 			parameters.put(PDF_PROJECT_CODE, projectCode);
 			parameters.put(PROJECT_NAME, projName);
-			parameters.put("techName", techName);
+			parameters.put(TECH_NAME, techName);
 			parameters.put(TEST_TYPE, testType);
 			parameters.put(REPORTS_TYPE, reportType);
+			parameters.put(VERSION, version);
 			JRBeanArrayDataSource dataSource = new JRBeanArrayDataSource(new SureFireReport[]{sureFireReports});
 			JasperReport jasperReport = (JasperReport) JRLoader.loadObject(bufferedInputStream);
 			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
@@ -625,9 +628,10 @@ public class GenerateReport implements PluginConstants {
 			Map<String, Object> parameters = new HashMap<String,Object>();
 			parameters.put(PDF_PROJECT_CODE, projectCode);
 			parameters.put(PROJECT_NAME, projName);
-			parameters.put("techName", techName);
+			parameters.put(TECH_NAME, techName);
 			parameters.put(TEST_TYPE, testType);
 			parameters.put(REPORTS_TYPE, reportType);
+			parameters.put(VERSION, version);
 			JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(jmeterTstResults);
 			reportGenerate(outFileNamePDF, jasperFile, parameters, dataSource);
 		} catch (Exception e) {
@@ -646,9 +650,10 @@ public class GenerateReport implements PluginConstants {
 			Map<String, Object> parameters = new HashMap<String,Object>();
 			parameters.put(PDF_PROJECT_CODE, projectCode);
 			parameters.put(PROJECT_NAME, projName);
-			parameters.put("techName", techName);
+			parameters.put(TECH_NAME, techName);
 			parameters.put(TEST_TYPE, testType);
 			parameters.put(REPORTS_TYPE, reportType);
+			parameters.put(VERSION, version);
 			JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(androidPerReports);
 			reportGenerate(outFileNamePDF, jasperFile, parameters, dataSource);
 		} catch (Exception e) {
@@ -667,9 +672,10 @@ public class GenerateReport implements PluginConstants {
 			Map<String, Object> parameters = new HashMap<String,Object>();
 			parameters.put(PDF_PROJECT_CODE, projectCode);
 			parameters.put(PROJECT_NAME, projName);
-			parameters.put("techName", techName);
+			parameters.put(TECH_NAME, techName);
 			parameters.put(TEST_TYPE, testType);
 			parameters.put(REPORTS_TYPE, reportType);
+			parameters.put(VERSION, version);
 			JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(loadTestResults);
 			reportGenerate(outFileNamePDF, jasperFile, parameters, dataSource);
 		} catch (Exception e) {
@@ -1349,7 +1355,6 @@ public class GenerateReport implements PluginConstants {
 		return stdDev;
 	}
 	
-	
     private List<TestResult> getLoadTestResult(Document doc) throws TransformerException, PhrescoException, ParserConfigurationException, SAXException, IOException {
     	 List<TestResult> testResults = new ArrayList<TestResult>(2);
 	     try {
@@ -1390,6 +1395,7 @@ public class GenerateReport implements PluginConstants {
 	     }
 	     return testResults;
     }
+    
     private Document getDocumentOfFile(String path, String fileName) {
     	Document doc = null;
         InputStream fis = null;
@@ -1477,14 +1483,14 @@ public class GenerateReport implements PluginConstants {
 	}
 	
 	private ApplicationInfo getApplicationInfo(File projectInfoFile) throws MojoExecutionException {
-		log.info("getApplicationInfo method called  ... " + projectInfoFile);
+		log.info("Entered getApplicationInfo() ... " + projectInfoFile);
 		try {
 	        Gson gson = new Gson();
 	        BufferedReader reader = null;
 	        reader = new BufferedReader(new FileReader(projectInfoFile));
 	        ProjectInfo projectInfo = gson.fromJson(reader, ProjectInfo.class);
-	        this.projName = projectInfo.getName();
-	        log.info("projectInfo name ... " + projectInfo.getName());
+	        String projName = projectInfo.getProjectCode();
+	        this.projName = projName;
 	        List<ApplicationInfo> appInfos = projectInfo.getAppInfos();
 	        for (ApplicationInfo appInfo : appInfos) {
 	        	log.info("appInfo dir name ... " + appInfo.getAppDirName());
@@ -1497,7 +1503,7 @@ public class GenerateReport implements PluginConstants {
 	}
 	
 	public void generate(Configuration config, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
-		log.debug("Generate Report Generate Called ");
+		log.info("Generate Report Generate Called ");
 		try {
 			this.log = log;
 	        baseDir = mavenProjectInfo.getBaseDir();
@@ -1509,7 +1515,6 @@ public class GenerateReport implements PluginConstants {
 				throw new MojoExecutionException("Project info file is not found in jenkins workspace dir " + baseDir.getCanonicalPath());
 			}
 			ApplicationInfo appInfo = getApplicationInfo(projectInfo);
-			
 			if (appInfo == null) {
 				throw new MojoExecutionException("AppInfo value is Null ");
 			}
@@ -1518,11 +1523,13 @@ public class GenerateReport implements PluginConstants {
 	        String reportType = configs.get(REPORT_TYPE);
 	        String testType = configs.get(TEST_TYPE);
 	        String sonarUrl = configs.get("sonarUrl");
+	        String appVersion = appInfo.getVersion();
+	        
 	        this.testType = testType;
 	        this.reportType = reportType;
-	        this.projName = baseDir.getName();
 	        this.projectCode = mavenProject.getName();
 	        this.techName = appInfo.getTechInfo().getId();
+	        this.version = appVersion;
 	        this.sonarUrl = sonarUrl;
 	        
 	        if (StringUtils.isEmpty(reportType)) {
@@ -1533,18 +1540,11 @@ public class GenerateReport implements PluginConstants {
 	        	throw new PhrescoException("Test Type is empty ");
 	        }
 	        
-	        String clangReportPath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_VALIDATE_REPORT);
-	        if (StringUtils.isNotEmpty(clangReportPath)) {
-	        	isClangReport = true;
-	        }
-	        
 	        if ("All".equalsIgnoreCase(testType)) {
-	        	// all report
-	        	log.info("all report generation started ... ");
+	        	log.info("all report generation started ... "); // all report
 	        	cumalitiveTestReport();
 	        } else {
-	        	// specified type report
-	        	log.info("indivudal report started ... ");
+	        	log.info("indivudal report started ... "); // specified type report
 	        	generatePdfReport();
 	        }
 		} catch (Exception e) {
@@ -1617,4 +1617,5 @@ class FileExtensionFileFilter implements FilenameFilter {
     public boolean accept(File dir, String name) {
         return name.endsWith(filter_);
     }
+    
 }
