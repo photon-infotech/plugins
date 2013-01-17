@@ -1,6 +1,8 @@
 package com.photon.phresco.plugins.java;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,6 +10,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilder;
@@ -25,9 +28,11 @@ import org.w3c.dom.Element;
 import com.photon.phresco.api.ConfigManager;
 import com.photon.phresco.commons.model.ProjectInfo;
 import com.photon.phresco.commons.model.TechnologyInfo;
+import com.photon.phresco.configuration.Environment;
 import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
+import com.photon.phresco.plugin.commons.DatabaseUtil;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
@@ -46,7 +51,7 @@ import com.photon.phresco.util.Utility;
 import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.util.PomProcessor;
 
-public class Package implements PluginConstants{
+public class Package implements PluginConstants {
 	
 	private MavenProject project;
 	private File baseDir;
@@ -68,6 +73,7 @@ public class Package implements PluginConstants{
 	private Log log;
 	private PluginPackageUtil util;
 	private String sourceDir;
+	private List<String> envList = null;
 	
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -87,6 +93,7 @@ public class Package implements PluginConstants{
 			if (environmentName != null) {
 				updateFinalName();
 				configure();
+				writeDatabaseDriverToConfigXml();
 			}
 			if(StringUtils.isNotEmpty(packMinifiedFilesValue)) {
 				boolean packMinifiedFiles = Boolean.parseBoolean(packMinifiedFilesValue);
@@ -184,12 +191,25 @@ public class Package implements PluginConstants{
 		try {
 			File pom = project.getFile();
 			PomProcessor pomprocessor = new PomProcessor(pom);
+			ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(new File(baseDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE));
 			if(pomprocessor.getModel().getPackaging() != null && pomprocessor.getModel().getPackaging().equals(PACKAGING_TYPE_JAR)) {
 				context = jarName;
 				updatemainClassName();
 			} else {
-				ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(new File(baseDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE));
-				List<com.photon.phresco.configuration.Configuration> configurations = configManager.getConfigurations(environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
+				String envName = environmentName;
+				PluginUtils pu = new PluginUtils();
+				envList = pu.csvToList(environmentName);
+				
+				if (environmentName.indexOf(',') > -1) { // multi-value
+					List<Environment> environments = configManager.getEnvironments(envList);
+					for (Environment environment : environments) {
+						boolean defaultEnv = environment.isDefaultEnv();
+						if(defaultEnv) {
+							envName = environment.getName();
+						}
+					}
+				}
+				List<com.photon.phresco.configuration.Configuration> configurations = configManager.getConfigurations(envName, Constants.SETTINGS_TEMPLATE_SERVER);
 				for (com.photon.phresco.configuration.Configuration configuration : configurations) {
 					context = configuration.getProperties().getProperty(Constants.SERVER_CONTEXT);
 					break;
@@ -347,6 +367,35 @@ public class Package implements PluginConstants{
 		try {
 			FileUtils.deleteDirectory(tempDir);
 		} catch (IOException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		}
+	}
+	
+	public void writeDatabaseDriverToConfigXml() throws MojoExecutionException {
+		DatabaseUtil.initDriverMap();
+		try {
+			File configFile = new File(baseDir.getPath() + sourceDir + File.separator + Constants.CONFIGURATION_INFO_FILE);
+			DatabaseUtil dbutil = new DatabaseUtil();
+			ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(configFile);
+			for (String envName : envList) {
+				List<com.photon.phresco.configuration.Configuration> configuration = configManager.getConfigurations(
+						envName, Constants.SETTINGS_TEMPLATE_DB);
+				for (com.photon.phresco.configuration.Configuration config : configuration) {
+					Properties properties = config.getProperties();
+					String databaseType = config.getProperties().getProperty(Constants.DB_TYPE).toLowerCase();
+					String dbDriver = dbutil.getDbDriver(databaseType);
+					properties.setProperty(Constants.DB_DRIVER, dbDriver);
+					config.setProperties(properties);
+					configManager.createConfiguration(envName, config);
+					configManager.deleteConfiguration(envName, config);
+				}
+				configManager.writeXml(new FileOutputStream(configFile));
+			}
+		} catch (PhrescoException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		} catch (ConfigurationException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		} catch (FileNotFoundException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}

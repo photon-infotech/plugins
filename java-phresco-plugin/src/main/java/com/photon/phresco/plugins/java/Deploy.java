@@ -118,20 +118,22 @@ public class Deploy implements PluginConstants {
 	
 	private void updateFinalName() throws MojoExecutionException {
 		try {
-				ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(new File(baseDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE));
-				List<com.photon.phresco.configuration.Configuration> configurations = configManager.getConfigurations(Constants.SETTINGS_TEMPLATE_SERVER,environmentName);
-				for (com.photon.phresco.configuration.Configuration configuration : configurations) {
-					context = configuration.getProperties().getProperty(Constants.SERVER_CONTEXT);
-					break;
-				}
 			File pom = project.getFile();
 			PomProcessor pomprocessor = new PomProcessor(pom);
+			ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(new File(baseDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE));
+			List<com.photon.phresco.configuration.Configuration> configurations = configManager.getConfigurations(environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
+			for (com.photon.phresco.configuration.Configuration configuration : configurations) {
+				context = configuration.getProperties().getProperty(Constants.SERVER_CONTEXT);
+				break;
+			}
 			pomprocessor.setFinalName(context);
 			pomprocessor.save();
 
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
-		} catch (Exception e) {
+		} catch (ConfigurationException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		} catch (PhrescoPomException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
@@ -422,8 +424,6 @@ public class Deploy implements PluginConstants {
 		}
 	}
 }
-
-
 
 class JDWarFileNameFilter implements FilenameFilter {
 

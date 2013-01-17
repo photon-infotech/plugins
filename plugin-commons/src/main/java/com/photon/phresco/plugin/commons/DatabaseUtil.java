@@ -55,13 +55,13 @@ import com.photon.phresco.util.Utility;
 
 public class DatabaseUtil {
 
-	private Map<String, String> dbDriverMap = new HashMap<String, String>(8);
+	private static Map<String, String> dbDriverMap = new HashMap<String, String>(8);
 
-	private String getDbDriver(String dbtype) {
+	public String getDbDriver(String dbtype) {
 		return dbDriverMap.get(dbtype);
 	}
 
-	private void initDriverMap() {
+	public static void initDriverMap() {
 		dbDriverMap.put("mysql", "com.mysql.jdbc.Driver");
 		dbDriverMap.put("oracle", "oracle.jdbc.OracleDriver");
 		dbDriverMap.put("hsql", "org.hsql.jdbcDriver");
