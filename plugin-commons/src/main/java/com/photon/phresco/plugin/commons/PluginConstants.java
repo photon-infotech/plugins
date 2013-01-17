@@ -355,7 +355,8 @@ public interface PluginConstants {
      String DIR_TYPE 					= "dir_type";
      String TEST_TYPE 					= "testType";
      String UTF_8 						= "utf-8";
- 	
+     String VERSION 					= "version";
+     String TECH_NAME 					= "techName";
 	 //Constants for dynamic parameter
 	 String BUILD_NAME 					= "buildName";
 	 String ENVIRONMENT_NAME 			= "environmentName";
