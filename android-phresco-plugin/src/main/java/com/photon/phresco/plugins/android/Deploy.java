@@ -21,7 +21,8 @@ public class Deploy implements PluginConstants {
 		String buildNumber = configs.get(BUILD_NUMBER);
 		String deviceValue = configs.get(DEVICES);
 		String serialNumber = configs.get(SERIAL_NUMBER);
-
+		String workingDir = mavenProjectInfo.getBaseDir().getPath();
+		
 		if (StringUtils.isEmpty(buildNumber)) {
 			System.out.println("buildNumber is empty . ");
 			throw new PhrescoException("buildNumber is empty . ");
@@ -62,6 +63,6 @@ public class Deploy implements PluginConstants {
 		
 		log.info("Project is Deploying...");
 		log.info("Command " + sb.toString());
-		Utility.executeStreamconsumer(sb.toString());
+		Utility.executeStreamconsumer(sb.toString(), workingDir);
 	}
 }

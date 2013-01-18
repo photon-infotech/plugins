@@ -107,7 +107,7 @@ public class Package implements PluginConstants {
 		}
 		
 		log.info("Command " + sb.toString());
-		Utility.executeStreamconsumer(sb.toString());
+		Utility.executeStreamconsumer(sb.toString(), baseDir);
 	}
 	
 	private void updateAllPOMWithProfile(String keystore, String storepass, String keypass, String alias) throws PhrescoException {

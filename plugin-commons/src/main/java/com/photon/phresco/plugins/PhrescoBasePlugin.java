@@ -270,15 +270,7 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append("-Dsonar.branch=functional");
 		}
-		BufferedReader reader = Utility.executeCommand(sb.toString(), workingDir);
-		String line = null;
-		try {
-			while ((line = reader.readLine()) != null) {
-				System.out.println(line); //do not use getLog() here as this line already contains the log type.
-			}
-		} catch (IOException e) {
-			throw new PhrescoException(e);
-		}
+		Utility.executeStreamconsumer(sb.toString(), workingDir);
 	}
 
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
@@ -307,17 +299,9 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 	}
 	
 	private void generateMavenCommand(MavenProjectInfo mavenProjectInfo, String workingDirectory) throws PhrescoException {
-		try {
-			String line = null;
-			StringBuilder sb = new StringBuilder();
-			sb.append(TEST_COMMAND);
-			BufferedReader bufferedReader = Utility.executeCommand(sb.toString(),workingDirectory);
-			while ((line = bufferedReader.readLine()) != null) {
-				System.out.println(line); //do not use getLog() here as this line already contains the log type.
-			}
-		} catch (IOException e) {
-			throw new PhrescoException(e);
-		}
+		StringBuilder sb = new StringBuilder();
+		sb.append(TEST_COMMAND);
+		Utility.executeStreamconsumer(sb.toString(), workingDirectory);
 	}
 	
 	public void adaptTestConfig(File SelectedEnvFile, File resultConfigXml, String envName, String browser, String resolution) throws PhrescoException {

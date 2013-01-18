@@ -37,12 +37,12 @@ public class XcodePlugin extends PhrescoBasePlugin {
 	@Override
 	public void runUnitTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		UnitTest test = new UnitTest();
-		test.unitTest(configuration);
+		test.unitTest(configuration, mavenProjectInfo);
 	}
 	
 	@Override
 	public void runFunctionalTest (Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		FunctionalTest test = new FunctionalTest();
-		test.functionalTest(configuration);
+		test.functionalTest(configuration, mavenProjectInfo);
 	}
 }

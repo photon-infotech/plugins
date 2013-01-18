@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.commons.lang.*;
 
 import com.photon.phresco.exception.*;
+import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
@@ -17,7 +18,7 @@ public class UnitTest implements PluginConstants {
 
 	private static final String TEST = "test";
 
-	public void unitTest(Configuration config) throws PhrescoException {
+	public void unitTest(Configuration config, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		Map<String, String> configs = MojoUtil.getAllValues(config);
 		String sdk = configs.get(SDK);
 		String target = configs.get(TARGET);
@@ -25,6 +26,7 @@ public class UnitTest implements PluginConstants {
 		// get command from plugin info
 		String unitTestType = configs.get(UNIT_TEST_TYPE);
 		String projectType = configs.get(PROJECT_TYPE);
+		String workingDir = mavenProjectInfo.getBaseDir().getPath();
 		
 		if (StringUtils.isEmpty(sdk)) {
 			System.out.println("SDK is empty . ");
@@ -74,6 +76,6 @@ public class UnitTest implements PluginConstants {
 		sb.append(STR_SPACE);
 		sb.append(TEST);
 		System.out.println("UnitTest Command " + sb.toString());
-		Utility.executeStreamconsumer(sb.toString());
+		Utility.executeStreamconsumer(sb.toString(), workingDir);
 	}
 }

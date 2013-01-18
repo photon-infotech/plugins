@@ -273,7 +273,7 @@ public class Package implements PluginConstants {
 			sb.append(MVN_PHASE_PACKAGE);
 			sb.append(STR_SPACE);
 			sb.append(SKIP_TESTS);
-			Utility.executeStreamconsumer(sb.toString());
+			Utility.executeStreamconsumer(sb.toString(), baseDir.getPath());
 	}
 
 	private boolean build() throws MojoExecutionException {

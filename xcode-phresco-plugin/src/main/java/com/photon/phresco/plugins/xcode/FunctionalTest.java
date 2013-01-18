@@ -11,11 +11,11 @@ import com.photon.phresco.plugins.util.*;
 import com.photon.phresco.util.*;
 
 public class FunctionalTest implements PluginConstants {
-	public void functionalTest(Configuration config) throws PhrescoException {
+	public void functionalTest(Configuration config, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		Map<String, String> configs = MojoUtil.getAllValues(config);
 		String buildNumber = configs.get(BUILD_NUMBER);
 		String deviceId = configs.get(DEVICE_ID);
-		
+		String workingDir = mavenProjectInfo.getBaseDir().getPath();
 		if (StringUtils.isEmpty(buildNumber)) {
 			System.out.println("Build Number is empty . ");
 			throw new PhrescoException("Build Number is empty . ");
@@ -33,6 +33,6 @@ public class FunctionalTest implements PluginConstants {
 		}
 		
 		System.out.println("Functional test Command " + sb.toString());
-		Utility.executeStreamconsumer(sb.toString());
+		Utility.executeStreamconsumer(sb.toString(), workingDir);
 	}
 }
