@@ -95,6 +95,8 @@ public interface PluginConstants {
      String MVN_HOME 					= "maven.home";
      String MVN_EXE_PATH				= "\\bin\\mvn.bat";
      String SKIP_TESTS					= "-DskipTests=true";
+     String SKIP_UNIT_TESTS				= "-DskipTests=";
+     String SKIP_YUICOMPRESSOR_SKIP		= "-Dmaven.yuicompressor.skip=";
      String JAVA_TEST_CONFIG_FILE 		= "/test/functional/src/main/resources/" + CONFIG_FILE;
 	 String JAVA_CONFIG_FILE 			= "/src/main/resources/" + CONFIG_FILE;
 	 String JAVA_WEBAPP_CONFIG_FILE 	= "/src/main/webapp/WEB-INF/resources/" + CONFIG_FILE;

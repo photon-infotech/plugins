@@ -75,6 +75,7 @@ public class Package implements PluginConstants {
 	private PluginPackageUtil util;
 	private PluginUtils pu;
 	private String sourceDir;
+	private String skipUnitTests;
 	
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -86,6 +87,7 @@ public class Package implements PluginConstants {
         buildNumber = configs.get(BUILD_NUMBER);
         jarName = configs.get(JAR_NAME);
         mainClassName = configs.get(MAIN_CLASS_NAME);
+        skipUnitTests = configs.get(SKIP_TEST);
         util = new PluginPackageUtil();
         pu = new PluginUtils();
         String packMinifiedFilesValue = configs.get(PACK_MINIFIED_FILES);
@@ -272,7 +274,12 @@ public class Package implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(MVN_PHASE_PACKAGE);
 			sb.append(STR_SPACE);
-			sb.append(SKIP_TESTS);
+			sb.append(SKIP_UNIT_TESTS);
+			sb.append(skipUnitTests);
+			sb.append(STR_SPACE);
+			sb.append(SKIP_YUICOMPRESSOR_SKIP);
+			sb.append(skipUnitTests);
+			log.info("Command = " + sb.toString());
 			Utility.executeStreamconsumer(sb.toString(), baseDir.getPath());
 	}
 
