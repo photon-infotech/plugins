@@ -17,6 +17,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -72,8 +73,8 @@ public class Package implements PluginConstants {
 	private String context;
 	private Log log;
 	private PluginPackageUtil util;
+	private PluginUtils pu;
 	private String sourceDir;
-	private List<String> envList = null;
 	
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -86,6 +87,7 @@ public class Package implements PluginConstants {
         jarName = configs.get(JAR_NAME);
         mainClassName = configs.get(MAIN_CLASS_NAME);
         util = new PluginPackageUtil();
+        pu = new PluginUtils();
         String packMinifiedFilesValue = configs.get(PACK_MINIFIED_FILES);
         File warConfigFile = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + WAR_CONFIG_FILE);
 		try { 
@@ -197,8 +199,7 @@ public class Package implements PluginConstants {
 				updatemainClassName();
 			} else {
 				String envName = environmentName;
-				PluginUtils pu = new PluginUtils();
-				envList = pu.csvToList(environmentName);
+				List<String> envList = pu.csvToList(environmentName);
 				
 				if (environmentName.indexOf(',') > -1) { // multi-value
 					List<Environment> environments = configManager.getEnvironments(envList);
@@ -302,7 +303,6 @@ public class Package implements PluginConstants {
 		File sourceConfigXML = new File(baseDir + modulePath + sourceDir + FORWARD_SLASH +  CONFIG_FILE);
 		File parentFile = sourceConfigXML.getParentFile();
 		if (parentFile.exists()) {
-			PluginUtils pu = new PluginUtils();
 			pu.executeUtil(environmentName, basedir, sourceConfigXML);
 		}
 	}
@@ -377,9 +377,13 @@ public class Package implements PluginConstants {
 			File configFile = new File(baseDir.getPath() + sourceDir + File.separator + Constants.CONFIGURATION_INFO_FILE);
 			DatabaseUtil dbutil = new DatabaseUtil();
 			ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(configFile);
+			List<String> envList = pu.csvToList(environmentName);
 			for (String envName : envList) {
 				List<com.photon.phresco.configuration.Configuration> configuration = configManager.getConfigurations(
 						envName, Constants.SETTINGS_TEMPLATE_DB);
+				if(CollectionUtils.isEmpty(configuration)) {
+					return;
+				}
 				for (com.photon.phresco.configuration.Configuration config : configuration) {
 					Properties properties = config.getProperties();
 					String databaseType = config.getProperties().getProperty(Constants.DB_TYPE).toLowerCase();
