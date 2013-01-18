@@ -209,7 +209,7 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 			String testAgainstType = configs.get(TEST_AGAINST);
 			String testName = configs.get(KEY_TEST_NAME);
 			String environmentName = configs.get(ENVIRONMENT_NAME);
-			String type = configs.get(testAgainstType);
+			String type = configs.get(KEY_CONFIGURATION);
 			String noOfUsers = configs.get(KEY_NO_OF_USERS);
 			String rampUpPeriod = configs.get(KEY_RAMP_UP_PERIOD);
 			String loopCount = configs.get(KEY_LOOP_COUNT);
