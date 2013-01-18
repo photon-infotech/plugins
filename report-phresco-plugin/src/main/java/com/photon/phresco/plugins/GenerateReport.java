@@ -531,7 +531,7 @@ public class GenerateReport implements PluginConstants {
         	}
         	
         	String artifact = sbuild.toString();
-			Sonar sonar = new Sonar(new HttpClient4Connector(new Host("http://localhost:9000")));
+			Sonar sonar = new Sonar(new HttpClient4Connector(new Host(sonarUrl)));
 			log.info("sonarUrl => " + sonarUrl);
 			log.info("artifact => " + artifact);
 			
