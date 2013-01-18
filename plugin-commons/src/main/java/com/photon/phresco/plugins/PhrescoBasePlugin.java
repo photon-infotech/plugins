@@ -47,8 +47,10 @@ import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.model.ContextUrls;
 import com.photon.phresco.framework.model.DbContextUrls;
+import com.photon.phresco.framework.model.Headers;
 import com.photon.phresco.framework.model.PerformanceDetails;
 import com.photon.phresco.impl.ConfigManagerImpl;
+import com.photon.phresco.plugin.commons.DatabaseUtil;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
@@ -171,17 +173,16 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 					String driver = "";
 					if(type.equalsIgnoreCase(Constants.MYSQL_DB)) {
 						dbUrl = "jdbc:mysql://" +host +":" +port+"/"+dbname;
-						driver = "com.mysql.jdbc.Driver";
 					} else if(type.equalsIgnoreCase(Constants.ORACLE_DB)) {
 						dbUrl = "jdbc:oracle:thin:@"+host +":" +port+":"+dbname;
-						driver = "oracle.jdbc.driver.OracleDriver";
 					} else if(type.equalsIgnoreCase(Constants.MSSQL_DB)) {
 						dbUrl = "jdbc:sqlserver://"+host +":" +port+";databaseName="+dbname;
-						driver = "com.microsoft.jdbc.sqlserver.SQLServerDriver";
 					} else if(type.equalsIgnoreCase(Constants.DB2_DB)) {
 						dbUrl = "jdbc:db2://"+host +":" +port+"/"+dbname;
-						driver = "com.ibm.db2.jcc.DB2Driver";
 					}
+					DatabaseUtil.initDriverMap();
+					DatabaseUtil du = new DatabaseUtil();
+					driver = du.getDbDriver(type);
 					pluginUtils.adaptDBPerformanceJmx(testConfigFilePath, dbContextUrls, configurationsName, Integer.parseInt(noOfUsers), Integer.parseInt(rampUpPeriod), Integer.parseInt(loopCount), dbUrl, driver, userName, passWord);
 				} else {
 					pluginUtils.adaptPerformanceJmx(testConfigFilePath, contextUrls, Integer.parseInt(noOfUsers), Integer.parseInt(rampUpPeriod), Integer.parseInt(loopCount));
