@@ -217,27 +217,30 @@ public class GenerateReport implements PluginConstants {
 			}
 			cumulativeReportparams.put(LOAD_TEST_REPORTS, loadTestResults);
 			
-			//Sonar details
-			List<SonarReport> sonarReports = new ArrayList<SonarReport>();
-			String pomPath =  baseDir + File.separator + POM_XML;
-			log.info("Checking Sonar Url exists or not =>" + sonarUrl);
-			if (StringUtils.isNotEmpty(sonarUrl)) {
-				log.info("Sonar Url exists =>" + sonarUrl);
-				List<String> sonarTechReports = getSonarProfiles(pomPath);
-				if (sonarTechReports != null) {
-					if(CollectionUtils.isEmpty(sonarTechReports)) {
-						sonarTechReports.add(SONAR_SOURCE);
-					}
-					sonarTechReports.add(FUNCTIONAL);
-					for (String sonarTechReport : sonarTechReports) {
-						SonarReport srcSonarReport = generateSonarReport(sonarTechReport);
-						if(srcSonarReport != null) {
-							sonarReports.add(srcSonarReport);
+			if (!isClangReport) {
+				//Sonar details
+				List<SonarReport> sonarReports = new ArrayList<SonarReport>();
+				String pomPath =  baseDir + File.separator + POM_XML;
+				log.info("Checking Sonar Url exists or not =>" + sonarUrl);
+				if (StringUtils.isNotEmpty(sonarUrl)) {
+					log.info("Sonar Url exists =>" + sonarUrl);
+					List<String> sonarTechReports = getSonarProfiles(pomPath);
+					if (sonarTechReports != null) {
+						if(CollectionUtils.isEmpty(sonarTechReports)) {
+							sonarTechReports.add(SONAR_SOURCE);
 						}
+						sonarTechReports.add(FUNCTIONAL);
+						for (String sonarTechReport : sonarTechReports) {
+							SonarReport srcSonarReport = generateSonarReport(sonarTechReport);
+							if(srcSonarReport != null) {
+								sonarReports.add(srcSonarReport);
+							}
+						}
+						cumulativeReportparams.put("sonarReport", sonarReports);
 					}
-					cumulativeReportparams.put("sonarReport", sonarReports);
 				}
 			}
+			
 			log.info("cumulativeReportparams =>" + cumulativeReportparams);
 			generateCumulativeTestReport(cumulativeReportparams);
 		} catch (Exception e) {
@@ -1527,7 +1530,8 @@ public class GenerateReport implements PluginConstants {
 	        
 	        this.testType = testType;
 	        this.reportType = reportType;
-	        this.projectCode = mavenProject.getName();
+	        this.projectCode = appInfo.getAppDirName();
+	        this.projName = appInfo.getName();
 	        this.techName = appInfo.getTechInfo().getId();
 	        this.version = appVersion;
 	        this.sonarUrl = sonarUrl;
@@ -1540,6 +1544,11 @@ public class GenerateReport implements PluginConstants {
 	        	throw new PhrescoException("Test Type is empty ");
 	        }
 	        
+	    	String clangReportPath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_VALIDATE_REPORT);
+	    	if (StringUtils.isNotEmpty(clangReportPath)) {
+	    		isClangReport = true;
+	    	}
+	    	
 	        if ("All".equalsIgnoreCase(testType)) {
 	        	log.info("all report generation started ... "); // all report
 	        	cumalitiveTestReport();
