@@ -726,7 +726,7 @@ public class GenerateReport implements PluginConstants {
 	
 	public List<LoadTestReport> getLoadTestResults()  throws Exception {
 		List<LoadTestReport> loadTestReports = new ArrayList<LoadTestReport>();
-		String reportFilePath = baseDir + mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_LOADTEST_DIR);
+		String reportFilePath = baseDir + mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_LOADTEST_RPT_DIR);
 		List<String> testResultFiles = getTestResultFiles(reportFilePath);
 		for (String resultFile : testResultFiles) {
 			Document doc = getDocumentOfFile(reportFilePath, resultFile);
