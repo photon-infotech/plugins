@@ -39,4 +39,10 @@ public class SharePointPlugin extends PhrescoBasePlugin {
 		Deploy deploy = new Deploy();
 		deploy.deploy(configuration, mavenProjectInfo, log);
 	}
+	
+	@Override
+	public void runUnitTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		SharePointTest test = new SharePointTest();
+		test.runUnitTest(configuration, mavenProjectInfo);
+	}
 }
