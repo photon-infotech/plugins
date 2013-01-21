@@ -717,6 +717,10 @@ public class PluginUtils {
 			File pomPath = new File(baseDir + File.separator + Constants.POM_NAME);
             PomProcessor processor = new PomProcessor(pomPath);
             String functionalTestDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
+            StringBuilder builder = new StringBuilder()
+            .append(baseDir)
+            .append(functionalTestDir);
+            executeValidatePhase(builder.toString());
             
 			File logFile  = new File(LogDir + Constants.SLASH + Constants.NODE_LOG);
 			StringBuilder sb = new StringBuilder()
@@ -743,8 +747,8 @@ public class PluginUtils {
 	        File pomPath = new File(baseDir + File.separator + Constants.POM_NAME);
             PomProcessor processor = new PomProcessor(pomPath);
             String functionalTestDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
-            StringBuilder builder = new StringBuilder();
-            builder.append(baseDir)
+            StringBuilder builder = new StringBuilder()
+            .append(baseDir)
             .append(functionalTestDir);
             
 	        executeValidatePhase(builder.toString());

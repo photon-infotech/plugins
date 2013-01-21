@@ -47,7 +47,6 @@ import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.model.ContextUrls;
 import com.photon.phresco.framework.model.DbContextUrls;
-import com.photon.phresco.framework.model.Headers;
 import com.photon.phresco.framework.model.PerformanceDetails;
 import com.photon.phresco.impl.ConfigManagerImpl;
 import com.photon.phresco.plugin.commons.DatabaseUtil;
@@ -97,7 +96,7 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 		String environmentName = configValues.get(ENVIRONMENT_NAME);
 		String testAgainst = configValues.get(TEST_AGAINST);
 		String functionalTestDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
-		if(StringUtils.isEmpty(functionalTestDir)) { 
+		if (StringUtils.isEmpty(functionalTestDir)) { 
 			functionalTestDir = "";
 		}
 		String jarLocation = "";
@@ -478,6 +477,7 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
             int portNumber = hubConfiguration.getPort();
 			PluginUtils pluginutil = new PluginUtils();
 			pluginutil.stopServer("" + portNumber, baseDir);
+			log.info("Hub Stopped Successfully...");
 		} catch (PhrescoPomException e) {
 			throw new PhrescoException(e);
 		} catch (FileNotFoundException e) {
@@ -513,6 +513,11 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 		String proxy = configs.get("proxy");
 		String browserInfo = configs.get("browserInfo");
 		
+		boolean connectionAlive = Utility.isConnectionAlive(Constants.DB_PROTOCOL, hubHost, hubPort);
+		if (!connectionAlive) {
+		    log.error("Hub not yet started...");
+		    throw new PhrescoException("Hub not yet started...");
+		}
 		try {
 			NodeConfiguration nodeConfiguration = new NodeConfiguration();
 			List<NodeCapability> nodeCapabilities = new ArrayList<NodeCapability>();
@@ -571,6 +576,7 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
             int portNumber = nodeConfiguration.getConfiguration().getPort();
 			PluginUtils pluginutil = new PluginUtils();
 			pluginutil.stopServer("" + portNumber, baseDir);
+			log.info("Node Stopped Successfully...");
 		} catch (PhrescoPomException e) {
 			throw new PhrescoException(e);
 		} catch (FileNotFoundException e) {
