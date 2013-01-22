@@ -96,6 +96,7 @@ public interface PluginConstants {
      String MVN_EXE_PATH				= "\\bin\\mvn.bat";
      String SKIP_TESTS					= "-DskipTests=true";
      String SKIP_UNIT_TESTS				= "-DskipTests=";
+     String SKIP           				= "skipTests";
      String SKIP_YUICOMPRESSOR_SKIP		= "-Dmaven.yuicompressor.skip=";
      String JAVA_TEST_CONFIG_FILE 		= "/test/functional/src/main/resources/" + CONFIG_FILE;
 	 String JAVA_CONFIG_FILE 			= "/src/main/resources/" + CONFIG_FILE;
@@ -391,6 +392,7 @@ public interface PluginConstants {
 	 String SONAR_COMMAND				= "mvn sonar:sonar";
 	 String SONAR						= "sonar";
 	 String PLUGIN_PARAMETER 			= "plugin";
+	 String SONARCOMMAND				= "sonar:sonar";
 	 
 	 //Constants for Tests
 	 String TEST_COMMAND				= "mvn clean test";	 
