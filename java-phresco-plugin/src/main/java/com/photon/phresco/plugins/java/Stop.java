@@ -42,17 +42,21 @@ public class Stop implements PluginConstants {
 	public void stop(MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		projectCode = mavenProjectInfo.getProjectCode();
 		File baseDir = mavenProjectInfo.getBaseDir();
-		String portNumber = findPortNumber();
+		File runagsInfoFile = new File(Utility.getProjectHome() + File.separator + projectCode + File.separator
+                + DOT_PHRESCO_FOLDER + File.separator + ENV_FILE);
+		String portNumber = findPortNumber(runagsInfoFile);
 		PluginUtils pluginutil = new PluginUtils();
 		pluginutil.stopServer(portNumber, baseDir);
 		log.info("Server stopped successfully");
+		if(runagsInfoFile.exists()) {
+            runagsInfoFile.delete();
+        }
+		
 	}
 
-	private String findPortNumber() throws PhrescoException {
+	private String findPortNumber(File runagsInfoFile) throws PhrescoException {
 		ConfigurationInfo info = new ConfigurationInfo();
 		try {
-			File runagsInfoFile = new File(Utility.getProjectHome() + File.separator + projectCode + File.separator
-					+ DOT_PHRESCO_FOLDER + File.separator + ENV_FILE);
 			BufferedReader reader = new BufferedReader(new FileReader(runagsInfoFile));
 			Gson gson = new Gson();
 			info = gson.fromJson(reader, ConfigurationInfo.class);
