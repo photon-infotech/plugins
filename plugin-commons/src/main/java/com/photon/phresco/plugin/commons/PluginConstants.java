@@ -61,6 +61,7 @@ public interface PluginConstants {
      String SONAR_LANGUAGE 				= "sonar.language";
      String CI_INFO_FILE				= "cijob.info";
      String WAR_CONFIG_FILE				= "war-config.xml";
+     String POM_PROP_CONFIG_FILE        = "phresco.env.config.xml";
      
 	//Constants for Maven commands
      String MVN_CMD 					= "mvn";

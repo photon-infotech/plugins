@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
@@ -111,10 +112,16 @@ public class Package implements PluginConstants {
 			File pom = project.getFile();
 		    PomProcessor pomProcessor = new PomProcessor(pom);
 			String sourceDir = pomProcessor.getProperty(POM_PROP_KEY_SOURCE_DIR);
-			File configfile = new File(baseDir + sourceDir + FORWARD_SLASH +  CONFIG_FILE);
+			String configSourceDir = pomProcessor.getProperty(POM_PROP_CONFIG_FILE);
+			File srcConfigFile = null;
+			if(StringUtils.isNotEmpty(configSourceDir)) {
+				srcConfigFile  = new File(baseDir + configSourceDir);
+			} else {
+				srcConfigFile = new File(baseDir + sourceDir + FORWARD_SLASH +  CONFIG_FILE);
+			}
 			String basedir = baseDir.getName();
 			PluginUtils pu = new PluginUtils();
-			pu.executeUtil(environmentName, basedir, configfile);
+			pu.executeUtil(environmentName, basedir, srcConfigFile);
 		} catch (PhrescoPomException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
