@@ -296,21 +296,33 @@ public class Package implements PluginConstants {
 		return isBuildSuccess;
 	}
 
-	private void configure() {
+	private void configure() throws MojoExecutionException {
 		log.info("Configuring the project....");
 		adaptSourceConfig();
 	}
 
-	private void adaptSourceConfig() {
+	private void adaptSourceConfig() throws MojoExecutionException {
 		String basedir = baseDir.getName();
 		String modulePath = "";
 		if (moduleName != null) {
 			modulePath = File.separatorChar + moduleName;
 		}
-		File sourceConfigXML = new File(baseDir + modulePath + sourceDir + FORWARD_SLASH +  CONFIG_FILE);
-		File parentFile = sourceConfigXML.getParentFile();
-		if (parentFile.exists()) {
-			pu.executeUtil(environmentName, basedir, sourceConfigXML);
+		PomProcessor processor  = null;
+		File sourceConfigXML = null;
+		try {
+			processor = new PomProcessor(project.getFile());
+			String configXml = processor.getProperty(POM_PROP_CONFIG_FILE);
+			if(StringUtils.isNotEmpty(configXml)) {
+				sourceConfigXML = new File(baseDir + modulePath + configXml);
+			} else {
+				sourceConfigXML = new File(baseDir + modulePath + sourceDir + FORWARD_SLASH +  CONFIG_FILE);
+			}
+			File parentFile = sourceConfigXML.getParentFile();
+			if (parentFile.exists()) {
+				pu.executeUtil(environmentName, basedir, sourceConfigXML);
+			}
+		} catch (PhrescoPomException e) {
+			throw new MojoExecutionException(e.getMessage());
 		}
 	}
 
