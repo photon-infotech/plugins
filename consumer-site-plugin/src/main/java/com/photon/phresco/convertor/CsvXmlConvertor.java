@@ -125,6 +125,7 @@ public class CsvXmlConvertor {
 			csvFileVO.setLanguage(parentFile);
 			if (file.getAttributeValue("addFunction") != null && file.getAttributeValue("addFunction").length() > 0) {
 				csvFileVO.setPhpFunction(file.getAttributeValue("addFunction"));
+				csvFileVO.setPhpVariable("variable_set('show-" + file.getAttributeValue("contentTypeName") + "', 1);");
 			}
 			for (int j = 0; j < arr.length; j++) {
 				ColumnVO columnVO = columnVOSet.get(headerArr[j].trim());
