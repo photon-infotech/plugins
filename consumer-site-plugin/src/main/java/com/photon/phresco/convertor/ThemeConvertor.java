@@ -12,15 +12,13 @@ import com.photon.phresco.plugin.commons.MavenProjectInfo;
 public class ThemeConvertor {
 
 	public ThemeConvertor() {
-
+	
 	}
-
 	public void convert(MavenProjectInfo mavenProjectInfo) throws IOException {
 		copyDirectory(new File(mavenProjectInfo.getProject().getBasedir()
-				+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.theme.target.dir")
-				+ File.separator + "assets"), new File(mavenProjectInfo.getProject().getBasedir() + File.separator
-				+ "source" + File.separator + "sites" + File.separator + "all" + File.separator + "themes"
-				+ File.separator + "corolla" + File.separator + "assets"));
+				+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.theme.target.dir")), 
+				new File(mavenProjectInfo.getProject().getBasedir()
+				+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.theme.upload.dir")));
 	};
 
 	public void copyDirectory(File sourceLocation, File targetLocation) throws IOException {
@@ -32,6 +30,12 @@ public class ThemeConvertor {
 			}
 			String[] children = sourceLocation.list();
 			for (int i = 0; i < children.length; i++) {
+				System.out.println("Filename : " + children[i]);
+				if (children[i].toLowerCase().equals("thumbs.db")) {
+					File thumbFile = new File(sourceLocation + File.separator + children[i]);
+					thumbFile.delete();
+					continue;
+				}
 				copyDirectory(new File(sourceLocation, children[i]), new File(targetLocation, children[i]));
 			}
 		} else {
