@@ -24,8 +24,10 @@ public class PHPCreator {
 	public List<CsvFileVO> createPHPFile(List<CsvFileVO> list, MavenProjectInfo mavenProjectInfo) throws IOException,
 			Exception {
 		Set<String> uniqueFunctionNamesSet = new HashSet<String>();
+		Set<String> uniqueVariableNamesSet = new HashSet<String>();
 		for (CsvFileVO csvo : list) {
 			uniqueFunctionNamesSet.add(csvo.getPhpFunction());
+			uniqueVariableNamesSet.add(csvo.getPhpVariable());
 		}
 		StringBuffer phpFile = new StringBuffer();
 		phpFile.append("<?php\n" + "/**\n" + "* @file\n" + "* ass\n" + "*/\n" + "/**\n"
@@ -38,6 +40,13 @@ public class PHPCreator {
 			String funcName = iter.next();
 			if (funcName != null && funcName.length() > 0) {
 				phpFile.append(funcName + "\n");
+			}
+		}
+		Iterator<String> iterVar = uniqueVariableNamesSet.iterator();
+		while (iterVar.hasNext()) {
+			String varName = iterVar.next();
+			if (varName != null && varName.length() > 0) {
+				phpFile.append(varName + "\n");
 			}
 		}
 		List<String> buildCreateContentLineList = getBuildCreateContentLines(list);
