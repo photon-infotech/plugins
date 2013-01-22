@@ -13,8 +13,7 @@ public class CsvFileVO implements Serializable {
 	private String fieldType;
 	private String currentFolderPath;
 	private String targetFolder;
-	
-	
+	private String phpVariable;
 
 	private Map<String, String> titleMap = new HashMap<String, String>();
 	private Map<String, String> descriptionMap = new HashMap<String, String>();
@@ -134,5 +133,13 @@ public class CsvFileVO implements Serializable {
 
 	public void setPhpFunction(String phpFunction) {
 		this.phpFunction = phpFunction;
+	}
+
+	public String getPhpVariable() {
+		return phpVariable;
+	}
+
+	public void setPhpVariable(String phpVariable) {
+		this.phpVariable = phpVariable;
 	}	
 }

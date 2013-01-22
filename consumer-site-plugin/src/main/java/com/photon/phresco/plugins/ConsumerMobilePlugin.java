@@ -1,25 +1,44 @@
 package com.photon.phresco.plugins;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipException;
 
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.Executor;
+import org.apache.commons.exec.ExecuteException;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
+import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.StringUtils;
+import org.jdom2.JDOMException;
 
+import com.photon.phresco.api.ConfigManager;
+import com.photon.phresco.commons.model.BuildInfo;
 import com.photon.phresco.convertor.ThemeConvertor;
+import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.manager.ConversionManager;
 import com.photon.phresco.manager.ValidationManager;
 import com.photon.phresco.parser.LocaleExtractor;
+import com.photon.phresco.plugin.commons.DatabaseUtil;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
+import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.drupal.DrupalPlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.status.ValidationStatus;
+import com.photon.phresco.util.ArchiveUtil;
+import com.photon.phresco.util.ArchiveUtil.ArchiveType;
+import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.Utility;
 import com.photon.phresco.validator.DirectoryValidator;
 import com.photon.phresco.validator.FileDimensionValidator;
 import com.photon.phresco.validator.FileValidator;
@@ -27,16 +46,25 @@ import com.photon.phresco.vo.CsvFileVO;
 
 public class ConsumerMobilePlugin extends DrupalPlugin {
 	
+	private File baseDir;
+	private String buildNumber;
+	private String environmentName;
+	private boolean importSql;
+	private File buildDir;
+	private File binariesDir;
+	private File buildFile;
+	private File tempDir;
+	private Log log;
+	private String sqlPath;
+	private ConversionManager conversionManager;
 	
-
 	public ConsumerMobilePlugin(Log log) {
 		super(log);
 	}
 
 	public void themeValidator(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		log.info("Theme validation is being done");
+		System.out.println("Theme validation is being done...");
 		try {
-
 			LocaleExtractor localeExtractor = new LocaleExtractor(mavenProjectInfo, File.separator
 					+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.theme.manifest.name"),
 					mavenProjectInfo.getProject().getProperties().getProperty("phresco.theme.target.dir"));
@@ -50,9 +78,9 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 			validationManager.addValidator(directoryValidator);
 			List<ValidationStatus> validationStatusDirectoryList = validationManager.validate();
 			// log current messages in case next validation fails
-			log.info("Dumping messages after folder validation");
+			System.out.println("Dumping messages after folder validation");
 			for (ValidationStatus v : validationStatusDirectoryList) {
-				log.info(v.getMessage());
+				System.out.println(v.getMessage());
 			}
 			for (ValidationStatus v : validationStatusDirectoryList) {
 				// must throw exception if folder does not exist otherwise next
@@ -66,9 +94,9 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 			validationManager.addValidator(fileValidator);
 			List<ValidationStatus> validationStatusFileList = validationManager.validate();
 			// log current messages in case next validation fails
-			log.info("Dumping messages after file validation");
+			System.out.println("Dumping messages after file validation");
 			for (ValidationStatus v : validationStatusFileList) {
-				log.info(v.getMessage());
+				System.out.println(v.getMessage());
 			}
 			for (ValidationStatus v : validationStatusFileList) {
 				// must throw exception if folder does not exist otherwise next
@@ -82,9 +110,9 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 			validationManager.addValidator(fileDimensionValidator);
 			List<ValidationStatus> validationStatusFileDimList = validationManager.validate();
 			// log current messages in case next validation fails
-			log.info("Dumping messages after image dimension validation");
+			System.out.println("Dumping messages after image dimension validation");
 			for (ValidationStatus v : validationStatusFileDimList) {
-				log.info(v.getMessage());
+				System.out.println(v.getMessage());
 			}
 			for (ValidationStatus v : validationStatusFileDimList) {
 				// must throw exception if folder does not exist otherwise next
@@ -100,11 +128,11 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 			validationStatusList.addAll(validationStatusFileList);
 			validationStatusList.addAll(validationStatusFileDimList);
 			String concatenatedStatusMessage = "";
-			log.info("---- CONSOLIDATED MESSAGES-------");
+			System.out.println("---- CONSOLIDATED MESSAGES-------");
 			for (ValidationStatus v : validationStatusList) {
 				concatenatedStatusMessage += v.getMessage();
 			}
-			log.info(concatenatedStatusMessage);
+			System.out.println(concatenatedStatusMessage);
 		} catch (ZipException e) {
 			throw new PhrescoException(e);
 		} catch (IOException e) {
@@ -116,7 +144,7 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 	}
 
 	public void themeConvertor(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		log.info("Theme conversion is being done");		
+		System.out.println("Theme conversion is being done...");
 		try {
 			new ThemeConvertor().convert(mavenProjectInfo);
 		} catch (Exception e) {
@@ -125,7 +153,7 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 	}
 
 	public void contentValidator(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		log.info("Content validation is being done");		
+		System.out.println("Content validation is being done...");		
 		try {
 			LocaleExtractor localeExtractor = new LocaleExtractor(mavenProjectInfo, File.separator
 					+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.content.manifest.name"),
@@ -140,9 +168,9 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 			validationManager.addValidator(directoryValidator);
 			List<ValidationStatus> validationStatusDirectoryList = validationManager.validate();
 			// log current messages in case next validation fails
-			log.info("Dumping messages after folder validation");
+			System.out.println("Dumping messages after folder validation");
 			for (ValidationStatus v : validationStatusDirectoryList) {
-				log.info(v.getMessage());
+				System.out.println(v.getMessage());
 			}
 			for (ValidationStatus v : validationStatusDirectoryList) {
 				// must throw exception if folder does not exist otherwise next
@@ -157,10 +185,10 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 			validationManager.addValidator(fileValidator);
 			List<ValidationStatus> validationStatusFileList = validationManager.validate();
 			// log current messages in case next validation fails
-			log.info("Dumping messages after file valdiation");
+			System.out.println("Dumping messages after file valdiation");
 			for (ValidationStatus v : validationStatusFileList) {
 
-				log.info(v.getMessage());
+				System.out.println(v.getMessage());
 			}
 			for (ValidationStatus v : validationStatusFileList) {
 				// must throw exception if folder does not exist otherwise next
@@ -174,9 +202,9 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 			validationManager.addValidator(fileDimensionValidator);
 			List<ValidationStatus> validationStatusFileDimList = validationManager.validate();
 			// log current messages in case next validation fails
-			log.info("Dumping messages after image file dimension valdiation");
+			System.out.println("Dumping messages after image file dimension valdiation");
 			for (ValidationStatus v : validationStatusFileDimList) {
-				log.info(v.getMessage());
+				System.out.println(v.getMessage());
 			}
 			for (ValidationStatus v : validationStatusFileDimList) {
 				// must throw exception if folder does not exist otherwise next
@@ -187,7 +215,7 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 			}
 			// log all messages after successful build - all validations passed.
 			// All status messages aggregated
-			log.info("---- CONSOLIDATED MESSAGES-------");
+			System.out.println("---- CONSOLIDATED MESSAGES-------");
 			List<ValidationStatus> validationStatusList = new ArrayList<ValidationStatus>();
 			validationStatusList.addAll(validationStatusDirectoryList);
 			validationStatusList.addAll(validationStatusFileList);
@@ -196,7 +224,7 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 			for (ValidationStatus v : validationStatusList) {
 				concatenatedStatusMessage += v.getMessage();
 			}
-			log.info(concatenatedStatusMessage);
+			System.out.println(concatenatedStatusMessage);
 		} catch (ZipException e) {
 			throw new PhrescoException(e);
 		} catch (IOException e) {
@@ -207,13 +235,15 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 	}
 
 	public void contentConvertor(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		log.info("Content conversion is being done");
+		System.out.println("Content conversion is being done");
 		try {
-			ConversionManager conversionManager = new ConversionManager(mavenProjectInfo, File.separator
-					+ "manifest.xml", mavenProjectInfo.getProject().getProperties()
-					.getProperty("phresco.content.target.dir"));
+			 conversionManager = new ConversionManager(mavenProjectInfo, File.separator
+					+ "manifest.xml", mavenProjectInfo.getProject().getProperties().getProperty("phresco.content.target.dir"));
 			List<CsvFileVO> csvoFileList = conversionManager.convert(mavenProjectInfo);
-			log.info(mavenProjectInfo.getProject().getProperties().getProperty("phresco.content.php.file.name")
+			String phrescoTargetDir=null;
+			conversionManager.replaceParameter(mavenProjectInfo, phrescoTargetDir);
+			
+			System.out.println(mavenProjectInfo.getProject().getProperties().getProperty("phresco.content.php.file.name")
 					+ " created at location" + "." + mavenProjectInfo.getBaseDir() + File.separator + "source"
 					+ File.separator + "sites" + File.separator + "all" + File.separator + "modules" + File.separator
 					+ "jnj_site_build" + File.separator + "build" + File.separator + "scripts");
@@ -224,60 +254,226 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 			e.printStackTrace();
 			throw new PhrescoException(e);
 		}
-
-	}
-
-	public void runDrushCommands() throws IOException {
-		
-		Executor exec = new DefaultExecutor();
-		CommandLine cl = new CommandLine(
-				"drush si -y standard --account-name=admin --account-pass=admin --account-mail=admin@mobilityfwk.com --db-url=mysql://root:root@localhost/drushdru --site-mail=noreply@mobilityfwk.com --site-name=Mobility-Phase2-Enhancements");
-		int exitvalue = exec.execute(cl);
-
-		exec = new DefaultExecutor();
-		cl = new CommandLine("drush en -y corolla");
-		exitvalue = exec.execute(cl);
-
-		exec = new DefaultExecutor();
-		cl = new CommandLine("drush vset theme_default corolla");
-		exitvalue = exec.execute(cl);
-
-		exec = new DefaultExecutor();
-		cl = new CommandLine(
-				"drush en -y php translation restapi framework_1_5 mail mobile_productlocator mobile_eretailer mobile_bazaar_voice social_share googleanalytics google_appliance webform jnj_site_build");
-		exitvalue = exec.execute(cl);
-
-		exec = new DefaultExecutor();
-		cl = new CommandLine("drush vset site_frontpage mobile-home");
-		exitvalue = exec.execute(cl);
-
-		exec = new DefaultExecutor();
-		cl = new CommandLine("drush sqlc < {source}" + File.separator + "sql" + File.separator + "mysql"
-				+ File.separator + "5.0" + File.separator + "site.sql");
-		exitvalue = exec.execute(cl);
-
-		exec = new DefaultExecutor();
-		cl = new CommandLine("drush scr {source}" + File.separator + "sites" + File.separator + "all" + File.separator
-				+ "modules" + File.separator + "jnj_site_build" + File.separator + "build" + File.separator + "scripts"
-				+ File.separator + "consumer-mobile-v1.build");
-		exitvalue = exec.execute(cl);
 	}
 
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		themeValidator(mavenProjectInfo);
+		themeConvertor(mavenProjectInfo);
+		contentValidator(mavenProjectInfo);
+		contentConvertor(mavenProjectInfo);
+		super.pack(configuration, mavenProjectInfo);
+	}
+	
+	@Override
+	public void deploy(Configuration configuration,
+			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		baseDir = mavenProjectInfo.getBaseDir();
+        Map<String, String> configs = MojoUtil.getAllValues(configuration);
+        environmentName = configs.get(ENVIRONMENT_NAME);
+        buildNumber = configs.get(BUILD_NUMBER);
+        importSql = Boolean.parseBoolean(configs.get(EXECUTE_SQL));
+        sqlPath = configs.get(FETCH_SQL);
+        
 		try {
-			themeValidator(mavenProjectInfo);
-			themeConvertor(mavenProjectInfo);
-			contentValidator(mavenProjectInfo);
-			contentConvertor(mavenProjectInfo);
-			super.pack(configuration, mavenProjectInfo);
-			runDrushCommands();
+			ConversionManager conversionManager = new ConversionManager();
+			Map getEnv = conversionManager.getEnvironmentDetails(mavenProjectInfo, null);
+			init();
+			createDb(getEnv);
+			importSQL();
+			packDrupal();
+			extractBuild();
+			deploy();
+			executeDrushCommands(mavenProjectInfo, getEnv);
+			cleanUp();
+		} catch (MojoExecutionException e) {
+			throw new PhrescoException(e);
+		} catch (ExecuteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} catch (IOException e) {
-			log.info(e.getMessage());
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JDOMException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	private void init() throws MojoExecutionException  {
+		try {
+			System.out.println("Build No => " + buildNumber + " Environment => " + environmentName);
+			if (StringUtils.isEmpty(buildNumber) || StringUtils.isEmpty(environmentName)) {
+				callUsage();
+			}
+			
+			PluginUtils pu = new PluginUtils();
+			BuildInfo buildInfo = pu.getBuildInfo(Integer.parseInt(buildNumber));
+			System.out.println("Build Name " + buildInfo);
+			
+			buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
+			buildFile = new File(buildDir.getPath() + File.separator + buildInfo.getBuildName());
+			System.out.println("buildFile path " + buildFile.getPath());
+			binariesDir = new File(baseDir.getPath() + BINARIES_DIR);
+			
+			String context = "";
+			List<com.photon.phresco.configuration.Configuration> configurations = getConfiguration(Constants.SETTINGS_TEMPLATE_SERVER);
+			for (com.photon.phresco.configuration.Configuration configuration : configurations) {
+				context = configuration.getProperties().getProperty(Constants.SERVER_CONTEXT);
+				break;
+			}
+			tempDir = new File(buildDir.getPath() + TEMP_DIR + File.separator + context);
+			tempDir.mkdirs();
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			throw new MojoExecutionException(e.getMessage(), e);
+		}
+	}
+
+	private void callUsage() throws MojoExecutionException {
+		System.out.println("Invalid usage.");
+		System.out.println("Usage of Deploy Goal");
+		System.out.println(
+				"mvn drupal:deploy -DbuildName=\"Name of the build\""
+				+ " -DenvironmentName=\"Multivalued evnironment names\""
+				+ " -DimportSql=\"Does the deployment needs to import sql(TRUE/FALSE?)\"");
+		throw new MojoExecutionException(
+				"Invalid Usage. Please see the Usage of Deploy Goal");
+	}
+	
+	private void createDb(Map getEnv) throws MojoExecutionException, PhrescoException {		
+		try {
+			Connection Conn = DriverManager.getConnection 
+					("jdbc:mysql://" + getEnv.get("host") + "/?user=" + getEnv.get("username") + "&password=" + getEnv.get("password")); 
+			Statement s = Conn.createStatement(); 
+			s.executeUpdate("CREATE DATABASE " + getEnv.get("dbname"));
+		} catch (Exception e) {
 			throw new PhrescoException(e);
 		}
 	}
 	
+	private void importSQL() throws MojoExecutionException, PhrescoException {
+		DatabaseUtil util = new DatabaseUtil();
+		try {
+			util.fetchSqlConfiguration(sqlPath, importSql, baseDir, environmentName);
+		} catch (Exception e) {
+			throw new PhrescoException(e);
+		}
+	}	
 	
+	private void packDrupal() throws MojoExecutionException {
+		BufferedReader bufferedReader = null;
+		boolean errorParam = false;
+		try {
+			//fetching drupal binary from repo
+			StringBuilder sb = new StringBuilder();
+			sb.append(MVN_CMD);
+			sb.append(STR_SPACE);
+			sb.append(MVN_PHASE_INITIALIZE);
+
+			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
+			String line = null;
+			while ((line = bufferedReader.readLine()) != null) {
+				if (line.startsWith("[ERROR]")) {
+					errorParam = true;
+				}
+			}
+			if (errorParam) {
+				throw new MojoExecutionException("Drupal Binary Download Failed ");
+			}
+			
+			//packing drupal binary to build
+			File drupalBinary = null;
+			File[] listFiles = binariesDir.listFiles();
+			for (File file : listFiles) {
+				if (file.isDirectory()) {
+					drupalBinary = new File(binariesDir + "/drupal");
+					file.renameTo(drupalBinary);
+				}
+			}
+			if (!drupalBinary.exists()) {
+				throw new MojoExecutionException("Drupal binary not found");
+			}
+			if (drupalBinary != null) {
+				FileUtils.copyDirectoryStructure(drupalBinary, tempDir);
+			}
+		} catch (Exception e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		} finally {
+			Utility.closeStream(bufferedReader);
+		}
+	}
 	
+    private void extractBuild() throws MojoExecutionException {
+		try {
+			ArchiveUtil.extractArchive(buildFile.getPath(), tempDir.getPath(), ArchiveType.ZIP);
+		} catch (PhrescoException e) {
+			throw new MojoExecutionException(e.getErrorMessage(), e);
+		}
+	}
+
+	private void deploy() throws MojoExecutionException {
+		String deployLocation = "";
+		try {
+			List<com.photon.phresco.configuration.Configuration> configurations = getConfiguration(Constants.SETTINGS_TEMPLATE_SERVER);
+			for (com.photon.phresco.configuration.Configuration configuration : configurations) {
+				deployLocation = configuration.getProperties().getProperty(Constants.SERVER_DEPLOY_DIR);
+				break;
+			}
+			File deployDir = new File(deployLocation);
+			if (!deployDir.exists()) {
+				throw new MojoExecutionException(" Deploy Directory" + deployLocation + " Does Not Exists ");
+			}
+			System.out.println("Project is deploying into " + deployLocation);
+			FileUtils.copyDirectoryStructure(tempDir.getParentFile(), deployDir);
+			System.out.println("Project is deployed successfully");
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			throw new MojoExecutionException(e.getMessage(), e);
+		}
+	}
 	
+	public void executeDrushCommands(MavenProjectInfo mavenProjectInfo,Map getEnv) throws ExecuteException, IOException, JDOMException {
+		try 
+		{ 
+			String filePath = (String) getEnv.get("deploy_dir")
+				+ File.separator
+				+ (String) getEnv.get("context")
+				+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.build.scripts.file.path");
+		
+			String[] command = new String[3];
+            command[0] = "cmd";
+            command[1] = "/c";
+            command[2] = "drush php-script " + filePath;
+            
+			Process process = Runtime.getRuntime().exec(command);
+		
+			BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			String line = reader.readLine(); 
+			while(line != null) 
+			{
+				System.out.println(line); 
+				line = reader.readLine(); 
+				
+				if (line == null) {
+					process.destroy();
+				}
+			} 
+		} 
+		catch(IOException e1) {
+		    System.out.println("Done"); 
+		}
+	}
+
+	private List<com.photon.phresco.configuration.Configuration> getConfiguration(String type) throws PhrescoException, ConfigurationException {
+		ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(new File(baseDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + CONFIG_FILE));
+		return configManager.getConfigurations(environmentName, type);		
+	}
+
+	private void cleanUp() throws MojoExecutionException {
+		try {
+			FileUtils.deleteDirectory(tempDir.getParentFile());
+		} catch (IOException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		}
+	}
 }
