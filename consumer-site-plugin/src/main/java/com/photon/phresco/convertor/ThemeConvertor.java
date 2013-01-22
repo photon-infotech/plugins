@@ -12,9 +12,8 @@ import com.photon.phresco.plugin.commons.MavenProjectInfo;
 public class ThemeConvertor {
 
 	public ThemeConvertor() {
-
+	
 	}
-
 	public void convert(MavenProjectInfo mavenProjectInfo) throws IOException {
 		copyDirectory(new File(mavenProjectInfo.getProject().getBasedir()
 				+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.theme.target.dir")), 
