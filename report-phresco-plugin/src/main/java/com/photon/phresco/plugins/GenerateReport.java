@@ -41,6 +41,8 @@ import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.data.JRBeanArrayDataSource;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.util.JRLoader;
+import net.sf.jasperreports.engine.JRStyle;
+import net.sf.jasperreports.engine.JRPen;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -88,6 +90,7 @@ import com.phresco.pom.model.Model;
 import com.phresco.pom.model.Model.Profiles;
 import com.phresco.pom.model.Profile;
 import com.phresco.pom.util.PomProcessor;
+import com.photon.phresco.commons.model.FrameWorkTheme;
 
 public class GenerateReport implements PluginConstants {
 	private static final String REPORTS_TYPE = "reportsDataType";
