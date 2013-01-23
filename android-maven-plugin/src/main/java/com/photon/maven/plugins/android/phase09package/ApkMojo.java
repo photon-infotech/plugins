@@ -74,7 +74,10 @@ import com.photon.maven.plugins.android.common.NativeHelper;
 import com.photon.maven.plugins.android.configuration.Sign;
 import com.photon.phresco.commons.model.BuildInfo;
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
+import com.phresco.pom.exception.PhrescoPomException;
+import com.phresco.pom.util.PomProcessor;
 
 
 /**
@@ -368,12 +371,22 @@ public class ApkMojo extends AbstractAndroidMojo {
 				return;
 			}
 			getLog().info("Configuring the project....");
-			File srcConfigFile = new File(sourceDirectory.getParent(), "/assets/phresco-env-config.xml");
+			
+			PomProcessor pomProcessor = new PomProcessor(project.getFile());
+			String configSourceDir = pomProcessor.getProperty(PluginConstants.POM_PROP_CONFIG_FILE);
+			File srcConfigFile = null;
+			if(StringUtils.isNotEmpty(configSourceDir)) {
+				srcConfigFile  = new File(baseDir + configSourceDir);
+			} else {
+				srcConfigFile = new File(sourceDirectory.getParent(), "/assets/phresco-env-config.xml");
+			}
 			String basedir = baseDir.getName();
 			PluginUtils pu = new PluginUtils();
 			pu.executeUtil(environmentName, basedir, srcConfigFile);
 			pu.setDefaultEnvironment(environmentName, srcConfigFile);
 		} catch (PhrescoException e) {
+			throw new MojoExecutionException(e.getMessage());
+		} catch (PhrescoPomException e) {
 			throw new MojoExecutionException(e.getMessage());
 		}
 	}
