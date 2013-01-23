@@ -1547,8 +1547,6 @@ public class GenerateReport implements PluginConstants {
 	        	Gson gson = new Gson();
 		        theme = gson.fromJson(themeJson, FrameWorkTheme.class);
 	        }
-	        System.out.println("Converted theme object =>  " + theme);
-	        System.out.println("logo => " + logo);
 	        
 	        this.testType = testType;
 	        this.reportType = reportType;
