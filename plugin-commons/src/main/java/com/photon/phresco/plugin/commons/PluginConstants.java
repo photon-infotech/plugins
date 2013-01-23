@@ -301,6 +301,9 @@ public interface PluginConstants {
 	 String MD5_WITH_RSA				= "MD5withRSA";
 	 String HYPHEN_DIGESTALG			= "-digestalg";
 	 String SHA1						= "SHA1";
+	 String V_1 						= "-v 1";
+	 String ADB_SHELL_MONKEY 			= "adb shell monkey -p";
+	 String PHRESCO_TEST_PACKAGE		= "phresco.test.package";
 	 
 	 // Constants report plugin
 	 String ATTR_TIME 					= "time";
