@@ -114,6 +114,10 @@ public class GenerateReport implements PluginConstants {
 	private boolean isClangReport;
 	private boolean showDeviceReport;
 	
+	// logo and theme objects
+	private String logo = null;
+	private FrameWorkTheme theme = null;
+	
     //test suite details
 	private float noOfTstSuiteTests = 0;
     private float noOfTstSuiteFailures = 0;
@@ -276,6 +280,8 @@ public class GenerateReport implements PluginConstants {
 			JasperReport jasperReport = (JasperReport) JRLoader.loadObject(bufferedInputStream);
 			
 			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, cumulativeReportparams, dataSource);
+			//applying theme
+			applyTheme(jasperPrint);
 			JRExporter exporter = new net.sf.jasperreports.engine.export.JRPdfExporter(); 
 			exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, outFileNamePDF);
 			exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
@@ -593,6 +599,8 @@ public class GenerateReport implements PluginConstants {
 			JRBeanArrayDataSource dataSource = new JRBeanArrayDataSource(new SureFireReport[]{sureFireReports});
 			JasperReport jasperReport = (JasperReport) JRLoader.loadObject(bufferedInputStream);
 			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
+			// applying theme
+			applyTheme(jasperPrint);
 			JRExporter exporter = new net.sf.jasperreports.engine.export.JRPdfExporter(); 
 			exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, outFileNamePDF);
 			exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
@@ -698,6 +706,8 @@ public class GenerateReport implements PluginConstants {
 			bufferedInputStream = new BufferedInputStream(reportStream);
 			JasperReport jasperReport = (JasperReport) JRLoader.loadObject(bufferedInputStream);
 			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
+			// applying theme
+			applyTheme(jasperPrint);
 			JRExporter exporter = new net.sf.jasperreports.engine.export.JRPdfExporter(); 
 			exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, outFileNamePDF);
 			exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
@@ -1528,6 +1538,15 @@ public class GenerateReport implements PluginConstants {
 	        String sonarUrl = configs.get("sonarUrl");
 	        String appVersion = appInfo.getVersion();
 	        
+	        logo = configs.get("logo");
+	        String themeJson = configs.get("theme");
+	        if (StringUtils.isNotEmpty(themeJson)) {
+	        	Gson gson = new Gson();
+		        theme = gson.fromJson(themeJson, FrameWorkTheme.class);
+	        }
+	        System.out.println("Converted theme object =>  " + theme);
+	        System.out.println("logo => " + logo);
+	        
 	        this.testType = testType;
 	        this.reportType = reportType;
 	        this.projectCode = appInfo.getAppDirName();
@@ -1591,6 +1610,112 @@ public class GenerateReport implements PluginConstants {
 			throw new PhrescoException(e);
 		}
 		return sonarTechReports;
+	}
+	
+	private void applyTheme(JasperPrint jasperPrint) throws Exception {
+		String titleColor = "#00CC66"; // TitleRectLogo
+		String titleLabelColor = "#333333"; // TitleRectDetail
+		
+		String headingForeColor = "#D0B48E"; // heading yellow color
+		String headingBackColor = "#00CC66";
+
+//		String headingLabelBackColor = "#FFFFFF"; //HeadingRo
+//		String headingLabelForeColor = "#000000"; //HeadingR
+//		String headingTextBackColor = "#FFFFFF"; //HeadingRo
+//		String headingTextForeColor = "#000000"; //HeadingRoo
+
+		String headingRowBackColor = "#DDFCDD"; //HeadingRow - light color
+		String headingRowLabelBackColor = "#FFFFFF"; //Done
+		String headingRowLabelForeColor = "#333333"; //Done - font color
+		String headingRowTextBackColor = "#FFFFFF"; //Done
+		String headingRowTextForeColor = "#333333"; //Done
+		
+		String copyRightBackColor = "#333333";
+		String copyRightForeColor = "#FFFFFF";
+		
+		String copyRightPageNumberForeColor = "#FFFFFF";
+		String copyRightPageNumberBackColor = "#00CC66";
+		
+		if (theme != null) {
+			titleColor = theme.getPageHeaderColor();
+			titleLabelColor = theme.getBrandingColor();
+			
+			headingForeColor = theme.getBrandingColor(); // heading yellow color
+			headingBackColor = theme.getPageHeaderColor();
+
+			headingRowBackColor = theme.getPageHeaderColor(); //HeadingRow - light color
+			headingRowLabelBackColor = theme.getPageHeaderColor();
+			headingRowTextBackColor = theme.getPageHeaderColor();
+			headingRowLabelForeColor = theme.getBrandingColor();
+			headingRowTextForeColor = theme.getBrandingColor();
+			
+			copyRightBackColor = theme.getPageHeaderColor();
+			copyRightForeColor = theme.getBrandingColor();
+			
+			copyRightPageNumberForeColor = theme.getBrandingColor();
+			copyRightPageNumberBackColor = theme.getPageHeaderColor();
+		}
+		
+		java.awt.Color userTitleColor = java.awt.Color.decode(titleColor);
+		java.awt.Color userTitleLabelColor = java.awt.Color.decode(titleLabelColor);
+		
+		java.awt.Color userHeadingForeColor = java.awt.Color.decode(headingForeColor); // heading yellow color
+		java.awt.Color userHeadingBackColor = java.awt.Color.decode(headingBackColor);
+		
+		java.awt.Color userHeadingRowBackColor = java.awt.Color.decode(headingRowBackColor); // HeadingRow - light color
+		java.awt.Color userHeadingRowLabelBackColor = java.awt.Color.decode(headingRowLabelBackColor); // HeadingRow - light color
+		java.awt.Color userHeadingRowLabelForeColor = java.awt.Color.decode(headingRowLabelForeColor); // HeadingRow - light color
+		java.awt.Color userHeadingRowTextBackColor = java.awt.Color.decode(headingRowTextBackColor); // HeadingRow - light color
+		java.awt.Color userHeadingRowTextForeColor = java.awt.Color.decode(headingRowTextForeColor); // HeadingRow - light color
+		
+		java.awt.Color userCopyRightBackColor = java.awt.Color.decode(copyRightBackColor);
+		java.awt.Color userCopyRightForeColor = java.awt.Color.decode(copyRightForeColor);
+		java.awt.Color userCopyRightPageNumberForeColor = java.awt.Color.decode(copyRightPageNumberForeColor);
+		java.awt.Color userCopyRightPageNumberBackColor = java.awt.Color.decode(copyRightPageNumberBackColor);
+		
+		
+		JRStyle[] styleList = jasperPrint.getStyles();
+		for (int j = 0; j < styleList.length; j++) {
+			if (styleList[j].getName().endsWith("TitleRectLogo")) {
+		        styleList[j].setBackcolor(userTitleColor);
+		        jasperPrint.addStyle(styleList[j], true);
+			} else if (styleList[j].getName().endsWith("TitleRectDetail")) {
+				styleList[j].setForecolor(userTitleLabelColor);
+				JRPen linePen = styleList[j].getLinePen();
+				linePen.setLineColor(userTitleColor);
+				linePen.setLineWidth(1);
+		        jasperPrint.addStyle(styleList[j], true);
+		    } else if (styleList[j].getName().endsWith("TitleLabel")) {
+		        styleList[j].setForecolor(userTitleLabelColor);
+		        jasperPrint.addStyle(styleList[j], true);
+		    } else if (styleList[j].getName().endsWith("TitleLabelValue")) {
+		        styleList[j].setForecolor(userTitleLabelColor);
+		        jasperPrint.addStyle(styleList[j], true);
+		    }  else if (styleList[j].getName().endsWith("Heading")) {
+		    	styleList[j].setForecolor(userHeadingForeColor);
+		    	styleList[j].setBackcolor(userHeadingBackColor);
+	        	jasperPrint.addStyle(styleList[j], true);
+		    }  else if (styleList[j].getName().endsWith("CopyRight")) {
+		    	styleList[j].setForecolor(userCopyRightForeColor);
+		    	styleList[j].setBackcolor(userCopyRightBackColor);
+	        	jasperPrint.addStyle(styleList[j], true);
+		    }  else if (styleList[j].getName().endsWith("CopyRightPageNo")) {
+		    	styleList[j].setForecolor(userCopyRightPageNumberForeColor);
+		    	styleList[j].setBackcolor(userCopyRightPageNumberBackColor);
+	        	jasperPrint.addStyle(styleList[j], true);
+		    }  else if (styleList[j].getName().endsWith("HeadingRow")) {
+		    	styleList[j].setBackcolor(userHeadingRowBackColor);
+	        	jasperPrint.addStyle(styleList[j], true);
+		    }  else if (styleList[j].getName().endsWith("HeadingRowLabel")) {
+		    	styleList[j].setForecolor(userHeadingRowLabelForeColor);
+		    	styleList[j].setBackcolor(userHeadingRowLabelBackColor);
+	        	jasperPrint.addStyle(styleList[j], true);
+		    }  else if (styleList[j].getName().endsWith("HeadingRowLabelValue")) {
+		    	styleList[j].setForecolor(userHeadingRowTextForeColor);
+		    	styleList[j].setBackcolor(userHeadingRowTextBackColor);
+	        	jasperPrint.addStyle(styleList[j], true);
+		    }
+		}
 	}
 }
 
