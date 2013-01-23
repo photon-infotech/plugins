@@ -49,7 +49,9 @@ public class SharePointTest
       Process p = cl.execute();
       BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
       String line = null;
-      while ((line = in.readLine()) != null);
+      while ((line = in.readLine()) != null) {
+    	  System.out.println(line);
+      }
     }
     catch (Exception e) {
       throw new MojoExecutionException(e.getMessage(), e);
@@ -75,7 +77,9 @@ public class SharePointTest
       Process execute = cl.execute();
       BufferedReader in = new BufferedReader(new InputStreamReader(execute.getInputStream()));
       String line = null;
-      while ((line = in.readLine()) != null);
+      while ((line = in.readLine()) != null) {
+    	  System.out.println(line);
+      }
     }
     catch (Exception e) {
       throw new MojoExecutionException(e.getMessage(), e);
