@@ -439,23 +439,31 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 	}
 	
 	public void executeDrushCommands(MavenProjectInfo mavenProjectInfo,Map getEnv) throws ExecuteException, IOException, JDOMException {
+		String OS = System.getProperty("os.name").toLowerCase();
+		String command;
+		String filePath;
+		
 		try 
 		{ 
-			String filePath = (String) getEnv.get("deploy_dir")
+			System.out.println("Your OS => " + OS);
+			 
+		    filePath = (String) getEnv.get("deploy_dir")
 				+ File.separator
 				+ (String) getEnv.get("context")
 				+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.build.scripts.file.path");
 			
-			System.out.println(filePath);
+			System.out.println("Path to Installation File => " + filePath);
 		
-			String[] command = new String[3];
-            command[0] = "cmd";
-            command[1] = "/c";
-            command[2] = "drush php-script " + filePath;
-            
-            System.out.println("Starting creating content...");
+			if (OS.indexOf("win") >= 0) {				
+	            command = "cmd /c drush php-script " + filePath;
+	            
+			} else {				
+	            command = "drush php-script " + filePath;
+			}
+			
+            System.out.println("Started creating content...");
 			Process process = Runtime.getRuntime().exec(command);
-		
+        		
 			BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 			String line = reader.readLine(); 
 			while(line != null) 
@@ -467,7 +475,7 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 					process.destroy();
 				}
 			} 
-			System.out.println("Done creating content.");
+			System.out.println("Content creation is done.");
 		} 
 		catch(IOException e1) {
 		    System.out.println("Exception thrown while executing the Drush command."); 
