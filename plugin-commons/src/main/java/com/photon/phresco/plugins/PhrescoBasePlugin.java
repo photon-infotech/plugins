@@ -268,6 +268,8 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 			workingDir = workingDir + project.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
 			sb.append(STR_SPACE);
 			sb.append("-Dsonar.branch=functional");
+			sb.append(STR_SPACE);
+			sb.append(SKIP_TESTS);
 		}
 		Utility.executeStreamconsumer(sb.toString(), workingDir);
 	}
