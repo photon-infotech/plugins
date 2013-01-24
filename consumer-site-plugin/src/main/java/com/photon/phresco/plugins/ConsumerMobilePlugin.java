@@ -237,6 +237,8 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 	public void contentConvertor(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		System.out.println("Content conversion is being done");
 		try {
+			
+			System.out.println("Content COnvertor started");
 			 conversionManager = new ConversionManager(mavenProjectInfo, File.separator
 					+ "manifest.xml", mavenProjectInfo.getProject().getProperties().getProperty("phresco.content.target.dir"));
 			List<CsvFileVO> csvoFileList = conversionManager.convert(mavenProjectInfo);
@@ -278,8 +280,8 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 			ConversionManager conversionManager = new ConversionManager();
 			Map getEnv = conversionManager.getEnvironmentDetails(mavenProjectInfo, null);
 			init();
-			createDb(getEnv);
-			importSQL();
+			//createDb(getEnv);
+			importSQL(getEnv);
 			packDrupal();
 			extractBuild();
 			deploy();
@@ -342,19 +344,23 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 	
 	private void createDb(Map getEnv) throws MojoExecutionException, PhrescoException {		
 		try {
+			System.out.println(getEnv);
 			Connection Conn = DriverManager.getConnection 
 					("jdbc:mysql://" + getEnv.get("host") + "/?user=" + getEnv.get("username") + "&password=" + getEnv.get("password")); 
 			Statement s = Conn.createStatement(); 
-			s.executeUpdate("CREATE DATABASE " + getEnv.get("dbname"));
+			s.executeUpdate("CREATE DATABASE IF NOT EXISTS " + getEnv.get("dbname"));
 		} catch (Exception e) {
 			throw new PhrescoException(e);
 		}
 	}
 	
-	private void importSQL() throws MojoExecutionException, PhrescoException {
+	private void importSQL(Map getEnv) throws MojoExecutionException, PhrescoException {
 		DatabaseUtil util = new DatabaseUtil();
 		try {
-			util.fetchSqlConfiguration(sqlPath, importSql, baseDir, environmentName);
+			if (importSql) {
+				createDb(getEnv);
+				util.fetchSqlConfiguration(sqlPath, importSql, baseDir, environmentName);
+			}
 		} catch (Exception e) {
 			throw new PhrescoException(e);
 		}
@@ -439,12 +445,15 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 				+ File.separator
 				+ (String) getEnv.get("context")
 				+ mavenProjectInfo.getProject().getProperties().getProperty("phresco.build.scripts.file.path");
+			
+			System.out.println(filePath);
 		
 			String[] command = new String[3];
             command[0] = "cmd";
             command[1] = "/c";
             command[2] = "drush php-script " + filePath;
             
+            System.out.println("Starting creating content...");
 			Process process = Runtime.getRuntime().exec(command);
 		
 			BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -458,9 +467,10 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 					process.destroy();
 				}
 			} 
+			System.out.println("Done creating content.");
 		} 
 		catch(IOException e1) {
-		    System.out.println("Done"); 
+		    System.out.println("Exception thrown while executing the Drush command."); 
 		}
 	}
 
