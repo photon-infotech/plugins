@@ -458,8 +458,8 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 	            command = "cmd /c drush php-script " + filePath;
 	            
 			} else {				
-	            //command = "drush php-script " + filePath;
-				command = "/bin/bash -c \"drush php-scrip\"" + filePath;
+	            command = "drush php-script " + filePath;
+				//command = "/bin/bash -c \"drush php-scrip\"" + filePath;
 			}
 			
             System.out.println("Started creating content...");
@@ -479,7 +479,7 @@ public class ConsumerMobilePlugin extends DrupalPlugin {
 			System.out.println("Content creation is done.");
 		} 
 		catch(IOException e1) {
-		    System.out.println("Exception thrown while executing the Drush command.");
+		    System.out.println("Exception thrown while executing the Drush command."+  e1.getStackTrace());
 		    e1.getStackTrace();
 		    e1.getMessage();
 		}
