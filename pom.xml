@@ -39,6 +39,7 @@
     	<module>android-maven-plugin</module>
 		<module>phresco-maven-plugin</module>
 		<module>report-phresco-plugin</module>
+		<module>hybridAppLauncher-maven-plugin</module>
   </modules>
     
 	 <properties>
