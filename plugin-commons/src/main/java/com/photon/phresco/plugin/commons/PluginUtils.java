@@ -31,6 +31,8 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.StringWriter;
 import java.lang.reflect.Type;
 import java.net.UnknownHostException;
@@ -64,6 +66,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import com.google.gson.Gson;
@@ -271,17 +274,26 @@ public class PluginUtils {
 	 private Document getDocument(File file) throws PhrescoException {
 			try {
 				InputStream fis = null;
+				Reader reader = null;
+				InputSource source = null;
 				DocumentBuilder builder = null;
 				try {
-				    fis = new FileInputStream(file);
+					fis = new FileInputStream(file);  
+				    reader = new InputStreamReader(fis, "UTF8");   
+				    source = new InputSource(reader);  
 				    DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
 				    domFactory.setNamespaceAware(false);
 				    builder = domFactory.newDocumentBuilder();
-				    Document doc = builder.parse(fis);
+				    Document doc = builder.parse(source);
+				    
 				    return doc;
 				    
 				} finally {
-					if(fis != null) {
+					if (reader != null) {
+						reader.close();
+					}
+					
+					if (fis != null) {
 						fis.close();
 				    }
 				}
