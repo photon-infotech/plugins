@@ -96,6 +96,7 @@ import com.photon.phresco.commons.model.FrameWorkTheme;
 public class GenerateReport implements PluginConstants {
 	private static final String REPORTS_TYPE = "reportsDataType";
 	private static final String PROJECT_NAME = "projectName";
+	private static final String LOGO = "logo";
 	private static final String PDF_PROJECT_CODE = "projectCode";
 	private static final String MMM_DD_YYYY_HH_MM = "MMM dd yyyy HH.mm";
 	private MavenProject mavenProject;
@@ -208,6 +209,7 @@ public class GenerateReport implements PluginConstants {
 			cumulativeReportparams.put(PROJECT_NAME, projectCode);
 			cumulativeReportparams.put(TECH_NAME, techName);
 			cumulativeReportparams.put(VERSION, version);
+			cumulativeReportparams.put(LOGO, logo);
 			
 			log.info("reportType for all report generation => " + reportType);
 			cumulativeReportparams.put(REPORTS_TYPE, reportType);
@@ -596,6 +598,7 @@ public class GenerateReport implements PluginConstants {
 			parameters.put(TEST_TYPE, testType);
 			parameters.put(REPORTS_TYPE, reportType);
 			parameters.put(VERSION, version);
+			parameters.put(LOGO, logo);
 			JRBeanArrayDataSource dataSource = new JRBeanArrayDataSource(new SureFireReport[]{sureFireReports});
 			JasperReport jasperReport = (JasperReport) JRLoader.loadObject(bufferedInputStream);
 			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
@@ -642,6 +645,7 @@ public class GenerateReport implements PluginConstants {
 			parameters.put(TEST_TYPE, testType);
 			parameters.put(REPORTS_TYPE, reportType);
 			parameters.put(VERSION, version);
+			parameters.put(LOGO, logo);
 			JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(jmeterTstResults);
 			reportGenerate(outFileNamePDF, jasperFile, parameters, dataSource);
 		} catch (Exception e) {
@@ -663,6 +667,7 @@ public class GenerateReport implements PluginConstants {
 			parameters.put(TEST_TYPE, testType);
 			parameters.put(REPORTS_TYPE, reportType);
 			parameters.put(VERSION, version);
+			parameters.put(LOGO, logo);
 			JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(androidPerReports);
 			reportGenerate(outFileNamePDF, jasperFile, parameters, dataSource);
 		} catch (Exception e) {
@@ -684,6 +689,7 @@ public class GenerateReport implements PluginConstants {
 			parameters.put(TEST_TYPE, testType);
 			parameters.put(REPORTS_TYPE, reportType);
 			parameters.put(VERSION, version);
+			parameters.put(LOGO, logo);
 			JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(loadTestResults);
 			reportGenerate(outFileNamePDF, jasperFile, parameters, dataSource);
 		} catch (Exception e) {
