@@ -13,6 +13,7 @@ import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugins.PhrescoBasePlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoUtil;
+import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
 
 public class NodeJsPlugin extends PhrescoBasePlugin {
@@ -54,6 +55,7 @@ public class NodeJsPlugin extends PhrescoBasePlugin {
 		MavenProject project = mavenProjectInfo.getProject();
 		String workingDir = project.getBasedir().getPath();
 		String skipTest = configs.get(SKIP);
+		String value = configs.get(SONAR);
 		StringBuilder sb = new  StringBuilder();
 		sb.append(TEST_COMMAND).
 		append(STR_SPACE).
@@ -61,6 +63,15 @@ public class NodeJsPlugin extends PhrescoBasePlugin {
 		append(STR_SPACE).
 		append("-Dskip=").
 		append(skipTest);
+		if(value.equals(FUNCTIONAL)) {
+			sb.delete(0, sb.length());
+			workingDir = workingDir + project.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
+			sb.append(SONAR_COMMAND).
+			append(STR_SPACE).
+			append("-Dsonar.branch=functional").
+			append(STR_SPACE).
+			append(SKIP_TESTS);
+		}
 		Utility.executeStreamconsumer(sb.toString(), workingDir);
 	}
 }
