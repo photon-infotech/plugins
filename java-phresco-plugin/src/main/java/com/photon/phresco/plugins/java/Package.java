@@ -40,6 +40,8 @@ import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Assembly.FileSets.FileSet;
 import com.photon.phresco.plugins.model.Assembly.FileSets.FileSet.Excludes;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands.MavenCommand;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.plugins.util.PluginPackageUtil;
 import com.photon.phresco.plugins.util.WarConfigProcessor;
@@ -75,7 +77,7 @@ public class Package implements PluginConstants {
 	private PluginPackageUtil util;
 	private PluginUtils pu;
 	private String sourceDir;
-	private String skipUnitTests;
+	private StringBuilder builder;
 	
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -87,9 +89,9 @@ public class Package implements PluginConstants {
         buildNumber = configs.get(BUILD_NUMBER);
         jarName = configs.get(JAR_NAME);
         mainClassName = configs.get(MAIN_CLASS_NAME);
-        skipUnitTests = configs.get(SKIP_TEST);
         util = new PluginPackageUtil();
         pu = new PluginUtils();
+        builder = new StringBuilder();
         String packMinifiedFilesValue = configs.get(PACK_MINIFIED_FILES);
         File warConfigFile = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + WAR_CONFIG_FILE);
 		try { 
@@ -113,6 +115,7 @@ public class Package implements PluginConstants {
 				}
 				configProcessor.save();
 			}
+			getMavenCommands(configuration);
 			executeMvnPackage();
 			boolean buildStatus = build();
 			writeBuildInfo(buildStatus);
@@ -265,22 +268,32 @@ public class Package implements PluginConstants {
 		}
 	}
 	
+	private void getMavenCommands(Configuration configuration) {
+		List<Parameter> parameters = configuration.getParameters().getParameter();
+		for (Parameter parameter : parameters) {
+			if(parameter.getPluginParameter() != null && parameter.getPluginParameter().equals(PLUGIN_PARAMETER)) {
+				List<MavenCommand> mavenCommands = parameter.getMavenCommands().getMavenCommand();
+				for (MavenCommand mavenCommand : mavenCommands) {
+					if(parameter.getValue().equals(mavenCommand.getKey())) {
+						builder.append(mavenCommand.getValue());
+						builder.append(STR_SPACE);
+					}
+				}
+			}
+		}
+	}
+	
 	private void executeMvnPackage() throws MojoExecutionException {
-			log.info("Packaging the project...");
-			StringBuilder sb = new StringBuilder();
-			sb.append(MVN_CMD);
-			sb.append(STR_SPACE);
-			sb.append(MVN_PHASE_CLEAN);
-			sb.append(STR_SPACE);
-			sb.append(MVN_PHASE_PACKAGE);
-			sb.append(STR_SPACE);
-			sb.append(SKIP_UNIT_TESTS);
-			sb.append(skipUnitTests);
-			sb.append(STR_SPACE);
-			sb.append(SKIP_YUICOMPRESSOR_SKIP);
-			sb.append(skipUnitTests);
-			log.info("Command = " + sb.toString());
-			Utility.executeStreamconsumer(sb.toString(), baseDir.getPath());
+		log.info("Packaging the project...");
+		StringBuilder sb = new StringBuilder();
+		sb.append(MVN_CMD);
+		sb.append(STR_SPACE);
+		sb.append(MVN_PHASE_CLEAN);
+		sb.append(STR_SPACE);
+		sb.append(MVN_PHASE_PACKAGE);
+		sb.append(STR_SPACE);
+		sb.append(builder.toString());
+		Utility.executeStreamconsumer(sb.toString(), baseDir.getPath());
 	}
 
 	private boolean build() throws MojoExecutionException {
