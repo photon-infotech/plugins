@@ -19,7 +19,7 @@ import com.phresco.pom.util.PomProcessor;
  * @goal applaunch
  * 
  */
-public class hybridAppLauncher extends AbstractMojo {
+public class HybridAppLauncher extends AbstractMojo {
 	
 	protected MavenProject project;
 	/**

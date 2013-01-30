@@ -50,4 +50,11 @@ public class JavaPlugin extends PhrescoBasePlugin {
 		Stop stop = new Stop();
 		stop.stop(mavenProjectInfo, log);
 	}
+	
+	@Override
+	public void runUnitTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		JavaTest unitTest = new JavaTest();
+		unitTest.runTest(configuration, mavenProjectInfo);
+	}
+	
 }

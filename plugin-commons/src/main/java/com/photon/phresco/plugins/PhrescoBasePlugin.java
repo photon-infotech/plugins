@@ -247,29 +247,26 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 		MavenProject project = mavenProjectInfo.getProject();
 		String workingDir = project.getBasedir().getPath();
 		String value = config.get(SONAR);
-		String string = config.get(value);
-		if(string != null) {
-			List<Parameter> parameters = configuration.getParameters().getParameter();
-			for (Parameter parameter : parameters) {
-				if (parameter.getPluginParameter() != null && parameter.getPluginParameter().equals(PLUGIN_PARAMETER)) {
-					List<MavenCommand> mavenCommands = parameter.getMavenCommands().getMavenCommand();
-					for (MavenCommand mavenCommand : mavenCommands) {
-						if (parameter.getValue().equals(value) || mavenCommand.getKey().equals(string)) {
-							String mavenCommandValue = mavenCommand.getValue();
-							sb.append(STR_SPACE);
-							sb.append(mavenCommandValue);
-						}
-					}
+		List<Parameter> parameters = configuration.getParameters().getParameter();
+		for (Parameter parameter : parameters) {
+			if (parameter.getPluginParameter() != null && parameter.getPluginParameter().equals(PLUGIN_PARAMETER) && parameter.getMavenCommands() != null) {
+				List<MavenCommand> mavenCommands = parameter.getMavenCommands().getMavenCommand();
+				for (MavenCommand mavenCommand : mavenCommands) {
+					if (parameter.getValue().equals(mavenCommand.getKey())) {
+						sb.append(STR_SPACE);
+						sb.append(mavenCommand.getValue());
+					} 
 				}
 			}
 		}
-
-		if(value.equals("functional")) {
+		if(value.equals(FUNCTIONAL)) {
+			sb.delete(0, sb.length());
 			workingDir = workingDir + project.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
-			sb.append(STR_SPACE);
-			sb.append("-Dsonar.branch=functional");
-			sb.append(STR_SPACE);
-			sb.append(SKIP_TESTS);
+			sb.append(SONAR_COMMAND).
+			append(STR_SPACE).
+			append(SKIP_TESTS).
+			append(STR_SPACE).
+			append("-Dsonar.branch=functional");
 		}
 		Utility.executeStreamconsumer(sb.toString(), workingDir);
 	}
