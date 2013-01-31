@@ -33,6 +33,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.logging.Log;
@@ -306,9 +307,12 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 		try {
 			ConfigManager configManager = new ConfigManagerImpl(SelectedEnvFile);
 			List<com.photon.phresco.configuration.Configuration> configurations = configManager.getConfigurations(envName, "Server");
+			if(CollectionUtils.isEmpty(configurations)) {
+				throw new PhrescoException("Configuration Not found...");
+			}
 			for (com.photon.phresco.configuration.Configuration configuration : configurations) {
 				updateTestConfiguration(envName, configuration, browser, resultConfigXml, resolution);
-			}
+			} 
         } catch (ConfigurationException e) {
 			throw new PhrescoException(e);
 		}
