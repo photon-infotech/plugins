@@ -138,6 +138,7 @@ public interface PluginConstants {
 	 String PACKAGING_TYPE_JAR			= "jar";
 	 String JAR_NAME					= "jarName";
 	 String MAIN_CLASS_NAME				= "mainClassName";
+	 String PROJECT_MODULE 				= "projectModule";
 	
 	//Constants for NodeJs Plugin
 	 String NODE_EXE_PATH				= "\\node.exe";

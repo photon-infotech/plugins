@@ -92,6 +92,7 @@ public class Package implements PluginConstants {
         util = new PluginPackageUtil();
         pu = new PluginUtils();
         builder = new StringBuilder();
+        moduleName = configs.get(PROJECT_MODULE);
         String packMinifiedFilesValue = configs.get(PACK_MINIFIED_FILES);
         File warConfigFile = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + WAR_CONFIG_FILE);
 		try { 
@@ -156,7 +157,11 @@ public class Package implements PluginConstants {
 	private void init() throws MojoExecutionException {
 		try {
 			buildDir = new File(baseDir.getPath() + PluginConstants.BUILD_DIRECTORY);
+			if(StringUtils.isNotEmpty(moduleName)) {
+				targetDir = new File(baseDir.getPath() + File.separator + moduleName + DO_NOT_CHECKIN_FOLDER + File.separator + TARGET);
+			} else {
 			targetDir = new File(project.getBuild().getDirectory());
+			}
 			baseDir = getProjectRoot(baseDir);
 			if (!buildDir.exists()) {
 				buildDir.mkdirs();
