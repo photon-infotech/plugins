@@ -114,6 +114,7 @@ public class GenerateReport implements PluginConstants {
 	private String testType = null;
 	private String version = null;
 	private String projName = null;
+	private String appDir = "";
     private String reportType = null;
     private String sonarUrl = null;
 	private boolean isClangReport;
@@ -206,7 +207,7 @@ public class GenerateReport implements PluginConstants {
 			Map<String, Object> cumulativeReportparams = new HashMap<String,Object>();
 			
 			cumulativeReportparams.put(PDF_PROJECT_CODE, projectCode);
-			cumulativeReportparams.put(PROJECT_NAME, projectCode);
+			cumulativeReportparams.put(PROJECT_NAME, projName);
 			cumulativeReportparams.put(TECH_NAME, techName);
 			cumulativeReportparams.put(VERSION, version);
 			cumulativeReportparams.put(LOGO, logo);
@@ -586,7 +587,7 @@ public class GenerateReport implements PluginConstants {
 		InputStream reportStream = null;
 		BufferedInputStream bufferedInputStream = null;
 		try {
-			String outFileNamePDF = Utility.getProjectHome() + projectCode + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType  + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+			String outFileNamePDF = Utility.getProjectHome() + appDir + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType  + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
 			new File(outFileNamePDF).getParentFile().mkdirs();
 			String containerJasperFile = "PhrescoSureFireReport.jasper";
 			reportStream = this.getClass().getClassLoader().getResourceAsStream(REPORTS_JASPER + containerJasperFile);
@@ -636,7 +637,7 @@ public class GenerateReport implements PluginConstants {
 		log.info("Entering Method PhrescoReportGeneration.generateJmeterPerformanceReport()");
 		try {
 			ArrayList<JmeterTypeReport> jmeterTstResults = jmeterTestResults;
-			String outFileNamePDF = Utility.getProjectHome() + projectCode + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType  + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+			String outFileNamePDF = Utility.getProjectHome() + appDir + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType  + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
 			String jasperFile = "PhrescoPerfContain.jasper";
 			Map<String, Object> parameters = new HashMap<String,Object>();
 			parameters.put(PDF_PROJECT_CODE, projectCode);
@@ -658,7 +659,7 @@ public class GenerateReport implements PluginConstants {
 	public void generateAndroidPerformanceReport(List<AndroidPerfReport> androidPerReports)  throws PhrescoException {
 		log.info("Entering Method PhrescoReportGeneration.generateAndroidPerformanceReport()");
 		try {
-			String outFileNamePDF = Utility.getProjectHome() + projectCode + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+			String outFileNamePDF = Utility.getProjectHome() + appDir + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
 			String jasperFile = "PhrescoAndroidPerfContain.jasper";
 			Map<String, Object> parameters = new HashMap<String,Object>();
 			parameters.put(PDF_PROJECT_CODE, projectCode);
@@ -680,7 +681,7 @@ public class GenerateReport implements PluginConstants {
 	public void generateLoadTestReport(List<LoadTestReport> loadTestResults)  throws PhrescoException {
 		log.info("Entering Method PhrescoReportGeneration.generateLoadTestReport()");
 		try {
-			String outFileNamePDF = Utility.getProjectHome() + projectCode + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+			String outFileNamePDF = Utility.getProjectHome() + appDir + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
 			String jasperFile = "PhrescoLoadTestContain.jasper";
 			Map<String, Object> parameters = new HashMap<String,Object>();
 			parameters.put(PDF_PROJECT_CODE, projectCode);
@@ -1716,8 +1717,7 @@ public class GenerateReport implements PluginConstants {
 	        BufferedReader reader = null;
 	        reader = new BufferedReader(new FileReader(projectInfoFile));
 	        ProjectInfo projectInfo = gson.fromJson(reader, ProjectInfo.class);
-	        String projName = projectInfo.getProjectCode();
-	        this.projName = projName;
+	        this.projName = projectInfo.getName();
 	        List<ApplicationInfo> appInfos = projectInfo.getAppInfos();
 	        for (ApplicationInfo appInfo : appInfos) {
 	        	log.info("appInfo dir name ... " + appInfo.getAppDirName());
@@ -1761,8 +1761,9 @@ public class GenerateReport implements PluginConstants {
 	        
 	        this.testType = testType;
 	        this.reportType = reportType;
-	        this.projectCode = appInfo.getAppDirName();
-	        this.projName = appInfo.getName();
+	        this.appDir = appInfo.getAppDirName();
+	        this.projectCode = appInfo.getName();
+//	        this.projName = appInfo.getName();
 	        this.techName = appInfo.getTechInfo().getId();
 	        this.version = appVersion;
 	        this.sonarUrl = sonarUrl;
@@ -1926,7 +1927,21 @@ public class GenerateReport implements PluginConstants {
 		    	styleList[j].setForecolor(userHeadingRowTextForeColor);
 		    	styleList[j].setBackcolor(userHeadingRowTextBackColor);
 	        	jasperPrint.addStyle(styleList[j], true);
+		   	// table related styles
+		    }  else if (styleList[j].getName().endsWith("table_CH")) {
+		    	styleList[j].setBackcolor(userHeadingRowBackColor);
+	        	jasperPrint.addStyle(styleList[j], true);
+		    }  else if (styleList[j].getName().endsWith("table_CH_Label")) {
+		    	styleList[j].setForecolor(userHeadingRowLabelForeColor);
+		    	styleList[j].setBackcolor(userHeadingRowLabelBackColor);
+	        	jasperPrint.addStyle(styleList[j], true);
 		    }
+			//
+//		    else if (styleList[j].getName().endsWith("table_TD_Label")) {
+//		    	styleList[j].setForecolor(userHeadingRowLabelForeColor);
+//		    	styleList[j].setBackcolor(userHeadingRowLabelBackColor);
+//	        	jasperPrint.addStyle(styleList[j], true);
+//		    }
 		}
 	}
 }
