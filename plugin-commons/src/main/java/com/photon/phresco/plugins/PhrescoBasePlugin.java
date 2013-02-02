@@ -81,13 +81,18 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 	}
 
 	public void runUnitTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		File baseDir = mavenProjectInfo.getBaseDir();
-		MavenProject project = mavenProjectInfo.getProject();
-		String workingDirectory = project.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_DIR);
-		if(StringUtils.isEmpty(workingDirectory)) {
-			workingDirectory = "";
-		}
-		generateMavenCommand(mavenProjectInfo, baseDir.getPath() + workingDirectory);
+	    File baseDir = mavenProjectInfo.getBaseDir();
+	    MavenProject project = mavenProjectInfo.getProject();
+	    Map<String, String> configs = MojoUtil.getAllValues(configuration);
+	    String projectModule = configs.get(PROJECT_MODULE);
+	    String workingDirectory = project.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_DIR);
+	    if (StringUtils.isEmpty(workingDirectory)) {
+	        workingDirectory = "";
+	    }
+	    if (StringUtils.isNotEmpty(projectModule)) {
+	        workingDirectory = File.separator + projectModule + File.separator + workingDirectory;
+	    }
+	    generateMavenCommand(mavenProjectInfo, baseDir.getPath() + workingDirectory);
 	}
 
 	public void runFunctionalTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
@@ -245,8 +250,12 @@ public class PhrescoBasePlugin implements PhrescoPlugin, PluginConstants {
 		StringBuilder sb = new StringBuilder();
 		sb.append(SONAR_COMMAND);
 		Map<String, String> config = MojoUtil.getAllValues(configuration);
+		String projectModule = config.get(PROJECT_MODULE);
 		MavenProject project = mavenProjectInfo.getProject();
 		String workingDir = project.getBasedir().getPath();
+		if (StringUtils.isNotEmpty(projectModule)) {
+            workingDir = workingDir + File.separator + projectModule;
+        }
 		String value = config.get(SONAR);
 		List<Parameter> parameters = configuration.getParameters().getParameter();
 		for (Parameter parameter : parameters) {
