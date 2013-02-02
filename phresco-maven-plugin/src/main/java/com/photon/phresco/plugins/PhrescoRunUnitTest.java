@@ -43,7 +43,7 @@ public class PhrescoRunUnitTest extends PhrescoAbstractMojo {
 		        plugin.runUnitTest(getConfiguration(infoFile.getPath(), UNIT_TEST), getMavenProjectInfo(project));
 			} else {
 				PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());
-		        plugin.runUnitTest(null,getMavenProjectInfo(project));
+		        plugin.runUnitTest(getConfiguration(infoFile.getPath(), UNIT_TEST) ,getMavenProjectInfo(project));
 			}
     	} catch (PhrescoException e) {
     		throw new MojoExecutionException(e.getMessage(), e);
