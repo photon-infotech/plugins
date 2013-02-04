@@ -250,7 +250,6 @@ public class GenerateReport implements PluginConstants {
 				}
 			}
 			
-			log.info("cumulativeReportparams =>" + cumulativeReportparams);
 			generateCumulativeTestReport(cumulativeReportparams);
 		} catch (Exception e) {
 			log.error("Report generation errorr ");
