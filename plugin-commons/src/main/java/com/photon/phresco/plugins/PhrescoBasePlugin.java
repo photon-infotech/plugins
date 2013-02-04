@@ -40,6 +40,8 @@ import org.w3c.dom.Node;
 
 import com.google.gson.Gson;
 import com.photon.phresco.api.ConfigManager;
+import com.photon.phresco.commons.model.ProjectInfo;
+import com.photon.phresco.commons.model.TechnologyInfo;
 import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.model.ContextUrls;
@@ -50,9 +52,7 @@ import com.photon.phresco.plugin.commons.DatabaseUtil;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
-import com.photon.phresco.plugins.api.CIPlugin;
 import com.photon.phresco.plugins.api.ExecutionStatus;
-import com.photon.phresco.plugins.api.SeleniumPlugin;
 import com.photon.phresco.plugins.impl.AbstractPhrescoPlugin;
 import com.photon.phresco.plugins.impl.DefaultExecutionStatus;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
@@ -60,6 +60,8 @@ import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Para
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands.MavenCommand;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.ProjectUtils;
+import com.photon.phresco.util.TechnologyTypes;
 import com.photon.phresco.util.Utility;
 import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.util.PomProcessor;
@@ -79,8 +81,11 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 	public ExecutionStatus runUnitTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 	    File baseDir = mavenProjectInfo.getBaseDir();
 	    MavenProject project = mavenProjectInfo.getProject();
-	    Map<String, String> configs = MojoUtil.getAllValues(configuration);
-	    String projectModule = configs.get(PROJECT_MODULE);
+	    String projectModule = "";
+	    if(configuration != null) {
+	    	Map<String, String> configs = MojoUtil.getAllValues(configuration);
+	    	projectModule = configs.get(PROJECT_MODULE);
+	    }
 	    String workingDirectory = project.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_DIR);
 	    if (StringUtils.isEmpty(workingDirectory)) {
 	        workingDirectory = "";
@@ -121,7 +126,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 		String resultConfigFileDir = project.getProperties().getProperty(Constants.PHRESCO_FUNCTIONAL_TEST_ADAPT_DIR);
 		if(StringUtils.isNotEmpty(resultConfigFileDir)) {
 			File resultConfigXml = new File(basedir + resultConfigFileDir);
-			adaptTestConfig(selectedEnvFile, resultConfigXml, environmentName, browserValue, resolutionValue);
+			adaptTestConfig(selectedEnvFile, resultConfigXml, environmentName, browserValue, resolutionValue, basedir);
 		}
 		generateMavenCommand(mavenProjectInfo, basedir + functionalTestDir);
 		
@@ -292,17 +297,29 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 		Utility.executeStreamconsumer(sb.toString(), workingDirectory);
 	}
 	
-	public void adaptTestConfig(File SelectedEnvFile, File resultConfigXml, String envName, String browser, String resolution) throws PhrescoException {
+	public void adaptTestConfig(File SelectedEnvFile, File resultConfigXml, String envName, String browser, String resolution, String baseDir) throws PhrescoException {
 		try {
 			ConfigManager configManager = new ConfigManagerImpl(SelectedEnvFile);
 			List<com.photon.phresco.configuration.Configuration> configurations = configManager.getConfigurations(envName, "Server");
-			if(CollectionUtils.isEmpty(configurations)) {
+			String techId = getTechId(new File(baseDir));
+			if(CollectionUtils.isEmpty(configurations) && !techId.equals(TechnologyTypes.JAVA_STANDALONE)) {
 				throw new PhrescoException("Configuration Not found...");
 			}
 			for (com.photon.phresco.configuration.Configuration configuration : configurations) {
 				updateTestConfiguration(envName, configuration, browser, resultConfigXml, resolution);
 			} 
         } catch (ConfigurationException e) {
+			throw new PhrescoException(e);
+		}
+	}
+	
+	private String getTechId(File baseDir) throws PhrescoException {
+		try {
+			ProjectUtils projectutils = new ProjectUtils();
+			ProjectInfo projectInfo = projectutils.getProjectInfo(baseDir);
+			TechnologyInfo applicationInfo = projectInfo.getAppInfos().get(0).getTechInfo();
+			return applicationInfo.getId();
+		} catch (PhrescoException e) {
 			throw new PhrescoException(e);
 		}
 	}

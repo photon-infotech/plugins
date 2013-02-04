@@ -5,6 +5,7 @@ package com.photon.phresco.plugins.impl;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
+import com.photon.phresco.plugins.api.CIPlugin;
 import com.photon.phresco.plugins.api.ExecutionStatus;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
@@ -12,7 +13,7 @@ import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 /**
  * Abstract implementation of PhrescoPlugin. Subclasses can extend this class and override the functions.
  */
-public abstract class AbstractPhrescoPlugin implements PhrescoPlugin {
+public abstract class AbstractPhrescoPlugin implements PhrescoPlugin, CIPlugin {
 
 	/* (non-Javadoc)
 	 * @see com.photon.phresco.plugins.api.PhrescoPlugin#validate(com.photon.phresco.plugins.model.Mojos.Mojo.Configuration, com.photon.phresco.plugin.commons.MavenProjectInfo)
@@ -91,42 +92,6 @@ public abstract class AbstractPhrescoPlugin implements PhrescoPlugin {
 	 */
 	public ExecutionStatus runLoadTest(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		return new DefaultExecutionStatus();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.photon.phresco.plugins.api.PhrescoPlugin#startHub(com.photon.phresco.plugins.model.Mojos.Mojo.Configuration, com.photon.phresco.plugin.commons.MavenProjectInfo)
-	 */
-	public ExecutionStatus startHub(Configuration configuration,
-			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		return new DefaultExecutionStatus();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.photon.phresco.plugins.api.PhrescoPlugin#stopHub(com.photon.phresco.plugin.commons.MavenProjectInfo)
-	 */
-	public ExecutionStatus stopHub(MavenProjectInfo mavenProjectInfo)
-			throws PhrescoException {
-		return new DefaultExecutionStatus();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.photon.phresco.plugins.api.PhrescoPlugin#startNode(com.photon.phresco.plugins.model.Mojos.Mojo.Configuration, com.photon.phresco.plugin.commons.MavenProjectInfo)
-	 */
-	public ExecutionStatus startNode(Configuration configuration,
-			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		return new DefaultExecutionStatus();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.photon.phresco.plugins.api.PhrescoPlugin#stopNode(com.photon.phresco.plugin.commons.MavenProjectInfo)
-	 */
-	public ExecutionStatus stopNode(MavenProjectInfo mavenProjectInfo)
-			throws PhrescoException {
 		return new DefaultExecutionStatus();
 
 	}
