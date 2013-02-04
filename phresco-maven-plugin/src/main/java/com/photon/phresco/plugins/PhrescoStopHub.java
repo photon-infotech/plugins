@@ -8,6 +8,7 @@ import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
+import com.photon.phresco.plugins.api.SeleniumPlugin;
 
 /**
  * Goal which deploys the PHP project
@@ -41,7 +42,7 @@ public class PhrescoStopHub extends PhrescoAbstractMojo {
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		getLog().info(baseDir.getPath());
 		try {	
-			PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());
+			SeleniumPlugin plugin = new DefaultSeleniumPlugin(getLog());
 			plugin.stopHub(getMavenProjectInfo(project));
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage(), e);

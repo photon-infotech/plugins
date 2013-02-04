@@ -25,7 +25,9 @@ import org.sonatype.aether.util.*;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
+import com.photon.phresco.plugins.api.CIPlugin;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
+import com.photon.phresco.plugins.api.PhrescoPlugin2;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoProcessor;
 import com.photon.phresco.util.Constants;
@@ -86,7 +88,10 @@ public class PhrescoCIPreBuildStep extends PhrescoAbstractMojo {
         	}
         	
             PhrescoPlugin plugin = getPlugin(getDependency(infoFile, PRE_BUILD_STEP));
-            plugin.performCIPreBuildStep(jobName, goal, phase, getMavenProjectInfo(project));
+            if(plugin instanceof CIPlugin) {
+            	CIPlugin ciPlugin = (CIPlugin) plugin;
+            	ciPlugin.performCIPreBuildStep(jobName, goal, phase, getMavenProjectInfo(project));
+			}
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }

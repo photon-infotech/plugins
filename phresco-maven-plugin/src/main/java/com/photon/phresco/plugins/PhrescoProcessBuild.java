@@ -38,9 +38,7 @@ public class PhrescoProcessBuild extends PhrescoAbstractMojo {
     		File infoFile = new File(baseDir + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.PROCESS_BUILD_INFO_FILE);
     		if (infoFile.exists() && isGoalAvailable(infoFile.getPath(), Constants.PHASE_PROCESS_BUILD) && getDependency(infoFile.getPath(), Constants.PHASE_PROCESS_BUILD) != null) {
     			PhrescoPlugin plugin = getPlugin(getDependency(infoFile.getPath(), Constants.PHASE_PROCESS_BUILD));
-    			System.out.println("processBuild.................");
     			if(plugin instanceof PhrescoPlugin2) {
-    				System.out.println("Process Build...........");
     				PhrescoPlugin2 plugin2 = (PhrescoPlugin2) plugin;
     				plugin2.processBuild(getConfiguration(infoFile.getPath(), Constants.PHASE_PROCESS_BUILD), getMavenProjectInfo(project));
     			}

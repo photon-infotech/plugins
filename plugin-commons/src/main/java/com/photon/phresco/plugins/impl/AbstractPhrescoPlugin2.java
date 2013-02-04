@@ -19,7 +19,7 @@ public abstract class AbstractPhrescoPlugin2 implements PhrescoPlugin2 {
 	 */
 	public ExecutionStatus validate(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-
+		return new DefaultExecutionStatus();
 
 	}
 
@@ -28,7 +28,7 @@ public abstract class AbstractPhrescoPlugin2 implements PhrescoPlugin2 {
 	 */
 	public ExecutionStatus pack(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-
+		return new DefaultExecutionStatus();
 
 	}
 
@@ -37,7 +37,7 @@ public abstract class AbstractPhrescoPlugin2 implements PhrescoPlugin2 {
 	 */
 	public ExecutionStatus deploy(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-
+		return new DefaultExecutionStatus();
 
 	}
 
@@ -46,7 +46,7 @@ public abstract class AbstractPhrescoPlugin2 implements PhrescoPlugin2 {
 	 */
 	public ExecutionStatus startServer(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-
+		return new DefaultExecutionStatus();
 
 	}
 
@@ -55,7 +55,7 @@ public abstract class AbstractPhrescoPlugin2 implements PhrescoPlugin2 {
 	 */
 	public ExecutionStatus stopServer(MavenProjectInfo mavenProjectInfo)
 			throws PhrescoException {
-
+		return new DefaultExecutionStatus();
 
 	}
 
@@ -64,7 +64,7 @@ public abstract class AbstractPhrescoPlugin2 implements PhrescoPlugin2 {
 	 */
 	public ExecutionStatus runUnitTest(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-
+		return new DefaultExecutionStatus();
 
 	}
 
@@ -73,7 +73,7 @@ public abstract class AbstractPhrescoPlugin2 implements PhrescoPlugin2 {
 	 */
 	public ExecutionStatus runFunctionalTest(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-
+		return new DefaultExecutionStatus();
 
 	}
 
@@ -82,7 +82,7 @@ public abstract class AbstractPhrescoPlugin2 implements PhrescoPlugin2 {
 	 */
 	public ExecutionStatus runPerformanceTest(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-
+		return new DefaultExecutionStatus();
 
 	}
 
@@ -91,53 +91,7 @@ public abstract class AbstractPhrescoPlugin2 implements PhrescoPlugin2 {
 	 */
 	public ExecutionStatus runLoadTest(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.photon.phresco.plugins.api.PhrescoPlugin#startHub(com.photon.phresco.plugins.model.Mojos.Mojo.Configuration, com.photon.phresco.plugin.commons.MavenProjectInfo)
-	 */
-	public ExecutionStatus startHub(Configuration configuration,
-			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.photon.phresco.plugins.api.PhrescoPlugin#stopHub(com.photon.phresco.plugin.commons.MavenProjectInfo)
-	 */
-	public ExecutionStatus stopHub(MavenProjectInfo mavenProjectInfo)
-			throws PhrescoException {
-
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.photon.phresco.plugins.api.PhrescoPlugin#startNode(com.photon.phresco.plugins.model.Mojos.Mojo.Configuration, com.photon.phresco.plugin.commons.MavenProjectInfo)
-	 */
-	public ExecutionStatus startNode(Configuration configuration,
-			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.photon.phresco.plugins.api.PhrescoPlugin#stopNode(com.photon.phresco.plugin.commons.MavenProjectInfo)
-	 */
-	public ExecutionStatus stopNode(MavenProjectInfo mavenProjectInfo)
-			throws PhrescoException {
-
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.photon.phresco.plugins.api.PhrescoPlugin#performCIPreBuildStep(java.lang.String, java.lang.String, java.lang.String, com.photon.phresco.plugin.commons.MavenProjectInfo)
-	 */
-	public ExecutionStatus performCIPreBuildStep(String jobName, String goal,
-			String phase, MavenProjectInfo mavenProjectInfo)
-			throws PhrescoException {
-
+		return new DefaultExecutionStatus();
 
 	}
 
@@ -146,7 +100,7 @@ public abstract class AbstractPhrescoPlugin2 implements PhrescoPlugin2 {
 	 */
 	public ExecutionStatus generateReport(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-
+		return new DefaultExecutionStatus();
 
 	}
 
@@ -155,7 +109,7 @@ public abstract class AbstractPhrescoPlugin2 implements PhrescoPlugin2 {
 	 */
 	public ExecutionStatus processBuild(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-
+		return new DefaultExecutionStatus();
 
 	}
 
@@ -164,7 +118,7 @@ public abstract class AbstractPhrescoPlugin2 implements PhrescoPlugin2 {
 	 */
 	public ExecutionStatus themeValidator(MavenProjectInfo mavenProjectInfo)
 			throws PhrescoException {
-
+		return new DefaultExecutionStatus();
 
 	}
 
@@ -173,7 +127,7 @@ public abstract class AbstractPhrescoPlugin2 implements PhrescoPlugin2 {
 	 */
 	public ExecutionStatus themeConvertor(MavenProjectInfo mavenProjectInfo)
 			throws PhrescoException {
-
+		return new DefaultExecutionStatus();
 
 	}
 
@@ -182,7 +136,7 @@ public abstract class AbstractPhrescoPlugin2 implements PhrescoPlugin2 {
 	 */
 	public ExecutionStatus contentValidator(MavenProjectInfo mavenProjectInfo)
 			throws PhrescoException {
-
+		return new DefaultExecutionStatus();
 
 	}
 
@@ -191,8 +145,7 @@ public abstract class AbstractPhrescoPlugin2 implements PhrescoPlugin2 {
 	 */
 	public ExecutionStatus contentConvertor(MavenProjectInfo mavenProjectInfo)
 			throws PhrescoException {
-
-
+		return new DefaultExecutionStatus();
 	}
 
 }

@@ -8,6 +8,7 @@ import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
+import com.photon.phresco.plugins.api.PhrescoPlugin2;
 
 /**
  * 
@@ -37,11 +38,11 @@ public class PhrescoContentConvertor extends PhrescoAbstractMojo {
     		File infoFile = new File(baseDir + File.separator + ".phresco/phresco-content-info.xml");
     		if (infoFile.exists() && isGoalAvailable(infoFile.getPath(), "content-convertor") && getDependency(infoFile.getPath(), "content-convertor") != null) {
 				PhrescoPlugin plugin = getPlugin(getDependency(infoFile.getPath(), "content-convertor"));
-		        plugin.contentConvertor(getMavenProjectInfo(project));
-			} else {
-				PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());
-				plugin.contentConvertor(getMavenProjectInfo(project));
-			}
+				if(plugin instanceof PhrescoPlugin2) {
+    				PhrescoPlugin2 plugin2 = (PhrescoPlugin2) plugin;
+    				plugin2.contentConvertor(getMavenProjectInfo(project));
+    			}
+			} 
     	} catch (PhrescoException e) {
     		throw new MojoExecutionException(e.getMessage(), e);
     	}

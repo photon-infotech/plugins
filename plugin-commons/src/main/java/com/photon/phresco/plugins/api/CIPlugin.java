@@ -3,7 +3,7 @@ package com.photon.phresco.plugins.api;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 
-public interface CIPlugin {
+public interface CIPlugin extends PhrescoPlugin {
 
 	 
     /**

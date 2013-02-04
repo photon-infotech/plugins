@@ -7,7 +7,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.exception.PhrescoException;
-import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.api.SeleniumPlugin;
 import com.photon.phresco.util.Constants;
 
