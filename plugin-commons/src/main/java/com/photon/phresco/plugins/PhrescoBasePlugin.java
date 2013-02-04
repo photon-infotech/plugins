@@ -233,6 +233,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			com.photon.phresco.configuration.Configuration config = configManager.getConfiguration(environmentName, testAgainstType, type);
 			String loadTestDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_LOADTEST_DIR);
 			if(StringUtils.isNotEmpty(loadTestDir)) {
+				loadTestDir = loadTestDir  + File.separator + testAgainstType;
 				pluginUtils.changeTestName(basedir + loadTestDir + File.separator, testName);
 				String testConfigFilePath = basedir + File.separator + loadTestDir + File.separator + "tests";
 				pluginUtils.adaptTestConfig(testConfigFilePath + File.separator , config);
