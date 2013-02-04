@@ -20,6 +20,8 @@ import org.apache.maven.plugin.logging.*;
 
 import com.photon.phresco.exception.*;
 import com.photon.phresco.plugin.commons.*;
+import com.photon.phresco.plugins.api.ExecutionStatus;
+import com.photon.phresco.plugins.impl.DefaultExecutionStatus;
 
 public class CIPlugin  extends PhrescoBasePlugin {
 
@@ -28,9 +30,10 @@ public class CIPlugin  extends PhrescoBasePlugin {
 	}
 	
 	@Override
-	public void performCIPreBuildStep(String jobName, String goal, String phase, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+	public ExecutionStatus performCIPreBuildStep(String jobName, String goal, String phase, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		PreBuildStep pbs = new PreBuildStep();
 		pbs.performCIPreBuildStep(jobName, goal, phase, mavenProjectInfo, getLog());
+		return new DefaultExecutionStatus();
 	}
 	
 }

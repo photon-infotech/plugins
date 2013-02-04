@@ -4,43 +4,119 @@ import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 
+/**
+ * Base Interface to phresco defined maven goals
+ * 
+ * Subclasses need to implement the functionalities for each goal. AbstractPhrescoPlugin can be used.
+ *
+ */
 public interface PhrescoPlugin {
     
-    void validate(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
+    /**
+     * Validates the project
+     * 
+     * @param configuration project configuration
+     * @param mavenProjectInfo customized Maven Project object
+     * @return ExecutionStatus
+     * 
+     * @throws PhrescoException
+     */
+    ExecutionStatus validate(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
-    void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
+    /**
+     * Goal for build operation
+     * 
+     * @param configuration project configuration
+     * @param mavenProjectInfo customized Maven Project object
+     * @return ExecutionStatus
+     * 
+     * @throws PhrescoException
+     */
+    ExecutionStatus pack(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
-    void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
+    /**
+     * Goal for deploy operation.
+     * 
+     * @param configuration project configuration
+     * @param mavenProjectInfo customized Maven Project object
+     * @return ExecutionStatus
+     * 
+     * @throws PhrescoException
+     */
+    ExecutionStatus deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
-    void startServer(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
+    /**
+     * Goal for starting the server
+     * 
+     * @param configuration project configuration
+     * @param mavenProjectInfo customized Maven Project object
+     * @return ExecutionStatus
+     * 
+     * @throws PhrescoException
+     */
+    ExecutionStatus startServer(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
-    void stopServer(MavenProjectInfo mavenProjectInfo) throws PhrescoException;
+    /**
+     * Goal for stoping the server
+     * 
+     * @param configuration project configuration
+     * @param mavenProjectInfo customized Maven Project object
+     * @return ExecutionStatus
+     * 
+     * @throws PhrescoException
+     */
+    ExecutionStatus stopServer(MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
-    void runUnitTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
+    /**
+     * Goal for running the unit tests
+     * 
+     * @param configuration project configuration
+     * @param mavenProjectInfo customized Maven Project object
+     * @return ExecutionStatus
+     * 
+     * @throws PhrescoException
+     */
+    ExecutionStatus runUnitTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
-    void runFunctionalTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
+    /**
+     * Goal for running the functional tests
+     * 
+     * @param configuration project configuration
+     * @param mavenProjectInfo customized Maven Project object
+     * @return ExecutionStatus
+     * 
+     * @throws PhrescoException
+     */
+    ExecutionStatus runFunctionalTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
-    void runPerformanceTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
+    /**
+     * Goal for running performance tests
+     * 
+     * @param configuration project configuration
+     * @param mavenProjectInfo customized Maven Project object
+     * @return ExecutionStatus
+     * 
+     * @throws PhrescoException
+     */
+    ExecutionStatus runPerformanceTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
-    void startHub(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
+    /**
+     * Goal for running load tests
+     * 
+     * @param configuration project configuration
+     * @param mavenProjectInfo customized Maven Project object
+     * @return ExecutionStatus
+     * 
+     * @throws PhrescoException
+     */
+    ExecutionStatus runLoadTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
-    void stopHub(MavenProjectInfo mavenProjectInfo) throws PhrescoException;
-    
-    void startNode(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
-    
-    void stopNode(MavenProjectInfo mavenProjectInfo) throws PhrescoException;
-    
-    void runLoadTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
-    
-    void performCIPreBuildStep(String jobName, String goal, String phase, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
-    
-    public void generateReport(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
-    
-    void themeValidator(MavenProjectInfo mavenProjectInfo) throws PhrescoException;
-    
-    void themeConvertor(MavenProjectInfo mavenProjectInfo) throws PhrescoException;
-    
-    void contentValidator(MavenProjectInfo mavenProjectInfo) throws PhrescoException;
-    
-    void contentConvertor(MavenProjectInfo mavenProjectInfo) throws PhrescoException;
+    /**
+     * @param configuration project configuration
+     * @param mavenProjectInfo customized Maven Project object
+     * @return ExecutionStatus
+     * 
+     * @throws PhrescoException
+     */
+    ExecutionStatus generateReport(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
 }

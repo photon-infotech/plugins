@@ -8,6 +8,7 @@ import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
+import com.photon.phresco.plugins.api.SeleniumPlugin;
 import com.photon.phresco.util.Constants;
 
 /**
@@ -42,7 +43,7 @@ public class PhrescoStartHub extends PhrescoAbstractMojo {
         getLog().info(baseDir.getPath());
         try {
         	String infoFile = baseDir + File.separator + Constants.START_HUB_INFO_FILE;
-        	PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());
+        	SeleniumPlugin plugin = new DefaultSeleniumPlugin(getLog());
 			plugin.startHub(getConfiguration(infoFile, Constants.PHASE_START_HUB),getMavenProjectInfo(project));
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);
