@@ -94,6 +94,7 @@ import com.phresco.pom.util.PomProcessor;
 import com.photon.phresco.commons.model.FrameWorkTheme;
 
 public class GenerateReport implements PluginConstants {
+	private static final String PHRESCO_UNIT_TEST = "phresco.unitTest";
 	private static final String REPORTS_TYPE = "reportsDataType";
 	private static final String PROJECT_NAME = "projectName";
 	private static final String LOGO = "logo";
@@ -595,7 +596,7 @@ public class GenerateReport implements PluginConstants {
 			parameters.put(PDF_PROJECT_CODE, projectCode);
 			parameters.put(PROJECT_NAME, projName);
 			parameters.put(TECH_NAME, techName);
-			parameters.put(TEST_TYPE, testType);
+			parameters.put(TEST_TYPE, testType.toUpperCase());
 			parameters.put(REPORTS_TYPE, reportType);
 			parameters.put(VERSION, version);
 			parameters.put(LOGO, logo);
@@ -642,7 +643,7 @@ public class GenerateReport implements PluginConstants {
 			parameters.put(PDF_PROJECT_CODE, projectCode);
 			parameters.put(PROJECT_NAME, projName);
 			parameters.put(TECH_NAME, techName);
-			parameters.put(TEST_TYPE, testType);
+			parameters.put(TEST_TYPE, testType.toUpperCase());
 			parameters.put(REPORTS_TYPE, reportType);
 			parameters.put(VERSION, version);
 			parameters.put(LOGO, logo);
@@ -664,7 +665,7 @@ public class GenerateReport implements PluginConstants {
 			parameters.put(PDF_PROJECT_CODE, projectCode);
 			parameters.put(PROJECT_NAME, projName);
 			parameters.put(TECH_NAME, techName);
-			parameters.put(TEST_TYPE, testType);
+			parameters.put(TEST_TYPE, testType.toUpperCase());
 			parameters.put(REPORTS_TYPE, reportType);
 			parameters.put(VERSION, version);
 			parameters.put(LOGO, logo);
@@ -686,7 +687,7 @@ public class GenerateReport implements PluginConstants {
 			parameters.put(PDF_PROJECT_CODE, projectCode);
 			parameters.put(PROJECT_NAME, projName);
 			parameters.put(TECH_NAME, techName);
-			parameters.put(TEST_TYPE, testType);
+			parameters.put(TEST_TYPE, testType.toUpperCase());
 			parameters.put(REPORTS_TYPE, reportType);
 			parameters.put(VERSION, version);
 			parameters.put(LOGO, logo);
@@ -888,7 +889,7 @@ public class GenerateReport implements PluginConstants {
 																						// testsuitePath,testcasePath>
 
 		if (UNIT.equals(testType)) {
-			String unitTestDir = mavenProject.getProperties().getProperty("phresco.unitTest");
+			String unitTestDir = mavenProject.getProperties().getProperty(PHRESCO_UNIT_TEST);
 			log.info("unitTestDir => " + unitTestDir);
 
 			if (StringUtils.isEmpty(unitTestDir)) {
