@@ -11,6 +11,8 @@ import org.codehaus.plexus.util.FileUtils;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugins.PhrescoBasePlugin;
+import com.photon.phresco.plugins.api.ExecutionStatus;
+import com.photon.phresco.plugins.impl.DefaultExecutionStatus;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.Constants;
@@ -23,7 +25,7 @@ public class NodeJsPlugin extends PhrescoBasePlugin {
 	}
 
 	@Override
-	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+	public ExecutionStatus pack(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		try {
 			File targetDir = new File(mavenProjectInfo.getBaseDir() + DO_NOT_CHECKIN_FOLDER + File.separator + TARGET);
 			if (targetDir.exists()) {
@@ -35,22 +37,26 @@ public class NodeJsPlugin extends PhrescoBasePlugin {
 		} catch (IOException e) {
 			throw new PhrescoException(e);
 		}
+		
+		return new DefaultExecutionStatus();
 	}
 
 	@Override
-	public void startServer(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+	public ExecutionStatus startServer(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		Start start = new Start();
 		start.start(configuration, mavenProjectInfo, log);
+		return new DefaultExecutionStatus();
 	}
 
 	@Override
-	public void stopServer(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+	public ExecutionStatus stopServer(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		Stop stop = new Stop();
 		stop.stop(mavenProjectInfo, log);
+		return new DefaultExecutionStatus();
 	}
 	
 	@Override
-	public void validate(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+	public ExecutionStatus validate(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
 		MavenProject project = mavenProjectInfo.getProject();
 		String workingDir = project.getBasedir().getPath();
@@ -73,5 +79,6 @@ public class NodeJsPlugin extends PhrescoBasePlugin {
 			append(SKIP_TESTS);
 		}
 		Utility.executeStreamconsumer(sb.toString(), workingDir);
+		return new DefaultExecutionStatus();
 	}
 }

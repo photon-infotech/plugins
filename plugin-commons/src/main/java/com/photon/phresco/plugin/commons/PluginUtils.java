@@ -84,7 +84,7 @@ import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.framework.model.ContextUrls;
 import com.photon.phresco.framework.model.DbContextUrls;
 import com.photon.phresco.framework.model.Headers;
-import com.photon.phresco.plugin.filter.FileListFilter;
+import com.photon.phresco.plugins.filter.FileListFilter;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.HubConfiguration;
 import com.photon.phresco.util.NodeConfiguration;

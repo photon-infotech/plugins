@@ -9,6 +9,8 @@ import org.codehaus.plexus.util.FileUtils;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugins.PhrescoBasePlugin;
+import com.photon.phresco.plugins.api.ExecutionStatus;
+import com.photon.phresco.plugins.impl.DefaultExecutionStatus;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 
 public class WordPressPlugin extends PhrescoBasePlugin {
@@ -18,7 +20,7 @@ public class WordPressPlugin extends PhrescoBasePlugin {
 	}
 
 	@Override
-	public void pack(Configuration configuration,
+	public ExecutionStatus pack(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		try {
 			File targetDir = new File(mavenProjectInfo.getBaseDir() + DO_NOT_CHECKIN_FOLDER + File.separator + TARGET);
@@ -31,12 +33,14 @@ public class WordPressPlugin extends PhrescoBasePlugin {
 		} catch (IOException e) {
 			throw new PhrescoException(e);
 		}
+		return new DefaultExecutionStatus();
 	}
 
 	@Override
-	public void deploy(Configuration configuration,
+	public ExecutionStatus deploy(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		Deploy deploy = new Deploy();
 		deploy.deploy(configuration, mavenProjectInfo, getLog());
+		return new DefaultExecutionStatus();
 	}
 }

@@ -1,4 +1,4 @@
-package com.photon.phresco.plugin.filter;
+package com.photon.phresco.plugins.filter;
 
 import java.io.File;
 import java.io.FilenameFilter;
