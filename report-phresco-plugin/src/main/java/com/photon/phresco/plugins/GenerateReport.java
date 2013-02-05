@@ -737,18 +737,42 @@ public class GenerateReport implements PluginConstants {
 	}
 	
 	public List<LoadTestReport> getLoadTestResults()  throws Exception {
+		List<String> testResultsTypes = new ArrayList<String>();
+        testResultsTypes.add("server");
+        testResultsTypes.add("webservice");
+        
 		List<LoadTestReport> loadTestReports = new ArrayList<LoadTestReport>();
 		String reportFilePath = baseDir + mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_LOADTEST_RPT_DIR);
-		List<String> testResultFiles = getTestResultFiles(reportFilePath);
-		for (String resultFile : testResultFiles) {
-			Document doc = getDocumentOfFile(reportFilePath, resultFile);
+		
+		List<File> testResultFiles = new ArrayList<File>();
+		
+		// if the load is having dir_type key
+		if (reportFilePath.contains(DIR_TYPE)) {
+			for(String loadType: testResultsTypes) {
+				Pattern p = Pattern.compile(DIR_TYPE);
+                Matcher matcher = p.matcher(reportFilePath);
+                String loadReportFilePath = matcher.replaceAll(loadType);
+                List<File> resultFiles = getTestResultFilesAsList(loadReportFilePath);
+                if (CollectionUtils.isNotEmpty(resultFiles)) {
+                	testResultFiles.addAll(resultFiles);
+                }
+			}
+		} else {
+			List<File> resultFiles = getTestResultFilesAsList(reportFilePath);
+            if (CollectionUtils.isNotEmpty(resultFiles)) {
+            	testResultFiles.addAll(resultFiles);
+            }
+		}
+		
+		for (File resultFile : testResultFiles) {
+			Document doc = getDocumentOfFile(resultFile);
 			List<TestResult> loadTestResults = getLoadTestResult(doc);
 			for (TestResult testResult : loadTestResults) {
 				log.info("testResult name .. " + testResult.getThreadName());
 			}
 			// Adding report data to bean object
 			LoadTestReport loadTestReport = new LoadTestReport();
-			loadTestReport.setFileName(resultFile);
+			loadTestReport.setFileName(resultFile.getName());
 			loadTestReport.setTestResults(loadTestResults);
 			loadTestReports.add(loadTestReport);
 		}
@@ -881,43 +905,25 @@ public class GenerateReport implements PluginConstants {
 	
 	// unit and functional test report
 	public SureFireReport sureFireReports() throws Exception {
-		String reportFilePath = "";
-		reportFilePath = baseDir.getAbsolutePath();
 
 		Map<String, String> reportDirWithTestSuitePath = new HashMap<String, String>(); // <file
 																						// -
 																						// testsuitePath,testcasePath>
-
+		List<String> modules = mavenProject.getModules();
+		System.out.println("Modules ...... " + modules);
 		if (UNIT.equals(testType)) {
-			String unitTestDir = mavenProject.getProperties().getProperty(PHRESCO_UNIT_TEST);
-			log.info("unitTestDir => " + unitTestDir);
-
-			if (StringUtils.isEmpty(unitTestDir)) {
-				unitTestDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_RPT_DIR);
-				String unitTestSuitePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_TESTSUITE_XPATH);
-				String unitTestCasePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_TESTCASE_PATH);
-				String reportPath = reportFilePath + unitTestDir;
-				List<File> testResultFiles = getTestResultFilesAsList(reportPath);
-				for (File testResultFile : testResultFiles) {
-					reportDirWithTestSuitePath.put(testResultFile.getPath(), unitTestSuitePath + "," + unitTestCasePath);
+			if (CollectionUtils.isNotEmpty(modules)) {
+				for (String module : modules) {
+					String reportFilePath = baseDir.getAbsolutePath();
+					reportFilePath = reportFilePath + File.separatorChar + module;
+					getUnitTestXmlFilesAndXpaths(reportFilePath, reportDirWithTestSuitePath);
 				}
 			} else {
-				List<String> unitTestTechs = Arrays.asList(unitTestDir.split(","));
-				for (String unitTestTech : unitTestTechs) {
-					unitTestDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_RPT_DIR_START + unitTestTech + Constants.POM_PROP_KEY_UNITTEST_RPT_DIR_END);
-					String unitTestSuitePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_RPT_DIR_START + unitTestTech + Constants.POM_PROP_KEY_UNITTEST_TESTSUITE_XPATH_END);
-					String unitTestCasePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_RPT_DIR_START + unitTestTech + Constants.POM_PROP_KEY_UNITTEST_TESTCASE_PATH_END);
-					if (StringUtils.isNotEmpty(unitTestDir)) { // kalees
-						String reportPath = reportFilePath + unitTestDir;
-						List<File> testResultFiles = getTestResultFilesAsList(reportPath);
-						for (File testResultFile : testResultFiles) {
-							reportDirWithTestSuitePath.put(testResultFile.getPath(), unitTestSuitePath + "," + unitTestCasePath);
-						}
-					}
-				}
+				String reportFilePath = baseDir.getAbsolutePath();
+				getUnitTestXmlFilesAndXpaths(reportFilePath, reportDirWithTestSuitePath);
 			}
-
 		} else {
+			String reportFilePath = baseDir.getAbsolutePath();
 			String functionalTestDir = mavenProject.getProperties()
 					.getProperty(Constants.POM_PROP_KEY_FUNCTEST_RPT_DIR);
 			String unitTestSuitePath = mavenProject.getProperties().getProperty(
@@ -1027,7 +1033,37 @@ public class GenerateReport implements PluginConstants {
 		return sureFireReport;
 	}
 
-	
+	private void getUnitTestXmlFilesAndXpaths(String reportFilePath,
+			Map<String, String> reportDirWithTestSuitePath) {
+		String unitTestDir = mavenProject.getProperties().getProperty("phresco.unitTest");
+		log.info("unitTestDir => " + unitTestDir);
+		// when it is having multiple values
+		if (StringUtils.isEmpty(unitTestDir)) {
+			unitTestDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_RPT_DIR);
+			String unitTestSuitePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_TESTSUITE_XPATH);
+			String unitTestCasePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_TESTCASE_PATH);
+			String reportPath = reportFilePath + unitTestDir;
+			List<File> testResultFiles = getTestResultFilesAsList(reportPath);
+			for (File testResultFile : testResultFiles) {
+				reportDirWithTestSuitePath.put(testResultFile.getPath(), unitTestSuitePath + "," + unitTestCasePath);
+			}
+		} else {
+			List<String> unitTestTechs = Arrays.asList(unitTestDir.split(","));
+			for (String unitTestTech : unitTestTechs) {
+				unitTestDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_RPT_DIR_START + unitTestTech + Constants.POM_PROP_KEY_UNITTEST_RPT_DIR_END);
+				String unitTestSuitePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_RPT_DIR_START + unitTestTech + Constants.POM_PROP_KEY_UNITTEST_TESTSUITE_XPATH_END);
+				String unitTestCasePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_RPT_DIR_START + unitTestTech + Constants.POM_PROP_KEY_UNITTEST_TESTCASE_PATH_END);
+				if (StringUtils.isNotEmpty(unitTestDir)) { // kalees
+					String reportPath = reportFilePath + unitTestDir;
+					List<File> testResultFiles = getTestResultFilesAsList(reportPath);
+					for (File testResultFile : testResultFiles) {
+						reportDirWithTestSuitePath.put(testResultFile.getPath(), unitTestSuitePath + "," + unitTestCasePath);
+					}
+				}
+			}
+		}
+	}
+
 	//detailed object info
 	private void printDetailedObj(ArrayList<TestSuite> testSuiteWithTestCase) {
 		log.debug("printing required values!!!!!");
