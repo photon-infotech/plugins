@@ -1,5 +1,6 @@
 package com.photon.phresco.plugins.android;
 
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 
 import com.photon.phresco.exception.PhrescoException;
@@ -27,7 +28,11 @@ public class AndroidPlugin extends PhrescoBasePlugin {
 	public ExecutionStatus deploy(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		Deploy deploy = new Deploy();
-		deploy.deploy(configuration, mavenProjectInfo, log);
+		try {
+			deploy.deploy(configuration, mavenProjectInfo, log);
+		} catch (MojoExecutionException e) {
+			throw new PhrescoException(e);
+		}
 		return new DefaultExecutionStatus();
 	}
 	

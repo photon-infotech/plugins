@@ -737,10 +737,14 @@ public class PluginUtils {
 			File logFile  = new File(LogDir + Constants.SLASH + Constants.NODE_LOG);
 			StringBuilder sb = new StringBuilder()
 			.append("java -Dwebdriver.chrome.driver=")
-			.append(functionalTestDir.substring(1, functionalTestDir.length()))
-			.append("/chromedriver/chromedriver.exe -jar ")
-			.append(functionalTestDir.substring(1, functionalTestDir.length()))
-			.append("/lib/selenium-server-standalone-2.26.0.jar")
+			.append(functionalTestDir.substring(1, functionalTestDir.length()));
+			if (findPlatform().equals(Constants.WINDOWS)) {
+				sb.append("/chromedriver/chromedriver.exe -jar ");
+			} else if (findPlatform().equals(FrameworkConstants.MAC)) {
+				sb.append("/chromedriver/chromedriver -jar ");
+			}
+			sb.append(functionalTestDir.substring(1, functionalTestDir.length()))
+			.append("/lib/selenium-server-standalone-2.29.0.jar")
 			.append(" -role node -nodeConfig ")
 			.append(functionalTestDir.substring(1, functionalTestDir.length()))
 	        .append("/nodeconfig.json");
@@ -772,7 +776,7 @@ public class PluginUtils {
 	        StringBuilder sb = new StringBuilder()
 	        .append("java -jar ")
 	        .append(functionalTestDir.substring(1, functionalTestDir.length()))
-	        .append("/lib/selenium-server-standalone-2.26.0.jar")
+	        .append("/lib/selenium-server-standalone-2.29.0.jar")
 	        .append(" -role hub -hubConfig ")
 	        .append(functionalTestDir.substring(1, functionalTestDir.length()))
 	        .append("/hubconfig.json");
@@ -868,5 +872,22 @@ public class PluginUtils {
 	    } catch (ConfigurationException e) {
 	        throw new PhrescoException(e);
 	    }
+	}
+	
+	private String findPlatform() {
+		String osName = System.getProperty(Constants.OS_NAME);
+		if (osName.contains(Constants.WINDOWS)) {
+			osName = Constants.WINDOWS;
+		} else if (osName.contains(FrameworkConstants.LINUX)) {
+			osName = FrameworkConstants.LINUX;
+		} else if (osName.contains(FrameworkConstants.MAC)) {
+			osName = FrameworkConstants.MAC;
+		} else if (osName.contains(FrameworkConstants.SERVER)) {
+			osName = FrameworkConstants.SERVER;
+		} else if (osName.contains(FrameworkConstants.WINDOWS7)) {
+			osName = FrameworkConstants.WINDOWS7.replace(" ", "");
+		}
+		
+		return osName;
 	}
 }

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
@@ -78,7 +79,14 @@ public class NodeJsPlugin extends PhrescoBasePlugin {
 			append(STR_SPACE).
 			append(SKIP_TESTS);
 		}
-		Utility.executeStreamconsumer(sb.toString(), workingDir);
+		boolean status = Utility.executeStreamconsumer(sb.toString(), workingDir);
+		if(!status) {
+			try {
+				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
+			} catch (MojoExecutionException e) {
+				throw new PhrescoException(e);
+			}
+		}
 		return new DefaultExecutionStatus();
 	}
 }

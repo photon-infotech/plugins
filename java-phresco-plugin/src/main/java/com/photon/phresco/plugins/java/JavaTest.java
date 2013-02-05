@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.maven.plugin.MojoExecutionException;
+
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
@@ -11,6 +13,7 @@ import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands.MavenCommand;
 import com.photon.phresco.plugins.util.MojoUtil;
+import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
 
 public class JavaTest implements PluginConstants {
@@ -51,7 +54,10 @@ public class JavaTest implements PluginConstants {
 			sb.append(TEST_COMMAND).append(STR_SPACE).
 			append(testAgainst);
 			System.out.println("Command = " + sb.toString());
-			Utility.executeStreamconsumer(sb.toString(), baseDir.getPath());
+			boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath());
+			if(!status) {
+				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
+			}
 		} catch (Exception e) {
 			throw new  PhrescoException(e);
 		}

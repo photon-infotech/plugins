@@ -36,9 +36,9 @@ public class PhrescoThemeValidator extends PhrescoAbstractMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
     	try {
-    		File infoFile = new File(baseDir + File.separator + ".phresco/phresco-theme-info.xml");
-    		if (infoFile.exists() && isGoalAvailable(infoFile.getPath(), "theme-validator") && getDependency(infoFile.getPath(), "theme-validator") != null) {
-    			PhrescoPlugin plugin = getPlugin(getDependency(infoFile.getPath(), "theme-validator"));
+    		File infoFile = new File(baseDir + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.THEME_INFO_FILE);
+    		if (infoFile.exists() && isGoalAvailable(infoFile.getPath(), Constants.PHASE_THEME_VALIDATOR) && getDependency(infoFile.getPath(), Constants.PHASE_THEME_VALIDATOR) != null) {
+    			PhrescoPlugin plugin = getPlugin(getDependency(infoFile.getPath(), Constants.PHASE_THEME_VALIDATOR));
     			if(plugin instanceof PhrescoPlugin2) {
     				PhrescoPlugin2 plugin2 = (PhrescoPlugin2) plugin;
     				plugin2.themeValidator(getMavenProjectInfo(project));

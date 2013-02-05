@@ -5,7 +5,9 @@ import java.util.*;
 
 import javax.xml.parsers.*;
 
+import org.apache.commons.jxpath.ri.parser.ParseException;
 import org.apache.commons.lang.*;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.*;
 import org.apache.maven.project.*;
 import org.w3c.dom.*;
@@ -107,7 +109,14 @@ public class Package implements PluginConstants {
 		}
 		
 		log.info("Command " + sb.toString());
-		Utility.executeStreamconsumer(sb.toString(), baseDir);
+		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir);
+		if(!status) {
+			try {
+				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
+			} catch (MojoExecutionException e) {
+				throw new PhrescoException(e);
+			}
+		}
 	}
 	
 	private void updateAllPOMWithProfile(String keystore, String storepass, String keypass, String alias) throws PhrescoException {

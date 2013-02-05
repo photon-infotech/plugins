@@ -9,6 +9,7 @@ import org.apache.maven.project.MavenProject;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.api.PhrescoPlugin2;
+import com.photon.phresco.util.Constants;
 
 /**
  * 
@@ -35,9 +36,9 @@ public class PhrescoThemeConvertor extends PhrescoAbstractMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
     	try {
-    		File infoFile = new File(baseDir + File.separator + ".phresco/phresco-theme-info.xml");
-    		if (infoFile.exists() && isGoalAvailable(infoFile.getPath(), "theme-convertor") && getDependency(infoFile.getPath(), "theme-convertor") != null) {
-    			PhrescoPlugin plugin = getPlugin(getDependency(infoFile.getPath(), "theme-convertor"));
+    		File infoFile = new File(baseDir + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.THEME_INFO_FILE);
+    		if (infoFile.exists() && isGoalAvailable(infoFile.getPath(), Constants.PHASE_THEME_CONVERTOR) && getDependency(infoFile.getPath(), Constants.PHASE_THEME_CONVERTOR) != null) {
+    			PhrescoPlugin plugin = getPlugin(getDependency(infoFile.getPath(), Constants.PHASE_THEME_CONVERTOR));
     			if(plugin instanceof PhrescoPlugin2) {
     				PhrescoPlugin2 plugin2 = (PhrescoPlugin2) plugin;
     				plugin2.themeConvertor(getMavenProjectInfo(project));

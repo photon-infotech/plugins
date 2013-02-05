@@ -9,6 +9,7 @@ import org.apache.maven.project.MavenProject;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.api.PhrescoPlugin2;
+import com.photon.phresco.util.Constants;
 
 /**
  * 
@@ -36,9 +37,9 @@ public class PhrescoContentValidator extends PhrescoAbstractMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
     	try {
-    		File infoFile = new File(baseDir + File.separator + ".phresco/phresco-content-info.xml");
-    		if (infoFile.exists() && isGoalAvailable(infoFile.getPath(), "content-validator") && getDependency(infoFile.getPath(), "content-validator") != null) {
-				PhrescoPlugin plugin = getPlugin(getDependency(infoFile.getPath(), "content-validator"));
+    		File infoFile = new File(baseDir + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONTENT_INFO_FILE);
+    		if (infoFile.exists() && isGoalAvailable(infoFile.getPath(), Constants.PHASE_CONTENT_VALIDATOR) && getDependency(infoFile.getPath(), Constants.PHASE_CONTENT_VALIDATOR) != null) {
+				PhrescoPlugin plugin = getPlugin(getDependency(infoFile.getPath(), Constants.PHASE_CONTENT_VALIDATOR));
 				if(plugin instanceof PhrescoPlugin2) {
     				PhrescoPlugin2 plugin2 = (PhrescoPlugin2) plugin;
     				plugin2.contentValidator(getMavenProjectInfo(project));

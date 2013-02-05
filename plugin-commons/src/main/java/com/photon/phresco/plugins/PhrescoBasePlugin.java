@@ -32,6 +32,7 @@ import javax.xml.xpath.XPathFactory;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.w3c.dom.Document;
@@ -286,7 +287,14 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			append(STR_SPACE).
 			append("-Dsonar.branch=functional");
 		}
-		Utility.executeStreamconsumer(sb.toString(), workingDir);
+		boolean status = Utility.executeStreamconsumer(sb.toString(), workingDir);
+		if(!status) {
+			try {
+				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
+			} catch (MojoExecutionException e) {
+				throw new PhrescoException(e);
+			}
+		}
 		return new DefaultExecutionStatus();
 	}
 
@@ -294,7 +302,14 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 	private void generateMavenCommand(MavenProjectInfo mavenProjectInfo, String workingDirectory) throws PhrescoException {
 		StringBuilder sb = new StringBuilder();
 		sb.append(TEST_COMMAND);
-		Utility.executeStreamconsumer(sb.toString(), workingDirectory);
+		boolean status = Utility.executeStreamconsumer(sb.toString(), workingDirectory);
+		if(!status) {
+			try {
+				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
+			} catch (MojoExecutionException e) {
+				throw new PhrescoException(e);
+			}
+		}
 	}
 	
 	public void adaptTestConfig(File SelectedEnvFile, File resultConfigXml, String envName, String browser, String resolution, String baseDir) throws PhrescoException {

@@ -3,6 +3,7 @@ package com.photon.phresco.plugins.android;
 import java.util.*;
 
 import org.apache.commons.lang.*;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 
 import com.photon.phresco.exception.*;
@@ -12,11 +13,12 @@ import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.*;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands.*;
 import com.photon.phresco.plugins.util.MojoUtil;
+import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
 
 public class Deploy implements PluginConstants {
 
-	public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException  {
+	public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException, MojoExecutionException  {
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
 		String buildNumber = configs.get(BUILD_NUMBER);
 		String deviceValue = configs.get(DEVICES);
@@ -63,6 +65,9 @@ public class Deploy implements PluginConstants {
 		
 		log.info("Project is Deploying...");
 		log.info("Command " + sb.toString());
-		Utility.executeStreamconsumer(sb.toString(), workingDir);
+		boolean status = Utility.executeStreamconsumer(sb.toString(), workingDir);
+		if(!status) {
+			throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
+		}
 	}
 }

@@ -1,5 +1,6 @@
 package com.photon.phresco.plugins.xcode;
 
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.*;
 
 import com.photon.phresco.exception.*;
@@ -8,6 +9,7 @@ import com.photon.phresco.plugins.*;
 import com.photon.phresco.plugins.api.ExecutionStatus;
 import com.photon.phresco.plugins.impl.DefaultExecutionStatus;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+import com.photon.phresco.util.Constants;
 
 public class XcodePlugin extends PhrescoBasePlugin {
 
@@ -48,7 +50,11 @@ public class XcodePlugin extends PhrescoBasePlugin {
 	@Override
 	public ExecutionStatus runFunctionalTest (Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		FunctionalTest test = new FunctionalTest();
-		test.functionalTest(configuration, mavenProjectInfo);
+		try {
+			test.functionalTest(configuration, mavenProjectInfo);
+		} catch (MojoExecutionException e) {
+			throw new PhrescoException(Constants.MOJO_ERROR_MESSAGE);
+		}
 		return new DefaultExecutionStatus();
 	}
 }

@@ -3,6 +3,7 @@ package com.photon.phresco.plugins.xcode;
 import java.util.*;
 
 import org.apache.commons.lang.*;
+import org.apache.maven.plugin.MojoExecutionException;
 
 import com.photon.phresco.exception.*;
 import com.photon.phresco.plugin.commons.*;
@@ -11,7 +12,7 @@ import com.photon.phresco.plugins.util.*;
 import com.photon.phresco.util.*;
 
 public class FunctionalTest implements PluginConstants {
-	public void functionalTest(Configuration config, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+	public void functionalTest(Configuration config, MavenProjectInfo mavenProjectInfo) throws PhrescoException, MojoExecutionException {
 		Map<String, String> configs = MojoUtil.getAllValues(config);
 		String buildNumber = configs.get(BUILD_NUMBER);
 		String deviceId = configs.get(DEVICE_ID);
@@ -33,6 +34,9 @@ public class FunctionalTest implements PluginConstants {
 		}
 		
 		System.out.println("Functional test Command " + sb.toString());
-		Utility.executeStreamconsumer(sb.toString(), workingDir);
+		boolean status = Utility.executeStreamconsumer(sb.toString(), workingDir);
+		if(!status) {
+			throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
+		}
 	}
 }
