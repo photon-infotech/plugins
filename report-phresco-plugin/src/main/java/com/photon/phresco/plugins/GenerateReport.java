@@ -783,7 +783,7 @@ public class GenerateReport implements PluginConstants {
         List<String> testResultsTypes = new ArrayList<String>();
         testResultsTypes.add("server");
         testResultsTypes.add("database");
-        testResultsTypes.add("webservices");
+        testResultsTypes.add("webservice");
         
         // List of performance test types
         ArrayList<JmeterTypeReport> jmeterTypeReports = new ArrayList<JmeterTypeReport>();
