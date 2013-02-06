@@ -807,7 +807,7 @@ public class PluginUtils {
 		if (System.getProperty(Constants.OS_NAME).startsWith(Constants.WINDOWS_PLATFORM)) {
 			stopJavaServerInWindows("netstat -ao | findstr " + portNo + " | findstr LISTENING", baseDir);
 		} else if (System.getProperty(Constants.OS_NAME).startsWith("Mac")) {
-			stopJavaServer("lsof -i tcp:" + portNo + " | awk '{print $2}'", baseDir);
+			stopJavaServerInMac("lsof -i tcp:" + portNo , baseDir);
 		} else {
 			stopJavaServer("fuser " + portNo + "/tcp " + "|" + "awk '{print $1}'", baseDir);
 		}
@@ -826,10 +826,30 @@ public class PluginUtils {
 		} catch (IOException e) {
 			throw new PhrescoException(e);
 		} finally {
-			Utility.closeStream(bufferedReader);
+			Utility.closeReader(bufferedReader);
 		}
 	}
 
+	private void stopJavaServerInMac(String command, File baseDir) throws PhrescoException {
+		BufferedReader bufferedReader = null;
+		try {
+			bufferedReader = Utility.executeCommand(command, baseDir.getPath());
+			String line = null;
+			String pid = "";
+			while ((line = bufferedReader.readLine()) != null) {
+				if (line.startsWith(PluginConstants.JAVA)) {
+					line = line.substring(8, line.length());
+					pid = line.substring(0, line.indexOf(" "));
+				}
+			}
+			Runtime.getRuntime().exec(Constants.JAVA_UNIX_PROCESS_KILL_CMD + pid);
+		} catch (IOException e) {
+			throw new PhrescoException(e);
+		} finally {
+			Utility.closeReader(bufferedReader);
+		}
+	}
+	
 	private void stopJavaServer(String command, File baseDir) throws PhrescoException {
 		BufferedReader bufferedReader = null;
 		try {
@@ -847,7 +867,7 @@ public class PluginUtils {
 		} catch (IOException e) {
 			throw new PhrescoException(e);
 		} finally {
-			Utility.closeStream(bufferedReader);
+			Utility.closeReader(bufferedReader);
 		}
 	}
 	
