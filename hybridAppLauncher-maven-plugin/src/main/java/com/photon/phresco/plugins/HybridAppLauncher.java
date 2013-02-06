@@ -36,9 +36,8 @@ public class HybridAppLauncher extends AbstractMojo {
 	private void hybridAppLauncherScripts() throws MojoExecutionException {
 		try {
 			File directory = new File(baseDir.getPath());
-			File pom = new File(baseDir.getPath() + PluginConstants.POM_XML);
+			File pom = new File(baseDir.getPath() + File.separator + PluginConstants.POM_XML);
 			PomProcessor processor = new PomProcessor(pom);
-			
 			String packageName = processor.getProperty(PluginConstants.PHRESCO_TEST_PACKAGE);
 			
 			if(packageName !=null ){

@@ -740,7 +740,7 @@ public class PluginUtils {
 			.append(functionalTestDir.substring(1, functionalTestDir.length()));
 			if (findPlatform().equals(Constants.WINDOWS)) {
 				sb.append("/chromedriver/chromedriver.exe -jar ");
-			} else if (findPlatform().equals(FrameworkConstants.MAC)) {
+			} else {
 				sb.append("/chromedriver/chromedriver -jar ");
 			}
 			sb.append(functionalTestDir.substring(1, functionalTestDir.length()))
