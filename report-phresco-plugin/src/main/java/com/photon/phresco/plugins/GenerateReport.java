@@ -145,10 +145,38 @@ public class GenerateReport implements PluginConstants {
 		try {
 			// Report generation for unit and functional
 			if (UNIT.equals(testType) || FUNCTIONAL.equals(testType)) {
+				List<String> modules = mavenProject.getModules();
+				boolean isMultiModuleProject = false;
+				if (CollectionUtils.isNotEmpty(modules)) {
+					isMultiModuleProject = true;
+				}
+				
 				//crisp and detail view report generation
-				SureFireReport sureFireReports = sureFireReports();
-				log.info("test type .... " + testType);
-				generateUnitAndFunctionalReport(sureFireReports);
+				if (isMultiModuleProject) {
+					System.out.println("Is Multi Module project ..... ");
+					// multi module project....
+					List<ModuleSureFireReport> moduleWiseReports = new ArrayList<ModuleSureFireReport>();
+					for (String module : modules) {
+						ModuleSureFireReport msr = new ModuleSureFireReport();
+						SureFireReport sureFireReports = sureFireReports(module);
+						
+						List<TestSuite> testSuites = sureFireReports.getTestSuites();
+						System.out.println("testSuites =>  " + testSuites);
+						if (CollectionUtils.isNotEmpty(testSuites)) {
+							msr.setModuleOrTechName(module);
+							msr.setModuleOrTechLabel("Module Name");
+							msr.setSureFireReport(Arrays.asList(sureFireReports));
+							System.out.println("Report found for module ====<> " + module);
+							moduleWiseReports.add(msr);
+						}
+					}
+					generateUnitAndFunctionalReport(moduleWiseReports);
+				} else {
+					// none module projects....
+					SureFireReport sureFireReports = sureFireReports(null);
+					log.info("test type .... " + testType);
+					generateUnitAndFunctionalReport(sureFireReports);				
+				}
 			// Report generation for performance
 			} else if (PERFORMACE.equals(testType)) {
 				boolean deviceReportAvail = isDeviceReportAvail();
@@ -178,14 +206,47 @@ public class GenerateReport implements PluginConstants {
 	public void cumalitiveTestReport() throws Exception {
 		log.debug("Entering GenerateReport.cumalitiveTestReport()");
 		try {
+			Map<String, Object> cumulativeReportparams = new HashMap<String,Object>();
 			//unit and functional details
 			testType = UNIT;
-			SureFireReport unitTestSureFireReports = null;
-			unitTestSureFireReports = sureFireReports();
+			
+			boolean isMultiModuleProject = false;
+			List<String> modules = mavenProject.getModules();
+			if (CollectionUtils.isNotEmpty(modules)) {
+				isMultiModuleProject = true;
+			}
+			
+			//crisp and detail view report generation
+			ModuleSureFireReport msr = null;
+			if (isMultiModuleProject) {
+				// multi module project....
+				List<ModuleSureFireReport> moduleWiseReports = new ArrayList<ModuleSureFireReport>();
+				for (String module : modules) {
+					msr = new ModuleSureFireReport();
+					SureFireReport sureFireReports = sureFireReports(module);
+					
+					List<TestSuite> testSuites = sureFireReports.getTestSuites();
+					if (CollectionUtils.isNotEmpty(testSuites)) {
+						msr.setModuleOrTechName(module);
+						msr.setModuleOrTechLabel("Module Name");
+						msr.setSureFireReport(Arrays.asList(sureFireReports));
+						System.out.println("Report found for module ====<> " + module);
+						moduleWiseReports.add(msr);
+					}
+				}
+				
+				cumulativeReportparams.put("isMultiModuleProject", true);
+				cumulativeReportparams.put("multiModuleUnitTestReports", moduleWiseReports);
+			} else {
+				SureFireReport unitTestSureFireReports = null;
+				unitTestSureFireReports = sureFireReports(null);
+				cumulativeReportparams.put("isMultiModuleProject", false);
+				cumulativeReportparams.put(UNIT_TEST_REPORTS, Arrays.asList(unitTestSureFireReports));
+			}
 			
 			testType = FUNCTIONAL;
 			SureFireReport functionalSureFireReports = null;
-			functionalSureFireReports = sureFireReports();
+			functionalSureFireReports = sureFireReports(null);
 			
 			testType = "";
 			//performance details
@@ -205,8 +266,6 @@ public class GenerateReport implements PluginConstants {
 			//load test details
 			List<LoadTestReport> loadTestResults = getLoadTestResults();
 			
-			Map<String, Object> cumulativeReportparams = new HashMap<String,Object>();
-			
 			cumulativeReportparams.put(PDF_PROJECT_CODE, projectCode);
 			cumulativeReportparams.put(PROJECT_NAME, projName);
 			cumulativeReportparams.put(TECH_NAME, techName);
@@ -215,7 +274,6 @@ public class GenerateReport implements PluginConstants {
 			
 			log.info("reportType for all report generation => " + reportType);
 			cumulativeReportparams.put(REPORTS_TYPE, reportType);
-			cumulativeReportparams.put(UNIT_TEST_REPORTS, Arrays.asList(unitTestSureFireReports));
 			cumulativeReportparams.put(FUNCTIONAL_TEST_REPORTS, Arrays.asList(functionalSureFireReports));
 			
 			if(deviceReportAvail) {
@@ -632,6 +690,60 @@ public class GenerateReport implements PluginConstants {
 		}
 	}
 	
+	// Unit and functional pdf report generation
+	public void generateUnitAndFunctionalReport(List<ModuleSureFireReport> moduleWiseReports)  throws PhrescoException {
+		log.info("Entering Method PhrescoReportGeneration.generateUnitAndFunctionalReport()");
+		InputStream reportStream = null;
+		BufferedInputStream bufferedInputStream = null;
+		try {
+			String outFileNamePDF = Utility.getProjectHome() + appDir + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType  + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+			new File(outFileNamePDF).getParentFile().mkdirs();
+			String containerJasperFile = "PhrescoModuleSureFireReport.japer";
+			reportStream = this.getClass().getClassLoader().getResourceAsStream("PhrescoModuleSureFireReport.jasper");
+			bufferedInputStream = new BufferedInputStream(reportStream);
+			Map<String, Object> parameters = new HashMap<String,Object>();
+			parameters.put(PDF_PROJECT_CODE, projectCode);
+			parameters.put(PROJECT_NAME, projName);
+			parameters.put(TECH_NAME, techName);
+			parameters.put(TEST_TYPE, testType);
+			parameters.put(REPORTS_TYPE, reportType);
+			parameters.put(VERSION, version);
+			parameters.put(LOGO, logo);
+			JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(moduleWiseReports);
+			JasperReport jasperReport = (JasperReport) JRLoader.loadObject(bufferedInputStream);
+//			JasperDesign jasperDesign = JRXmlLoader.load(bufferedInputStream);
+//			JasperReport jasperReport = JasperCompileManager.compileReport(jasperDesign);
+			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
+			// applying theme
+			applyTheme(jasperPrint);
+			JRExporter exporter = new net.sf.jasperreports.engine.export.JRPdfExporter(); 
+			exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, outFileNamePDF);
+			exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
+			exporter.exportReport();
+			System.out.println("outFileNamePDF =<>  " + outFileNamePDF);
+			log.info("Unit and functional Report generation completed" + outFileNamePDF);
+		} catch(Exception e) {
+			log.error("Unit and functional  generation error");
+			throw new PhrescoException(e);
+		} finally {
+			if (reportStream != null) {
+				try {
+					reportStream.close();
+				} catch (IOException e) {
+					log.info("Report generation errorr ");
+				}
+			}
+			if (bufferedInputStream != null) {
+				try {
+					bufferedInputStream.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+					log.info("Report generation errorr ");
+				}
+			}
+		}
+	}
+	
 	// performance test report
 	public void generateJmeterPerformanceReport(ArrayList<JmeterTypeReport> jmeterTestResults)  throws PhrescoException {
 		log.info("Entering Method PhrescoReportGeneration.generateJmeterPerformanceReport()");
@@ -904,24 +1016,18 @@ public class GenerateReport implements PluginConstants {
 	}
 	
 	// unit and functional test report
-	public SureFireReport sureFireReports() throws Exception {
+	public SureFireReport sureFireReports(String module) throws Exception {
 
 		Map<String, String> reportDirWithTestSuitePath = new HashMap<String, String>(); // <file
 																						// -
 																						// testsuitePath,testcasePath>
-		List<String> modules = mavenProject.getModules();
-		System.out.println("Modules ...... " + modules);
 		if (UNIT.equals(testType)) {
-			if (CollectionUtils.isNotEmpty(modules)) {
-				for (String module : modules) {
-					String reportFilePath = baseDir.getAbsolutePath();
-					reportFilePath = reportFilePath + File.separatorChar + module;
-					getUnitTestXmlFilesAndXpaths(reportFilePath, reportDirWithTestSuitePath);
-				}
-			} else {
-				String reportFilePath = baseDir.getAbsolutePath();
-				getUnitTestXmlFilesAndXpaths(reportFilePath, reportDirWithTestSuitePath);
+			String reportFilePath = baseDir.getAbsolutePath();
+			if (StringUtils.isNotEmpty(module)) {
+				reportFilePath = reportFilePath + File.separatorChar + module;
 			}
+			System.out.println("reportFilePath =>  " + reportFilePath);
+			getUnitTestXmlFilesAndXpaths(reportFilePath, reportDirWithTestSuitePath);
 		} else {
 			String reportFilePath = baseDir.getAbsolutePath();
 			String functionalTestDir = mavenProject.getProperties()
@@ -933,6 +1039,9 @@ public class GenerateReport implements PluginConstants {
 			String reportPath = "";
 			if (StringUtils.isNotEmpty(functionalTestDir)) {
 				reportPath = reportFilePath + functionalTestDir;
+			}
+			if (StringUtils.isNotEmpty(module)) {
+				reportFilePath = reportFilePath + File.separatorChar + module;
 			}
 			List<File> testResultFiles = getTestResultFilesAsList(reportPath);
 			for (File testResultFile : testResultFiles) {
