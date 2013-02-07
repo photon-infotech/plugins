@@ -153,7 +153,7 @@ public class GenerateReport implements PluginConstants {
 				
 				//crisp and detail view report generation
 				if (isMultiModuleProject) {
-					System.out.println("Is Multi Module project ..... ");
+					log.info("Multi Module project ..... ");
 					// multi module project....
 					List<ModuleSureFireReport> moduleWiseReports = new ArrayList<ModuleSureFireReport>();
 					for (String module : modules) {
@@ -161,12 +161,10 @@ public class GenerateReport implements PluginConstants {
 						SureFireReport sureFireReports = sureFireReports(module);
 						
 						List<TestSuite> testSuites = sureFireReports.getTestSuites();
-						System.out.println("testSuites =>  " + testSuites);
 						if (CollectionUtils.isNotEmpty(testSuites)) {
 							msr.setModuleOrTechName(module);
 							msr.setModuleOrTechLabel("Module Name");
 							msr.setSureFireReport(Arrays.asList(sureFireReports));
-							System.out.println("Report found for module ====<> " + module);
 							moduleWiseReports.add(msr);
 						}
 					}
@@ -230,7 +228,6 @@ public class GenerateReport implements PluginConstants {
 						msr.setModuleOrTechName(module);
 						msr.setModuleOrTechLabel("Module Name");
 						msr.setSureFireReport(Arrays.asList(sureFireReports));
-						System.out.println("Report found for module ====<> " + module);
 						moduleWiseReports.add(msr);
 					}
 				}
@@ -720,7 +717,6 @@ public class GenerateReport implements PluginConstants {
 			exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, outFileNamePDF);
 			exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
 			exporter.exportReport();
-			System.out.println("outFileNamePDF =<>  " + outFileNamePDF);
 			log.info("Unit and functional Report generation completed" + outFileNamePDF);
 		} catch(Exception e) {
 			log.error("Unit and functional  generation error");
@@ -1026,7 +1022,7 @@ public class GenerateReport implements PluginConstants {
 			if (StringUtils.isNotEmpty(module)) {
 				reportFilePath = reportFilePath + File.separatorChar + module;
 			}
-			System.out.println("reportFilePath =>  " + reportFilePath);
+			log.info("reportFilePath =>  " + reportFilePath);
 			getUnitTestXmlFilesAndXpaths(reportFilePath, reportDirWithTestSuitePath);
 		} else {
 			String reportFilePath = baseDir.getAbsolutePath();
