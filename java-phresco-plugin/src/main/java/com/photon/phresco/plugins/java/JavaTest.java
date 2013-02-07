@@ -51,9 +51,8 @@ public class JavaTest implements PluginConstants {
 		System.out.println("-----------------------------------------");
 		try {
 			StringBuilder sb = new StringBuilder();
-			sb.append(TEST_COMMAND).append(STR_SPACE).
+			sb.append(UNITTEST_COMMAND).append(STR_SPACE).
 			append(testAgainst);
-			System.out.println("Command = " + sb.toString());
 			boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath());
 			if(!status) {
 				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
