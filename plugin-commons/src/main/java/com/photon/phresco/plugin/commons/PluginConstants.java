@@ -401,6 +401,7 @@ public interface PluginConstants {
 	 
 	 //Constants for Tests
 	 String TEST_COMMAND				= "mvn clean test";	 
+	 String UNITTEST_COMMAND				= "mvn test";	 
 	 
 	// BlackBerry maven plugin constants
 	// Author: Viral

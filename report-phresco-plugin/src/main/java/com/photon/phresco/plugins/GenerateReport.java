@@ -10,6 +10,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -22,7 +23,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -36,14 +36,14 @@ import javax.xml.transform.TransformerException;
 import net.sf.jasperreports.engine.JREmptyDataSource;
 import net.sf.jasperreports.engine.JRExporter;
 import net.sf.jasperreports.engine.JRExporterParameter;
+import net.sf.jasperreports.engine.JRPen;
+import net.sf.jasperreports.engine.JRStyle;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.data.JRBeanArrayDataSource;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.util.JRLoader;
-import net.sf.jasperreports.engine.JRStyle;
-import net.sf.jasperreports.engine.JRPen;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -72,6 +72,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
@@ -91,7 +92,6 @@ import com.phresco.pom.model.Model;
 import com.phresco.pom.model.Model.Profiles;
 import com.phresco.pom.model.Profile;
 import com.phresco.pom.util.PomProcessor;
-import com.photon.phresco.commons.model.FrameWorkTheme;
 
 public class GenerateReport implements PluginConstants {
 	private static final String PHRESCO_UNIT_TEST = "phresco.unitTest";
@@ -123,7 +123,7 @@ public class GenerateReport implements PluginConstants {
 	
 	// logo and theme objects
 	private String logo = null;
-	private FrameWorkTheme theme = null;
+	private Map<String, String> theme = null;
 	
     //test suite details
 	private float noOfTstSuiteTests = 0;
@@ -1901,7 +1901,8 @@ public class GenerateReport implements PluginConstants {
 	        String themeJson = configs.get("theme");
 	        if (StringUtils.isNotEmpty(themeJson)) {
 	        	Gson gson = new Gson();
-		        theme = gson.fromJson(themeJson, FrameWorkTheme.class);
+	        	Type mapType = new TypeToken<Map<String, String>>() {}.getType();
+		        theme = (Map<String, String>)gson.fromJson(themeJson, mapType);
 	        }
 	        
 	        this.testType = testType;
@@ -1994,24 +1995,24 @@ public class GenerateReport implements PluginConstants {
 		String copyRightPageNumberForeColor = "#FFFFFF";
 		String copyRightPageNumberBackColor = "#00CC66";
 		
-		if (theme != null) {
-			titleColor = theme.getPageHeaderColor();
-			titleLabelColor = theme.getBrandingColor();
+		if (MapUtils.isNotEmpty(theme)) {
+			titleColor = theme.get("PageHeaderColor");
+			titleLabelColor = theme.get("PageHeaderColor");
 			
-			headingForeColor = theme.getBrandingColor(); // heading yellow color
-			headingBackColor = theme.getPageHeaderColor();
+			headingForeColor = theme.get("brandingColor"); // heading yellow color
+			headingBackColor = theme.get("PageHeaderColor");
 
-			headingRowBackColor = theme.getPageHeaderColor(); //HeadingRow - light color
-			headingRowLabelBackColor = theme.getPageHeaderColor();
-			headingRowTextBackColor = theme.getPageHeaderColor();
-			headingRowLabelForeColor = theme.getBrandingColor();
-			headingRowTextForeColor = theme.getBrandingColor();
+			headingRowBackColor = theme.get("PageHeaderColor"); //HeadingRow - light color
+			headingRowLabelBackColor = theme.get("PageHeaderColor");
+			headingRowTextBackColor = theme.get("PageHeaderColor");
+			headingRowLabelForeColor = theme.get("brandingColor");
+			headingRowTextForeColor = theme.get("brandingColor");
 			
-			copyRightBackColor = theme.getPageHeaderColor();
-			copyRightForeColor = theme.getBrandingColor();
+			copyRightBackColor = theme.get("PageHeaderColor");
+			copyRightForeColor = theme.get("brandingColor");
 			
-			copyRightPageNumberForeColor = theme.getBrandingColor();
-			copyRightPageNumberBackColor = theme.getPageHeaderColor();
+			copyRightPageNumberForeColor = theme.get("brandingColor");
+			copyRightPageNumberBackColor = theme.get("PageHeaderColor");
 		}
 		
 		java.awt.Color userTitleColor = java.awt.Color.decode(titleColor);

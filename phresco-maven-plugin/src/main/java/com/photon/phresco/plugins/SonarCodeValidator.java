@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.lang.reflect.Type;
+import java.util.Map;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -17,6 +18,8 @@ import com.photon.phresco.commons.model.ProjectInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.TechnologyTypes;
 
@@ -58,9 +61,12 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
 			ProjectInfo projectInfo = gson.fromJson(projectInfoJson , projectInfoType);
 			ApplicationInfo applicationInfo = projectInfo.getAppInfos().get(0);
 			String techId = applicationInfo.getTechInfo().getId();
-			if (techId.equals(TechnologyTypes.ANDROID_NATIVE) || techId.equals(TechnologyTypes.ANDROID_HYBRID) || techId.equals(TechnologyTypes.JAVA_STANDALONE)) {
+			Configuration config = getConfiguration(infoFile, VALIDATE_CODE);
+			Map<String, String> parameters = MojoUtil.getAllValues(config);
+			String testAgainst = parameters.get("sonar");
+			if (((techId.equals(TechnologyTypes.ANDROID_NATIVE) && testAgainst.equals("functional")) || (techId.equals(TechnologyTypes.ANDROID_HYBRID) && testAgainst.equals("functional"))) ||  techId.equals(TechnologyTypes.JAVA_STANDALONE)) {
 				String[] list = targetDir.list(new JarFileNameFilter());
-				if (list.length == 0) {
+				if (list == null || list.length == 0) {
 					throw new MojoExecutionException("Code Validation for functional test scripts requires a build. Generate a build and try again.");
 				}
 			} 
