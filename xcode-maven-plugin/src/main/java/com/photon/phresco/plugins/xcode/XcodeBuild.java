@@ -64,9 +64,9 @@ import com.photon.phresco.util.IosSdkUtil.MacSdkType;
  */
 public class XcodeBuild extends AbstractMojo implements PluginConstants {
 
-	private static final String TEST_AFTER_BUILD_YES = "TEST_AFTER_BUILD=YES";
+	private static final String RUN_UNIT_TEST_WITH_IOS_SIM_YES = "RUN_UNIT_TEST_WITH_IOS_SIM=YES";
 
-	private static final String SHELL_SPACE = "\\ ";
+	private static final String TEST_AFTER_BUILD_YES = "TEST_AFTER_BUILD=YES";
 
 	private static final String XCODEBUILD = "xcodebuild";
 
@@ -477,7 +477,7 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 			} else {
 				commands.add(PROJECT);
 			}
-			commands.add(xcodeProject);
+			commands.add(xcodeProject.replace(STR_SPACE, SHELL_SPACE));
 		}
 		
 		if (StringUtils.isNotBlank(xcodeTarget)) {
@@ -487,7 +487,7 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 			} else {
 				commands.add(TARGET);
 			}
-			commands.add(xcodeTarget);
+			commands.add(xcodeTarget.replace(STR_SPACE, SHELL_SPACE));
 		}
 		
 		if (StringUtils.isNotBlank(configuration)) {
@@ -498,6 +498,11 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 		// if it is unit test, we have to set TEST_AFTER_BUILD=YES in build settings
 		if (unittest) {
 			commands.add(TEST_AFTER_BUILD_YES);
+		}
+		
+		// if it is unit test and application test, we need to pass this command
+		if (unittest && applicationTest) {
+			commands.add(RUN_UNIT_TEST_WITH_IOS_SIM_YES);
 		}
 		
 		if (StringUtils.isNotBlank(sdk)) {

@@ -3,11 +3,11 @@ package com.photon.phresco.plugins.xcode;
 import java.util.*;
 
 import org.apache.commons.lang.*;
-import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.*;
 
 import com.photon.phresco.exception.*;
 import com.photon.phresco.plugin.commons.*;
-import com.photon.phresco.plugins.model.Mojos.Mojo.*;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.*;
 import com.photon.phresco.util.*;
 

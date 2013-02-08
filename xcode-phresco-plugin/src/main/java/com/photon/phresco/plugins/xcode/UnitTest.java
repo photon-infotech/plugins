@@ -1,20 +1,17 @@
 package com.photon.phresco.plugins.xcode;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.lang.*;
-import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.*;
 
 import com.photon.phresco.exception.*;
-import com.photon.phresco.plugin.commons.MavenProjectInfo;
-import com.photon.phresco.plugin.commons.PluginConstants;
+import com.photon.phresco.plugin.commons.*;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands.MavenCommand;
-import com.photon.phresco.plugins.util.MojoUtil;
-import com.photon.phresco.util.Constants;
-import com.photon.phresco.util.Utility;
+import com.photon.phresco.plugins.util.*;
+import com.photon.phresco.util.*;
 
 public class UnitTest implements PluginConstants {
 
@@ -24,6 +21,9 @@ public class UnitTest implements PluginConstants {
 		Map<String, String> configs = MojoUtil.getAllValues(config);
 		String sdk = configs.get(SDK);
 		String target = configs.get(TARGET);
+        if (StringUtils.isNotEmpty(target)) {
+        	target = target.replace(STR_SPACE, SHELL_SPACE);
+        }
 		boolean unitTest = Boolean.valueOf(configs.get(UNIT_TEST));
 		// get command from plugin info
 		String unitTestType = configs.get(UNIT_TEST_TYPE);

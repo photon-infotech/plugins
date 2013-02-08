@@ -1,16 +1,12 @@
 package com.photon.phresco.plugins.xcode;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.maven.plugin.*;
 import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.Commandline;
@@ -52,6 +48,9 @@ public class Package implements PluginConstants {
             environmentName = configs.get(ENVIRONMENT_NAME);
             String sdk = configs.get(SDK);
             String target = configs.get(TARGET);
+            if (StringUtils.isNotEmpty(target)) {
+            	target = target.replace(STR_SPACE, SHELL_SPACE);
+            }
             String configuration = configs.get(MODE);
             String encrypt = configs.get(ENCRYPT);
             String plistFile = configs.get(PLIST_FILE);
@@ -111,20 +110,15 @@ public class Package implements PluginConstants {
 			sb.append(HYPHEN_D + PLIST_FILE + EQUAL + plistFile);
 			
 			System.out.println("Command " + sb.toString());
-			Commandline cl = new Commandline(sb.toString());
-
-			Process pb = cl.execute();
-			// Consume subprocess output and write to stdout for debugging
-			InputStream is = new BufferedInputStream(pb.getInputStream());
-			int singleByte = 0;
-			while ((singleByte = is.read()) != -1) {
-				System.out.write(singleByte);
+			boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath());
+			if(!status) {
+				try {
+					throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
+				} catch (MojoExecutionException e) {
+					throw new PhrescoException(e);
+				}
 			}
-		} catch (CommandLineException e) {
-			System.out.println("Packaging failed ");
-			throw new PhrescoException(e);
-		} catch (IOException e) {
-			System.out.println("Packaging failed ");
+		} catch (FileNotFoundException e) {
 			throw new PhrescoException(e);
 		} finally {
             if (projectInfoReader != null) {

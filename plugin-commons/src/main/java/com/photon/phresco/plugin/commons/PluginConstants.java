@@ -33,6 +33,7 @@ public interface PluginConstants {
      String SUCCESS		 				= "SUCCESS";
      String FAILURE		 				= "FAILURE";
      String STR_SPACE 					= " ";
+     String SHELL_SPACE 				= "\\ ";
      String STR_UNDERSCORE				= "_";
      String PROJECT_INFO_FILE			= "project.info";
      String PLUGIN_INFO_FILE			= "phresco-plugin-info.xml";

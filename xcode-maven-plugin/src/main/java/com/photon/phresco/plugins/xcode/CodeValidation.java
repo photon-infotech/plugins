@@ -19,24 +19,21 @@
  */
 package com.photon.phresco.plugins.xcode;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.*;
 import org.apache.commons.lang.*;
-import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.*;
+
+import com.photon.phresco.plugin.commons.*;
 
 /**
  * APP deploy
  * @goal codevalidate
  */
 
-public class CodeValidation extends AbstractXcodeMojo{
+public class CodeValidation extends AbstractXcodeMojo implements PluginConstants {
 
 	private static final String MAKE = "make";
 	private static final String O = "-o";
