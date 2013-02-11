@@ -94,6 +94,7 @@ import com.phresco.pom.model.Profile;
 import com.phresco.pom.util.PomProcessor;
 
 public class GenerateReport implements PluginConstants {
+	private static final String DEFAULT_COPYRIGHTS = "© 2013 Photon Infotech Pvt.Ltd";
 	private static final String PHRESCO_UNIT_TEST = "phresco.unitTest";
 	private static final String REPORTS_TYPE = "reportsDataType";
 	private static final String PROJECT_NAME = "projectName";
@@ -124,6 +125,7 @@ public class GenerateReport implements PluginConstants {
 	// logo and theme objects
 	private String logo = null;
 	private Map<String, String> theme = null;
+	private String copyRights = "";
 	
     //test suite details
 	private float noOfTstSuiteTests = 0;
@@ -201,6 +203,7 @@ public class GenerateReport implements PluginConstants {
 		log.debug("Entering GenerateReport.cumalitiveTestReport()");
 		try {
 			Map<String, Object> cumulativeReportparams = new HashMap<String,Object>();
+			cumulativeReportparams.put("copyRights", copyRights);
 			//unit and functional details
 			testType = UNIT;
 			
@@ -625,6 +628,7 @@ public class GenerateReport implements PluginConstants {
 			reportStream = this.getClass().getClassLoader().getResourceAsStream(REPORTS_JASPER + containerJasperFile);
 			bufferedInputStream = new BufferedInputStream(reportStream);
 			Map<String, Object> parameters = new HashMap<String,Object>();
+			parameters.put("copyRights", copyRights);
 			parameters.put(PDF_PROJECT_CODE, projectCode);
 			parameters.put(PROJECT_NAME, projName);
 			parameters.put(TECH_NAME, techName);
@@ -674,6 +678,7 @@ public class GenerateReport implements PluginConstants {
 			reportStream = this.getClass().getClassLoader().getResourceAsStream("PhrescoModuleSureFireReport.jasper");
 			bufferedInputStream = new BufferedInputStream(reportStream);
 			Map<String, Object> parameters = new HashMap<String,Object>();
+			parameters.put("copyRights", copyRights);
 			parameters.put(PDF_PROJECT_CODE, projectCode);
 			parameters.put(PROJECT_NAME, projName);
 			parameters.put(TECH_NAME, techName);
@@ -721,6 +726,7 @@ public class GenerateReport implements PluginConstants {
 			String outFileNamePDF = Utility.getProjectHome() + appDir + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType  + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
 			String jasperFile = "PhrescoPerfContain.jasper";
 			Map<String, Object> parameters = new HashMap<String,Object>();
+			parameters.put("copyRights", copyRights);
 			parameters.put(PDF_PROJECT_CODE, projectCode);
 			parameters.put(PROJECT_NAME, projName);
 			parameters.put(TECH_NAME, techName);
@@ -742,6 +748,7 @@ public class GenerateReport implements PluginConstants {
 			String outFileNamePDF = Utility.getProjectHome() + appDir + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
 			String jasperFile = "PhrescoAndroidPerfContain.jasper";
 			Map<String, Object> parameters = new HashMap<String,Object>();
+			parameters.put("copyRights", copyRights);
 			parameters.put(PDF_PROJECT_CODE, projectCode);
 			parameters.put(PROJECT_NAME, projName);
 			parameters.put(TECH_NAME, techName);
@@ -763,6 +770,7 @@ public class GenerateReport implements PluginConstants {
 			String outFileNamePDF = Utility.getProjectHome() + appDir + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
 			String jasperFile = "PhrescoLoadTestContain.jasper";
 			Map<String, Object> parameters = new HashMap<String,Object>();
+			parameters.put("copyRights", copyRights);
 			parameters.put(PDF_PROJECT_CODE, projectCode);
 			parameters.put(PROJECT_NAME, projName);
 			parameters.put(TECH_NAME, techName);
@@ -1860,18 +1868,20 @@ public class GenerateReport implements PluginConstants {
 	        String appVersion = appInfo.getVersion();
 	        
 	        logo = configs.get("logo");
+	        // Default copyrights
+	        this.copyRights = DEFAULT_COPYRIGHTS;
 	        String themeJson = configs.get("theme");
 	        if (StringUtils.isNotEmpty(themeJson)) {
 	        	Gson gson = new Gson();
 	        	Type mapType = new TypeToken<Map<String, String>>() {}.getType();
 		        theme = (Map<String, String>)gson.fromJson(themeJson, mapType);
+		        this.copyRights = theme.get("CopyRight");
 	        }
 	        
 	        this.testType = testType;
 	        this.reportType = reportType;
 	        this.appDir = appInfo.getAppDirName();
 	        this.projectCode = appInfo.getName();
-//	        this.projName = appInfo.getName();
 	        this.techName = appInfo.getTechInfo().getId();
 	        this.version = appVersion;
 	        this.sonarUrl = sonarUrl;
