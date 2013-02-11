@@ -78,8 +78,8 @@ public class Deploy implements PluginConstants {
 				}
 			}
 			
-//			sb.append(STR_SPACE);
-//			sb.append(HYPHEN_D + TRIGGER_SIMULATOR + EQUAL + triggerSimulator);
+			sb.append(STR_SPACE);
+			sb.append(HYPHEN_D + TRIGGER_SIMULATOR + EQUAL + triggerSimulator);
 			
 			System.out.println("Command " + sb.toString());
 			File baseDir = mavenProjectInfo.getBaseDir();
