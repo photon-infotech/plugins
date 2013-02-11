@@ -16,6 +16,7 @@ import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Para
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands.MavenCommand;
 import com.photon.phresco.plugins.util.*;
+import com.photon.phresco.util.*;
 
 public class Deploy implements PluginConstants {
 	
@@ -77,17 +78,18 @@ public class Deploy implements PluginConstants {
 				}
 			}
 			
-			sb.append(STR_SPACE);
-			sb.append(HYPHEN_D + TRIGGER_SIMULATOR + EQUAL + triggerSimulator);
+//			sb.append(STR_SPACE);
+//			sb.append(HYPHEN_D + TRIGGER_SIMULATOR + EQUAL + triggerSimulator);
 			
 			System.out.println("Command " + sb.toString());
-			Commandline cl = new Commandline(sb.toString());
-			Process pb = cl.execute();
-			
-			InputStream is = new BufferedInputStream(pb.getInputStream());
-			int singleByte = 0;
-			while ((singleByte = is.read()) != -1) {
-				System.out.write(singleByte);
+			File baseDir = mavenProjectInfo.getBaseDir();
+			boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath());
+			if(!status) {
+				try {
+					throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
+				} catch (MojoExecutionException e) {
+					throw new PhrescoException(e);
+				}
 			}
 		} catch (Exception e) {
 			throw new PhrescoException(e);

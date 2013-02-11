@@ -213,7 +213,8 @@ public class AppDeploy extends AbstractMojo implements PluginConstants {
 
 		getLog().info("triggerSimulator " + triggerSimulator);
 		getLog().info("deviceDeploy " + deviceDeploy);
-		if (triggerSimulator || deviceDeploy) { // Phresco app deploy should deploy the app in both simulator and device, In jenkins, app should start running only on device deployment - Due to Pipeline issue
+		// For device deployment alone
+		if (deviceDeploy) { // Phresco app deploy should deploy the app in both simulator and device, In jenkins, app should start running only on device deployment - Due to Pipeline issue
 			getLog().info("Triggering simulator started ");
 			Thread t = new Thread(runnable, "iPhoneSimulator");
 			t.start();
