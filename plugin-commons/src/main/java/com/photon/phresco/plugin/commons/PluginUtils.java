@@ -41,6 +41,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -70,10 +71,13 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.photon.phresco.api.ConfigManager;
 import com.photon.phresco.commons.FrameworkConstants;
 import com.photon.phresco.commons.model.BuildInfo;
+import com.photon.phresco.commons.model.ProjectInfo;
 import com.photon.phresco.configuration.ConfigReader;
 import com.photon.phresco.configuration.ConfigWriter;
 import com.photon.phresco.configuration.Configuration;
@@ -84,6 +88,7 @@ import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.framework.model.ContextUrls;
 import com.photon.phresco.framework.model.DbContextUrls;
 import com.photon.phresco.framework.model.Headers;
+import com.photon.phresco.impl.ConfigManagerImpl;
 import com.photon.phresco.plugins.filter.FileListFilter;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.HubConfiguration;
@@ -99,13 +104,13 @@ public class PluginUtils {
 	private String protocol = null;
 	private String serverContext = null;
 
-	public void executeUtil(String environmentType, String basedir, File sourceConfigXML) {
+	public void executeUtil(String environmentType, String basedir, File sourceConfigXML) throws PhrescoException {
 		try {
+			String customerId = readCustomerId(new File(basedir));
 			File currentDirectory = new File(".");
 			File configXML = new File(currentDirectory + File.separator + 
 			PluginConstants.DOT_PHRESCO_FOLDER + File.separator + PluginConstants.CONFIG_FILE);
-			File settingsXML = new File(Utility.getProjectHome() + PluginConstants.SETTINGS_FILE);
-			
+			File settingsXML = new File(Utility.getProjectHome() + customerId + Constants.SETTINGS_XML);
 			ConfigReader reader = new ConfigReader(configXML);
 			ConfigWriter writer = new ConfigWriter(reader, true);
 			writer.saveXml(sourceConfigXML, environmentType);
@@ -116,8 +121,12 @@ public class PluginUtils {
 				ConfigWriter globalWriter = new ConfigWriter(globalReader, true);
 				globalWriter.saveXml(srcReaderToAppend, environmentType);
 			}
-		} catch (Exception e) {
-			//FIXME : log the errors
+		} catch (TransformerException e) {
+			throw new PhrescoException(e);
+		} catch (IOException e) {
+			throw new PhrescoException(e);
+		} catch (ConfigurationException e) {
+			throw new PhrescoException(e);
 		}
 	}
 
@@ -909,5 +918,91 @@ public class PluginUtils {
 		}
 		
 		return osName;
+	}
+
+	public List<com.photon.phresco.configuration.Configuration> getConfiguration(File baseDir, String environmentName,
+			String type) throws PhrescoException {
+		ConfigManager configManager = null;
+		try {
+			String customerId = readCustomerId(baseDir);
+			File settingsFile = new File(Utility.getProjectHome() + customerId + Constants.SETTINGS_XML);
+			if (settingsFile.exists()) {
+				configManager = new ConfigManagerImpl(settingsFile);
+				List<com.photon.phresco.configuration.Configuration> settingsconfig = configManager.getConfigurations(
+						environmentName, type);
+				if (CollectionUtils.isNotEmpty(settingsconfig)) {
+					return settingsconfig;
+				}
+			}
+			configManager = new ConfigManagerImpl(new File(baseDir.getPath() + File.separator
+					+ Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE));
+			List<com.photon.phresco.configuration.Configuration> configurations = configManager.getConfigurations(
+					environmentName, type);
+			if (CollectionUtils.isNotEmpty(configurations)) {
+				return configurations;
+			}
+
+		} catch (ConfigurationException e) {
+			throw new PhrescoException(e);
+		}
+		return null;
+	}
+
+	public void writeDatabaseDriverToConfigXml(File baseDir, String sourceDir, String environmentName)
+			throws PhrescoException {
+		DatabaseUtil.initDriverMap();
+		try {
+			File configFile = new File(baseDir.getPath() + sourceDir + File.separator
+					+ Constants.CONFIGURATION_INFO_FILE);
+			if (!configFile.exists()) {
+				return;
+			}
+			DatabaseUtil dbutil = new DatabaseUtil();
+			List<String> envList = csvToList(environmentName);
+			for (String envName : envList) {
+				ConfigManager configManager = new ConfigManagerImpl(configFile);
+				List<com.photon.phresco.configuration.Configuration> configuration = configManager.getConfigurations(
+						envName, Constants.SETTINGS_TEMPLATE_DB);
+				if (CollectionUtils.isNotEmpty(configuration)) {
+					for (com.photon.phresco.configuration.Configuration config : configuration) {
+						Properties properties = config.getProperties();
+						String databaseType = config.getProperties().getProperty(Constants.DB_TYPE).toLowerCase();
+						String dbDriver = dbutil.getDbDriver(databaseType);
+						properties.setProperty(Constants.DB_DRIVER, dbDriver);
+						config.setProperties(properties);
+						configManager.createConfiguration(envName, config);
+						configManager.deleteConfiguration(envName, config);
+					}
+					configManager.writeXml(new FileOutputStream(configFile));
+				}
+			}
+		} catch (ConfigurationException e) {
+			throw new PhrescoException(e);
+		} catch (FileNotFoundException e) {
+			throw new PhrescoException(e);
+		}
+	}
+	
+	public String readCustomerId(File baseDir) throws PhrescoException {
+		ProjectInfo Projectinfo = null;
+		try {
+			File projectInfoPath = new File(baseDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER
+					+ File.separator + Constants.PROJECT_INFO_FILE);
+			if (projectInfoPath.exists()) {
+				BufferedReader bufferedReader = new BufferedReader(new FileReader(projectInfoPath));
+				Gson gson = new Gson();
+				Type type = new TypeToken<ProjectInfo>() {
+				}.getType();
+
+				Projectinfo = gson.fromJson(bufferedReader, type);
+			}
+			return Projectinfo.getCustomerIds().get(0);
+		} catch (JsonIOException e) {
+			throw new PhrescoException(e);
+		} catch (JsonSyntaxException e) {
+			throw new PhrescoException(e);
+		} catch (FileNotFoundException e) {
+			throw new PhrescoException(e);
+		}
 	}
 }

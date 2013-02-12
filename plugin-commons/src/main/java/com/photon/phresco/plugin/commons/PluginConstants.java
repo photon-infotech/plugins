@@ -39,7 +39,7 @@ public interface PluginConstants {
      String PLUGIN_INFO_FILE			= "phresco-plugin-info.xml";
      String FORWARD_SLASH               = "/";
      String CONFIG_FILE					= "phresco-env-config.xml";
-     String SETTINGS_FILE				= "settings.xml";
+     String SETTINGS_FILE				= "-settings.xml";
      String BASH 						= "bash";
      String ENV_FILE					= "runagainstsource.info";
      String POM_PROP_KEY_SOURCE_DIR     = "phresco.source.resource.dir";

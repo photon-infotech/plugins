@@ -11,11 +11,8 @@ import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
 
-import com.photon.phresco.api.ConfigManager;
 import com.photon.phresco.commons.model.BuildInfo;
-import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
-import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.plugin.commons.DatabaseUtil;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
@@ -39,6 +36,7 @@ public class Deploy implements PluginConstants {
 	private File tempDir;
 	private Log log;
 	private String sqlPath;
+	private PluginUtils pUtil;
 	
 	public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -48,6 +46,7 @@ public class Deploy implements PluginConstants {
         buildNumber = configs.get(BUILD_NUMBER);
         importSql = Boolean.parseBoolean(configs.get(EXECUTE_SQL));
         sqlPath = configs.get(FETCH_SQL);
+        pUtil = new PluginUtils();
         
 		try {
 			init();
@@ -67,8 +66,7 @@ public class Deploy implements PluginConstants {
 				callUsage();
 			}
 			
-			PluginUtils pu = new PluginUtils();
-			BuildInfo buildInfo = pu.getBuildInfo(Integer.parseInt(buildNumber));
+			BuildInfo buildInfo = pUtil.getBuildInfo(Integer.parseInt(buildNumber));
 			log.info("Build Name " + buildInfo);
 			
 			buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
@@ -77,7 +75,7 @@ public class Deploy implements PluginConstants {
 			binariesDir = new File(baseDir.getPath() + BINARIES_DIR);
 			
 			String context = "";
-			List<com.photon.phresco.configuration.Configuration> configurations = getConfiguration(Constants.SETTINGS_TEMPLATE_SERVER);
+			List<com.photon.phresco.configuration.Configuration> configurations = pUtil.getConfiguration(baseDir, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
 			for (com.photon.phresco.configuration.Configuration configuration : configurations) {
 				context = configuration.getProperties().getProperty(Constants.SERVER_CONTEXT);
 				break;
@@ -101,12 +99,12 @@ public class Deploy implements PluginConstants {
 				"Invalid Usage. Please see the Usage of Deploy Goal");
 	}
 	
-	private void createDb() throws MojoExecutionException, PhrescoException {
+	private void createDb() throws MojoExecutionException {
 		DatabaseUtil util = new DatabaseUtil();
 		try {
 			util.fetchSqlConfiguration(sqlPath, importSql, baseDir, environmentName);
-		} catch (Exception e) {
-			throw new PhrescoException(e);
+		} catch (PhrescoException e) {
+			throw new MojoExecutionException(e.getErrorMessage(), e);
 		}
 	}
 	
@@ -164,7 +162,7 @@ public class Deploy implements PluginConstants {
 	private void deploy() throws MojoExecutionException {
 		String deployLocation = "";
 		try {
-			List<com.photon.phresco.configuration.Configuration> configurations = getConfiguration(Constants.SETTINGS_TEMPLATE_SERVER);
+			List<com.photon.phresco.configuration.Configuration> configurations = pUtil.getConfiguration(baseDir, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
 			for (com.photon.phresco.configuration.Configuration configuration : configurations) {
 				deployLocation = configuration.getProperties().getProperty(Constants.SERVER_DEPLOY_DIR);
 				break;
@@ -176,15 +174,11 @@ public class Deploy implements PluginConstants {
 			log.info("Project is deploying into " + deployLocation);
 			FileUtils.copyDirectoryStructure(tempDir.getParentFile(), deployDir);
 			log.info("Project is deployed successfully");
-		} catch (Exception e) {
-			log.error(e.getMessage());
+		} catch (PhrescoException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
-	}
-	
-	private List<com.photon.phresco.configuration.Configuration> getConfiguration(String type) throws PhrescoException, ConfigurationException {
-		ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(new File(baseDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + CONFIG_FILE));
-		return configManager.getConfigurations(environmentName, type);		
 	}
 
 	private void cleanUp() throws MojoExecutionException {

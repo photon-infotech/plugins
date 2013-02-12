@@ -942,9 +942,8 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 			getLog().info("baseDir ... " + baseDir.getAbsolutePath());
 			getLog().info("SourceDirectory ... " + project.getBuild().getSourceDirectory());
 			getLog().info("Config file : " + srcConfigFile.getAbsolutePath() );
-			String basedir = baseDir.getName();
 			PluginUtils pu = new PluginUtils();
-			pu.executeUtil(environmentName, basedir, srcConfigFile);
+			pu.executeUtil(environmentName, baseDir.getPath(), srcConfigFile);
 			pu.setDefaultEnvironment(environmentName, srcConfigFile);
 			
 			// write project source path inside source folder
