@@ -64,7 +64,7 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
 			Configuration config = getConfiguration(infoFile, VALIDATE_CODE);
 			Map<String, String> parameters = MojoUtil.getAllValues(config);
 			String testAgainst = parameters.get("sonar");
-			if (((techId.equals(TechnologyTypes.ANDROID_NATIVE) && testAgainst.equals("functional")) || (techId.equals(TechnologyTypes.ANDROID_HYBRID) && testAgainst.equals("functional"))) ||  techId.equals(TechnologyTypes.JAVA_STANDALONE)) {
+			if (((techId.equals(TechnologyTypes.ANDROID_NATIVE) && testAgainst.equals("functional")) || (techId.equals(TechnologyTypes.ANDROID_HYBRID) && testAgainst.equals("functional"))) ||  (techId.equals(TechnologyTypes.JAVA_STANDALONE) && testAgainst.equals("functional"))) {
 				String[] list = targetDir.list(new JarFileNameFilter());
 				if (list == null || list.length == 0) {
 					throw new MojoExecutionException("Code Validation for functional test scripts requires a build. Generate a build and try again.");
