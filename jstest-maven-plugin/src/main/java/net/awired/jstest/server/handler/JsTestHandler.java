@@ -4,18 +4,19 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import net.awired.jstest.resource.ResourceResolver;
 import net.awired.jstest.runner.Runner;
 import net.awired.jstest.runner.RunnerType;
 import net.awired.jstest.runner.TestType;
+
 import org.apache.maven.plugin.logging.Log;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
-import com.yahoo.platform.yuitest.coverage.DirectoryInstrumenter;
-import net.awired.jscoverage.instrumentation.JsInstrumentedSource;
 
 public class JsTestHandler extends AbstractHandler {
 
@@ -53,8 +54,10 @@ public class JsTestHandler extends AbstractHandler {
     }
 
     @Override
-    public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException {
+        public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
+                throws IOException, ServletException {
+    
+   
         try {
             response.addDateHeader("EXPIRES", 0L);
             response.addHeader("CACHE_CONTROL", "NO_CACHE");
