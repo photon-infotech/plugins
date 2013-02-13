@@ -119,10 +119,11 @@ public class Package implements PluginConstants {
 			} else {
 				srcConfigFile = new File(baseDir + sourceDir + FORWARD_SLASH +  CONFIG_FILE);
 			}
-			String basedir = baseDir.getName();
 			PluginUtils pu = new PluginUtils();
-			pu.executeUtil(environmentName, basedir, srcConfigFile);
+			pu.executeUtil(environmentName, baseDir.getPath(), srcConfigFile);
 		} catch (PhrescoPomException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}

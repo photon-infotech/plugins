@@ -45,11 +45,8 @@ import com.mongodb.DBDecoder;
 import com.mongodb.DBObject;
 import com.mongodb.DefaultDBDecoder;
 import com.mongodb.Mongo;
-import com.photon.phresco.api.ConfigManager;
 import com.photon.phresco.configuration.Configuration;
-import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
-import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
 
@@ -182,10 +179,10 @@ public class DatabaseUtil {
 		}
 	}
 
-	public void fetchSqlConfiguration(String sqlPath, Boolean importSql, File baseDir, String environmentName) throws PhrescoException, ConfigurationException {
-		ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(new File(baseDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE));
+	public void fetchSqlConfiguration(String sqlPath, Boolean importSql, File baseDir, String environmentName) throws PhrescoException {
 		if (importSql) {
-			List<com.photon.phresco.configuration.Configuration> configuration = configManager.getConfigurations(environmentName, Constants.SETTINGS_TEMPLATE_DB);
+			PluginUtils putil = new PluginUtils();
+			List<com.photon.phresco.configuration.Configuration> configuration = putil.getConfiguration(baseDir, environmentName, Constants.SETTINGS_TEMPLATE_DB);
 			for (com.photon.phresco.configuration.Configuration config : configuration) {
 				getSqlFilePath(config, baseDir, sqlPath);
 			}

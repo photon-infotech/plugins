@@ -380,9 +380,8 @@ public class ApkMojo extends AbstractAndroidMojo {
 			} else {
 				srcConfigFile = new File(sourceDirectory.getParent(), "/assets/phresco-env-config.xml");
 			}
-			String basedir = baseDir.getName();
 			PluginUtils pu = new PluginUtils();
-			pu.executeUtil(environmentName, basedir, srcConfigFile);
+			pu.executeUtil(environmentName, baseDir.getPath(), srcConfigFile);
 			pu.setDefaultEnvironment(environmentName, srcConfigFile);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage());
