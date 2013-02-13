@@ -21,12 +21,12 @@ package com.photon.phresco.plugins;
 
 public class TestCase {
 
-	private String name;
-	private String testClass;
-	private String file;
+	private String name = "";
+	private String testClass = "";
+	private String file = "";;
 	private float line;
 	private float assertions;
-	private String time;
+	private String time = "";;
 	private TestCaseFailure testCaseFailure;
 	private TestCaseError testCaseError;
 

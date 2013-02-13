@@ -25,19 +25,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
 import com.google.gson.Gson;
-import com.photon.phresco.api.ConfigManager;
 import com.photon.phresco.configuration.ConfigurationInfo;
-import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
-import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.plugin.commons.DatabaseUtil;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
@@ -84,7 +79,6 @@ public class Start implements PluginConstants {
 			if (environmentName != null) {
 				updateFinalName();
 				configure();
-				writeDatabaseDriverToConfigXml();
 				storeEnvName();
 			}
 		    createDb();
@@ -96,7 +90,7 @@ public class Start implements PluginConstants {
 
 	private void updateFinalName() throws MojoExecutionException {
 		try {
-			List<com.photon.phresco.configuration.Configuration> configuration = getConfiguration(Constants.SETTINGS_TEMPLATE_SERVER);
+			List<com.photon.phresco.configuration.Configuration> configuration = pu.getConfiguration(baseDir, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
 			for (com.photon.phresco.configuration.Configuration serverConfiguration : configuration) {
 				serverPort = serverConfiguration.getProperties().getProperty(Constants.SERVER_PORT);
 				serverContext = serverConfiguration.getProperties().getProperty(Constants.SERVER_CONTEXT);
@@ -115,7 +109,12 @@ public class Start implements PluginConstants {
 
 	private void configure() throws MojoExecutionException {
 		log.info("Configuring the project....");
-		adaptSourceConfig();
+		try {
+			adaptSourceConfig();
+			pu.writeDatabaseDriverToConfigXml(baseDir, sourceDir, environmentName);
+		} catch (PhrescoException e) {
+			throw new MojoExecutionException(e.getMessage());
+		}
 	}
 
 	private void storeEnvName() throws MojoExecutionException {
@@ -145,89 +144,47 @@ public class Start implements PluginConstants {
 		}
 	}
 
-	private void createDb() throws MojoExecutionException, PhrescoException {
+	private void createDb() throws MojoExecutionException {
 		DatabaseUtil util = new DatabaseUtil();
 		try {
 			util.fetchSqlConfiguration(sqlPath, importSql, baseDir, environmentName);
-		} catch (Exception e) {
-			throw new PhrescoException(e);
+		} catch (PhrescoException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
 
 	private void adaptSourceConfig() throws MojoExecutionException {
 		File wsConfigFile = new File(baseDir + sourceDir + FORWARD_SLASH +  CONFIG_FILE);
 		File parentFile = wsConfigFile.getParentFile();
-		String basedir = projectCode;
-		if (parentFile.exists()) {
-			pu.executeUtil(environmentName, basedir, wsConfigFile);
+		try {
+			if (parentFile.exists()) {
+				pu.executeUtil(environmentName, baseDir.getPath(), wsConfigFile);
+			}
+		} catch (PhrescoException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
 
 	private void executePhase() throws MojoExecutionException {
 		FileOutputStream fos = null;
-		try {
 			File errorLog = new File(Utility.getProjectHome() + File.separator + projectCode + File.separator
 					+ LOG_FILE_DIRECTORY + RUN_AGS_LOG_FILE);
-			StringBuilder sb = new StringBuilder();
-			sb.append(MVN_CMD);
-			sb.append(STR_SPACE);
-			sb.append(JAVA_TOMCAT_RUN);
-			sb.append(STR_SPACE);
-			sb.append("-Dserver.port=");
-			sb.append(serverPort);
-			fos = new FileOutputStream(errorLog, false);
-			// ProcessBuilder pb = new ProcessBuilder(BASH, "-c", sb.toString());
-			Utility.executeStreamconsumer(sb.toString(), fos);
-		} catch (Exception e) {
-			throw new MojoExecutionException(e.getMessage(), e);
-		}
+			try {
+				StringBuilder sb = new StringBuilder();
+				sb.append(MVN_CMD);
+				sb.append(STR_SPACE);
+				sb.append(JAVA_TOMCAT_RUN);
+				sb.append(STR_SPACE);
+				sb.append("-Dserver.port=");
+				sb.append(serverPort);
+				fos = new FileOutputStream(errorLog, false);
+				// ProcessBuilder pb = new ProcessBuilder(BASH, "-c", sb.toString());
+				Utility.executeStreamconsumer(sb.toString(), fos);
+			} catch (FileNotFoundException e) {
+				throw new MojoExecutionException(e.getMessage(), e);
+			}
 	}
 	
-	public void writeDatabaseDriverToConfigXml() throws MojoExecutionException {
-		DatabaseUtil.initDriverMap();
-		try {
-			File configFile = new File(baseDir.getPath() + sourceDir + File.separator + Constants.CONFIGURATION_INFO_FILE);
-			DatabaseUtil dbutil = new DatabaseUtil();
-			ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(configFile);
-			List<String> envList = pu.csvToList(environmentName);
-			for (String envName : envList) {
-				List<com.photon.phresco.configuration.Configuration> configuration = configManager.getConfigurations(
-						envName, Constants.SETTINGS_TEMPLATE_DB);
-				if(CollectionUtils.isEmpty(configuration)) {
-					return;
-				}
-				for (com.photon.phresco.configuration.Configuration config : configuration) {
-					Properties properties = config.getProperties();
-					String databaseType = config.getProperties().getProperty(Constants.DB_TYPE).toLowerCase();
-					String dbDriver = dbutil.getDbDriver(databaseType);
-					properties.setProperty(Constants.DB_DRIVER, dbDriver);
-					config.setProperties(properties);
-					configManager.createConfiguration(envName, config);
-					configManager.deleteConfiguration(envName, config);
-				}
-				configManager.writeXml(new FileOutputStream(configFile));
-			}
-		} catch (PhrescoException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
-		} catch (ConfigurationException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
-		} catch (FileNotFoundException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
-		}
-	}
-
-	private List<com.photon.phresco.configuration.Configuration> getConfiguration(String configType)
-			throws PhrescoException, MojoExecutionException {
-		try {
-			ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(new File(baseDir.getPath()
-					+ File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator
-					+ Constants.CONFIGURATION_INFO_FILE));
-			return configManager.getConfigurations(environmentName, configType);
-		} catch (ConfigurationException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
-		}
-	}
-
 	private File getProjectHome() {
 		File basePath = new File(Utility.getProjectHome() + File.separator + projectCode);
 		return basePath;

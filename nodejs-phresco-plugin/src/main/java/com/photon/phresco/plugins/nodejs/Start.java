@@ -35,10 +35,8 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
 import com.google.gson.Gson;
-import com.photon.phresco.api.ConfigManager;
 import com.photon.phresco.configuration.ConfigurationInfo;
 import com.photon.phresco.exception.PhrescoException;
-import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.plugin.commons.DatabaseUtil;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
@@ -57,6 +55,7 @@ public class Start implements PluginConstants {
 	private String environmentName;
 	private Log log;
 	private String sqlPath;
+	private PluginUtils pUtil;
 
 	public void start(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -66,6 +65,8 @@ public class Start implements PluginConstants {
 		environmentName = configs.get(ENVIRONMENT_NAME);
 		importSql = Boolean.parseBoolean(configs.get(EXECUTE_SQL));
 	    sqlPath = configs.get(FETCH_SQL);
+	    pUtil = new PluginUtils();
+	    
 		try {
 			configure();
 			storeEnvName();
@@ -83,20 +84,20 @@ public class Start implements PluginConstants {
 			PomProcessor pomProcessor = new PomProcessor(pom);
 			String sourceDir = pomProcessor.getProperty(POM_PROP_KEY_SOURCE_DIR);
 			File ConfigFile = new File(baseDir + sourceDir + FORWARD_SLASH +  CONFIG_FILE);
-			String basedir = baseDir.getName();
-			PluginUtils pu = new PluginUtils();
-			pu.executeUtil(environmentName, basedir, ConfigFile);
+			pUtil.executeUtil(environmentName, baseDir.getPath(), ConfigFile);
 		} catch (PhrescoPomException e) {
+			throw new MojoExecutionException(e.getMessage());
+		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage());
 		}
 	}
 
-	private void createDb() throws MojoExecutionException, PhrescoException {
+	private void createDb() throws MojoExecutionException {
 		DatabaseUtil util = new DatabaseUtil();
 		try {
 			util.fetchSqlConfiguration(sqlPath, importSql, baseDir, environmentName);
-		} catch (Exception e) {
-			throw new PhrescoException(e);
+		} catch (PhrescoException e) {
+			throw new MojoExecutionException(e.getMessage());
 		}
 	}
 
@@ -123,11 +124,7 @@ public class Start implements PluginConstants {
 			}
 			fileWriter = new FileWriter(baseDir.getPath() + LOG_FILE_DIRECTORY + RUN_AGS_LOG_FILE, false);
 			LogWriter logWriter = new LogWriter();
-			ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(new File(baseDir.getPath()
-					+ File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator
-					+ Constants.CONFIGURATION_INFO_FILE));
-			List<com.photon.phresco.configuration.Configuration> configurations = configManager.getConfigurations(
-					environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
+			List<com.photon.phresco.configuration.Configuration> configurations = pUtil.getConfiguration(baseDir, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
 			for (com.photon.phresco.configuration.Configuration serverConfiguration : configurations) {
 				serverhost = serverConfiguration.getProperties().getProperty(Constants.SERVER_HOST);
 				serverport = Integer.parseInt(serverConfiguration.getProperties().getProperty(Constants.SERVER_PORT));

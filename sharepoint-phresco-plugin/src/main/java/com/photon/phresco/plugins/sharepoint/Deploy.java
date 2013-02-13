@@ -11,11 +11,8 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.util.StringUtils;
 
-import com.photon.phresco.api.ConfigManager;
 import com.photon.phresco.commons.model.BuildInfo;
-import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
-import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
@@ -38,6 +35,7 @@ public class Deploy implements PluginConstants {
 	private File temp;
 	private File build;
 	private Log log;
+	private PluginUtils pUtil;
 	
 	public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -45,6 +43,7 @@ public class Deploy implements PluginConstants {
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
         buildNumber = configs.get(BUILD_NUMBER);
+        pUtil = new PluginUtils();
         
 		try {
 			init();
@@ -62,8 +61,7 @@ public class Deploy implements PluginConstants {
 				callUsage();
 			}
 			
-			PluginUtils pu = new PluginUtils();
-			BuildInfo buildInfo = pu.getBuildInfo(Integer.parseInt(buildNumber));
+			BuildInfo buildInfo = pUtil.getBuildInfo(Integer.parseInt(buildNumber));
 			log.info("Build Name " + buildInfo);
 			
 			buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
@@ -101,9 +99,7 @@ public class Deploy implements PluginConstants {
 
 	private void deploy() throws PhrescoException {
 		try {
-			ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(new File(baseDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE));
-
-			List<com.photon.phresco.configuration.Configuration> configurations = configManager.getConfigurations(environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
+			List<com.photon.phresco.configuration.Configuration> configurations = pUtil.getConfiguration(baseDir, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
 			for (com.photon.phresco.configuration.Configuration configuration : configurations) {
 				String serverContext = configuration.getProperties().getProperty(Constants.SERVER_CONTEXT);
 				String protocol = configuration.getProperties().getProperty(Constants.SERVER_PROTOCOL);
@@ -114,8 +110,6 @@ public class Deploy implements PluginConstants {
 				addSolution(projectCode);
 				deploysolution(protocol, serverContext, host, port, projectCode);
 			}
-		} catch (ConfigurationException e) {
-			throw new PhrescoException(e);
 		} catch (MojoExecutionException e) {
 			throw new PhrescoException(e);
 		}
