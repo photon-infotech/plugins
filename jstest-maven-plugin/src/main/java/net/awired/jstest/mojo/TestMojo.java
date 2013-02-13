@@ -57,7 +57,7 @@ public class TestMojo extends AbstractJsTestMojo {
 
             if (isPackBeforeTest()) {
                 getLog().info("Package Started");
-                Commandline cmdLine = new Commandline("mvn package -DskipTests");
+                Commandline cmdLine = new Commandline("mvn package -Pjava -DskipTests");
                 //cmdLine.setWorkingDirectory(".");
                 try {
                     Process process = cmdLine.execute();
@@ -65,6 +65,7 @@ public class TestMojo extends AbstractJsTestMojo {
                     StringWriter writer = new StringWriter();
                     IOUtils.copy(inputStream, writer);
                     String output = writer.toString();
+                    getLog().info(output);
                     if (output.contains("[INFO] BUILD SUCCESS")) {
                         getLog().info("Packaged successfully");
                         WebAppContext webAppContext = new WebAppContext();

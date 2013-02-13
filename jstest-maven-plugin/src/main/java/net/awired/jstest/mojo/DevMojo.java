@@ -57,7 +57,7 @@ public class DevMojo extends AbstractJsTestMojo {
 
             if (isPackBeforeTest()) {
                 getLog().info("Package Started");
-                Commandline cmdLine = new Commandline("mvn package -DskipTests");
+                Commandline cmdLine = new Commandline("mvn package -Pjava -DskipTests");
                 cmdLine.setWorkingDirectory(".");
                 try {
                     Process process = cmdLine.execute();
