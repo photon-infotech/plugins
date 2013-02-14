@@ -3,12 +3,12 @@ package net.awired.jstest.mojo.inherite;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
 import net.awired.jstest.resource.ResourceDirectory;
 import net.awired.jstest.resource.ResourceResolver;
 import net.awired.jstest.runner.RunnerType;
 import net.awired.jstest.runner.TestType;
 
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
@@ -128,6 +128,22 @@ public abstract class JsTestConfiguration extends AbstractMojo {
     private boolean mavenTestFailureIgnore;
 
     ///////////////////////////////////////////////////
+
+
+    /**
+     * @parameter default-value="${project.build.directory}${file.separator}${project.build.finalName}"
+     */
+    private String warTargetDir;
+
+    /**
+     * @parameter expression="${packBeforeTest}" default-value="false"
+     */
+    private boolean packBeforeTest;
+
+    /**
+     * @parameter default-value="${project.build.finalName}"
+     */
+    protected String context;
 
     /**
      * @parameter default-value="${project.build.directory}${file.separator}jstest"
@@ -291,4 +307,20 @@ public abstract class JsTestConfiguration extends AbstractMojo {
         return amdPreloads;
     }
 
+    public String getWarTargetDir() {
+        return warTargetDir;
+    }
+
+    public void setWarTargetDir(String warTargetDir) {
+        this.warTargetDir = warTargetDir;
+    }
+
+    public boolean isPackBeforeTest() {
+        return packBeforeTest;
+    }
+
+    public void setPackBeforeTest(boolean packBeforeTest) {
+        this.packBeforeTest = packBeforeTest;
+    }
+    
 }

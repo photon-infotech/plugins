@@ -7,6 +7,7 @@ import org.apache.maven.plugin.logging.Log;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.eclipse.jetty.webapp.WebAppContext;
 
 public class JsTestServer {
 
@@ -28,10 +29,11 @@ public class JsTestServer {
     public void startServer(Handler handler) throws Exception {
         SelectChannelConnector connector = new SelectChannelConnector();
         server.addConnector(connector);
-        server.setHandler(handler);
         connector.setPort(port);
+        server.setHandler(handler);
         log.info("Starting JsTest server on port " + port);
         server.start();
+//        server.join();
     }
 
     public void join() {
