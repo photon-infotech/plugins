@@ -229,9 +229,12 @@ public class Package implements PluginConstants {
 	public String readDefaultEnv(List<String> envList) throws MojoExecutionException {
 		boolean defaultEnv = false;
 		String defaultEnvName = "";
+		ConfigManager configManager = null;
 		try {
 			String customerId = pu.readCustomerId(baseDir);
-			ConfigManager configManager = new ConfigManagerImpl(new File(Utility.getProjectHome() + customerId + Constants.SETTINGS_XML)); 
+			File settingsXml = new File(Utility.getProjectHome() + customerId + Constants.SETTINGS_XML);
+			if (settingsXml.exists()) {
+			configManager = new ConfigManagerImpl(settingsXml); 
 			List<Environment> settingsEnvironments = configManager.getEnvironments(envList);
 			for (Environment environment : settingsEnvironments) {
 				 defaultEnv = environment.isDefaultEnv();
@@ -239,6 +242,7 @@ public class Package implements PluginConstants {
 						defaultEnvName = environment.getName();
 				 }
 			}
+		}
 			if(!defaultEnv){
 				configManager = new ConfigManagerImpl(new File(baseDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE));
 				List<Environment> configurationEnvironments = configManager.getEnvironments(envList);
