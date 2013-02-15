@@ -52,9 +52,9 @@ public class TestMojo extends AbstractJsTestMojo {
                     buildAmdRunnerType(), buildTestType(resourceResolver), false, getLog().isDebugEnabled(),
                     getAmdPreloads(), getTargetSourceDirectory());
 
-            Handler[] handlers = new Handler[2];
-            handlers[0] = jsTestHandler;
-
+            Handler[] handlers = new Handler[] {jsTestHandler };
+            getLog().info("before if...............handlers === " + handlers);
+            
             if (isPackBeforeTest()) {
                 getLog().info("Package Started");
                 Commandline cmdLine = new Commandline("mvn package -Pjava -DskipTests");
@@ -65,7 +65,6 @@ public class TestMojo extends AbstractJsTestMojo {
                     StringWriter writer = new StringWriter();
                     IOUtils.copy(inputStream, writer);
                     String output = writer.toString();
-                    getLog().info(output);
                     if (output.contains("[INFO] BUILD SUCCESS")) {
                         getLog().info("Packaged successfully");
                         WebAppContext webAppContext = new WebAppContext();
@@ -76,7 +75,7 @@ public class TestMojo extends AbstractJsTestMojo {
 
                         webAppContext.setContextPath("/" + context);
                         webAppContext.setParentLoaderPriority(true);
-                        handlers[1] = webAppContext;
+                        handlers = new Handler[] {jsTestHandler, webAppContext };
                     } else {
                         getLog().info("Package Failed");
                     }
