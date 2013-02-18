@@ -137,6 +137,7 @@ public interface PluginConstants {
 	 String JAVA_TOMCAT_RUN             = "tomcat:run";
 	 String JAVA_UNIX_PROCESS_KILL_CMD	= "kill -9 ";
 	 String PACKAGING_TYPE_JAR			= "jar";
+	 String PACKAGING_TYPE_WAR          = "war";
 	 String JAR_NAME					= "jarName";
 	 String MAIN_CLASS_NAME				= "mainClassName";
 	 String PROJECT_MODULE 				= "projectModule";

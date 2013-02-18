@@ -14,6 +14,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -197,7 +198,7 @@ public class Package implements PluginConstants {
 		try {
 			File pom = project.getFile();
 			PomProcessor pomprocessor = new PomProcessor(pom);
-			if(pomprocessor.getModel().getPackaging() != null && pomprocessor.getModel().getPackaging().equals(PACKAGING_TYPE_JAR)) {
+			if(isJarProject(project)) {
 				context = jarName;
 				updatemainClassName();
 			} else {
@@ -224,6 +225,28 @@ public class Package implements PluginConstants {
 		} catch (PhrescoPomException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
+	}
+	
+	private boolean isJarProject(MavenProject project) throws PhrescoPomException {
+		boolean jarProject = true;
+		List<String> modules = project.getModules();
+		if(CollectionUtils.isEmpty(modules)) {
+			if(project.getModel().getPackaging().equals(PACKAGING_TYPE_WAR)) {
+				jarProject = false;
+			}
+		}
+		for (String mavenProject : modules) {
+			File pomFile = new File(project.getBasedir(), File.separator
+					+ mavenProject + File.separator + POM_XML);
+			if (pomFile.exists()) {
+				PomProcessor processor = new PomProcessor(pomFile);
+				if (processor.getPackage().equals(PACKAGING_TYPE_WAR)) {
+					jarProject = false;
+					break;
+				}
+			}
+		}
+		return jarProject;
 	}
 	
 	public String readDefaultEnv(List<String> envList) throws MojoExecutionException {
