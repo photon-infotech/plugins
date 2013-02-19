@@ -742,14 +742,17 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 
 
 	private void createDeliverables(String buildName, File baseFolder) throws MojoExecutionException {
+		File tmpFile = null;
 		try {
 			getLog().info("Creating deliverables.....");
 			File packageInfoFile = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + PHRESCO_PACKAGE_FILE);
+			tmpFile = new File(baseDir + DO_NOT_CHECKIN_BUILD, buildName);
+			FileUtils.copyDirectory(baseFolder, tmpFile);
 			if(packageInfoFile.exists()) {
-				PluginUtils.createBuildResources(packageInfoFile, baseDir, baseFolder);
+				PluginUtils.createBuildResources(packageInfoFile, baseDir, tmpFile);
 			}
 			ZipArchiver zipArchiver = new ZipArchiver();
-			zipArchiver.addDirectory(baseFolder);
+			zipArchiver.addDirectory(tmpFile);
 			File deliverableZip = new File(baseDir + DO_NOT_CHECKIN_BUILD, buildName + ".zip");
 			zipArchiver.setDestFile(deliverableZip);
 			zipArchiver.createArchive();
@@ -757,6 +760,10 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 			getLog().info("Deliverables available at " + deliverableZip.getName());
 		} catch (IOException e) {
 			throw new MojoExecutionException("Error in writing output..." + e.getLocalizedMessage());
+		} finally {
+			if(tmpFile.exists()) {
+				FileUtil.delete(tmpFile);
+			}
 		}
 	}
 	

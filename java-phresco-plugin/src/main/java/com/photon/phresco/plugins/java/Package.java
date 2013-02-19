@@ -411,7 +411,7 @@ public class Package implements PluginConstants {
 			String appTechId = applicationInfo.getId();
 			
 			
-			File packageInfoFile = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + "phresco-package.xml");
+			File packageInfoFile = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + PHRESCO_PACKAGE_FILE);
 			if (appTechId.equals(TechnologyTypes.JAVA_STANDALONE)) {
 				if(packageInfoFile.exists()) {
 					copyJarToPackage(zipNameWithoutExt);
