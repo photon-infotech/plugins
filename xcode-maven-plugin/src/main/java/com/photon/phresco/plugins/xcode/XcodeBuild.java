@@ -744,6 +744,10 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 	private void createDeliverables(String buildName, File baseFolder) throws MojoExecutionException {
 		try {
 			getLog().info("Creating deliverables.....");
+			File packageInfoFile = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + PHRESCO_PACKAGE_FILE);
+			if(packageInfoFile.exists()) {
+				PluginUtils.createBuildResources(packageInfoFile, baseDir, baseFolder);
+			}
 			ZipArchiver zipArchiver = new ZipArchiver();
 			zipArchiver.addDirectory(baseFolder);
 			File deliverableZip = new File(baseDir + DO_NOT_CHECKIN_BUILD, buildName + ".zip");

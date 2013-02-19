@@ -46,6 +46,7 @@ import org.codehaus.plexus.util.cli.Commandline;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
+import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.PossibleValues;
@@ -213,6 +214,10 @@ public class Package implements PluginConstants {
 			zipName = util.createPackage(buildName, buildNumber, nextBuildNo, currentDate);
 			zipFilePath = buildDir.getPath() + File.separator + zipName;
 			tempDir = new File(baseDir + sourceDirectory + File.separator + tempZipName.substring(0, tempZipName.length() - 4));
+			File packageInfoFile = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + PHRESCO_PACKAGE_FILE);
+			if(packageInfoFile.exists()) {
+				PluginUtils.createBuildResources(packageInfoFile, baseDir, tempDir);
+			}
 			ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getErrorMessage(), e);

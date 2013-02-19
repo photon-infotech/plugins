@@ -448,5 +448,10 @@ public interface PluginConstants {
     String TEST_AGAINST_DB = "dataBase";
     
     String PHASE_PACKAGE_INFO = "phresco-package-info.xml";
+    
+    String PHRESCO_PACKAGE_FILE = "phresco-build.xml";
+    String ELEMENT_DIRECTORIES  = "directories";
+    String ELEMENT_FILES        = "files";
+    String ATTR_TODIR           = "toDirectory"; 
 	
 }
