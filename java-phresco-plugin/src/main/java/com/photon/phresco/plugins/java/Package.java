@@ -235,14 +235,16 @@ public class Package implements PluginConstants {
 				jarProject = false;
 			}
 		}
-		for (String mavenProject : modules) {
-			File pomFile = new File(project.getBasedir(), File.separator
-					+ mavenProject + File.separator + POM_XML);
-			if (pomFile.exists()) {
-				PomProcessor processor = new PomProcessor(pomFile);
-				if (processor.getPackage().equals(PACKAGING_TYPE_WAR)) {
-					jarProject = false;
-					break;
+		if(CollectionUtils.isNotEmpty(modules)) {
+			for (String mavenProject : modules) {
+				File pomFile = new File(project.getBasedir(), File.separator
+						+ mavenProject + File.separator + POM_XML);
+				if (pomFile.exists()) {
+					PomProcessor processor = new PomProcessor(pomFile);
+					if (processor.getPackage().equals(PACKAGING_TYPE_WAR)) {
+						jarProject = false;
+						break;
+					}
 				}
 			}
 		}
