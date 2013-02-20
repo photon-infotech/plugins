@@ -58,9 +58,9 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.codehaus.plexus.util.FileUtils;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -143,7 +143,7 @@ public class PluginUtils {
 	
 	public void encode(File configFile) throws PhrescoException {
 		try {
-			String fileToString = FileUtils.fileRead(configFile);
+			String fileToString = org.codehaus.plexus.util.FileUtils.fileRead(configFile);
 			String content = Base64.encodeBase64String(fileToString.getBytes());
 //			FileUtils.fileWrite(configFile, content);
 		} catch (IOException e) {
@@ -1003,6 +1003,91 @@ public class PluginUtils {
 			throw new PhrescoException(e);
 		} catch (FileNotFoundException e) {
 			throw new PhrescoException(e);
+		}
+	}
+	
+	public static void createBuildResources(File packageInfoFile, File baseDir, File tempDir) throws MojoExecutionException {
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder;
+		Document doc;
+		try {
+			dBuilder = dbFactory.newDocumentBuilder();
+			doc = dBuilder.parse(packageInfoFile);
+			doc.getDocumentElement().normalize();
+			NodeList nList = doc.getElementsByTagName(PluginConstants.ELEMENT_DIRECTORIES);
+			copyResources(nList, baseDir, tempDir);
+			nList = doc.getElementsByTagName(PluginConstants.ELEMENT_FILES);
+			copyResources(nList, baseDir, tempDir);
+		} catch (SAXException e) {
+			throw new MojoExecutionException(e.getMessage());
+		} catch (IOException e) {
+			throw new MojoExecutionException(e.getMessage());
+		} catch (ParserConfigurationException e) {
+			throw new MojoExecutionException(e.getMessage());
+		}
+	}
+
+	private static void copyResources(NodeList nList, File baseDir, File tempDir) throws MojoExecutionException {
+		for (int temp = 0; temp < nList.getLength(); temp++) {
+			Node nNode = nList.item(temp);
+			Element eElement = (Element) nNode;
+			NodeList attributes = eElement.getChildNodes();
+			for (int i = 0; i < attributes.getLength(); i++) {
+				Node node = attributes.item(i);
+				if (node.getNodeType() == Node.ELEMENT_NODE) {
+					Element element  = (Element) node;
+					if(StringUtils.isNotEmpty(element.getAttribute(PluginConstants.ATTR_TODIR))) {
+						copyToDirectory(baseDir, element.getAttribute(PluginConstants.ATTR_TODIR), node.getTextContent().trim(), tempDir);
+					} else {
+						copyFolders(baseDir, node.getTextContent().trim(), tempDir);
+					}
+				}
+			}
+		}
+	}
+	
+	private static void copyToDirectory(File projectBaseDir, String attribute, String source, File tempDir) throws MojoExecutionException {
+		if(StringUtils.isNotEmpty(attribute)) {
+			File cFile = new File(projectBaseDir, source);
+			File newFile = new File(tempDir, attribute);
+			if(!cFile.exists()) {
+				newFile.mkdirs();
+				return;
+			}
+			try {
+				if(cFile.exists()) {
+					if(cFile.isDirectory()) {
+						FileUtils.copyDirectory(cFile, newFile);
+					} else {
+						FileUtils.copyFileToDirectory(cFile, newFile);
+					}
+				}
+			} catch (IOException e) {
+				throw new MojoExecutionException(e.getMessage());
+			}
+		}
+		
+	}
+
+	private static void copyFolders(File projectBaseDir, String folderToCopy, File tempDir) throws MojoExecutionException  {
+		if(StringUtils.isNotEmpty(folderToCopy)) {
+			File cFile = new File(projectBaseDir, folderToCopy);
+			if(!cFile.exists() && cFile.isDirectory()) {
+				File newFile = new File(tempDir, folderToCopy);
+				newFile.mkdirs();
+				return;
+			}
+			try {
+				if(cFile.exists()) {
+					if(cFile.isDirectory()) { 
+						FileUtils.copyDirectoryToDirectory(cFile, tempDir);
+					} else {
+						FileUtils.copyFileToDirectory(cFile, tempDir);
+					}
+				}
+			} catch (IOException e) {
+				throw new MojoExecutionException(e.getMessage());
+			}
 		}
 	}
 }

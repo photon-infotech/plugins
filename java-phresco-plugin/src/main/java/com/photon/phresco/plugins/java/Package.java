@@ -235,14 +235,16 @@ public class Package implements PluginConstants {
 				jarProject = false;
 			}
 		}
-		for (String mavenProject : modules) {
-			File pomFile = new File(project.getBasedir(), File.separator
-					+ mavenProject + File.separator + POM_XML);
-			if (pomFile.exists()) {
-				PomProcessor processor = new PomProcessor(pomFile);
-				if (processor.getPackage().equals(PACKAGING_TYPE_WAR)) {
-					jarProject = false;
-					break;
+		if(CollectionUtils.isNotEmpty(modules)) {
+			for (String mavenProject : modules) {
+				File pomFile = new File(project.getBasedir(), File.separator
+						+ mavenProject + File.separator + POM_XML);
+				if (pomFile.exists()) {
+					PomProcessor processor = new PomProcessor(pomFile);
+					if (processor.getPackage().equals(PACKAGING_TYPE_WAR)) {
+						jarProject = false;
+						break;
+					}
 				}
 			}
 		}
@@ -407,16 +409,30 @@ public class Package implements PluginConstants {
 			ProjectInfo projectInfo = projectutils.getProjectInfo(baseDir);
 			TechnologyInfo applicationInfo = projectInfo.getAppInfos().get(0).getTechInfo();
 			String appTechId = applicationInfo.getId();
+			
+			
+			File packageInfoFile = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + PHRESCO_PACKAGE_FILE);
 			if (appTechId.equals(TechnologyTypes.JAVA_STANDALONE)) {
+				if(packageInfoFile.exists()) {
+					copyJarToPackage(zipNameWithoutExt);
+					PluginUtils.createBuildResources(packageInfoFile, baseDir, tempDir);
+				}
 				copyJarToPackage(zipNameWithoutExt);
 			} else {
+				if(packageInfoFile.exists()) {
+					copyWarToPackage(zipNameWithoutExt, context);
+					PluginUtils.createBuildResources(packageInfoFile, baseDir, tempDir);
+				}
 				copyWarToPackage(zipNameWithoutExt, context);
 			}
+			
 			ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getErrorMessage(), e);
 		}
 	}
+	
+	
 
 	private void copyJarToPackage(String zipNameWithoutExt) throws MojoExecutionException {
 		try {

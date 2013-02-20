@@ -43,6 +43,7 @@ import org.jdom.input.SAXBuilder;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
+import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.model.WP8PackageInfo;
 import com.photon.phresco.plugins.util.MojoUtil;
@@ -327,6 +328,11 @@ public class Package implements PluginConstants {
 			} else if(type.equalsIgnoreCase("wp7")) {
 				String packageFolder = solutionFile[0].getName().substring(0, solutionFile[0].getName().length() - 4);
 				tempDir = new File(baseDir + sourceDirectory + File.separator + WP_SOURCE + File.separator + packageFolder + WP7_BIN_FOLDER + WP7_RELEASE_FOLDER);	
+			}
+			File packageInfoFile = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + PHRESCO_PACKAGE_FILE);
+			// To Copy Contents From Package Info File
+			if(packageInfoFile.exists()) {
+				PluginUtils.createBuildResources(packageInfoFile, baseDir, tempDir);
 			}
 			ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
 		} catch (PhrescoException e) {

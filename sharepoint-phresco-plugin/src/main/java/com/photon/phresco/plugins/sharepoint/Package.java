@@ -28,6 +28,7 @@ import org.jdom.output.XMLOutputter;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
+import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.plugins.util.PluginPackageUtil;
@@ -198,7 +199,13 @@ public class Package implements PluginConstants {
 			String zipName = util.createPackage(buildName, buildNumber, nextBuildNo, currentDate);
 			String zipFilePath = buildDir.getPath() + File.separator + zipName;
 			String zipNameWithoutExt = zipName.substring(0, zipName.lastIndexOf('.'));
-			copyWspToPackage(zipNameWithoutExt, context);
+			File packageInfoFile = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + PHRESCO_PACKAGE_FILE);
+			if(packageInfoFile.exists()) {
+				copyWspToPackage(zipNameWithoutExt, context);
+				PluginUtils.createBuildResources(packageInfoFile, baseDir, tempDir);
+			} else {
+				copyWspToPackage(zipNameWithoutExt, context);
+			}
 			ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getErrorMessage(), e);

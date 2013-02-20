@@ -389,7 +389,12 @@ public class Deploy implements PluginConstants {
 				throw new MojoExecutionException(" Deploy Directory " + deployLocation + " Does Not Exists ");
 			}
 			log.info("Project is deploying into " + deployLocation);
-			FileUtils.copyDirectoryStructure(tempDir.getAbsoluteFile(), deployDir);
+			String[] list = tempDir.list(new JDWarFileNameFilter());
+			if (list.length > 0) {
+				File warFile = new File(tempDir.getPath() + File.separator + list[0]);
+				FileUtils.copyFileToDirectory(warFile, deployDir);
+			}
+//			FileUtils.copyDirectoryStructure(tempDir.getAbsoluteFile(), deployDir);
 			log.info("Project is deployed successfully");
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage(), e);

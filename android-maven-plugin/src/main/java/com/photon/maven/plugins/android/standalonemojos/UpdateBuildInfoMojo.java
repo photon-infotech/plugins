@@ -61,10 +61,12 @@ import com.google.gson.reflect.TypeToken;
 import com.photon.maven.plugins.android.AbstractAndroidMojo;
 import com.photon.phresco.commons.model.BuildInfo;
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoProcessor;
 import com.photon.phresco.plugins.util.MojoUtil;
+import com.photon.phresco.util.FileUtil;
 
 
 /**
@@ -171,7 +173,6 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 		}
 		
 		if (outputFile.exists()) {
-
 			try {
 				getLog().info("APK created.. Copying to Build directory.....");
 				String buildName = project.getBuild().getFinalName() + '_' + getTimeStampForBuildName(currentDate);
@@ -190,9 +191,18 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 				getLog().info("copied to..." + destFile.getName());
 				apkFileName = destFile.getName();
 				getLog().info("Creating deliverables.....");
+				File packageInfoFile = new File(baseDir.getPath() + File.separator + ".phresco" + File.separator + PluginConstants.PHRESCO_PACKAGE_FILE);
 				ZipArchiver zipArchiver = new ZipArchiver();
+				File tmpFile = new File(buildDir, buildName);
+				if(!tmpFile.exists()) {
+					tmpFile.mkdirs();
+				}
+				FileUtils.copyFileToDirectory(destFile, tmpFile);
+				if(packageInfoFile.exists()) {
+					PluginUtils.createBuildResources(packageInfoFile, baseDir, tmpFile);
+				}
 				File inputFile = new File(apkFileName);
-				zipArchiver.addFile(destFile, destFile.getName());
+				zipArchiver.addDirectory(tmpFile);
 				File deliverableZip = new File(buildDir, buildName + ".zip");
 				zipArchiver.setDestFile(deliverableZip);
 				zipArchiver.createArchive();
@@ -200,10 +210,12 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 				deliverable = deliverableZip.getPath();
 				getLog().info("Deliverables available at " + deliverableZip.getName());
 				writeBuildInfo(true);
-				
+				if(!tmpFile.exists()) {
+					FileUtil.delete(tmpFile);
+				}
 			} catch (IOException e) {
 				throw new MojoExecutionException("Error in writing output...");
-			}
+			} 
 
 		}
 	}
