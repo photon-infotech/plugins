@@ -66,7 +66,8 @@ public class ProcessTestSourcesMojo extends AbstractJsTestMojo {
 				} 
             }
             for (String file : scan) {
-                if (!file.toLowerCase().endsWith(".js")) {
+                
+                if (!file.toLowerCase().endsWith(".js") && !file.toLowerCase().endsWith(".json")) {
                     getLog().debug("Skip instrumentation of file " + file + " as its not a .js file");
                     continue;
                 }
@@ -76,14 +77,22 @@ public class ProcessTestSourcesMojo extends AbstractJsTestMojo {
                 }
 
                 try {
-                	JsInstrumentedSource instrument = jsInstrumentor.instrument(file,
-                			fileUtilsWrapper.readFileToString(new File(sourceScriptDirectory.getDirectory(), file)));
 
+                    String fileContent = "";
+                    if (file.toLowerCase().endsWith(".json")) {
+                        fileContent = fileUtilsWrapper.readFileToString(new File(sourceScriptDirectory.getDirectory(), file));
+                    } else {
+
+                    	JsInstrumentedSource instrument = jsInstrumentor.instrument(file,
+                    			fileUtilsWrapper.readFileToString(new File(sourceScriptDirectory.getDirectory(), file)));
+                        fileContent = instrument.getIntrumentedSource();
+                    }
+                	
                 	File instrumentedfile = new File(getInstrumentedDirectory(), file);
 
                 	fileUtilsWrapper.forceMkdir(instrumentedfile.getParentFile());
 
-                	fileUtilsWrapper.writeStringToFile(instrumentedfile, instrument.getIntrumentedSource(), "UTF-8");
+                	fileUtilsWrapper.writeStringToFile(instrumentedfile, fileContent, "UTF-8");
 
                 } catch (FileNotFoundException e) {
                     throw new IllegalStateException("cannot find source code to instrument", e);

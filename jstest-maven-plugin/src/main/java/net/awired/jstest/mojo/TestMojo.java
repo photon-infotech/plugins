@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URL;
+import java.util.List;
 import java.util.ArrayList;
 import net.awired.jstest.executor.RunnerExecutor;
 import net.awired.jstest.mojo.inherite.AbstractJsTestMojo;
@@ -52,8 +53,8 @@ public class TestMojo extends AbstractJsTestMojo {
                     buildAmdRunnerType(), buildTestType(resourceResolver), false, getLog().isDebugEnabled(),
                     getAmdPreloads(), getTargetSourceDirectory());
             
-            Handler[] handlers = new Handler[] {jsTestHandler };
-            getLog().info("before if...............handlers === " + handlers);
+            List<Handler> handlers = new ArrayList<Handler>(2);
+            handlers.add(jsTestHandler);
             
             if (isPackBeforeTest()) {
                 getLog().info("Package Started");
@@ -76,7 +77,7 @@ public class TestMojo extends AbstractJsTestMojo {
 
                         webAppContext.setContextPath("/" + context);
                         webAppContext.setParentLoaderPriority(true);
-                        handlers = new Handler[] {jsTestHandler, webAppContext };
+                        handlers.add(webAppContext);
                     } else {
                         getLog().info("Package Failed");
                     }
@@ -87,8 +88,9 @@ public class TestMojo extends AbstractJsTestMojo {
             }
 
             HandlerCollection handlerCollect = new HandlerCollection();
-            handlerCollect.setHandlers(handlers);
+            handlerCollect.setHandlers(handlers.toArray(new Handler[handlers.size()]));
             jsTestServer.startServer(handlerCollect);
+            //jsTestServer.join();
 
             if (isEmulator()) {
                 executor = new RunnerExecutor();

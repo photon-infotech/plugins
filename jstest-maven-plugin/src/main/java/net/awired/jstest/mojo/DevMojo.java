@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.List;
+
 import net.awired.jstest.mojo.inherite.AbstractJsTestMojo;
 import net.awired.jstest.resource.ResourceDirectory;
 import net.awired.jstest.resource.ResourceResolver;
@@ -52,19 +54,20 @@ public class DevMojo extends AbstractJsTestMojo {
                     buildAmdRunnerType(), buildTestType(resourceResolver), true, getLog().isDebugEnabled(),
                     getAmdPreloads(), getTargetSourceDirectory());
             
-            Handler[] handlers = new Handler[2];
-            handlers[0] = jsTestHandler;
-
+            List<Handler> handlers = new ArrayList<Handler>(2);
+            handlers.add(jsTestHandler);
+            
             if (isPackBeforeTest()) {
                 getLog().info("Package Started");
                 Commandline cmdLine = new Commandline("mvn package -Pjava -DskipTests");
-                cmdLine.setWorkingDirectory(".");
+                //cmdLine.setWorkingDirectory(".");
                 try {
                     Process process = cmdLine.execute();
                     InputStream inputStream = process.getInputStream();
                     StringWriter writer = new StringWriter();
                     IOUtils.copy(inputStream, writer);
                     String output = writer.toString();
+                  
                     if (output.contains("[INFO] BUILD SUCCESS")) {
                         getLog().info("Packaged successfully");
                         WebAppContext webAppContext = new WebAppContext();
@@ -75,7 +78,7 @@ public class DevMojo extends AbstractJsTestMojo {
 
                         webAppContext.setContextPath("/" + context);
                         webAppContext.setParentLoaderPriority(true);
-                        handlers[1] = webAppContext;
+                        handlers.add(webAppContext);
                     } else {
                         getLog().info("Package Failed");
                     }
@@ -86,7 +89,7 @@ public class DevMojo extends AbstractJsTestMojo {
             }
 
             HandlerCollection handlerCollect = new HandlerCollection();
-            handlerCollect.setHandlers(handlers);
+            handlerCollect.setHandlers(handlers.toArray(new Handler[handlers.size()]));
             jsTestServer.startServer(handlerCollect);
 
             getLog().info(String.format(INSTRUCTION_FORMAT, getDevPort(), getSourceDir(), getTestDir()));
