@@ -107,6 +107,7 @@ public class Package implements PluginConstants {
     			keyPass = configs.get(dependencyValue);
         	}
 		}
+        PluginUtils.checkForConfigurations(baseDir, environmentName);
         util = new PluginPackageUtil();
         try {
 			init();

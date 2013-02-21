@@ -75,6 +75,8 @@ public class Package implements PluginConstants {
 				throw new PhrescoException("Environment Name is empty . ");
 			}
 			
+			PluginUtils.checkForConfigurations(baseDir, embedAppId);
+			
 			if (StringUtils.isEmpty(sdk)) {
 				System.out.println("SDK is empty . ");
 				throw new PhrescoException("SDK is empty . ");

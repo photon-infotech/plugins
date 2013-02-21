@@ -45,7 +45,6 @@ public class Package implements PluginConstants {
 		String storepass = configs.get(STOREPASS);
 		String keypass = configs.get(KEYPASS);
 		String alias = configs.get(ALIAS);
-		
 		if (StringUtils.isEmpty(environmentName)) {
 			System.out.println("Environment Name is empty . ");
 			throw new PhrescoException("Environment Name is empty . ");
@@ -55,6 +54,8 @@ public class Package implements PluginConstants {
 			System.out.println("sdkVersion is empty . ");
 			throw new PhrescoException("sdkVersion is empty . ");
 		}
+		
+		PluginUtils.checkForConfigurations(new File(baseDir), environmentName);
 		
 		Boolean isSigning = Boolean.valueOf(signing);
 		log.info("isSigning . " + isSigning);

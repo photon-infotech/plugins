@@ -91,7 +91,8 @@ public class Package implements PluginConstants {
         moduleName = configs.get(PROJECT_MODULE);
         String packMinifiedFilesValue = configs.get(PACK_MINIFIED_FILES);
         File warConfigFile = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + WAR_CONFIG_FILE);
-		try { 
+        PluginUtils.checkForConfigurations(baseDir, environmentName);
+        try { 
 			init();
 			if (environmentName != null) {
 				updateFinalName();

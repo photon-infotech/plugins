@@ -90,7 +90,7 @@ public class Package implements PluginConstants {
         config = configs.get(CONFIG);
         type = configs.get(WINDOWS_PLATFORM_TYPE);
         util = new PluginPackageUtil();
-        
+        PluginUtils.checkForConfigurations(baseDir, environmentName);
 		try {
 			init();
 			if(type.equalsIgnoreCase(WP8_PLATFORM)) {

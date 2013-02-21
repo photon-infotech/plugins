@@ -76,6 +76,7 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.photon.phresco.api.ConfigManager;
 import com.photon.phresco.commons.FrameworkConstants;
+import com.photon.phresco.commons.model.ApplicationInfo;
 import com.photon.phresco.commons.model.BuildInfo;
 import com.photon.phresco.commons.model.ProjectInfo;
 import com.photon.phresco.configuration.ConfigReader;
@@ -881,26 +882,74 @@ public class PluginUtils {
 	}
 	
 	public static void checkForConfigurations(File baseDir, String environmentName) throws PhrescoException {
-	    try {
-	        String configFile = baseDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE;
-	        ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(new File(configFile));
-	        PluginUtils pu = new PluginUtils();
-	        List<String> selectedEnvs = pu.csvToList(environmentName);
-	        List<Environment> environments = configManager.getEnvironments();
-	        for (Environment environment : environments) {
-	            if (selectedEnvs.contains(environment.getName())) {
-	                if (CollectionUtils.isEmpty(environment.getConfigurations())) {
-	                    String errMsg = environment.getName() + " environment in " + baseDir.getName() + " doesnot have any configurations";
-	                    System.out.println(errMsg);
-	                    throw new PhrescoException(errMsg);
-	                }
-	            }
-	        }
-	    } catch (PhrescoException e) {
-	        throw new PhrescoException(e);
-	    } catch (ConfigurationException e) {
-	        throw new PhrescoException(e);
-	    }
+		try {
+			String configFile = baseDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE;
+			ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(new File(configFile));
+			PluginUtils pu = new PluginUtils();
+			List<String> selectedEnvs = pu.csvToList(environmentName);
+			List<Environment> environments = configManager.getEnvironments();
+			List<String> selectedConfigTypeList = pu.getSelectedConfigTypeList(baseDir);
+			List<String> nullConfig = new ArrayList<String>();
+			for (Environment environment : environments) {
+				if (selectedEnvs.contains(environment.getName())) {
+					if (CollectionUtils.isNotEmpty(selectedConfigTypeList)) {
+						for (String selectedConfigType : selectedConfigTypeList) {
+							if(CollectionUtils.isEmpty(configManager.getConfigurations(environment.getName(), selectedConfigType))) {
+								nullConfig.add(selectedConfigType);
+							}
+						}
+					}
+				} if(CollectionUtils.isNotEmpty(nullConfig)) {
+					String errMsg = environment.getName() + " environment in " + baseDir.getName() + " doesnot have "+ nullConfig + " configurations";
+					throw new PhrescoException(errMsg);
+				}
+			} 
+		} catch (PhrescoException e) {
+			throw new PhrescoException(e);
+		} catch (ConfigurationException e) {
+			throw new PhrescoException(e);
+		}
+	}
+	
+	private List<String> getSelectedConfigTypeList(File baseDir) throws PhrescoException {
+		try {
+			ApplicationInfo appInfo = getAppInfo(baseDir);
+			List<String> selectedList = new ArrayList<String>();
+			if(CollectionUtils.isNotEmpty(appInfo.getSelectedServers())) {
+				selectedList.add("Server");
+			}
+			if(CollectionUtils.isNotEmpty(appInfo.getSelectedDatabases())) {
+				selectedList.add("Database");
+			}
+			if(CollectionUtils.isNotEmpty(appInfo.getSelectedWebservices())) {
+				selectedList.add("WebService");
+			}
+			return selectedList;
+		} catch (PhrescoException e) {
+			throw new PhrescoException(e);
+		}
+	}
+	
+	private ApplicationInfo getAppInfo(File baseDir) throws PhrescoException {
+		StringBuilder sb = new StringBuilder();
+		sb.append(baseDir.getPath())
+		.append(File.separator)
+		.append(Constants.DOT_PHRESCO_FOLDER)
+		.append(File.separator)
+		.append(Constants.PROJECT_INFO_FILE);
+		Gson gson = new Gson();
+		try {
+			FileReader filereader = new FileReader(new File(sb.toString()));
+			BufferedReader reader = new BufferedReader(filereader);
+			ProjectInfo projectInfo = gson.fromJson(reader, ProjectInfo.class);
+			return projectInfo.getAppInfos().get(0);
+		} catch (JsonSyntaxException e) {
+			throw new PhrescoException(e);
+		} catch (JsonIOException e) {
+			throw new PhrescoException(e);
+		} catch (FileNotFoundException e) {
+			throw new PhrescoException(e);
+		}
 	}
 	
 	private String findPlatform() {

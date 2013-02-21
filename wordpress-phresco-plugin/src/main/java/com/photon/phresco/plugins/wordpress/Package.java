@@ -52,7 +52,7 @@ public class Package implements PluginConstants {
         buildName = configs.get(BUILD_NAME);
         buildNumber = configs.get(BUILD_NUMBER);
         util = new PluginPackageUtil();
-        
+        PluginUtils.checkForConfigurations(baseDir, environmentName);
 		try {
 			init();
 			boolean buildStatus = build();
