@@ -586,14 +586,14 @@ public class GenerateReport implements PluginConstants {
 			//metric key parameters for sonar 
 			String metrickey[] = {"ncloc", "lines", "files", "comment_lines_density" , "comment_lines", "duplicated_lines_density", "duplicated_lines", 
 					"duplicated_blocks", "duplicated_files", "function_complexity", "file_complexity", "violations_density", "blocker_violations", 
-					"critical_violations", "major_violations", "minor_violations", "info_violations", "weighted_violations",
+					"critical_violations", "major_violations", "minor_violations", "info_violations", "violations",
 					"classes", "functions",
 					"statements","packages", "accessors", "public_documented_api_density", "public_undocumented_api","package_tangle_index","package_cycles", "package_feedback_edges", "package_tangles", "lcom4", "rfc",
 					"directories", "class_complexity", "comment_blank_lines", "coverage", "uncovered_lines"};
 
 			String methodkey[] = {"nonCommentLinesOfCode", "lines", "files", "commentLinesDensity" , "commentLines", "duplicatedLinesDensity", "duplicatedLines", 
 					"duplicatedBlocks", "duplicatedFiles", "functionComplexity", "fileComplexity", "violationsDensity", "blockerViolations", 
-					"criticalViolations", "majorViolations", "minorViolations", "infoViolations", "weightedViolations",
+					"criticalViolations", "majorViolations", "minorViolations", "infoViolations", "Violations",
 					"classes", "functions",
 					"statements","packages", "accessors", "publicDocumentedApiDensity", "publicUndocumentedApi","packageTangleIndex","packageCycles", "packageFeedbackEdges", "packageTangles", "lackOfCohesionMethods", "responseForCode",
 					"directories", "classComplexity", "commentBlankLines", "coverage", "uncoveredLines"};
