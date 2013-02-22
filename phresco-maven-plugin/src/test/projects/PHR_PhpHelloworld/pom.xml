@@ -18,7 +18,7 @@
 			<plugin>
                 <groupId>com.photon.phresco.plugins</groupId>
                 <artifactId>phresco-maven-plugin</artifactId>
-                <version>2.1.0.1003-SNAPSHOT</version>
+                <version>2.1.0.1004-SNAPSHOT</version>
                 <extensions>true</extensions>
             </plugin>
 			
