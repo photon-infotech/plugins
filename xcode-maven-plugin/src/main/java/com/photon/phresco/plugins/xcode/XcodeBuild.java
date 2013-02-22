@@ -746,7 +746,7 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 		try {
 			getLog().info("Creating deliverables.....");
 			File packageInfoFile = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + PHRESCO_PACKAGE_FILE);
-			tmpFile = new File(baseDir + DO_NOT_CHECKIN_BUILD, buildName);
+			tmpFile = new File(baseDir + DO_NOT_CHECKIN_BUILD, "temp");
 			FileUtils.copyDirectory(baseFolder, tmpFile);
 			if(packageInfoFile.exists()) {
 				PluginUtils.createBuildResources(packageInfoFile, baseDir, tmpFile);
