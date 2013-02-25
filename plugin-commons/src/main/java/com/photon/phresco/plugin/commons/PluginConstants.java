@@ -307,6 +307,13 @@ public interface PluginConstants {
 	 String V_1 						= "-v 1";
 	 String ADB_SHELL_MONKEY 			= "adb shell monkey -p";
 	 String PHRESCO_TEST_PACKAGE		= "phresco.test.package";
+	 String TEST_FOLDER 				= "test";
+	 String FUNCTIONAL_TEST_FOLDER      = "functional";
+	 String DEVICE_LIST_ID_PROPERTY     = "device.list.id";
+	 String MVN_ANT_PLUGIN_GRP_ID		= "org.apache.maven.plugins";
+	 String MVN_ANT_PLUGIN_ARTF_ID		= "maven-antrun-plugin";
+	 String RUN							= "run"; 
+	 String ADB_SERIAL                  = "adbSerial";
 	 
 	 // Constants report plugin
 	 String ATTR_TIME 					= "time";

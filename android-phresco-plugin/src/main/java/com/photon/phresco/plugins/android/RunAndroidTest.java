@@ -1,14 +1,19 @@
 package com.photon.phresco.plugins.android;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.Commandline;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
@@ -17,11 +22,14 @@ import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands.MavenCommand;
 import com.photon.phresco.plugins.util.MojoUtil;
+import com.photon.phresco.util.Constants;
+import com.phresco.pom.exception.PhrescoPomException;
+import com.phresco.pom.util.PomProcessor;
 
 public class RunAndroidTest implements PluginConstants {
 	
 	public static void runAndroidTest(Configuration configuration, MavenProjectInfo mavenProjectInfo, String workingDir) throws PhrescoException {
-		try {
+		try {			
 			StringBuilder sb = new StringBuilder();
 			sb.append(MVN_CMD);
 			sb.append(STR_SPACE);
@@ -32,6 +40,8 @@ public class RunAndroidTest implements PluginConstants {
 			Map<String, String> configs = MojoUtil.getAllValues(configuration);
 			String deviceValue = configs.get(DEVICES);
 			String signing = configs.get(SIGNING);
+			String device = configs.get(DEVICES_LIST);
+			System.out.println("Connected Devices . " +device);
 			
 			Boolean isSigning = Boolean.valueOf(signing);
 			System.out.println("isSigning . " + isSigning);
@@ -64,6 +74,11 @@ public class RunAndroidTest implements PluginConstants {
 			System.out.println("Command " + sb.toString());
 			Commandline commandline = new Commandline(sb.toString());
 			String baseDir = mavenProjectInfo.getBaseDir().getPath();
+			PomProcessor pomProcessor = new PomProcessor(new File(baseDir + File.separator + PluginConstants.TEST_FOLDER + File.separator + PluginConstants.FUNCTIONAL_TEST_FOLDER + File.separator + Constants.POM_NAME));						
+			com.phresco.pom.model.PluginExecution.Configuration pluginExecutionConfiguration = pomProcessor.getPluginExecutionConfiguration(PluginConstants.MVN_ANT_PLUGIN_GRP_ID,PluginConstants.MVN_ANT_PLUGIN_ARTF_ID);
+			Element run = getTagname(PluginConstants.RUN, pluginExecutionConfiguration);			
+			run.setAttribute(PluginConstants.ADB_SERIAL, device);
+			pomProcessor.save();
 			if (StringUtils.isNotEmpty(workingDir)) {
 				commandline.setWorkingDirectory(baseDir + workingDir);
 			}
@@ -77,6 +92,26 @@ public class RunAndroidTest implements PluginConstants {
 			throw new PhrescoException(e);
 		} catch (IOException e) {
 			throw new PhrescoException(e);
+		} catch (PhrescoPomException e) {
+			// TODO Auto-generated catch block
+			throw new PhrescoException(e);
 		}
+	}
+	
+	private static Element getTagname(String tagName,
+			com.phresco.pom.model.PluginExecution.Configuration configuration) {
+		for (Element config : configuration.getAny()) {
+			NodeList childNodes = config.getChildNodes();
+			for(int i=0 ; i< childNodes.getLength(); i ++) {
+				Node node = childNodes.item(i);
+				if(node instanceof Element) {
+					Element element = (Element) node;
+					if(tagName.equals(element.getTagName())){
+						return element;
+					}
+				}
+			}
+		}
+		return null;
 	}
 }
