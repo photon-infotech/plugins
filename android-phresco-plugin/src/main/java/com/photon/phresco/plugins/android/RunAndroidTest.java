@@ -22,7 +22,9 @@ import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands.MavenCommand;
 import com.photon.phresco.plugins.util.MojoUtil;
+import com.photon.phresco.service.pom.POMConstants;
 import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.Utility;
 import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.util.PomProcessor;
 
@@ -30,6 +32,19 @@ public class RunAndroidTest implements PluginConstants {
 	
 	public static void runAndroidTest(Configuration configuration, MavenProjectInfo mavenProjectInfo, String workingDir) throws PhrescoException {
 		try {			
+			Map<String, String> configs = MojoUtil.getAllValues(configuration);
+			MavenProject project = mavenProjectInfo.getProject();
+			String seleniumToolType = project.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_SELENIUM_TOOL);
+			// calabash Execution
+			if(StringUtils.isNotEmpty((seleniumToolType)) && seleniumToolType.equals(CALABASH)) {
+				StringBuilder builder = new StringBuilder();
+				builder.append(CALABASH_ANDROID_COMMAND);
+				builder.append(STR_SPACE);
+				String directory = project.getBuild().getDirectory();
+				builder.append(directory + File.separator + project.getArtifactId() + DOT + POMConstants.APK);	
+				Utility.executeStreamconsumer(builder.toString(), project.getBasedir() + File.separator + workingDir);
+				return;
+			}
 			StringBuilder sb = new StringBuilder();
 			sb.append(MVN_CMD);
 			sb.append(STR_SPACE);
@@ -37,7 +52,6 @@ public class RunAndroidTest implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(MVN_PHASE_INSTALL);
 			
-			Map<String, String> configs = MojoUtil.getAllValues(configuration);
 			String deviceValue = configs.get(DEVICES);
 			String signing = configs.get(SIGNING);
 			String device = configs.get(DEVICES_LIST);

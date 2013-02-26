@@ -260,6 +260,7 @@ public interface PluginConstants {
 	 String FAMILY 						= "family";
 	 String UNIT_TEST_TYPE				= "unitTestType";
 	 String UNIT_TEST					= "unittest";
+	 String CALABASH_IOS_COMMAND		= "cucumber --guess";
 	 
 	 //Constants for Android
 	 
@@ -314,6 +315,7 @@ public interface PluginConstants {
 	 String MVN_ANT_PLUGIN_ARTF_ID		= "maven-antrun-plugin";
 	 String RUN							= "run"; 
 	 String ADB_SERIAL                  = "adbSerial";
+	 String CALABASH_ANDROID_COMMAND	= "calabash-android run";
 	 
 	 // Constants report plugin
 	 String ATTR_TIME 					= "time";
@@ -448,6 +450,7 @@ public interface PluginConstants {
     String GRID = "grid";
     String UIAUTOMATION = "UIAutomation";
     String HYPEN = "-";
+    String CALABASH		= "calabash";
     
   //Performance Test Parameter Keys
     String KEY_CONFIGURATION = "configurations";

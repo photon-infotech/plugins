@@ -2,6 +2,7 @@ package com.photon.phresco.plugins;
 
 import java.io.File;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -43,12 +44,8 @@ public class PhrescoRunFunctionalTest extends PhrescoAbstractMojo implements Plu
 			PomProcessor processor = new PomProcessor(pomPath);
 			String property = processor.getProperty(FUNCTIONAL_TEST_SELENIUM_TYPE);
 			String goal = "";
-			if (property.equals(WEBDRIVER)) {
-				goal = FUNCTIONAL_TEST + HYPEN + WEBDRIVER.trim();
-			} else if (property.equals(GRID)) {
-				goal = FUNCTIONAL_TEST + HYPEN + GRID.trim();
-			}  else if (property.equals(UIAUTOMATION)) {
-				goal = FUNCTIONAL_TEST + HYPEN + UIAUTOMATION.trim();
+			if(StringUtils.isNotEmpty(property)) {
+				goal = FUNCTIONAL_TEST + HYPEN + property.trim();
 			}
 			String infoFile = baseDir + File.separator+ Constants.FUNCTIONAL_TEST_INFO_FILE;
 			if (isGoalAvailable(infoFile, goal)&& getDependency(infoFile, goal) != null) {
