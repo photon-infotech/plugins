@@ -75,7 +75,7 @@ public class Package implements PluginConstants {
 				throw new PhrescoException("Environment Name is empty . ");
 			}
 			
-			PluginUtils.checkForConfigurations(baseDir, embedAppId);
+			PluginUtils.checkForConfigurations(baseDir, environmentName);
 			
 			if (StringUtils.isEmpty(sdk)) {
 				System.out.println("SDK is empty . ");
@@ -156,6 +156,9 @@ public class Package implements PluginConstants {
         File pomFile = new File(baseDir.getPath() + File.separator + Constants.POM_NAME);
         PomProcessor pomProcessor = new PomProcessor(pomFile);
         String appTargetProp = pomProcessor.getProperty(Constants.POM_PROP_KEY_EMBED_APP_TARGET_DIR);
+        if(StringUtils.isEmpty(appTargetProp)) {
+            throw new PhrescoException("Target directory to embed the selected application is not specified");
+        }
         String appTargetDir = baseDir + File.separator + appTargetProp;
         File[] wwwFiles = new File(appTargetDir).listFiles();
         if (!ArrayUtils.isEmpty(wwwFiles)) {
