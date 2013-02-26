@@ -59,6 +59,7 @@ import org.codehaus.plexus.archiver.zip.ZipUnArchiver;
 import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.logging.console.ConsoleLogger;
 import org.codehaus.plexus.util.AbstractScanner;
+import org.apache.commons.io.FileUtils;
 
 import com.photon.maven.plugins.android.AbstractAndroidMojo;
 import com.photon.maven.plugins.android.CommandExecutor;
@@ -84,7 +85,7 @@ public class GenerateSourcesMojo extends AbstractAndroidMojo {
      *
      */
     protected File genDirectory;
-    
+	
     /**
      * Override default generated folder containing aidl classes
      *
@@ -118,6 +119,7 @@ public class GenerateSourcesMojo extends AbstractAndroidMojo {
 
             generateR();
             generateApklibR();
+			generateBuildConfig();
 
             // When compiling AIDL for this project,
             // make sure we compile AIDL for dependencies as well.
@@ -346,7 +348,7 @@ public class GenerateSourcesMojo extends AbstractAndroidMojo {
             commands.add("-c");
             commands.add(configurations);
         }
-        getLog().info(getAndroidSdk().getPathForTool("aapt") + " " + commands.toString());
+	   getLog().info(getAndroidSdk().getPathForTool("aapt") + " " + commands.toString());
         try {
             executor.executeCommand(getAndroidSdk().getPathForTool("aapt"), commands, project.getBasedir(), false);
         } catch (ExecutionException e) {
@@ -427,6 +429,52 @@ public class GenerateSourcesMojo extends AbstractAndroidMojo {
 			throw new MojoExecutionException("", e);
 		}
 	}
+	 private void generateBuildConfig() throws MojoExecutionException
+    {
+        getLog().debug( "Generating BuildConfig file" );
+
+        // Create the BuildConfig for our package.
+        String packageName = extractPackageNameFromAndroidManifest( androidManifestFile );
+        if ( StringUtils.isNotBlank( customPackage ) )
+        {
+            packageName = customPackage;
+        }
+        generateBuildConfigForPackage( packageName, !release );
+
+        // Generate the BuildConfig for any apklib dependencies.
+        for ( Artifact artifact : getAllRelevantDependencyArtifacts() )
+        {
+            if ( artifact.getType().equals( "apklib" ) )
+            {
+                File apklibManifeset = new File( getLibraryUnpackDirectory( artifact ), "AndroidManifest.xml" );
+                String apklibPackageName = extractPackageNameFromAndroidManifest( apklibManifeset );
+                generateBuildConfigForPackage( apklibPackageName, !release );
+            }
+        }
+    }
+	
+	private void generateBuildConfigForPackage( String packageName, boolean debug ) throws MojoExecutionException
+    {
+        File outputFolder = new File( genDirectory, packageName.replace( ".", File.separator ) );
+        outputFolder.mkdirs();
+        String buildConfig = ""
+                + "package " + packageName + ";\n\n"
+                + "public final class BuildConfig {\n"
+                + "  public static final boolean DEBUG = " + Boolean.toString( debug ) + ";\n"
+                + "}\n"
+        ;
+        File outputFile = new File( outputFolder, "BuildConfig.java" );
+        try
+        {
+            FileUtils.writeStringToFile( outputFile, buildConfig );
+        }
+        catch ( IOException e )
+        {
+            getLog().error( "Error generating BuildConfig ", e );
+            throw new MojoExecutionException( "Error generating BuildConfig", e );
+        }
+    }
+
 
     /**
      * Given a map of source directories to list of AIDL (relative) filenames within each,

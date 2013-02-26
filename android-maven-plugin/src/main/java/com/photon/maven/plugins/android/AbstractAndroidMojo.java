@@ -252,6 +252,13 @@ public abstract class AbstractAndroidMojo extends AbstractMojo {
 	 * @parameter expression="${android.aaptExtraArgs}"
 	 */
 	protected String[] aaptExtraArgs;
+	
+	 /**
+     * Whether to create a release build (default is false / debug build). This affect BuildConfig generation 
+     * and apk generation at this stage, but should probably affect other aspects of the build.
+     * @parameter expression="${android.release}" default-value="false"
+     */
+    protected boolean release;
 
 	/**
 	 * Decides whether the Apk should be generated or not. If set to false, dx
@@ -269,8 +276,7 @@ public abstract class AbstractAndroidMojo extends AbstractMojo {
 	 * @component
 	 */
 	protected RepositorySystem repoSystem;
-
-	/**
+    /**
 	 * The current repository/network configuration of Maven.
 	 * 
 	 * @parameter default-value="${repositorySystemSession}"
