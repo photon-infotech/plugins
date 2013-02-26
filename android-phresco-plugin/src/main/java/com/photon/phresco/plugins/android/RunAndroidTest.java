@@ -88,11 +88,13 @@ public class RunAndroidTest implements PluginConstants {
 			System.out.println("Command " + sb.toString());
 			Commandline commandline = new Commandline(sb.toString());
 			String baseDir = mavenProjectInfo.getBaseDir().getPath();
-			PomProcessor pomProcessor = new PomProcessor(new File(baseDir + File.separator + PluginConstants.TEST_FOLDER + File.separator + PluginConstants.FUNCTIONAL_TEST_FOLDER + File.separator + Constants.POM_NAME));						
-			com.phresco.pom.model.PluginExecution.Configuration pluginExecutionConfiguration = pomProcessor.getPluginExecutionConfiguration(PluginConstants.MVN_ANT_PLUGIN_GRP_ID,PluginConstants.MVN_ANT_PLUGIN_ARTF_ID);
-			Element run = getTagname(PluginConstants.RUN, pluginExecutionConfiguration);			
-			run.setAttribute(PluginConstants.ADB_SERIAL, device);
-			pomProcessor.save();
+			if(StringUtils.isNotEmpty(device)) {
+				PomProcessor pomProcessor = new PomProcessor(new File(baseDir + File.separator + PluginConstants.TEST_FOLDER + File.separator + PluginConstants.FUNCTIONAL_TEST_FOLDER + File.separator + Constants.POM_NAME));						
+				com.phresco.pom.model.PluginExecution.Configuration pluginExecutionConfiguration = pomProcessor.getPluginExecutionConfiguration(PluginConstants.MVN_ANT_PLUGIN_GRP_ID,PluginConstants.MVN_ANT_PLUGIN_ARTF_ID);
+				Element run = getTagname(PluginConstants.RUN, pluginExecutionConfiguration);			
+				run.setAttribute(PluginConstants.ADB_SERIAL, device);
+				pomProcessor.save();
+			}
 			if (StringUtils.isNotEmpty(workingDir)) {
 				commandline.setWorkingDirectory(baseDir + workingDir);
 			}
