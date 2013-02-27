@@ -94,6 +94,10 @@ import com.phresco.pom.model.Profile;
 import com.phresco.pom.util.PomProcessor;
 
 public class GenerateReport implements PluginConstants {
+	private static final String TECH_ANDROID_LIBRARY = "tech-android-library";
+	private static final String TECH_ANDROID_HYBRID = "tech-android-hybrid";
+	private static final String TECH_IPHONE_NATIVE = "tech-iphone-native";
+	private static final String HIDE_CLASS_COLUMN = "hideClassColumn";
 	private static final String DEFAULT_COPYRIGHTS = "© 2013 Photon Infotech Pvt.Ltd";
 	private static final String PHRESCO_UNIT_TEST = "phresco.unitTest";
 	private static final String REPORTS_TYPE = "reportsDataType";
@@ -298,6 +302,15 @@ public class GenerateReport implements PluginConstants {
 						cumulativeReportparams.put("sonarReport", sonarReports);
 					}
 				}
+			}
+			
+			//hide class column if not exist in xml  in pdf 
+			if (TECH_IPHONE_NATIVE.equals(techName) || TECH_ANDROID_HYBRID.equals(techName) || TECH_ANDROID_LIBRARY.equals(techName) || "tech-iphone-hybrid".equals(techName)) {
+				cumulativeReportparams.put(HIDE_CLASS_COLUMN, "hide");
+				log.info("Hide class for functional ==>" + techName);
+			} else {
+				cumulativeReportparams.put(HIDE_CLASS_COLUMN, "show");
+				log.info("Show class for functional ==>" + techName);
 			}
 			
 			generateCumulativeTestReport(cumulativeReportparams);
@@ -636,6 +649,16 @@ public class GenerateReport implements PluginConstants {
 			parameters.put(REPORTS_TYPE, reportType);
 			parameters.put(VERSION, version);
 			parameters.put(LOGO, logo);
+			
+			//hide class column if not exist in xml  in pdf 
+			if (TECH_IPHONE_NATIVE.equals(techName) || TECH_ANDROID_HYBRID.equals(techName) || TECH_ANDROID_LIBRARY.equals(techName) || "tech-iphone-hybrid".equals(techName)) {
+				parameters.put(HIDE_CLASS_COLUMN, "hide");
+				log.info("Hide class for functional ==>" + techName);
+			} else {
+				parameters.put(HIDE_CLASS_COLUMN, "show");
+				log.info("Show class for functional ==>" + techName);
+			}
+			
 			JRBeanArrayDataSource dataSource = new JRBeanArrayDataSource(new SureFireReport[]{sureFireReports});
 			JasperReport jasperReport = (JasperReport) JRLoader.loadObject(bufferedInputStream);
 			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
@@ -1003,12 +1026,9 @@ public class GenerateReport implements PluginConstants {
 			getUnitTestXmlFilesAndXpaths(reportFilePath, reportDirWithTestSuitePath);
 		} else {
 			String reportFilePath = baseDir.getAbsolutePath();
-			String functionalTestDir = mavenProject.getProperties()
-					.getProperty(Constants.POM_PROP_KEY_FUNCTEST_RPT_DIR);
-			String unitTestSuitePath = mavenProject.getProperties().getProperty(
-					Constants.POM_PROP_KEY_FUNCTEST_TESTSUITE_XPATH);
-			String unitTestCasePath = mavenProject.getProperties().getProperty(
-					Constants.POM_PROP_KEY_FUNCTEST_TESTCASE_PATH);
+			String functionalTestDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_RPT_DIR);
+			String unitTestSuitePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_TESTSUITE_XPATH);
+			String unitTestCasePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_TESTCASE_PATH);
 			String reportPath = "";
 			if (StringUtils.isNotEmpty(functionalTestDir)) {
 				reportPath = reportFilePath + functionalTestDir;
