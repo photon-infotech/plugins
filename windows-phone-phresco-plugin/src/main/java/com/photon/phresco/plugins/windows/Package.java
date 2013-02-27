@@ -197,8 +197,6 @@ public class Package implements PluginConstants {
 			StringBuilder sb = new StringBuilder();
 			sb.append(WP_MSBUILD_PATH);
 			sb.append(STR_SPACE);
-			sb.append(baseDir.getPath() + sourceDirectory);
-			sb.append(WINDOWS_STR_BACKSLASH);
 			sb.append(solutionFile[0].getName());
 			sb.append(STR_SPACE);
 			sb.append(WP_STR_TARGET);
@@ -208,6 +206,9 @@ public class Package implements PluginConstants {
 			sb.append(WP_STR_PROPERTY);
 			sb.append(WP_STR_COLON);
 			sb.append(WP_STR_CONFIGURATION + "=" + config);
+			sb.append(WP_STR_SEMICOLON);
+			sb.append(WP_STR_PLATFORM + "=" + WP_STR_DOUBLEQUOTES + platform + WP_STR_DOUBLEQUOTES);
+			
 			log.info("Command = "+ sb.toString());
 			Commandline cl = new Commandline(sb.toString());
 			cl.setWorkingDirectory(baseDir.getPath() + sourceDirectory);
@@ -236,8 +237,6 @@ public class Package implements PluginConstants {
 			StringBuilder sb = new StringBuilder();
 			sb.append(WP_MSBUILD_PATH);
 			sb.append(STR_SPACE);
-			sb.append(baseDir.getPath() + sourceDirectory);
-			sb.append(WINDOWS_STR_BACKSLASH);
 			sb.append(solutionFile[0].getName());
 			sb.append(STR_SPACE);
 			sb.append(WP_STR_TARGET);
