@@ -192,7 +192,7 @@ public class Package implements PluginConstants {
 		try {
 			log.info("Building project ...");
 						
-			// MSBuild MyApp.sln /t:Rebuild /p:Configuration=Release
+			// MSBuild MyApp.sln /t:Rebuild /p:Configuration=Release;Platform="Any CPU"
 			StringBuilder sb = new StringBuilder();
 			sb.append(WP_MSBUILD_PATH);
 			sb.append(STR_SPACE);
@@ -231,7 +231,7 @@ public class Package implements PluginConstants {
 			
 			log.info("Building project ...");
 			
-			// MSBuild MyApp.sln /t:Rebuild /p:Configuration=Release
+			// MSBuild MyApp.sln /t:Rebuild /p:Configuration=Release;Platform="Any CPU"
 			StringBuilder sb = new StringBuilder();
 			sb.append(WP_MSBUILD_PATH);
 			sb.append(STR_SPACE);
