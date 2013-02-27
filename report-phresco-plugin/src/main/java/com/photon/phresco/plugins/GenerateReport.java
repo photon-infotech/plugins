@@ -94,6 +94,9 @@ import com.phresco.pom.model.Profile;
 import com.phresco.pom.util.PomProcessor;
 
 public class GenerateReport implements PluginConstants {
+	private static final String MODULE_NAME = "Module Name";
+	private static final String COPY_RIGHTS = "copyRights";
+	private static final String SONAR_REPORT = "sonarReport";
 	private static final String TECH_ANDROID_LIBRARY = "tech-android-library";
 	private static final String TECH_ANDROID_HYBRID = "tech-android-hybrid";
 	private static final String TECH_IPHONE_NATIVE = "tech-iphone-native";
@@ -167,7 +170,7 @@ public class GenerateReport implements PluginConstants {
 						List<TestSuite> testSuites = sureFireReports.getTestSuites();
 						if (CollectionUtils.isNotEmpty(testSuites)) {
 							msr.setModuleOrTechName(module);
-							msr.setModuleOrTechLabel("Module Name");
+							msr.setModuleOrTechLabel(MODULE_NAME);
 							msr.setSureFireReport(Arrays.asList(sureFireReports));
 							moduleWiseReports.add(msr);
 						}
@@ -207,7 +210,7 @@ public class GenerateReport implements PluginConstants {
 		log.debug("Entering GenerateReport.cumalitiveTestReport()");
 		try {
 			Map<String, Object> cumulativeReportparams = new HashMap<String,Object>();
-			cumulativeReportparams.put("copyRights", copyRights);
+			cumulativeReportparams.put(COPY_RIGHTS, copyRights);
 			//unit and functional details
 			testType = UNIT;
 			
@@ -229,7 +232,7 @@ public class GenerateReport implements PluginConstants {
 					List<TestSuite> testSuites = sureFireReports.getTestSuites();
 					if (CollectionUtils.isNotEmpty(testSuites)) {
 						msr.setModuleOrTechName(module);
-						msr.setModuleOrTechLabel("Module Name");
+						msr.setModuleOrTechLabel(MODULE_NAME);
 						msr.setSureFireReport(Arrays.asList(sureFireReports));
 						moduleWiseReports.add(msr);
 					}
@@ -299,7 +302,7 @@ public class GenerateReport implements PluginConstants {
 								sonarReports.add(srcSonarReport);
 							}
 						}
-						cumulativeReportparams.put("sonarReport", sonarReports);
+						cumulativeReportparams.put(SONAR_REPORT, sonarReports);
 					}
 				}
 			}
@@ -641,7 +644,7 @@ public class GenerateReport implements PluginConstants {
 			reportStream = this.getClass().getClassLoader().getResourceAsStream(REPORTS_JASPER + containerJasperFile);
 			bufferedInputStream = new BufferedInputStream(reportStream);
 			Map<String, Object> parameters = new HashMap<String,Object>();
-			parameters.put("copyRights", copyRights);
+			parameters.put(COPY_RIGHTS, copyRights);
 			parameters.put(PDF_PROJECT_CODE, projectCode);
 			parameters.put(PROJECT_NAME, projName);
 			parameters.put(TECH_NAME, techName);
@@ -701,7 +704,7 @@ public class GenerateReport implements PluginConstants {
 			reportStream = this.getClass().getClassLoader().getResourceAsStream("PhrescoModuleSureFireReport.jasper");
 			bufferedInputStream = new BufferedInputStream(reportStream);
 			Map<String, Object> parameters = new HashMap<String,Object>();
-			parameters.put("copyRights", copyRights);
+			parameters.put(COPY_RIGHTS, copyRights);
 			parameters.put(PDF_PROJECT_CODE, projectCode);
 			parameters.put(PROJECT_NAME, projName);
 			parameters.put(TECH_NAME, techName);
@@ -749,7 +752,7 @@ public class GenerateReport implements PluginConstants {
 			String outFileNamePDF = Utility.getProjectHome() + appDir + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType  + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
 			String jasperFile = "PhrescoPerfContain.jasper";
 			Map<String, Object> parameters = new HashMap<String,Object>();
-			parameters.put("copyRights", copyRights);
+			parameters.put(COPY_RIGHTS, copyRights);
 			parameters.put(PDF_PROJECT_CODE, projectCode);
 			parameters.put(PROJECT_NAME, projName);
 			parameters.put(TECH_NAME, techName);
@@ -771,7 +774,7 @@ public class GenerateReport implements PluginConstants {
 			String outFileNamePDF = Utility.getProjectHome() + appDir + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
 			String jasperFile = "PhrescoAndroidPerfContain.jasper";
 			Map<String, Object> parameters = new HashMap<String,Object>();
-			parameters.put("copyRights", copyRights);
+			parameters.put(COPY_RIGHTS, copyRights);
 			parameters.put(PDF_PROJECT_CODE, projectCode);
 			parameters.put(PROJECT_NAME, projName);
 			parameters.put(TECH_NAME, techName);
@@ -793,7 +796,7 @@ public class GenerateReport implements PluginConstants {
 			String outFileNamePDF = Utility.getProjectHome() + appDir + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
 			String jasperFile = "PhrescoLoadTestContain.jasper";
 			Map<String, Object> parameters = new HashMap<String,Object>();
-			parameters.put("copyRights", copyRights);
+			parameters.put(COPY_RIGHTS, copyRights);
 			parameters.put(PDF_PROJECT_CODE, projectCode);
 			parameters.put(PROJECT_NAME, projName);
 			parameters.put(TECH_NAME, techName);
@@ -1137,7 +1140,7 @@ public class GenerateReport implements PluginConstants {
 
 	private void getUnitTestXmlFilesAndXpaths(String reportFilePath,
 			Map<String, String> reportDirWithTestSuitePath) {
-		String unitTestDir = mavenProject.getProperties().getProperty("phresco.unitTest");
+		String unitTestDir = mavenProject.getProperties().getProperty(PHRESCO_UNIT_TEST);
 		// when it is having multiple values
 		if (StringUtils.isEmpty(unitTestDir)) {
 			unitTestDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_RPT_DIR);
