@@ -754,7 +754,7 @@ public class PluginUtils {
 				sb.append("/chromedriver/chromedriver -jar ");
 			}
 			sb.append(functionalTestDir.substring(1, functionalTestDir.length()))
-			.append("/lib/selenium-server-standalone-2.29.0.jar")
+			.append("/lib/selenium-server-standalone-2.30.0.jar")
 			.append(" -role node -nodeConfig ")
 			.append(functionalTestDir.substring(1, functionalTestDir.length()))
 	        .append("/nodeconfig.json");
@@ -786,7 +786,7 @@ public class PluginUtils {
 	        StringBuilder sb = new StringBuilder()
 	        .append("java -jar ")
 	        .append(functionalTestDir.substring(1, functionalTestDir.length()))
-	        .append("/lib/selenium-server-standalone-2.29.0.jar")
+	        .append("/lib/selenium-server-standalone-2.30.0.jar")
 	        .append(" -role hub -hubConfig ")
 	        .append(functionalTestDir.substring(1, functionalTestDir.length()))
 	        .append("/hubconfig.json");
