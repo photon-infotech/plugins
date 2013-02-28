@@ -609,7 +609,7 @@ public class GenerateReport implements PluginConstants {
 
 			String methodkey[] = {"nonCommentLinesOfCode", "lines", "files", "commentLinesDensity" , "commentLines", "duplicatedLinesDensity", "duplicatedLines", 
 					"duplicatedBlocks", "duplicatedFiles", "functionComplexity", "fileComplexity", "violationsDensity", "blockerViolations", 
-					"criticalViolations", "majorViolations", "minorViolations", "infoViolations", "Violations",
+					"criticalViolations", "majorViolations", "minorViolations", "infoViolations", "violations",
 					"classes", "functions",
 					"statements","packages", "accessors", "publicDocumentedApiDensity", "publicUndocumentedApi","packageTangleIndex","packageCycles", "packageFeedbackEdges", "packageTangles", "lackOfCohesionMethods", "responseForCode",
 					"directories", "classComplexity", "commentBlankLines", "coverage", "uncoveredLines"};

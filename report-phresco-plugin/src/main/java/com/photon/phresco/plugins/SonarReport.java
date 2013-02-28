@@ -23,7 +23,7 @@ public class SonarReport {
 	private String majorViolations = "";
 	private String minorViolations = "";
 	private String infoViolations = "";
-	private String weightedViolations = "";
+	private String violations = "";
 	private String reportType = "";
 	private String statements = "";
 	private String accessors = "";
@@ -134,6 +134,12 @@ public class SonarReport {
 	public void setFileComplexity(String fileComplexity) {
 		this.fileComplexity = fileComplexity;
 	}
+	public String getViolations() {
+		return violations;
+	}
+	public void setViolations(String violations) {
+		this.violations = violations;
+	}
 	public String getViolationsDensity() {
 		return violationsDensity;
 	}
@@ -169,12 +175,6 @@ public class SonarReport {
 	}
 	public void setInfoViolations(String infoViolations) {
 		this.infoViolations = infoViolations;
-	}
-	public String getWeightedViolations() {
-		return weightedViolations;
-	}
-	public void setWeightedViolations(String weightedViolations) {
-		this.weightedViolations = weightedViolations;
 	}
 	public String getReportType() {
 		return reportType;
