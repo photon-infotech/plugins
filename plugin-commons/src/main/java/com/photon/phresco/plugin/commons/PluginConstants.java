@@ -211,7 +211,7 @@ public interface PluginConstants {
 	 String WP_SLN 						= ".sln";
 	 String WP_CSPROJ 					= ".csproj";
 	 
-	 // Variables related to Windows 8 build process
+	// Variables related to Windows Store (Metro) build process
 	 String WP_STR_CONFIGURATION		= "Configuration";
 	 String WP_STR_PLATFORM				= "Platform";
 	 String WP_APP_PACKAGE				= "\\AppPackages";
@@ -221,24 +221,38 @@ public interface PluginConstants {
 	 String WP_AUTO_INCREMENT_PKG_VERSION_NO = "AppxAutoIncrementPackageRevision";
 	 
 	 
-	 // Variables related to Windows 8 deploy process	 
+	 // Variables related to Windows Store (Metro) deploy process	 
 	 String WP_POWERSHELL_PATH			= "PowerShell ";
 	 String WP_STR_DOT					= ".";
 	 String WP_ADD_APPX_PACKAGE 		= "Add-AppxPackage ";
 	 String WP_GET_APPX_PACKAGE 		= "Get-AppxPackage ";
 	 String WP_REMOVE_APPX_PACKAGE 		= "Remove-AppxPackage ";
 	 String WP8_PLATFORM 				= "wp8";
-	 // Variables related to Windows 7 build process
+	 
+	// Variables related to Windows Store (Metro) unit test build process
+	 String WP_UNIT_TEST_PROJECT_ROOT 	= "Metro.UnitTests";
+	 String WP_UNIT_TEST_VSTEST 		= "vstest.console";
+	 String WP_UNIT_TEST_INISOLATION 	= "/InIsolation";
+	 String WP_UNIT_TEST_LOGGER 		= "/Logger:trx";
+			 
+	 // Variables related to Windows Phone build process
 	 String WP7_BIN_FOLDER				= "\\bin";
 	 String WP7_RELEASE_FOLDER			= "\\release";
 	 
-	 // Variables related to Windows 7 deploy process
+	 // Variables related to Windows Phone 7 deploy process
 	 // wptools.exe -target:emulator -xap:WindowsPhoneApplication1.xap -install
 	 String WP7_WPTOOLS_PATH			= "wptools.exe ";
 	 String WP7_TARGET					= "-target";
 	 String WP7_XAP_FILE				= "-xap";
 	 String WP7_INSTALL					= "-install"; 
 	 
+	 // Variables related to Windows Phone 8 deploy process
+	 String WP8_XDE_PATH				= "xde.exe ";
+	 String WP8_XAPCMD_PATH				= "XapDeployCmd.exe ";
+	 String WP8_XAPCMD_INSTALL			= "/installlaunch ";
+	 String WP8_XAPCMD_TARGET			= "/targetdevice";
+	 
+ 
 	 //Xcode plugin constants
 	 String WAXSIM_HOME 				= "WAXSIM_HOME";
 	 String OCUNIT2JUNIT_HOME 			= "OCUNIT2JUNIT_HOME";
@@ -260,7 +274,7 @@ public interface PluginConstants {
 	 String FAMILY 						= "family";
 	 String UNIT_TEST_TYPE				= "unitTestType";
 	 String UNIT_TEST					= "unittest";
-	 String CALABASH_IOS_COMMAND		= "cucumber --guess";
+	 String CALABASH_IOS_COMMAND		= "cucumber";
 	 
 	 //Constants for Android
 	 

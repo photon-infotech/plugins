@@ -599,6 +599,16 @@ public class PluginUtils {
 	 
 	 private static void createHeaderElementProp(Document document,
 			 Map<String, String> headersMap, Node collectionProp) {
+		 //To remove already added header key,values
+		 NodeList childNodes = collectionProp.getChildNodes();
+		 for (int i = 0; i < childNodes.getLength(); i++) {
+			 Node item = childNodes.item(i);
+			 if(item.hasChildNodes()) {
+				 collectionProp.removeChild(item);
+			 }	 
+		 }
+		 
+		 //To append header key values newly
 		 for (Map.Entry<String, String> entry : headersMap.entrySet()) {
 			 Node subElementProp = document.createElement("elementProp");
 			 NamedNodeMap subElementAttributes = subElementProp.getAttributes();

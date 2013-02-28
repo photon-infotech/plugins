@@ -49,7 +49,7 @@ public class Deploy implements PluginConstants {
 	private String environmentName;
 	private String target;
 	private String type;
-	
+
 	private String sourceDirectory = "\\source";
 	private File buildFile;
 	private File tempDir;
@@ -62,47 +62,56 @@ public class Deploy implements PluginConstants {
 	private String buildName;
 	private String buildNumber;
 
-	public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
+	public void deploy(Configuration configuration,
+			MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
-        Map<String, String> configs = MojoUtil.getAllValues(configuration);
-        environmentName = configs.get(ENVIRONMENT_NAME);
-        buildName = configs.get(BUILD_NAME);
-        buildNumber = configs.get(BUILD_NUMBER);
-        type = configs.get(WINDOWS_PLATFORM_TYPE);
-        target =  configs.get(TARGET);
-        
+		Map<String, String> configs = MojoUtil.getAllValues(configuration);
+		environmentName = configs.get(ENVIRONMENT_NAME);
+		buildName = configs.get(BUILD_NAME);
+		buildNumber = configs.get(BUILD_NUMBER);
+		type = configs.get(WINDOWS_PLATFORM_TYPE);
+		target = configs.get(TARGET);
+
 		try {
 			init();
 			extractBuild();
 			if (type.equalsIgnoreCase(WP8_PLATFORM)) {
-				deployWp8Package();
+				deployWinStorePackage();
 			} else {
-				deployWp7Package();
+				deployWinPhonePackage();
 			}
 		} catch (MojoExecutionException e) {
 			throw new PhrescoException(e);
 		}
-		
+
 	}
 
 	private void init() throws MojoExecutionException {
 		try {
 
-			if (StringUtils.isEmpty(buildNumber) || StringUtils.isEmpty(environmentName) || StringUtils.isEmpty(type) || (!type.equals(WP7) && !type.equals(WP8))) {
+			if (StringUtils.isEmpty(buildNumber)
+					|| StringUtils.isEmpty(environmentName)
+					|| StringUtils.isEmpty(type)
+					|| (!type.equals(WP7) && !type.equals(WP8))) {
 				callUsage();
 			}
-			if(type.equalsIgnoreCase(WP8_PLATFORM)) {
+			if (type.equalsIgnoreCase(WP8_PLATFORM)) {
 				getSolutionFile();
 				packageInfo = new WP8PackageInfo(rootDir);
 			}
 			PluginUtils utils = new PluginUtils();
-			BuildInfo buildInfo = utils.getBuildInfo(Integer.parseInt(buildNumber));
+			BuildInfo buildInfo = utils.getBuildInfo(Integer
+					.parseInt(buildNumber));
 			buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
-			buildFile = new File(buildDir.getPath() + File.separator + buildInfo.getBuildName());
-			tempDir = new File(buildDir.getPath() + File.separator + buildFile.getName().substring(0, buildFile.getName().length() - 4));
+			buildFile = new File(buildDir.getPath() + File.separator
+					+ buildInfo.getBuildName());
+			tempDir = new File(buildDir.getPath()
+					+ File.separator
+					+ buildFile.getName().substring(0,
+							buildFile.getName().length() - 4));
 			tempDir.mkdirs();
-			temp = new File(tempDir.getPath());	
+			temp = new File(tempDir.getPath());
 		} catch (Exception e) {
 			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
@@ -112,126 +121,195 @@ public class Deploy implements PluginConstants {
 	private void callUsage() throws MojoExecutionException {
 		log.error("Invalid usage.");
 		log.info("Usage of Deploy Goal");
-		log.info(
-				"mvn windows-phone:deploy -DbuildNumber=\"Build Number\""
-						+ " -DenvironmentName=\"Multivalued evnironment names\"" 
-						+ " -Dtype=\"Windows Phone platform\"");
-		throw new MojoExecutionException("Invalid Usage. Please see the Usage of Deploy Goal");
+		log.info("mvn windows-phone:deploy -DbuildNumber=\"Build Number\""
+				+ " -DenvironmentName=\"Multivalued evnironment names\""
+				+ " -Dtype=\"Windows Phone platform\"");
+		throw new MojoExecutionException(
+				"Invalid Usage. Please see the Usage of Deploy Goal");
 	}
-	
+
 	private void getSolutionFile() throws MojoExecutionException {
 		try {
 			// Get .sln file from the source folder
 			File sourceDir = new File(baseDir.getPath() + sourceDirectory);
-			solutionFile = sourceDir.listFiles(new FilenameFilter() { 
-				public boolean accept(File dir, String name) { 
+			solutionFile = sourceDir.listFiles(new FilenameFilter() {
+				public boolean accept(File dir, String name) {
 					return name.endsWith(WP_SLN);
 				}
 			});
-			
-//			projectRootFolder = solutionFile[0].getName().substring(0, solutionFile[0].getName().length() - 4);
-			
+
+			// projectRootFolder = solutionFile[0].getName().substring(0,
+			// solutionFile[0].getName().length() - 4);
+
 			// Get the source/<ProjectRoot> folder
-			rootDir = new File(baseDir.getPath() + sourceDirectory + File.separator + WP_SOURCE + File.separator +  WP_PROJECT_ROOT);
+			rootDir = new File(baseDir.getPath() + sourceDirectory
+					+ File.separator + WP_SOURCE + File.separator
+					+ WP_PROJECT_ROOT);
 		} catch (Exception e) {
 			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
-	
+
 	private void extractBuild() throws MojoExecutionException {
 		try {
-			ArchiveUtil.extractArchive(buildFile.getPath(), tempDir.getPath(), ArchiveType.ZIP);
+			ArchiveUtil.extractArchive(buildFile.getPath(), tempDir.getPath(),
+					ArchiveType.ZIP);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getErrorMessage(), e);
-		} 
+		}
 	}
 
-	private void deployWp7Package() throws MojoExecutionException {
+	private void deployWinPhonePackage() throws MojoExecutionException {
 		BufferedReader in = null;
 		try {
 			log.info("Deploying project ...");
-			
-			
+
 			// Get .xap file from the extracted contents
-			File[] xapFile = tempDir.listFiles(new FilenameFilter() { 
-				public boolean accept(File dir, String name) { 
+			File[] xapFile = tempDir.listFiles(new FilenameFilter() {
+				public boolean accept(File dir, String name) {
 					return name.endsWith(".xap");
 				}
 			});
-			
-			
-			// wptools.exe -target:emulator -xap:WindowsPhoneApplication1.xap -install
-			StringBuilder sb = new StringBuilder();
-			sb.append(WP7_WPTOOLS_PATH);
-			sb.append(WP7_TARGET);
-			sb.append(WP_STR_COLON);
-			sb.append(target);
-			sb.append(STR_SPACE);
-			
-			sb.append(WP7_XAP_FILE);
-			sb.append(WP_STR_COLON);
-			sb.append(xapFile[0].getName());
-			sb.append(STR_SPACE);
-			
-			sb.append(WP7_INSTALL);
-			
-			log.info("command = " + sb.toString());
-			
-			Commandline cl = new Commandline(sb.toString());
-			cl.setWorkingDirectory(tempDir);
-			Process process = cl.execute();
-			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			while ((in.readLine()) != null) {
+			String osArch = getOSArchitecture();
+
+			if (osArch.contains("86")) {
+				// For Windows 32 bit OS (only running windows phone 7 and 7.5)
+				String wp7DeployCmd = buildWP7DeployCmd(xapFile);
+				log.info("command = " + wp7DeployCmd);
+				Commandline cl = new Commandline(wp7DeployCmd);
+				cl.setWorkingDirectory(tempDir);
+				Process process = cl.execute();
+				in = new BufferedReader(new InputStreamReader(
+						process.getInputStream()));
+				while ((in.readLine()) != null) {
+				}
+			} else if (osArch.contains("64")) {
+				// For Windows 64 bit OS (running Windows Phone 8 SDK)
+//				launchWP8Emulator();
+				String wp8DeployCmd = buildWP8DeployCmd(xapFile);
+				log.info("command = " + wp8DeployCmd);
+				Commandline cl = new Commandline(wp8DeployCmd);
+				cl.setWorkingDirectory(tempDir);
+				Process process = cl.execute();
+				in = new BufferedReader(new InputStreamReader(
+						process.getInputStream()));
+				while ((in.readLine()) != null) {
+				}
 			}
 		} catch (CommandLineException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
-		} 
+		}
+	}
+
+	public String getOSArchitecture() {
+		String osArch = "";
+		for (Map.Entry<Object, Object> e : System.getProperties().entrySet()) {
+
+			if (e.getKey().toString().equalsIgnoreCase("os.arch")) {
+				osArch = e.getValue().toString();
+				break;
+			}
+		}
+		return osArch;
+	}
+
+	/**
+	 * @param xapFile
+	 */
+	private String buildWP7DeployCmd(File[] xapFile) {
+		// wptools.exe -target:emulator -xap:WindowsPhoneApplication1.xap
+		// -install
+		StringBuilder sb = new StringBuilder();
+		sb.append(WP7_WPTOOLS_PATH);
+		sb.append(WP7_TARGET);
+		sb.append(WP_STR_COLON);
+		sb.append(target);
+		sb.append(STR_SPACE);
+
+		sb.append(WP7_XAP_FILE);
+		sb.append(WP_STR_COLON);
+		sb.append(xapFile[0].getName());
+		sb.append(STR_SPACE);
+
+		sb.append(WP7_INSTALL);
+		return sb.toString();
 	}
 	
-	private void deployWp8Package() throws MojoExecutionException {
+	
+	/**
+	 * @param xapFile
+	 */
+	private String buildWP8DeployCmd(File[] xapFile) {
+		// XapDeployCmd.exe /installlaunch <XAP file name> /targetdevice:<xd / de>
+		StringBuilder sb = new StringBuilder();
+		sb.append(WP8_XAPCMD_PATH);
+		sb.append(WP8_XAPCMD_INSTALL);
+		sb.append(xapFile[0].getName());
+		sb.append(STR_SPACE);
+		sb.append(WP8_XAPCMD_TARGET);
+		sb.append(WP_STR_COLON);
+		sb.append(target);
+		return sb.toString();
+	}
+
+	private void launchWP8Emulator() throws MojoExecutionException {
+		StringBuilder sb = new StringBuilder();
+		BufferedReader in = null;
+		try {
+			sb.append(WP8_XDE_PATH);
+			log.info("command = " + sb.toString());
+			Commandline cl = new Commandline(sb.toString());
+			// cl.setWorkingDirectory(tempDir);
+			Process process = cl.execute();
+			in = new BufferedReader(new InputStreamReader(
+					process.getInputStream()));
+			while ((in.readLine()) != null) {
+			}
+			
+		} catch (CommandLineException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		} catch (IOException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		}
+	}
+
+	private void deployWinStorePackage() throws MojoExecutionException {
 		BufferedReader in = null;
 		try {
 			log.info("Deploying project ...");
-			
+
 			if (packageAlreadyInstalled()) {
 				log.info("Package already installed... Uninstalling.");
 				uninstallExistingPackage();
 			}
 			// Get .ps1 file from the extracted contents
-			File[] appxFile = tempDir.listFiles(new FilenameFilter() { 
-				public boolean accept(File dir, String name) { 
+			File[] appxFile = tempDir.listFiles(new FilenameFilter() {
+				public boolean accept(File dir, String name) {
 					return name.endsWith(".appx");
 				}
 			});
-			
+
 			/* DONT REMOVE FOLLOWING COMMENT BLOCK */
-			/*BufferedReader br = null;
-			BufferedWriter bw = null;
-			File path = new File(tempDir.getPath() + File.separator + ps1File[0].getName());
-			File tempFile = new File(tempDir.getPath() + File.separator + "tmp" + ps1File[0].getName().substring(ps1File[0].getName().length() - 4));
-			File newFile = new File(tempDir.getPath() + File.separator + ps1File[0].getName());
-			try {
-				br = new BufferedReader(new FileReader(path));
-				bw = new BufferedWriter(new FileWriter(tempFile));
-				String line;
-				while ((line = br.readLine()) != null) {
-					if (line.trim().contains("[switch]$Force = $false")) {
-						line = line.replace("[switch]$Force = $false", "[switch]$Force = $true");
-					}
-					bw.write(line + "\n");
-				}
-			} catch (Exception e) {
-				return;
-			} finally {
-				br.close();
-				bw.close();
-			}
-			path.delete();
-			tempFile.renameTo(newFile);*/
-			
+			/*
+			 * BufferedReader br = null; BufferedWriter bw = null; File path =
+			 * new File(tempDir.getPath() + File.separator +
+			 * ps1File[0].getName()); File tempFile = new File(tempDir.getPath()
+			 * + File.separator + "tmp" +
+			 * ps1File[0].getName().substring(ps1File[0].getName().length() -
+			 * 4)); File newFile = new File(tempDir.getPath() + File.separator +
+			 * ps1File[0].getName()); try { br = new BufferedReader(new
+			 * FileReader(path)); bw = new BufferedWriter(new
+			 * FileWriter(tempFile)); String line; while ((line = br.readLine())
+			 * != null) { if (line.trim().contains("[switch]$Force = $false")) {
+			 * line = line.replace("[switch]$Force = $false",
+			 * "[switch]$Force = $true"); } bw.write(line + "\n"); } } catch
+			 * (Exception e) { return; } finally { br.close(); bw.close(); }
+			 * path.delete(); tempFile.renameTo(newFile);
+			 */
+
 			// PowerShell .\Add-AppDevPackage.ps1
 			StringBuilder sb = new StringBuilder();
 			sb.append(WP_POWERSHELL_PATH);
@@ -242,30 +320,33 @@ public class Deploy implements PluginConstants {
 			Commandline cl = new Commandline(sb.toString());
 			cl.setWorkingDirectory(tempDir);
 			Process process = cl.execute();
-			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			in = new BufferedReader(new InputStreamReader(
+					process.getInputStream()));
 			while ((in.readLine()) != null) {
 			}
 		} catch (CommandLineException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
-		} 
+		}
 	}
-	
+
 	private boolean packageAlreadyInstalled() throws MojoExecutionException {
 		boolean isPackageInstalled = false;
 		BufferedReader in = null;
 		try {
 			String packageName = packageInfo.getPackageName();
-			
+
 			// PowerShell (Get-AppxPackage -Name <packageName>).count
 			StringBuilder sb = new StringBuilder();
 			sb.append(WP_POWERSHELL_PATH);
-			sb.append("(" + WP_GET_APPX_PACKAGE +"-Name " + packageName + ").count");
+			sb.append("(" + WP_GET_APPX_PACKAGE + "-Name " + packageName
+					+ ").count");
 			Commandline cl = new Commandline(sb.toString());
 			cl.setWorkingDirectory(tempDir);
 			Process process = cl.execute();
-			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			in = new BufferedReader(new InputStreamReader(
+					process.getInputStream()));
 			String line = null;
 			String tempVar = null;
 			while ((line = in.readLine()) != null) {
@@ -274,7 +355,7 @@ public class Deploy implements PluginConstants {
 				}
 			}
 			if (tempVar != null) {
-				if(Integer.parseInt(tempVar.trim()) > 0) {			
+				if (Integer.parseInt(tempVar.trim()) > 0) {
 					isPackageInstalled = true;
 				}
 			}
@@ -284,58 +365,61 @@ public class Deploy implements PluginConstants {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 		return isPackageInstalled;
-		
+
 	}
-	
+
 	private void uninstallExistingPackage() throws MojoExecutionException {
 		BufferedReader in = null;
 		try {
 			String packageFullName = getPackageFullName();
 			// PowerShell Remove-AppxPackage <packageFullName>
-			
+
 			StringBuilder sb = new StringBuilder();
 			sb.append(WP_POWERSHELL_PATH);
 			sb.append(WP_REMOVE_APPX_PACKAGE + packageFullName);
 			Commandline cl = new Commandline(sb.toString());
 			cl.setWorkingDirectory(tempDir);
 			Process process = cl.execute();
-			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			while ((in.readLine()) != null) {				
+			in = new BufferedReader(new InputStreamReader(
+					process.getInputStream()));
+			while ((in.readLine()) != null) {
 			}
-			
+
 		} catch (CommandLineException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
-		}		
+		}
 	}
-	
+
 	private String getPackageFullName() throws MojoExecutionException {
 		String packageFullName = null;
 		BufferedReader in = null;
 		try {
 			String packageName = packageInfo.getPackageName();
-			
+
 			// PowerShell (Get-AppxPackage -Name <packageName>).packagefullname
 			StringBuilder sb = new StringBuilder();
 			sb.append(WP_POWERSHELL_PATH);
-			sb.append("(" + WP_GET_APPX_PACKAGE + "-Name " + packageName + ").packagefullname");
-			
+			sb.append("(" + WP_GET_APPX_PACKAGE + "-Name " + packageName
+					+ ").packagefullname");
+
 			Commandline cl = new Commandline(sb.toString());
 			cl.setWorkingDirectory(tempDir);
 			Process process = cl.execute();
-			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			in = new BufferedReader(new InputStreamReader(
+					process.getInputStream()));
 			String line = null;
 			while ((line = in.readLine()) != null) {
 				if (packageFullName == null) {
 					packageFullName = line;
-				}		
+				}
 			}
 		} catch (CommandLineException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
-		return packageFullName;		
+		return packageFullName;
 	}
 }
