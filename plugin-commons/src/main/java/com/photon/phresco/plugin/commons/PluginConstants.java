@@ -274,7 +274,7 @@ public interface PluginConstants {
 	 String FAMILY 						= "family";
 	 String UNIT_TEST_TYPE				= "unitTestType";
 	 String UNIT_TEST					= "unittest";
-	 String CALABASH_IOS_COMMAND		= "cucumber --guess";
+	 String CALABASH_IOS_COMMAND		= "cucumber";
 	 
 	 //Constants for Android
 	 
