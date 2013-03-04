@@ -87,15 +87,17 @@ public class PreBuildStep  implements PluginConstants {
 			
 			log.info("phase " + phase);
 			Configuration configuration = mojo.getConfiguration(phase);
-			List<Parameter> parameters = configuration.getParameters().getParameter();
-			BeanUtils bu = new BeanUtils();
-			
-			if (CollectionUtils.isNotEmpty(parameters)) {
-				for (Parameter parameter : parameters) {
-					log.info("Storing parameter Key " + parameter.getKey());
-					String paramValue = bu.getProperty(job, parameter.getKey());
-					log.info("Storing paramValue " + paramValue);
-					parameter.setValue(paramValue);					
+			if (configuration != null) {
+				List<Parameter> parameters = configuration.getParameters().getParameter();
+				BeanUtils bu = new BeanUtils();
+				
+				if (CollectionUtils.isNotEmpty(parameters)) {
+					for (Parameter parameter : parameters) {
+						log.info("Storing parameter Key " + parameter.getKey());
+						String paramValue = bu.getProperty(job, parameter.getKey());
+						log.info("Storing paramValue " + paramValue);
+						parameter.setValue(paramValue);					
+					}
 				}
 			}
 			mojo.save();
