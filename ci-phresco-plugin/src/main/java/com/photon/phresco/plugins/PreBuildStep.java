@@ -93,10 +93,14 @@ public class PreBuildStep  implements PluginConstants {
 				
 				if (CollectionUtils.isNotEmpty(parameters)) {
 					for (Parameter parameter : parameters) {
-						log.info("Storing parameter Key " + parameter.getKey());
-						String paramValue = bu.getProperty(job, parameter.getKey());
-						log.info("Storing paramValue " + paramValue);
-						parameter.setValue(paramValue);					
+						try {
+							log.info("Storing parameter Key " + parameter.getKey());
+							String paramValue = bu.getProperty(job, parameter.getKey());
+							log.info("Storing paramValue " + paramValue);
+							parameter.setValue(paramValue);
+						} catch (Exception e) {
+							log.info("Key is missing ... " + parameter.getKey());
+						}
 					}
 				}
 			}
