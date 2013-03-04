@@ -17,20 +17,22 @@ import com.photon.phresco.util.Utility;
 
 public class FunctionalTest implements PluginConstants {
 	public void functionalTest(Configuration config, MavenProjectInfo mavenProjectInfo) throws PhrescoException, MojoExecutionException {
-		Map<String, String> configs = MojoUtil.getAllValues(config);
-		String buildNumber = configs.get(BUILD_NUMBER);
-		String deviceId = configs.get(DEVICE_ID);
-		String baseDir = mavenProjectInfo.getBaseDir().getPath();
 		MavenProject project = mavenProjectInfo.getProject();
 		String seleniumToolType = project.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_SELENIUM_TOOL);
 		String workingDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
+		String baseDir = mavenProjectInfo.getBaseDir().getPath();
 		// calabash Execution
 		if(StringUtils.isNotEmpty((seleniumToolType)) && seleniumToolType.equals(CALABASH)) {
 			StringBuilder builder = new StringBuilder();
-			builder.append(CALABASH_IOS_COMMAND);
+			builder.append(CALABASH_IOS_COMMAND)
+			.append(STR_SPACE)
+			.append("-f junit -o test-reports -f html -o test-reports/calabash.html");
 			Utility.executeStreamconsumer(builder.toString(), baseDir + File.separator + workingDir);
 			return;
 		}
+		Map<String, String> configs = MojoUtil.getAllValues(config);
+		String buildNumber = configs.get(BUILD_NUMBER);
+		String deviceId = configs.get(DEVICE_ID);
 		if (StringUtils.isEmpty(buildNumber)) {
 			System.out.println("Build Number is empty . ");
 			throw new PhrescoException("Build Number is empty . ");

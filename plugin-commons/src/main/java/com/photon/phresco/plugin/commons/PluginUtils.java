@@ -599,6 +599,16 @@ public class PluginUtils {
 	 
 	 private static void createHeaderElementProp(Document document,
 			 Map<String, String> headersMap, Node collectionProp) {
+		 //To remove already added header key,values
+		 NodeList childNodes = collectionProp.getChildNodes();
+		 for (int i = 0; i < childNodes.getLength(); i++) {
+			 Node item = childNodes.item(i);
+			 if(item.hasChildNodes()) {
+				 collectionProp.removeChild(item);
+			 }	 
+		 }
+		 
+		 //To append header key values newly
 		 for (Map.Entry<String, String> entry : headersMap.entrySet()) {
 			 Node subElementProp = document.createElement("elementProp");
 			 NamedNodeMap subElementAttributes = subElementProp.getAttributes();
@@ -754,7 +764,7 @@ public class PluginUtils {
 				sb.append("/chromedriver/chromedriver -jar ");
 			}
 			sb.append(functionalTestDir.substring(1, functionalTestDir.length()))
-			.append("/lib/selenium-server-standalone-2.29.0.jar")
+			.append("/lib/selenium-server-standalone-2.30.0.jar")
 			.append(" -role node -nodeConfig ")
 			.append(functionalTestDir.substring(1, functionalTestDir.length()))
 	        .append("/nodeconfig.json");
@@ -786,7 +796,7 @@ public class PluginUtils {
 	        StringBuilder sb = new StringBuilder()
 	        .append("java -jar ")
 	        .append(functionalTestDir.substring(1, functionalTestDir.length()))
-	        .append("/lib/selenium-server-standalone-2.29.0.jar")
+	        .append("/lib/selenium-server-standalone-2.30.0.jar")
 	        .append(" -role hub -hubConfig ")
 	        .append(functionalTestDir.substring(1, functionalTestDir.length()))
 	        .append("/hubconfig.json");
