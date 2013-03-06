@@ -430,7 +430,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 		}
 	}
 	
-	public void writePhrescoBuildXml(com.photon.phresco.plugins.model.Mojos.Mojo.Configuration configuration, MavenProjectInfo mavenProjectInfo) {
+	public void writePhrescoBuildXml(com.photon.phresco.plugins.model.Mojos.Mojo.Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		try {
 			StringBuilder sb = new StringBuilder(mavenProjectInfo.getBaseDir().toString())
 			.append(File.separator)
