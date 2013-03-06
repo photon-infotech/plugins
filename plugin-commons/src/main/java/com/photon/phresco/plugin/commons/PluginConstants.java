@@ -141,7 +141,15 @@ public interface PluginConstants {
 	 String JAR_NAME					= "jarName";
 	 String MAIN_CLASS_NAME				= "mainClassName";
 	 String PROJECT_MODULE 				= "projectModule";
-	
+	 String SERVER_CONTAINER_ID			= "-Dcontainer.id=";
+	 String SREVER_CONTEXT				= "-Dserver.context=";
+	 String SERVER_PROTOCOL				= "-Dserver.protocol=";
+	 String HTTPS						= "https";
+	 String JAVAX_TRUSTSTORE			= "-Djavax.net.ssl.trustStore=";
+	 String JAVAX_TRUSTSTORE_PWD		= "-Djavax.net.ssl.trustStorePassword=";
+	 String JAVAX_KEYSTORE				= "-Djavax.net.ssl.keyStore=";
+	 String JAVAX_KEYSTORE_PWD			= "-Djavax.net.ssl.keyStorePassword=";
+	 String DEFAULT_PWD					= "changeit";
 	//Constants for NodeJs Plugin
 	 String NODE_EXE_PATH				= "\\node.exe";
 	 String NODEJS_DIR_NAME				= "NodeJS";

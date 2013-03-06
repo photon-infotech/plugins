@@ -161,19 +161,20 @@ public class Deploy implements PluginConstants {
 		}
 	}
 	
-	private void deploy(com.photon.phresco.configuration.Configuration confoguration) throws MojoExecutionException, PhrescoException {
-		if (confoguration == null) {
+	private void deploy(com.photon.phresco.configuration.Configuration configuration) throws MojoExecutionException, PhrescoException {
+		if (configuration == null) {
 			return;
 		}
-		String serverhost = confoguration.getProperties().getProperty(Constants.SERVER_HOST);
-		String serverport = confoguration.getProperties().getProperty(Constants.SERVER_PORT);
-		String serverprotocol = confoguration.getProperties().getProperty(Constants.SERVER_PROTOCOL);
-		String serverusername = confoguration.getProperties().getProperty(Constants.SERVER_ADMIN_USERNAME);
-		String serverpassword = confoguration.getProperties().getProperty(Constants.SERVER_ADMIN_PASSWORD);
-		String version = confoguration.getProperties().getProperty(Constants.SERVER_VERSION);
-		String servertype = confoguration.getProperties().getProperty(Constants.SERVER_TYPE);
-		context = confoguration.getProperties().getProperty(Constants.SERVER_CONTEXT);
-		String remotedeploy = confoguration.getProperties().getProperty(Constants.SERVER_REMOTE_DEPLOYMENT);
+		String serverhost = configuration.getProperties().getProperty(Constants.SERVER_HOST);
+		String serverport = configuration.getProperties().getProperty(Constants.SERVER_PORT);
+		String serverprotocol = configuration.getProperties().getProperty(Constants.SERVER_PROTOCOL);
+		String serverusername = configuration.getProperties().getProperty(Constants.SERVER_ADMIN_USERNAME);
+		String serverpassword = configuration.getProperties().getProperty(Constants.SERVER_ADMIN_PASSWORD);
+		String version = configuration.getProperties().getProperty(Constants.SERVER_VERSION);
+		String servertype = configuration.getProperties().getProperty(Constants.SERVER_TYPE);
+		context = configuration.getProperties().getProperty(Constants.SERVER_CONTEXT);
+		String remotedeploy = configuration.getProperties().getProperty(Constants.SERVER_REMOTE_DEPLOYMENT);
+		String certificatePath = configuration.getProperties().getProperty("certificate");
 		
 		String containerId = "";
 		renameWar(context);
@@ -188,11 +189,11 @@ public class Deploy implements PluginConstants {
 		if (servertype.contains(TYPE_TOMCAT)) {
 			removeCargoDependency();
 			containerId = serverVersionMap.get("tomcat-" + version);
-			deployToServer(serverprotocol, serverhost, serverport, serverusername, serverpassword, containerId);
+			deployToServer(serverprotocol, serverhost, serverport, serverusername, serverpassword, containerId, certificatePath);
 		} else if (servertype.contains(TYPE_JBOSS)) {
 			addCargoDependency(version);
 			containerId = serverVersionMap.get("jboss-" + version);
-			deployToServer(serverprotocol, serverhost, serverport, serverusername, serverpassword, containerId);
+			deployToServer(serverprotocol, serverhost, serverport, serverusername, serverpassword, containerId, certificatePath);
 		} else if (servertype.contains(TYPE_WEBLOGIC) && ((version.equals(Constants.WEBLOGIC_12c)) || (version.equals(Constants.WEBLOGIC_11gR1)))) {
 			deployToWeblogicServer(serverprotocol, serverhost, serverport, serverusername, serverpassword, version);
 		} 
@@ -268,7 +269,7 @@ public class Deploy implements PluginConstants {
 	
 	
 	private void deployToServer(String serverprotocol, String serverhost, String serverport,
-			String serverusername, String serverpassword, String containerId) throws MojoExecutionException {
+			String serverusername, String serverpassword, String containerId, String certificatePath) throws MojoExecutionException {
 		BufferedReader bufferedReader = null;
 		boolean errorParam = false;
 		try {
@@ -277,7 +278,7 @@ public class Deploy implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(JBOSS_GOAL);
 			sb.append(STR_SPACE);
-			sb.append("-Dserver.protocol=");
+			sb.append(SERVER_PROTOCOL);
 			sb.append(serverprotocol);
 			sb.append(STR_SPACE);
 			sb.append(SERVER_HOST);
@@ -292,14 +293,35 @@ public class Deploy implements PluginConstants {
 			sb.append(SERVER_PASSWORD);
 			sb.append(serverpassword);
 			sb.append(STR_SPACE);
-			sb.append("-Dcontainer.id=");
+			sb.append(SERVER_CONTAINER_ID);
 			sb.append(containerId);
 			sb.append(STR_SPACE);
-			sb.append("-Dserver.context=");
+			sb.append(SREVER_CONTEXT);
 			sb.append(context);
 			sb.append(STR_SPACE);
 			sb.append(SKIP_TESTS);
 			
+			if (serverprotocol.equals(HTTPS) && certificatePath != null) {
+				File certificateFile = null;
+				if (new File(baseDir, certificatePath).exists()) {
+					certificateFile = new File(certificatePath);
+				} else {
+					certificateFile = new File("../" + certificatePath);
+				}
+				sb.append(STR_SPACE);
+				sb.append(JAVAX_TRUSTSTORE);
+				sb.append(certificateFile.getPath());
+				sb.append(STR_SPACE);
+				sb.append(JAVAX_TRUSTSTORE_PWD);
+				sb.append(DEFAULT_PWD);
+				sb.append(STR_SPACE);
+				sb.append(JAVAX_KEYSTORE);
+				sb.append(certificateFile.getPath());
+				sb.append(STR_SPACE);
+				sb.append(JAVAX_KEYSTORE_PWD);
+				sb.append(DEFAULT_PWD);
+			}
+
 			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 			String line = null;
 			while ((line = bufferedReader.readLine()) != null) {
