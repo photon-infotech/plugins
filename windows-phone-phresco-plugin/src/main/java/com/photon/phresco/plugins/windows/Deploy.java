@@ -19,10 +19,12 @@
  */
 package com.photon.phresco.plugins.windows;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Map;
 
@@ -76,7 +78,7 @@ public class Deploy implements PluginConstants {
 		try {
 			init();
 			extractBuild();
-			if (type.equalsIgnoreCase(WP8_PLATFORM)) {
+			if (type.equalsIgnoreCase(WIN_STORE)) {
 				deployWinStorePackage();
 			} else {
 				deployWinPhonePackage();
@@ -93,10 +95,10 @@ public class Deploy implements PluginConstants {
 			if (StringUtils.isEmpty(buildNumber)
 					|| StringUtils.isEmpty(environmentName)
 					|| StringUtils.isEmpty(type)
-					|| (!type.equals(WP7) && !type.equals(WP8))) {
+					|| (!type.equals(WIN_PHONE) && !type.equals(WIN_STORE))) {
 				callUsage();
 			}
-			if (type.equalsIgnoreCase(WP8_PLATFORM)) {
+			if (type.equalsIgnoreCase(WIN_STORE)) {
 				getSolutionFile();
 				packageInfo = new WP8PackageInfo(rootDir);
 			}
@@ -196,6 +198,7 @@ public class Deploy implements PluginConstants {
 						process.getInputStream()));
 				while ((in.readLine()) != null) {
 				}
+				
 			}
 		} catch (CommandLineException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
@@ -220,8 +223,7 @@ public class Deploy implements PluginConstants {
 	 * @param xapFile
 	 */
 	private String buildWP7DeployCmd(File[] xapFile) {
-		// wptools.exe -target:emulator -xap:WindowsPhoneApplication1.xap
-		// -install
+		// wptools.exe -target:emulator -xap:WindowsPhoneApplication1.xap -install
 		StringBuilder sb = new StringBuilder();
 		sb.append(WP7_WPTOOLS_PATH);
 		sb.append(WP7_TARGET);
@@ -244,6 +246,17 @@ public class Deploy implements PluginConstants {
 	 */
 	private String buildWP8DeployCmd(File[] xapFile) {
 		// XapDeployCmd.exe /installlaunch <XAP file name> /targetdevice:<xd / de>
+		/*ProcessBuilder pb;
+		pb = new ProcessBuilder(WP8_XAPCMD_PATH);
+		// Include errors in output
+		pb.redirectErrorStream(true);
+		pb.command().add(WP8_XAPCMD_INSTALL);
+		pb.command().add(xapFile[0].getName());
+		pb.command().add(WP8_XAPCMD_TARGET);
+		pb.command().add(WP_STR_COLON);
+		pb.command().add(target);*/
+		
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append(WP8_XAPCMD_PATH);
 		sb.append(WP8_XAPCMD_INSTALL);
@@ -253,9 +266,11 @@ public class Deploy implements PluginConstants {
 		sb.append(WP_STR_COLON);
 		sb.append(target);
 		return sb.toString();
+		
+//		return pb;
 	}
 
-	private void launchWP8Emulator() throws MojoExecutionException {
+	/*private void launchWP8Emulator() throws MojoExecutionException {
 		StringBuilder sb = new StringBuilder();
 		BufferedReader in = null;
 		try {
@@ -274,7 +289,7 @@ public class Deploy implements PluginConstants {
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
-	}
+	}*/
 
 	private void deployWinStorePackage() throws MojoExecutionException {
 		BufferedReader in = null;
@@ -317,6 +332,9 @@ public class Deploy implements PluginConstants {
 			sb.append(WP_STR_DOT);
 			sb.append(WINDOWS_STR_BACKSLASH);
 			sb.append(appxFile[0].getName());
+			
+			log.info("command = " + sb.toString());
+			
 			Commandline cl = new Commandline(sb.toString());
 			cl.setWorkingDirectory(tempDir);
 			Process process = cl.execute();

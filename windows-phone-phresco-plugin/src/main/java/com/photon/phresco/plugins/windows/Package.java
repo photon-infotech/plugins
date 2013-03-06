@@ -93,7 +93,7 @@ public class Package implements PluginConstants {
         PluginUtils.checkForConfigurations(baseDir, environmentName);
 		try {
 			init();
-			if(type.equalsIgnoreCase(WP8_PLATFORM)) {
+			if(type.equalsIgnoreCase(WIN_STORE)) {
 				try {
 					generateWP8Package();
 				} catch (PhrescoException e) {				
@@ -113,13 +113,13 @@ public class Package implements PluginConstants {
 
 	private void init() throws MojoExecutionException {
 		try {
-			if (StringUtils.isEmpty(environmentName) || StringUtils.isEmpty(type) || (!type.equals(WP7) && !type.equals(WP8))) {
+			if (StringUtils.isEmpty(environmentName) || StringUtils.isEmpty(type) || (!type.equals(WIN_PHONE) && !type.equals(WIN_STORE))) {
 				callUsage();
 			}
 			
 			getSolutionFile();
 			
-			if(type.equalsIgnoreCase(WP8_PLATFORM)) {
+			if(type.equalsIgnoreCase(WIN_STORE)) {
 				getProjectRoot();
 				getCSProjectFile();
 				packageInfo = new WP8PackageInfo(rootDir);
@@ -320,11 +320,11 @@ public class Package implements PluginConstants {
 		try {
 			zipName = util.createPackage(buildName, buildNumber, nextBuildNo, currentDate);
 			String zipFilePath = buildDir.getPath() + File.separator + zipName;
-			if(type.equalsIgnoreCase(WP8_PLATFORM)) {
+			if(type.equalsIgnoreCase(WIN_STORE)) {
 				String packageVersion = packageInfo.getPackageVersion();
 				String tempFilePath = rootDir.getPath() + WP_APP_PACKAGE + File.separator + WP_PROJECT_ROOT + STR_UNDERSCORE + packageVersion + STR_UNDERSCORE + (platform.equalsIgnoreCase("any cpu")?"AnyCPU":platform) + (config.equalsIgnoreCase("debug")? STR_UNDERSCORE + config : "") + WP_TEST;
 				tempDir = new File(tempFilePath);
-			} else if(type.equalsIgnoreCase("wp7")) {
+			} else if(type.equalsIgnoreCase(WIN_PHONE)) {
 				String packageFolder = solutionFile[0].getName().substring(0, solutionFile[0].getName().length() - 4);
 				tempDir = new File(baseDir + sourceDirectory + File.separator + WP_SOURCE + File.separator + packageFolder + WP7_BIN_FOLDER + WP7_RELEASE_FOLDER);	
 			}

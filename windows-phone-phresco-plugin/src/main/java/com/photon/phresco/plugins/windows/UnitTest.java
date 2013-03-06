@@ -113,7 +113,7 @@ public class UnitTest implements PluginConstants {
 
 	private void executePackage() throws MojoExecutionException {
 		packageInit();
-		if(type.equalsIgnoreCase(WP8_PLATFORM)) {
+		if(type.equalsIgnoreCase(WIN_STORE)) {
 			try {
 				generateWP8UnitTestPackage();
 			} catch (PhrescoException e) {				
@@ -130,7 +130,7 @@ public class UnitTest implements PluginConstants {
 		try {
 			unitTestInit();
 			extractBuild();
-			if (type.equalsIgnoreCase(WP8_PLATFORM)) {
+			if (type.equalsIgnoreCase(WIN_STORE)) {
 				runWP8UnitTest();
 			} else {
 //				deployWp7Package();
@@ -146,11 +146,11 @@ public class UnitTest implements PluginConstants {
 	private void packageInit() throws MojoExecutionException {
 		try {
 			
-			if (StringUtils.isEmpty(type) || (!type.equals(WP7) && !type.equals(WP8))) {
+			if (StringUtils.isEmpty(type) || (!type.equals(WP7) && !type.equals(WIN_STORE))) {
 				packageCallUsage();
 			}
 			
-			if(type.equalsIgnoreCase(WP8_PLATFORM)) {
+			if(type.equalsIgnoreCase(WIN_STORE)) {
 				getProjectRoot();
 				getCSProjectFile();
 				log.info("csproject file name = " + csprojFile[0].getName());
@@ -353,14 +353,14 @@ public class UnitTest implements PluginConstants {
 			
 			log.info("zip file path = " + zipFilePath);
 			
-			if(type.equalsIgnoreCase(WP8_PLATFORM)) {
+			if(type.equalsIgnoreCase(WIN_STORE)) {
 				String packageVersion = packageInfo.getPackageVersion();
 				String tempFilePath = rootDir.getPath() + WP_APP_PACKAGE + File.separator + WP_UNIT_TEST_PROJECT_ROOT + STR_UNDERSCORE + packageVersion + STR_UNDERSCORE + (platform.equalsIgnoreCase("any cpu")?"AnyCPU":platform) + (config.equalsIgnoreCase("debug")? STR_UNDERSCORE + config : "") + WP_TEST;
 				
 				log.info("tempFilePath = " + tempFilePath);
 				
 				tempDir = new File(tempFilePath);
-			} else if(type.equalsIgnoreCase("wp7")) {
+			} else if(type.equalsIgnoreCase(WIN_PHONE)) {
 				String packageFolder = solutionFile[0].getName().substring(0, solutionFile[0].getName().length() - 4);
 				tempDir = new File(baseDir + unitTestDirectory + File.separator + WP_SOURCE + File.separator + packageFolder + WP7_BIN_FOLDER + WP7_RELEASE_FOLDER);	
 			}
