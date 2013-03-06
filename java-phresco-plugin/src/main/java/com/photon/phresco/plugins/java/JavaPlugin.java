@@ -27,6 +27,7 @@ public class JavaPlugin extends PhrescoBasePlugin {
 				FileUtils.deleteDirectory(targetDir);
 				log.info("Target Folder Deleted Successfully");
 			}
+			writePhrescoBuildXml(configuration, mavenProjectInfo);
 			Package pack = new Package();
 			pack.pack(configuration, mavenProjectInfo, log);
 		} catch (IOException e) {

@@ -18,6 +18,7 @@ public class BlackBerryPlugin extends PhrescoBasePlugin {
 	@Override
 	public ExecutionStatus pack(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		writePhrescoBuildXml(configuration, mavenProjectInfo);
 		Package pack = new Package();
 		pack.pack(configuration, mavenProjectInfo, log);
 		return new DefaultExecutionStatus();

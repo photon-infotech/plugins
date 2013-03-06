@@ -27,6 +27,7 @@ public class SiteCorePlugin extends PhrescoBasePlugin {
 				FileUtils.deleteDirectory(targetDir);
 				log.info("Target Folder Deleted Successfully");
 			}
+			writePhrescoBuildXml(configuration, mavenProjectInfo);
 			Package pack = new Package();
 			pack.pack(configuration, mavenProjectInfo, getLog());
 		} catch (IOException e) {

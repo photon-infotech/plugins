@@ -20,6 +20,7 @@ public class XcodePlugin extends PhrescoBasePlugin {
 	@Override
 	public ExecutionStatus pack(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		writePhrescoBuildXml(configuration, mavenProjectInfo);
 		Package pack = new Package();
 		pack.pack(configuration, mavenProjectInfo, getLog());
 		return new DefaultExecutionStatus();

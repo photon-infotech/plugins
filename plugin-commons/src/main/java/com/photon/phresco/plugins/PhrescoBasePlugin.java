@@ -2,25 +2,33 @@ package com.photon.phresco.plugins;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
@@ -30,11 +38,13 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -418,6 +428,143 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 				fos.close();
 			}
 		}
+	}
+	
+	public void writePhrescoBuildXml(com.photon.phresco.plugins.model.Mojos.Mojo.Configuration configuration, MavenProjectInfo mavenProjectInfo) {
+		try {
+			StringBuilder sb = new StringBuilder(mavenProjectInfo.getBaseDir().toString())
+			.append(File.separator)
+			.append(".phresco")
+			.append(File.separator)
+			.append("phresco-build.xml");
+			File configFile = new File(sb.toString());
+			Map<String, String> configs = MojoUtil.getAllValues(configuration);
+			String value = configs.get("packageFileBrowse");
+			if (StringUtils.isNotEmpty(value)) {
+				Map<String, List<String>> directoriesMap = new HashMap<String, List<String>>();
+				Map<String, List<String>> filesMap = new HashMap<String, List<String>>();
+				getBuildConfigMap(value, directoriesMap, filesMap, mavenProjectInfo);
+				writeToBuildConfigXml(configFile, directoriesMap, filesMap);
+			} else {
+				configFile.delete();
+			}
+		} catch (Exception e) {
+			throw new PhrescoException(e);
+		}
+	}
+	
+	/**
+	 * To get the file/folders map based on the selection
+	 * @param csvTargetFolder
+	 * @param directoriesMap
+	 * @param filesMap
+	 * @throws PhrescoException
+	 */
+	private void getBuildConfigMap(String csvTargetFolder, Map<String, List<String>> directoriesMap, 
+	        Map<String, List<String>> filesMap, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+	    try {
+	        String[] sepSplits = csvTargetFolder.split("#SEP#");
+	        for (String sepSplit : sepSplits) {
+	            String[] fileSepSplits = sepSplit.split("#FILESEP#");
+	            String targetFolder = fileSepSplits[0];
+	            String fileOrFolder = fileSepSplits[1];
+	            if (new File(mavenProjectInfo.getBaseDir().toString() + fileOrFolder).isDirectory()) {
+	                if (directoriesMap.containsKey(targetFolder)) {
+	                    List<String> list = new ArrayList<String>();
+	                    list.addAll(directoriesMap.get(targetFolder));
+	                    list.add(fileOrFolder);
+	                    directoriesMap.put(targetFolder, list);
+	                } else {
+	                    directoriesMap.put(targetFolder, Collections.singletonList(fileOrFolder));
+	                }
+	            } else {
+	                List<String> list = new ArrayList<String>();
+	                if (filesMap.containsKey(targetFolder)) {
+	                    list.addAll(filesMap.get(targetFolder));
+	                }
+	                String[] split = fileOrFolder.split(",");
+	                list.addAll(Arrays.asList(split));
+	                filesMap.put(targetFolder, list);
+	            }
+	        }
+	    } catch (Exception e) {
+	        throw new PhrescoException(e);
+	    }
+	}
+	
+	/**
+	 * To write the map values into build-config.xml
+	 * @param configFile
+	 * @param directoriesMap
+	 * @param filesMap
+	 * @throws PhrescoException
+	 */
+	private void writeToBuildConfigXml(File configFile, Map<String, List<String>> directoriesMap, Map<String, List<String>> filesMap) throws PhrescoException {
+	    try {
+	        DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
+	        domFactory.setNamespaceAware(false);
+	        DocumentBuilder builder = domFactory.newDocumentBuilder();
+	        Document document = builder.newDocument();
+	        Element rootElement = document.createElement("build");
+	        Element directoriesElement = document.createElement("directories");
+	        if (MapUtils.isNotEmpty(directoriesMap)) {
+	            Set<String> keySet = directoriesMap.keySet();
+	            for (String key : keySet) {
+	                List<String> list = directoriesMap.get(key);
+	                for (String string : list) {
+	                    Element directoryElement = document.createElement("directory");
+	                    if (StringUtils.isNotEmpty(key)) {
+	                        directoryElement.setAttribute("toDirectory", key);
+	                    }
+	                    directoryElement.setTextContent(string);
+	                    directoriesElement.appendChild(directoryElement);
+	                }
+	            }
+	        }
+	        rootElement.appendChild(directoriesElement);
+
+	        Element filesElement = document.createElement("files");
+	        if (MapUtils.isNotEmpty(filesMap)) {
+	            Set<String> keySet = filesMap.keySet();
+	            for (String key : keySet) {
+	                List<String> list = filesMap.get(key);
+	                for (String string : list) {
+	                    Element fileElement = document.createElement("file");
+	                    if (StringUtils.isNotEmpty(key)) {
+	                        fileElement.setAttribute("toDirectory", key);
+	                    }
+	                    fileElement.setTextContent(string);
+	                    filesElement.appendChild(fileElement);
+	                }
+	            }
+	        }
+	        rootElement.appendChild(filesElement);
+	        document.appendChild(rootElement);
+
+	        TransformerFactory tFactory = TransformerFactory.newInstance();
+	        Transformer transformer = tFactory.newTransformer();
+	        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+	        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+	        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+
+	        Source src = new DOMSource(document);
+	        Result res = new StreamResult(new FileOutputStream(configFile));
+	        transformer.transform(src, res);
+	    } catch (DOMException e) {
+	        throw new PhrescoException(e);
+	    } catch (TransformerConfigurationException e) {
+	        throw new PhrescoException(e);
+	    } catch (IllegalArgumentException e) {
+	        throw new PhrescoException(e);
+	    } catch (FileNotFoundException e) {
+	        throw new PhrescoException(e);
+	    } catch (ParserConfigurationException e) {
+	        throw new PhrescoException(e);
+	    } catch (TransformerFactoryConfigurationError e) {
+	        throw new PhrescoException(e);
+	    } catch (TransformerException e) {
+	        throw new PhrescoException(e);
+	    }
 	}
 
 }
