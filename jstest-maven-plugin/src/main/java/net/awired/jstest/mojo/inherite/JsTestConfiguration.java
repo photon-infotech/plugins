@@ -235,6 +235,13 @@ public abstract class JsTestConfiguration extends AbstractMojo {
     }
 
     public ResourceDirectory buildCurrentSrcDir(boolean serverMode) {
+    	RunnerType runnerType = buildAmdRunnerType();
+    	if (runnerType.equals(RunnerType.YUI) && serverMode) {
+    		ResourceDirectory buildSrcResourceDirectory = buildSrcResourceDirectory();
+    		File buildsrcResDir = new File(buildSrcResourceDirectory.getDirectory() + File.separator + "js");
+    		buildSrcResourceDirectory.setDirectory(buildsrcResDir);
+    		return buildSrcResourceDirectory;
+    	}
         if (serverMode) {
             return buildSrcResourceDirectory();
         } else if (isCoverage()) {

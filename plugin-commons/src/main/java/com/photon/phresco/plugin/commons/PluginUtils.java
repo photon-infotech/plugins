@@ -979,7 +979,7 @@ public class PluginUtils {
 		}
 	}
 	
-	private ApplicationInfo getAppInfo(File baseDir) throws PhrescoException {
+	public ApplicationInfo getAppInfo(File baseDir) throws PhrescoException {
 		StringBuilder sb = new StringBuilder();
 		sb.append(baseDir.getPath())
 		.append(File.separator)

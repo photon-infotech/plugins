@@ -1,11 +1,11 @@
 package net.awired.jstest.mojo;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URL;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+
 import net.awired.jstest.executor.RunnerExecutor;
 import net.awired.jstest.mojo.inherite.AbstractJsTestMojo;
 import net.awired.jstest.resource.ResourceDirectory;
@@ -90,7 +90,6 @@ public class TestMojo extends AbstractJsTestMojo {
             HandlerCollection handlerCollect = new HandlerCollection();
             handlerCollect.setHandlers(handlers.toArray(new Handler[handlers.size()]));
             jsTestServer.startServer(handlerCollect);
-            //jsTestServer.join();
 
             if (isEmulator()) {
                 executor = new RunnerExecutor();
@@ -113,6 +112,7 @@ public class TestMojo extends AbstractJsTestMojo {
                     throw new MojoFailureException(message);
                 }
             }
+//          jsTestServer.join();
         } catch (MojoFailureException e) {
             throw e;
         } catch (Exception e) {

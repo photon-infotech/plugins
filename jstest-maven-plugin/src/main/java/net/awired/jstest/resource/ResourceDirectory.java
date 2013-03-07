@@ -7,7 +7,7 @@ import java.util.List;
 public class ResourceDirectory {
 
     public static final List<String> DEFAULT_INCLUDES = asList("**/**");
-    public static final List<String> DEFAULT_EXCLUDES = asList("META-INF/**", "WEB-INF/**");
+    public static final List<String> DEFAULT_EXCLUDES = asList("META-INF/**");
 
     private File directory;
     private List<String> includes;

@@ -1,6 +1,5 @@
 package net.awired.jstest.mojo;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -24,7 +23,7 @@ import org.eclipse.jetty.webapp.WebAppContext;
 
 /**
  * @goal dev
- * @execute lifecycle="jstest-lifecycle" phase="generate-test-sources"
+ * @execute lifecycle="jstest-lifecycle" phase="process-test-resources"
  * @requiresDirectInvocation true
  */
 public class DevMojo extends AbstractJsTestMojo {

@@ -39,6 +39,8 @@ public interface PluginConstants {
      String PLUGIN_INFO_FILE			= "phresco-plugin-info.xml";
      String FORWARD_SLASH               = "/";
      String CONFIG_FILE					= "phresco-env-config.xml";
+     String UNIT_INFO_FILE				= "phresco-unit-test-info.xml";
+     String VALIDATE_INFO_INFO_FILE		= "phresco-validate-code-info.xml";
      String SETTINGS_FILE				= "-settings.xml";
      String BASH 						= "bash";
      String ENV_FILE					= "runagainstsource.info";
@@ -103,6 +105,8 @@ public interface PluginConstants {
      String JAVA_TEST_CONFIG_FILE 		= "/test/functional/src/main/resources/" + CONFIG_FILE;
 	 String JAVA_CONFIG_FILE 			= "/src/main/resources/" + CONFIG_FILE;
 	 String JAVA_WEBAPP_CONFIG_FILE 	= "/src/main/webapp/WEB-INF/resources/" + CONFIG_FILE;
+	 String JAVA_WEBAPP_UNIT_INFO_FILE 	= "/src/main/webapp/WEB-INF/resources/" + UNIT_INFO_FILE;
+	 String JAVA_WEBAPP_CODE_INFO_FILE 	= "/src/main/webapp/WEB-INF/resources/" + VALIDATE_INFO_INFO_FILE;
 	 String JAVA_SERVER_CONFIG_FILE		= "/serverconfig.properties";
 	 String JAVA_CMD					= "java";
 	 String JAR_PATH					= "/lib/driver/";
@@ -403,6 +407,7 @@ public interface PluginConstants {
 	 //Constants for dynamic parameter
 	 String BUILD_NAME 					= "buildName";
 	 String ENVIRONMENT_NAME 			= "environmentName";
+	 String WEBSERVICE 					= "webservice";
 	 String WINDOWS_PLATFORM_TYPE		= "type";
 	 String CONFIG 						= "configuration";
 	 String PLATFORM 					= "platform";
@@ -429,7 +434,7 @@ public interface PluginConstants {
 	 String TIME_STAMP_FOR_DISPLAY 		= "dd/MMM/yyyy HH:mm:ss";
 	 
 	 //Constants for CodeValidator
-	 String SONAR_COMMAND				= "mvn sonar:sonar";
+	 String SONAR_COMMAND				= "mvn clean sonar:sonar";
 	 String SONAR						= "sonar";
 	 String PLUGIN_PARAMETER 			= "plugin";
 	 String SONARCOMMAND				= "sonar:sonar";
