@@ -70,11 +70,10 @@ public class Start implements PluginConstants {
 		projectCode = mavenProjectInfo.getProjectCode();
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
 		environmentName = configs.get(ENVIRONMENT_NAME);
-		// port = configs.get(Constants.SERVER_PORT);
-		// context = configs.get(Constants.SERVER_CONTEXT);
 		importSql = Boolean.parseBoolean(configs.get(EXECUTE_SQL));
 	    sqlPath = configs.get(FETCH_SQL);
 	    pu = new PluginUtils();
+	    PluginUtils.checkForConfigurations(baseDir, environmentName);
 		try {
 			if (environmentName != null) {
 				updateFinalName();
@@ -121,7 +120,6 @@ public class Start implements PluginConstants {
 		ConfigurationInfo info = new ConfigurationInfo();
 		info.setContext(serverContext);
 		info.setEnvironmentName(environmentName);
-		info.setModuleName("");// projectModule
 		info.setServerPort(serverPort);
 		Gson gson = new Gson();
 		String envName = gson.toJson(info);

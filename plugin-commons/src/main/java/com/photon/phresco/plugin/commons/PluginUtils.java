@@ -910,14 +910,35 @@ public class PluginUtils {
 	}
 	
 	public static void checkForConfigurations(File baseDir, String environmentName) throws PhrescoException {
+		ConfigManager configManager = null;
+		PluginUtils pu = new PluginUtils();
 		try {
-			String configFile = baseDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE;
-			ConfigManager configManager = PhrescoFrameworkFactory.getConfigManager(new File(configFile));
-			PluginUtils pu = new PluginUtils();
+			String customerId = pu.readCustomerId(baseDir);
+			File configFile = new File(baseDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE);
+			File settingsFile = new File(Utility.getProjectHome()+ customerId + PluginConstants.SETTINGS_FILE);
 			List<String> selectedEnvs = pu.csvToList(environmentName);
-			List<Environment> environments = configManager.getEnvironments();
 			List<String> selectedConfigTypeList = pu.getSelectedConfigTypeList(baseDir);
 			List<String> nullConfig = new ArrayList<String>();
+			if (settingsFile.exists()) {
+				configManager = PhrescoFrameworkFactory.getConfigManager(settingsFile);
+				List<Environment> environments = configManager.getEnvironments();
+				for (Environment environment : environments) {
+					if (selectedEnvs.contains(environment.getName())) {
+						if (CollectionUtils.isNotEmpty(selectedConfigTypeList)) {
+							for (String selectedConfigType : selectedConfigTypeList) {
+								if(CollectionUtils.isEmpty(configManager.getConfigurations(environment.getName(), selectedConfigType))) {
+									nullConfig.add(selectedConfigType);
+								}
+							}
+						}
+					} if(CollectionUtils.isNotEmpty(nullConfig)) {
+						String errMsg = environment.getName() + " environment in global settings doesnot have "+ nullConfig + " configurations";
+						throw new PhrescoException(errMsg);
+					}
+				} 
+			} 
+			configManager = PhrescoFrameworkFactory.getConfigManager(configFile);
+			List<Environment> environments = configManager.getEnvironments();
 			for (Environment environment : environments) {
 				if (selectedEnvs.contains(environment.getName())) {
 					if (CollectionUtils.isNotEmpty(selectedConfigTypeList)) {

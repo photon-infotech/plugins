@@ -51,7 +51,7 @@ import com.phresco.pom.util.PomProcessor;
 public class Start implements PluginConstants {
 	private File baseDir;
 	private MavenProject project;
-	private boolean importSql; // value need passed
+	private boolean importSql;
 	private String environmentName;
 	private Log log;
 	private String sqlPath;
@@ -66,7 +66,7 @@ public class Start implements PluginConstants {
 		importSql = Boolean.parseBoolean(configs.get(EXECUTE_SQL));
 	    sqlPath = configs.get(FETCH_SQL);
 	    pUtil = new PluginUtils();
-	    
+	    PluginUtils.checkForConfigurations(baseDir, environmentName);
 		try {
 			configure();
 			storeEnvName();
