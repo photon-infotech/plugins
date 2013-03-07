@@ -207,6 +207,8 @@ public interface PluginConstants {
 	 String WP_SOURCE					= "src";
 	 String WP8							= "wp8";
 	 String WP7							= "wp7";
+	 String WIN_STORE					= "winstore";
+	 String WIN_PHONE					= "winphone";
 	 
 	 String WP_SLN 						= ".sln";
 	 String WP_CSPROJ 					= ".csproj";
@@ -227,7 +229,7 @@ public interface PluginConstants {
 	 String WP_ADD_APPX_PACKAGE 		= "Add-AppxPackage ";
 	 String WP_GET_APPX_PACKAGE 		= "Get-AppxPackage ";
 	 String WP_REMOVE_APPX_PACKAGE 		= "Remove-AppxPackage ";
-	 String WP8_PLATFORM 				= "wp8";
+//	 String WP8_PLATFORM 				= "wp8";
 	 
 	// Variables related to Windows Store (Metro) unit test build process
 	 String WP_UNIT_TEST_PROJECT_ROOT 	= "Metro.UnitTests";
