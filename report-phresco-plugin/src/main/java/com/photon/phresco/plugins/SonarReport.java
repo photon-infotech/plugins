@@ -43,7 +43,14 @@ public class SonarReport {
 	private String commentBlankLines = "";
 	private String coverage = "";
 	private String uncoveredLines = "";
+	private String moduleName = "";
 	
+	public String getModuleName() {
+		return moduleName;
+	}
+	public void setModuleName(String moduleName) {
+		this.moduleName = moduleName;
+	}
 	public String getNonCommentLinesOfCode() {
 		return nonCommentLinesOfCode;
 	}

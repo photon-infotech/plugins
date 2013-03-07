@@ -75,6 +75,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.html.simpleparser.StyleSheet;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.tool.xml.XMLWorkerHelper;
 import com.lowagie.text.pdf.PdfContentByte;
@@ -94,13 +95,10 @@ import com.phresco.pom.model.Profile;
 import com.phresco.pom.util.PomProcessor;
 
 public class GenerateReport implements PluginConstants {
+	private static final String IS_CLASS_EMPTY = "isClassEmpty";
 	private static final String MODULE_NAME = "Module Name";
 	private static final String COPY_RIGHTS = "copyRights";
 	private static final String SONAR_REPORT = "sonarReport";
-	private static final String TECH_ANDROID_LIBRARY = "tech-android-library";
-	private static final String TECH_ANDROID_HYBRID = "tech-android-hybrid";
-	private static final String TECH_IPHONE_NATIVE = "tech-iphone-native";
-	private static final String HIDE_CLASS_COLUMN = "hideClassColumn";
 	private static final String DEFAULT_COPYRIGHTS = "© 2013 Photon Infotech Pvt.Ltd";
 	private static final String PHRESCO_UNIT_TEST = "phresco.unitTest";
 	private static final String REPORTS_TYPE = "reportsDataType";
@@ -297,25 +295,37 @@ public class GenerateReport implements PluginConstants {
 						}
 						sonarTechReports.add(FUNCTIONAL);
 						for (String sonarTechReport : sonarTechReports) {
-							SonarReport srcSonarReport = generateSonarReport(sonarTechReport);
-							if(srcSonarReport != null) {
-								sonarReports.add(srcSonarReport);
+							if (isMultiModuleProject) {
+								for (String module : modules) {
+									SonarReport srcSonarReport = generateSonarReport(sonarTechReport, module);
+									if(srcSonarReport != null) {
+										sonarReports.add(srcSonarReport);
+									}
+								}
+							} else {
+								SonarReport srcSonarReport = generateSonarReport(sonarTechReport, null);
+								if(srcSonarReport != null) {
+									sonarReports.add(srcSonarReport);
+								}
 							}
 						}
-						cumulativeReportparams.put(SONAR_REPORT, sonarReports);
 					}
+					cumulativeReportparams.put(SONAR_REPORT, sonarReports);
 				}
 			}
 			
-			//hide class column if not exist in xml  in pdf 
-			if (TECH_IPHONE_NATIVE.equals(techName) || TECH_ANDROID_HYBRID.equals(techName) || TECH_ANDROID_LIBRARY.equals(techName) || "tech-iphone-hybrid".equals(techName)) {
-				cumulativeReportparams.put(HIDE_CLASS_COLUMN, "hide");
-				log.info("Hide class for functional ==>" + techName);
-			} else {
-				cumulativeReportparams.put(HIDE_CLASS_COLUMN, "show");
-				log.info("Show class for functional ==>" + techName);
+			// check class attribute is there or not in xml
+			List<TestSuite> testSuites = functionalSureFireReports.getTestSuites();
+			boolean isClassEmpty = true;
+			for (TestSuite testSuite : testSuites) {
+				List<TestCase> testcases = testSuite.getTestCases();
+				for (TestCase testCase : testcases) {
+					if (StringUtils.isNotEmpty(testCase.getTestClass())) {
+						isClassEmpty = false;
+					}
+				}
 			}
-			
+			cumulativeReportparams.put(IS_CLASS_EMPTY, isClassEmpty);
 			generateCumulativeTestReport(cumulativeReportparams);
 		} catch (Exception e) {
 			log.error("Report generation errorr ");
@@ -569,15 +579,19 @@ public class GenerateReport implements PluginConstants {
 		}
 	}
 	
-	 public SonarReport generateSonarReport(String report) throws PhrescoException {
+	 public SonarReport generateSonarReport(String report, String module) throws PhrescoException {
 		log.debug("Entering Method PhrescoReportGeneration.generateSonarReport()");
 		SonarReport sonarReport = null;
-		String serverUrl = "";
 		try {
 			StringBuilder builder = new StringBuilder(baseDir.getAbsolutePath());
             if (StringUtils.isNotEmpty(report) && FUNCTIONALTEST.equals(report)) {
                 builder.append(mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR));
             }
+            
+            if (!FUNCTIONALTEST.equals(report) && module != null) {
+				builder.append(File.separatorChar);
+				builder.append(module);
+			}
             
             builder.append(File.separatorChar);
         	builder.append(POM_XML);
@@ -625,6 +639,9 @@ public class GenerateReport implements PluginConstants {
 					} 
 				}
 				sonarReport.setReportType(report);
+				if (module != null) {
+					sonarReport.setModuleName(module);
+				}
 			}
 			return sonarReport;
 		} catch (Exception e) {
@@ -638,6 +655,17 @@ public class GenerateReport implements PluginConstants {
 		InputStream reportStream = null;
 		BufferedInputStream bufferedInputStream = null;
 		try {
+			boolean isClassEmpty = true;
+			List<TestSuite> testSuites = sureFireReports.getTestSuites();
+			for (TestSuite testSuite : testSuites) {
+				List<TestCase> testcases = testSuite.getTestCases();
+				for (TestCase testCase : testcases) {
+					if (StringUtils.isNotEmpty(testCase.getTestClass())) {
+						isClassEmpty = false;
+					}
+				}
+			}
+			
 			String outFileNamePDF = Utility.getProjectHome() + appDir + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType  + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
 			new File(outFileNamePDF).getParentFile().mkdirs();
 			String containerJasperFile = "PhrescoSureFireReport.jasper";
@@ -652,15 +680,7 @@ public class GenerateReport implements PluginConstants {
 			parameters.put(REPORTS_TYPE, reportType);
 			parameters.put(VERSION, version);
 			parameters.put(LOGO, logo);
-			
-			//hide class column if not exist in xml  in pdf 
-			if (TECH_IPHONE_NATIVE.equals(techName) || TECH_ANDROID_HYBRID.equals(techName) || TECH_ANDROID_LIBRARY.equals(techName) || "tech-iphone-hybrid".equals(techName)) {
-				parameters.put(HIDE_CLASS_COLUMN, "hide");
-				log.info("Hide class for functional ==>" + techName);
-			} else {
-				parameters.put(HIDE_CLASS_COLUMN, "show");
-				log.info("Show class for functional ==>" + techName);
-			}
+			parameters.put(IS_CLASS_EMPTY, isClassEmpty);
 			
 			JRBeanArrayDataSource dataSource = new JRBeanArrayDataSource(new SureFireReport[]{sureFireReports});
 			JasperReport jasperReport = (JasperReport) JRLoader.loadObject(bufferedInputStream);
