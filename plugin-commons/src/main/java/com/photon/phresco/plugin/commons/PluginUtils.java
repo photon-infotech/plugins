@@ -96,6 +96,7 @@ import com.photon.phresco.util.HubConfiguration;
 import com.photon.phresco.util.NodeConfiguration;
 import com.photon.phresco.util.Utility;
 import com.phresco.pom.exception.PhrescoPomException;
+import com.phresco.pom.model.Dependency;
 import com.phresco.pom.util.PomProcessor;
 
 public class PluginUtils {
@@ -756,18 +757,22 @@ public class PluginUtils {
             
 			File logFile  = new File(LogDir + Constants.SLASH + Constants.NODE_LOG);
 			StringBuilder sb = new StringBuilder()
-			.append("java -Dwebdriver.chrome.driver=")
+			.append(PluginConstants.JAVA_DWEBDRIVER_CHROME_DRIVER)
 			.append(functionalTestDir.substring(1, functionalTestDir.length()));
 			if (findPlatform().equals(Constants.WINDOWS)) {
-				sb.append("/chromedriver/chromedriver.exe -jar ");
+				sb.append(PluginConstants.CHROMEDRIVER_CHROMEDRIVER_EXE_JAR);
 			} else {
-				sb.append("/chromedriver/chromedriver -jar ");
+				sb.append(PluginConstants.CHROMEDRIVER_CHROMEDRIVER_JAR);
 			}
+			
 			sb.append(functionalTestDir.substring(1, functionalTestDir.length()))
-			.append("/lib/selenium-server-standalone-2.30.0.jar")
-			.append(" -role node -nodeConfig ")
+			.append(PluginConstants.LIB_SELENIUM_SERVER_STANDALONE)
+			.append(PluginConstants.HYPEN)
+			.append(getVersion(baseDir))
+			.append(PluginConstants.DOT_JAR)
+			.append(PluginConstants.ROLE_NODE_NODE_CONFIG)
 			.append(functionalTestDir.substring(1, functionalTestDir.length()))
-	        .append("/nodeconfig.json");
+	        .append(PluginConstants.NODECONFIG_JSON);
 			fos = new FileOutputStream(logFile, false);
 			Utility.executeStreamconsumer(sb.toString(), fos);
 		} catch (FileNotFoundException e) {
@@ -777,6 +782,16 @@ public class PluginUtils {
         }
 	}
 	
+	private String getVersion(File baseDir) throws PhrescoPomException {
+		File pomFile = new File(baseDir + File.separator + Constants.POM_NAME);
+		PomProcessor processor = new PomProcessor(pomFile);
+		String functionalDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
+		File funcPomFile = new File(baseDir + File.separator + functionalDir + File.separator + Constants.POM_NAME);
+		PomProcessor funPomProcessor = new PomProcessor(funcPomFile);
+		Dependency dependency = funPomProcessor.getDependency(PluginConstants.ORG_SELENIUMHQ_SELENIUM, PluginConstants.SELENIUM_SERVER_STANDALONE);
+		return dependency.getVersion();
+	}
+
 	public void startHub(File baseDir) throws PhrescoException {
 	    FileOutputStream fos = null;
 	    try {
@@ -794,12 +809,15 @@ public class PluginUtils {
 	        }
 	        File logFile  = new File(LogDir + Constants.SLASH + Constants.HUB_LOG);
 	        StringBuilder sb = new StringBuilder()
-	        .append("java -jar ")
+	        .append(PluginConstants.JAVA_JAR)
 	        .append(functionalTestDir.substring(1, functionalTestDir.length()))
-	        .append("/lib/selenium-server-standalone-2.30.0.jar")
-	        .append(" -role hub -hubConfig ")
+	        .append(PluginConstants.LIB_SELENIUM_SERVER_STANDALONE)
+	        .append(PluginConstants.HYPEN)
+			.append(getVersion(baseDir))
+			.append(PluginConstants.DOT_JAR)
+	        .append(PluginConstants.ROLE_HUB_HUB_CONFIG)
 	        .append(functionalTestDir.substring(1, functionalTestDir.length()))
-	        .append("/hubconfig.json");
+	        .append(PluginConstants.HUBCONFIG_JSON);
 	        fos = new FileOutputStream(logFile, false);
 	        Utility.executeStreamconsumer(sb.toString(), fos);
 	    } catch (FileNotFoundException e) {

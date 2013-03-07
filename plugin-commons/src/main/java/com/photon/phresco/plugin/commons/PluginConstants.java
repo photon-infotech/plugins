@@ -436,7 +436,7 @@ public interface PluginConstants {
 	 
 	 //Constants for Tests
 	 String TEST_COMMAND				= "mvn clean test";	 
-	 String UNITTEST_COMMAND				= "mvn test";	 
+	 String UNITTEST_COMMAND			= "mvn test";	 
 	 
 	// BlackBerry maven plugin constants
 	// Author: Viral
@@ -475,6 +475,18 @@ public interface PluginConstants {
     String UIAUTOMATION = "UIAutomation";
     String HYPEN = "-";
     String CALABASH		= "calabash";
+    String JAVA_JAR = "java -jar ";
+    String HUBCONFIG_JSON = "/hubconfig.json";
+    String ROLE_HUB_HUB_CONFIG = " -role hub -hubConfig ";
+    String DOT_JAR = ".jar";
+    String LIB_SELENIUM_SERVER_STANDALONE = "/lib/selenium-server-standalone";
+    String NODECONFIG_JSON = "/nodeconfig.json";
+    String ROLE_NODE_NODE_CONFIG = " -role node -nodeConfig ";
+    String CHROMEDRIVER_CHROMEDRIVER_JAR = "/chromedriver/chromedriver -jar ";
+    String CHROMEDRIVER_CHROMEDRIVER_EXE_JAR = "/chromedriver/chromedriver.exe -jar ";
+    String JAVA_DWEBDRIVER_CHROME_DRIVER = "java -Dwebdriver.chrome.driver=";
+    String SELENIUM_SERVER_STANDALONE = "selenium-server-standalone";
+    String ORG_SELENIUMHQ_SELENIUM = "org.seleniumhq.selenium";
     
   //Performance Test Parameter Keys
     String KEY_CONFIGURATION = "configurations";
