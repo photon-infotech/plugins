@@ -1,22 +1,24 @@
 package com.photon.phresco.plugins.xcode;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.List;
+import java.util.Map;
 
-import org.apache.commons.lang.*;
-import org.apache.maven.plugin.*;
-import org.apache.maven.plugin.logging.*;
-import org.codehaus.plexus.util.cli.*;
+import org.apache.commons.lang.StringUtils;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.logging.Log;
 
-import com.photon.phresco.exception.*;
-import com.photon.phresco.plugin.commons.*;
+import com.photon.phresco.commons.model.BuildInfo;
+import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.plugin.commons.MavenProjectInfo;
+import com.photon.phresco.plugin.commons.PluginConstants;
+import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
-import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
-import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands.MavenCommand;
-import com.photon.phresco.plugins.util.*;
-import com.photon.phresco.util.*;
+import com.photon.phresco.plugins.util.MojoUtil;
+import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.Utility;
 
 public class Deploy implements PluginConstants {
 	
@@ -30,13 +32,17 @@ public class Deploy implements PluginConstants {
 			System.out.println("Deployment started ");
 			this.log = log;
 			Map<String, String> configs = MojoUtil.getAllValues(config);
-			
+			File baseDir = mavenProjectInfo.getBaseDir();
 			String buildNumber = configs.get(BUILD_NUMBER);
 			String family = configs.get(FAMILY);
 			String simVersion = configs.get(SIM_VERSION);
 			String deviceType = configs.get(DEVICE_TYPE);
 			String triggerSimulator = configs.get(TRIGGER_SIMULATOR);
-			
+			String projectType = configs.get(PROJECT_TYPE);
+			if(StringUtils.isNotEmpty(projectType) && projectType.equals(MAC)) {
+				macAppDeploy(Integer.parseInt(buildNumber), baseDir.getPath());
+				return;
+			}
 			if (StringUtils.isEmpty(buildNumber)) {
 				System.out.println("Build number is empty for deployment . ");
 				throw new PhrescoException("Build number is empty for deployment . ");
@@ -82,7 +88,7 @@ public class Deploy implements PluginConstants {
 			sb.append(HYPHEN_D + TRIGGER_SIMULATOR + EQUAL + triggerSimulator);
 			
 			System.out.println("Command " + sb.toString());
-			File baseDir = mavenProjectInfo.getBaseDir();
+			
 			boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath());
 			if(!status) {
 				try {
@@ -92,6 +98,22 @@ public class Deploy implements PluginConstants {
 				}
 			}
 		} catch (Exception e) {
+			throw new PhrescoException(e);
+		}
+	}
+	
+	private void macAppDeploy(int buildNumber, String baseDir) throws PhrescoException {
+		PluginUtils pu = new PluginUtils();
+		try {
+			BuildInfo buildInfo = pu.getBuildInfo(buildNumber);
+			String appPath = buildInfo.getBuildName();
+			StringBuilder sb = new StringBuilder();
+			sb.append("open -n .");
+			sb.append(STR_SPACE);
+			sb.append("--args -AppCommandLineArg");
+			System.out.println("command : " + sb.toString());
+			Utility.executeStreamconsumer(sb.toString(), appPath);
+		} catch (MojoExecutionException e) {
 			throw new PhrescoException(e);
 		}
 	}

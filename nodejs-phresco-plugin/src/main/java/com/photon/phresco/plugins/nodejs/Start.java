@@ -30,6 +30,7 @@ import java.net.URLConnection;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
@@ -125,6 +126,9 @@ public class Start implements PluginConstants {
 			fileWriter = new FileWriter(baseDir.getPath() + LOG_FILE_DIRECTORY + RUN_AGS_LOG_FILE, false);
 			LogWriter logWriter = new LogWriter();
 			List<com.photon.phresco.configuration.Configuration> configurations = pUtil.getConfiguration(baseDir, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
+			if(CollectionUtils.isEmpty(configurations)) {
+				throw new PhrescoException("Configuration is Empty...");
+			}
 			for (com.photon.phresco.configuration.Configuration serverConfiguration : configurations) {
 				serverhost = serverConfiguration.getProperties().getProperty(Constants.SERVER_HOST);
 				serverport = Integer.parseInt(serverConfiguration.getProperties().getProperty(Constants.SERVER_PORT));

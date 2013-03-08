@@ -58,6 +58,8 @@ public class Package implements PluginConstants {
             String plistFile = configs.get(PLIST_FILE);
             String projectType = configs.get(PROJECT_TYPE);
             
+            PluginUtils.checkForConfigurations(baseDir, environmentName);
+            
 		    StringBuilder projectInfoFile = new StringBuilder(baseDir.getPath())
 		    .append(File.separator)
 		    .append(Constants.DOT_PHRESCO_FOLDER)
@@ -71,38 +73,27 @@ public class Package implements PluginConstants {
 		    if (StringUtils.isNotEmpty(embedAppId)) {
 		        embedApplication(baseDir, projectInfo, embedAppId);
 		    }
-			
-			if (StringUtils.isEmpty(environmentName)) {
-				System.out.println("Environment Name is empty . ");
-				throw new PhrescoException("Environment Name is empty . ");
-			}
-			
-			PluginUtils.checkForConfigurations(baseDir, environmentName);
-			
-			if (StringUtils.isEmpty(sdk)) {
-				System.out.println("SDK is empty . ");
-				throw new PhrescoException("SDK is empty . ");
-			}
-			
-			if (StringUtils.isEmpty(target)) {
-				System.out.println("Target is empty for deployment . ");
-				throw new PhrescoException("Target is empty for deployment .");
-			}
-			
-			StringBuilder sb = new StringBuilder();
+		    
+		    StringBuilder sb = new StringBuilder();
 			sb.append(XCODE_BUILD_COMMAND);
-			
-			sb.append(STR_SPACE);
-			sb.append(HYPHEN_D + ENVIRONMENT_NAME + EQUAL + environmentName);
 			
 			sb.append(STR_SPACE);
 			sb.append(HYPHEN_D + PROJECT_TYPE + EQUAL + projectType);
 			
-			sb.append(STR_SPACE);
-			sb.append(HYPHEN_D + SDK + EQUAL + sdk);
+			if (StringUtils.isNotEmpty(environmentName)) {
+				sb.append(STR_SPACE);
+				sb.append(HYPHEN_D + ENVIRONMENT_NAME + EQUAL + environmentName);
+			}
 			
-			sb.append(STR_SPACE);
-			sb.append(HYPHEN_D + TARGET_NAME + EQUAL + target);
+			if (StringUtils.isNotEmpty(sdk)) {
+				sb.append(STR_SPACE);
+				sb.append(HYPHEN_D + SDK + EQUAL + sdk);
+			}
+			
+			if (StringUtils.isNotEmpty(target)) {
+				sb.append(STR_SPACE);
+				sb.append(HYPHEN_D + TARGET_NAME + EQUAL + target);
+			}
 			
 			sb.append(STR_SPACE);
 			sb.append(HYPHEN_D + CONFIGURATION + EQUAL + configuration);
@@ -113,7 +104,8 @@ public class Package implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(HYPHEN_D + PLIST_FILE + EQUAL + plistFile);
 			
-			System.out.println("Command " + sb.toString());
+			
+			System.out.println("Command" + sb.toString());
 			boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath());
 			if(!status) {
 				try {

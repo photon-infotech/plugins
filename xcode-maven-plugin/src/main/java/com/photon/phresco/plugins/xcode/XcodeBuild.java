@@ -35,25 +35,42 @@
  ******************************************************************************/
 package com.photon.phresco.plugins.xcode;
 
-import java.io.*;
-import java.text.*;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import org.apache.commons.collections.*;
-import org.apache.commons.io.*;
-import org.apache.commons.lang.*;
-import org.apache.maven.plugin.*;
-import org.apache.maven.project.*;
-import org.codehaus.plexus.archiver.zip.*;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.archiver.zip.ZipArchiver;
 
-import com.google.gson.*;
-import com.google.gson.reflect.*;
-import com.photon.phresco.commons.*;
-import com.photon.phresco.commons.model.*;
-import com.photon.phresco.plugin.commons.*;
-import com.photon.phresco.plugins.xcode.utils.*;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.photon.phresco.commons.XCodeConstants;
+import com.photon.phresco.commons.model.BuildInfo;
+import com.photon.phresco.plugin.commons.PluginConstants;
+import com.photon.phresco.plugin.commons.PluginUtils;
+import com.photon.phresco.plugins.xcode.utils.SdkVerifier;
 import com.photon.phresco.plugins.xcode.utils.XcodeUtil;
-import com.photon.phresco.util.*;
+import com.photon.phresco.util.FileUtil;
+import com.photon.phresco.util.IosSdkUtil;
 import com.photon.phresco.util.IosSdkUtil.MacSdkType;
 
 /**
@@ -266,7 +283,7 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 		getLog().info("baseDir Name" + baseDir.getName());
 
 		try {
-			if(!SdkVerifier.isAvailable(sdk)) {
+			if(!SdkVerifier.isAvailable(sdk) && !projectType.equals(MAC)) {
 					throw new MojoExecutionException("Selected version " +sdk +" is not available!");
 			}
 		} catch (IOException e2) {
@@ -505,7 +522,7 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 			commands.add(RUN_UNIT_TEST_WITH_IOS_SIM_YES);
 		}
 		
-		if (StringUtils.isNotBlank(sdk)) {
+		if (StringUtils.isNotBlank(sdk) && !projectType.equals(MAC)) {
 			commands.add(SDK);
 			commands.add(sdk);
 		}
@@ -709,8 +726,7 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 	private void createdSYM() throws MojoExecutionException {
 		File outputFile = getdSYMName();
 		if (outputFile == null) {
-			getLog().error("xcodebuild failed. resultant dSYM not generated!");
-			throw new MojoExecutionException("xcodebuild has been failed");
+			return;
 		}
 		if (outputFile.exists()) {
 
@@ -867,12 +883,15 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 	}
 	
 	private String getTargetResultPath() {
-		String path = configuration + HYPHEN;
+		String path = configuration + HYPEN;
+		if(projectType.equals(MAC)) {
+			return configuration;
+		}
 		if (sdk.startsWith(IPHONEOS)) {
 			path = path + IPHONEOS;
 		} else {
 			path = path + IPHONE_SIMULATOR;
-		}
+		} 
 		return path;
 	}
 	

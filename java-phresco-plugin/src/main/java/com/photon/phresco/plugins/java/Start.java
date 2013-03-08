@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
@@ -90,6 +91,9 @@ public class Start implements PluginConstants {
 	private void updateFinalName() throws MojoExecutionException {
 		try {
 			List<com.photon.phresco.configuration.Configuration> configuration = pu.getConfiguration(baseDir, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
+			if(CollectionUtils.isEmpty(configuration)) {
+				throw new PhrescoException("Configuration is Empty...");
+			}
 			for (com.photon.phresco.configuration.Configuration serverConfiguration : configuration) {
 				serverPort = serverConfiguration.getProperties().getProperty(Constants.SERVER_PORT);
 				serverContext = serverConfiguration.getProperties().getProperty(Constants.SERVER_CONTEXT);

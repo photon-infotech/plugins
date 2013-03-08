@@ -205,17 +205,19 @@ public class Package implements PluginConstants {
 			} else {
 				String envName = environmentName;
 				List<String> envList = pu.csvToList(environmentName);
-				
+
 				if (environmentName.indexOf(',') > -1) { // multi-value
-					 envName = readDefaultEnv(envList);
-					}
+					envName = readDefaultEnv(envList);
+				}
 				List<com.photon.phresco.configuration.Configuration> configurations = pu.getConfiguration(baseDir, envName, Constants.SETTINGS_TEMPLATE_SERVER);
-				for (com.photon.phresco.configuration.Configuration configuration : configurations) {
-					context = configuration.getProperties().getProperty(Constants.SERVER_CONTEXT);
-					break;
+				if(CollectionUtils.isNotEmpty(configurations)) {
+					for (com.photon.phresco.configuration.Configuration configuration : configurations) {
+						context = configuration.getProperties().getProperty(Constants.SERVER_CONTEXT);
+						break;
+					}
 				}
 			}
-			 sourceDir = pomprocessor.getProperty(POM_PROP_KEY_SOURCE_DIR);
+			sourceDir = pomprocessor.getProperty(POM_PROP_KEY_SOURCE_DIR);
 			if (StringUtils.isEmpty(context)) {
 				return;
 			}

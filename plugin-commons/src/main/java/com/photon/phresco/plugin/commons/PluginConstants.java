@@ -289,6 +289,7 @@ public interface PluginConstants {
 	 String UNIT_TEST_TYPE				= "unitTestType";
 	 String UNIT_TEST					= "unittest";
 	 String CALABASH_IOS_COMMAND		= "cucumber";
+	 String MAC							= "mac";
 	 
 	 //Constants for Android
 	 
