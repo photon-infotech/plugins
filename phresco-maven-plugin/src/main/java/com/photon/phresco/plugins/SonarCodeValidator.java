@@ -89,7 +89,7 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
 				File codeInfoFile = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER  + File.separator + VALIDATE_INFO_INFO_FILE );
 				File destCodeInfoFile = new File(baseDir.getPath() + File.separator + JAVA_WEBAPP_CODE_INFO_FILE);
 				FileUtils.copyFile(codeInfoFile, destCodeInfoFile);
-				File unitInfoPath = new File(baseDir.getPath() + File.separator + UNIT_INFO_FILE);
+				File unitInfoPath = new File(baseDir.getPath() + File.separator + JAVA_WEBAPP_UNIT_INFO_FILE);
 				if (unitInfoPath.exists()) {
 					unitInfoPath.delete();
 				}
