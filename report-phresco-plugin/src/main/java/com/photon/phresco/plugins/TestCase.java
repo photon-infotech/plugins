@@ -24,6 +24,11 @@ public class TestCase {
 	private String name = "";
 	private String testClass = "";
 	private String file = "";;
+	private String featureId = "";
+	private String testCaseId = "";
+	private String expectedResult = "";
+	private String actualResult = "";
+	private String status = "";
 	private float line;
 	private float assertions;
 	private String time = "";;
@@ -106,6 +111,46 @@ public class TestCase {
 
 	public void setTestCaseError(TestCaseError testCaseError) {
 		this.testCaseError = testCaseError;
+	}
+
+	public String getFeatureId() {
+		return featureId;
+	}
+
+	public void setFeatureId(String featureId) {
+		this.featureId = featureId;
+	}
+
+	public String getTestCaseId() {
+		return testCaseId;
+	}
+
+	public void setTestCaseId(String testCaseId) {
+		this.testCaseId = testCaseId;
+	}
+
+	public String getExpectedResult() {
+		return expectedResult;
+	}
+
+	public void setExpectedResult(String expectedResult) {
+		this.expectedResult = expectedResult;
+	}
+
+	public String getActualResult() {
+		return actualResult;
+	}
+
+	public void setActualResult(String actualResult) {
+		this.actualResult = actualResult;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 }

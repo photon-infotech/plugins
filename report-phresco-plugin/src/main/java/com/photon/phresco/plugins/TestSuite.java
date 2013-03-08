@@ -29,6 +29,8 @@ public class TestSuite {
 	private float tests;
 	private float failures;
 	private float errors;
+	private float total;
+	private float testCoverage;
 	private String time;
 	private List<TestCase> testCases;
 
@@ -108,6 +110,22 @@ public class TestSuite {
 
 	public void setTestCases(List<TestCase> testCases) {
 		this.testCases = testCases;
+	}
+
+	public float getTotal() {
+		return total;
+	}
+
+	public void setTotal(float total) {
+		this.total = total;
+	}
+
+	public float getTestCoverage() {
+		return testCoverage;
+	}
+
+	public void setTestCoverage(float testCoverage) {
+		this.testCoverage = testCoverage;
 	}
 
 }

@@ -6,6 +6,7 @@ public class AllTestSuite {
 	private float success;
 	private float failure;
 	private float error;
+	private float testCoverage;
 	
 	public AllTestSuite(String testSuiteName, float total, float success, float failure, float error) {
 		this.testSuiteName = testSuiteName;
@@ -15,6 +16,9 @@ public class AllTestSuite {
 		this.error = error;
 	}
 	
+	public AllTestSuite() {
+	}
+
 	public String getTestSuiteName() {
 		return testSuiteName;
 	}
@@ -52,6 +56,14 @@ public class AllTestSuite {
 
 	public void setError(float error) {
 		this.error = error;
+	}
+
+	public float getTestCoverage() {
+		return testCoverage;
+	}
+
+	public void setTestCoverage(float testCoverage) {
+		this.testCoverage = testCoverage;
 	}
 
 }

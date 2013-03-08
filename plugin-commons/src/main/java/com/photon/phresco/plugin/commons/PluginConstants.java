@@ -51,6 +51,7 @@ public interface PluginConstants {
      String EQUAL						= "=";
      String TRUE 						= "true";
      String PDF 						= "pdf";
+     String XLSX 						= "xlsx";
      String XML 						= "xml";
      String POM_XML 					= "pom.xml";
      String STATIC_ANALYSIS_REPORT 		= "static-analysis-report";
@@ -368,6 +369,7 @@ public interface PluginConstants {
 	 String ATTR_JM_BYTES	 			= "by";
 	 String ATTR_JM_RESPONSE_CODE 		= "rc";
 	 String ATTR_ID 					= "id";
+	 String MANUAL 						= "manual";
 	 String FUNCTIONAL 					= "functional";
 	 String UNIT 						= "unit";
 	 String LOAD 						= "load";
@@ -389,6 +391,7 @@ public interface PluginConstants {
      String FUNCTIONAL_TEST_REPORTS 	= "functionalTestReports";
      String UNIT_TEST_REPORTS 			= "unitTestReports";
      String FUNCTIONAL_SURE_FIRE_REPORTS = "functionalSureFireReports";
+     String MANUAL_SURE_FIRE_REPORTS     = "manualSureFireReports";
      String JMETER_TEST_RESULTS_FOR_ANDROID = "jmeterTestResultsForAndroid";
      String JMETER_TEST_RESULTS 		= "jmeterTestResults";
      String DATE_TIME_FORMAT 			= "dd-MMM-yyyy HH:mm:ss";
