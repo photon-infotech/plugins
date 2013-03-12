@@ -255,10 +255,10 @@ public class GenerateReport implements PluginConstants {
 				cumulativeReportparams.put(UNIT_TEST_REPORTS, Arrays.asList(unitTestSureFireReports));
 			}
 			
-			testType = MANUAL;
-			SureFireReport manualSureFireReports = null;
-			manualSureFireReports = sureFireReports(null);
-			cumulativeReportparams.put("manualId", "manual");
+//			testType = MANUAL;
+//			SureFireReport manualSureFireReports = null;
+//			manualSureFireReports = sureFireReports(null);
+			
 			
 			testType = FUNCTIONAL;
 			SureFireReport functionalSureFireReports = null;
@@ -297,7 +297,8 @@ public class GenerateReport implements PluginConstants {
 				cumulativeReportparams.put(PERFORMANCE_TEST_REPORTS, jmeterTestResults);
 			}
 			cumulativeReportparams.put(LOAD_TEST_REPORTS, loadTestResults);
-			cumulativeReportparams.put(MANUAL_SURE_FIRE_REPORTS, manualSureFireReports);
+//			cumulativeReportparams.put(MANUAL_SURE_FIRE_REPORTS, Arrays.asList(manualSureFireReports));
+			
 			if (!isClangReport) {
 				//Sonar details
 				List<SonarReport> sonarReports = new ArrayList<SonarReport>();
@@ -681,7 +682,7 @@ public class GenerateReport implements PluginConstants {
 				}
 			}
 			
-			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType  + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
 			new File(outFileNamePDF).getParentFile().mkdirs();
 			String containerJasperFile = "PhrescoSureFireReport.jasper";
 			reportStream = this.getClass().getClassLoader().getResourceAsStream(REPORTS_JASPER + containerJasperFile);
@@ -707,7 +708,8 @@ public class GenerateReport implements PluginConstants {
 			exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
 			exporter.exportReport();
 		} catch(Exception e) {
-			log.error("Unit and functional  generation error");
+			log.error("Unit and functional generation error");
+			e.printStackTrace();
 			throw new PhrescoException(e);
 		} finally {
 			if (reportStream != null) {
@@ -733,7 +735,8 @@ public class GenerateReport implements PluginConstants {
 			InputStream reportStream = null;
 			BufferedInputStream bufferedInputStream = null;
 			try {
-				String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType  + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+				String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+
 				new File(outFileNamePDF).getParentFile().mkdirs();
 				String containerJasperFile = "PhrescoManualReport.jasper";
 				reportStream = this.getClass().getClassLoader().getResourceAsStream(REPORTS_JASPER + containerJasperFile);
@@ -747,7 +750,7 @@ public class GenerateReport implements PluginConstants {
 				parameters.put(REPORTS_TYPE, reportType);
 				parameters.put(VERSION, version);
 				parameters.put(LOGO, logo);
-				parameters.put("manualId", "manual");
+				parameters.put("isManualTest", "yes");
 				
 				JRBeanArrayDataSource dataSource = new JRBeanArrayDataSource(new SureFireReport[]{sureFireReports});
 				JasperReport jasperReport = (JasperReport) JRLoader.loadObject(bufferedInputStream);
@@ -786,7 +789,8 @@ public class GenerateReport implements PluginConstants {
 		InputStream reportStream = null;
 		BufferedInputStream bufferedInputStream = null;
 		try {
-			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType  + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+
 			new File(outFileNamePDF).getParentFile().mkdirs();
 			String containerJasperFile = "PhrescoModuleSureFireReport.japer";
 			reportStream = this.getClass().getClassLoader().getResourceAsStream("PhrescoModuleSureFireReport.jasper");
@@ -837,7 +841,8 @@ public class GenerateReport implements PluginConstants {
 	public void generateJmeterPerformanceReport(ArrayList<JmeterTypeReport> jmeterTestResults)  throws PhrescoException {
 		try {
 			ArrayList<JmeterTypeReport> jmeterTstResults = jmeterTestResults;
-			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType  + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+
 			String jasperFile = "PhrescoPerfContain.jasper";
 			Map<String, Object> parameters = new HashMap<String,Object>();
 			parameters.put(COPY_RIGHTS, copyRights);
@@ -860,6 +865,7 @@ public class GenerateReport implements PluginConstants {
 	public void generateAndroidPerformanceReport(List<AndroidPerfReport> androidPerReports)  throws PhrescoException {
 		try {
 			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+
 			String jasperFile = "PhrescoAndroidPerfContain.jasper";
 			Map<String, Object> parameters = new HashMap<String,Object>();
 			parameters.put(COPY_RIGHTS, copyRights);
@@ -882,6 +888,7 @@ public class GenerateReport implements PluginConstants {
 	public void generateLoadTestReport(List<LoadTestReport> loadTestResults)  throws PhrescoException {
 		try {
 			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+
 			String jasperFile = "PhrescoLoadTestContain.jasper";
 			Map<String, Object> parameters = new HashMap<String,Object>();
 			parameters.put(COPY_RIGHTS, copyRights);
@@ -2340,18 +2347,18 @@ public class GenerateReport implements PluginConstants {
 	}
 	
 	private void applyTheme(JasperPrint jasperPrint) throws Exception {
-		String titleColor = "#00CC66"; // TitleRectLogo
+		String titleColor = "#DE522F"; // TitleRectLogo
 		String titleLabelColor = "#333333"; // TitleRectDetail
 		
 		String headingForeColor = "#D0B48E"; // heading yellow color
-		String headingBackColor = "#00CC66";
+		String headingBackColor = "#DE522F";
 
 //		String headingLabelBackColor = "#FFFFFF"; //HeadingRo
 //		String headingLabelForeColor = "#000000"; //HeadingR
 //		String headingTextBackColor = "#FFFFFF"; //HeadingRo
 //		String headingTextForeColor = "#000000"; //HeadingRoo
 
-		String headingRowBackColor = "#DDFCDD"; //HeadingRow - light color
+		String headingRowBackColor = "#A7A7A7"; //HeadingRow - light color
 		String headingRowLabelBackColor = "#FFFFFF"; //Done
 		String headingRowLabelForeColor = "#333333"; //Done - font color
 		String headingRowTextBackColor = "#FFFFFF"; //Done
@@ -2361,7 +2368,7 @@ public class GenerateReport implements PluginConstants {
 		String copyRightForeColor = "#FFFFFF";
 		
 		String copyRightPageNumberForeColor = "#FFFFFF";
-		String copyRightPageNumberBackColor = "#00CC66";
+		String copyRightPageNumberBackColor = "#DE522F";
 		
 		if (MapUtils.isNotEmpty(theme)) {
 			titleColor = theme.get("PageHeaderColor");
