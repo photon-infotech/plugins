@@ -289,6 +289,7 @@ public interface PluginConstants {
 	 String FAMILY 						= "family";
 	 String UNIT_TEST_TYPE				= "unitTestType";
 	 String UNIT_TEST					= "unittest";
+	 String JSTEST						= "jstest/src/WEB-INF";
 	 String CALABASH_IOS_COMMAND		= "cucumber";
 	 String MAC							= "mac";
 	 
@@ -438,7 +439,7 @@ public interface PluginConstants {
 	 String TIME_STAMP_FOR_DISPLAY 		= "dd/MMM/yyyy HH:mm:ss";
 	 
 	 //Constants for CodeValidator
-	 String SONAR_COMMAND				= "mvn clean sonar:sonar";
+	 String SONAR_COMMAND				= "mvn sonar:sonar";
 	 String SONAR						= "sonar";
 	 String PLUGIN_PARAMETER 			= "plugin";
 	 String SONARCOMMAND				= "sonar:sonar";

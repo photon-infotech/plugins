@@ -49,8 +49,12 @@ public class JavaTest implements PluginConstants {
 				File destPath = new File(baseDir + File.separator + JAVA_WEBAPP_UNIT_INFO_FILE);
 				FileUtils.copyFile(unitInfoPath, destPath);
 				File codeInfoFile = new File(baseDir.getPath() + File.separator + JAVA_WEBAPP_CODE_INFO_FILE );
+				File jsTestReportDir = new File(baseDir.getPath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + TARGET + File.separator + JSTEST);
 				if (codeInfoFile.exists()) {
 					codeInfoFile.delete();
+				}
+				if (jsTestReportDir.exists()) {
+					FileUtils.deleteDirectory(jsTestReportDir);
 				}
 			}
 		} catch (IOException e) {
@@ -82,7 +86,7 @@ public class JavaTest implements PluginConstants {
 		System.out.println("-----------------------------------------");
 		try {
 			StringBuilder sb = new StringBuilder();
-			sb.append(TEST_COMMAND).append(STR_SPACE).
+			sb.append(UNITTEST_COMMAND).append(STR_SPACE).
 			append(testAgainst);
 			boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath());
 			if(!status) {

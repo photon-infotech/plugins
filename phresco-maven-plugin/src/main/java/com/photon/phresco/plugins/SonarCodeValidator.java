@@ -29,6 +29,7 @@ import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.FileUtil;
 import com.photon.phresco.util.TechnologyTypes;
 import com.photon.phresco.util.Utility;
 
@@ -90,8 +91,12 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
 				File destCodeInfoFile = new File(baseDir.getPath() + File.separator + JAVA_WEBAPP_CODE_INFO_FILE);
 				FileUtils.copyFile(codeInfoFile, destCodeInfoFile);
 				File unitInfoPath = new File(baseDir.getPath() + File.separator + JAVA_WEBAPP_UNIT_INFO_FILE);
+				File jsTestReportDir = new File(baseDir.getPath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + TARGET + File.separator + JSTEST);
 				if (unitInfoPath.exists()) {
 					unitInfoPath.delete();
+				}
+				if (jsTestReportDir.exists()) {
+					FileUtils.deleteDirectory(jsTestReportDir);
 				}
 			}
 			pluginValidate(infoFile);
