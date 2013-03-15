@@ -2,6 +2,7 @@ package com.photon.phresco.plugins.sharepoint;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,7 @@ public class Deploy implements PluginConstants {
 	private File build;
 	private Log log;
 	private PluginUtils pUtil;
+	private String wspFile = "";
 	
 	public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -69,7 +71,6 @@ public class Deploy implements PluginConstants {
 			buildFile = new File(buildDir.getPath() + File.separator + buildInfo.getBuildName());
 			tempDir = new File(buildDir.getPath() + TEMP_DIR);
 			tempDir.mkdirs();
-			temp = new File(tempDir.getPath() + "\\" + baseDir.getName() + ".wsp");
 		} catch (Exception e) {
 			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
@@ -88,6 +89,17 @@ public class Deploy implements PluginConstants {
 	private void extractBuild() throws MojoExecutionException {
 		try {
 			ArchiveUtil.extractArchive(buildFile.getPath(), tempDir.getPath(), ArchiveType.ZIP);
+			
+			String tempDirPath = tempDir.getPath();
+			File directory = new File(tempDirPath);
+			String[] wspFiles = directory.list(new FilenameFilter() {
+			    public boolean accept(File directory, String fileName) {
+			        return fileName.endsWith(".wsp");
+			    }
+			});
+			wspFile = wspFiles[0];
+			temp = new File(tempDir.getPath() + "\\" + wspFile);
+			
 			FileUtils.copyFileToDirectory(temp, build);
 			FileUtils.deleteDirectory(tempDir);
 		} catch (PhrescoException e) {
@@ -105,10 +117,9 @@ public class Deploy implements PluginConstants {
 				String protocol = configuration.getProperties().getProperty(Constants.SERVER_PROTOCOL);
 				String host = configuration.getProperties().getProperty(Constants.SERVER_HOST);
 				String port = configuration.getProperties().getProperty(Constants.SERVER_PORT);
-				String projectCode = baseDir.getName();
 				restore(protocol, serverContext, host, port);
-				addSolution(projectCode);
-				deploysolution(protocol, serverContext, host, port, projectCode);
+				addSolution(wspFile);
+				deploysolution(protocol, serverContext, host, port, wspFile);
 			}
 		} catch (MojoExecutionException e) {
 			throw new PhrescoException(e);
@@ -148,6 +159,7 @@ public class Deploy implements PluginConstants {
 			sb.append(SHAREPOINT_STR_FILENAME);
 			sb.append(STR_SPACE);
 			sb.append(SHAREPOINT_STR_DOUBLEQUOTES + file + SHAREPOINT_STR_DOUBLEQUOTES);
+			log.info("Restore command " + sb.toString());
 			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 			String line = null;
 			while ((line = bufferedReader.readLine()) != null) {
@@ -166,7 +178,7 @@ public class Deploy implements PluginConstants {
 		}
 	}
 
-	private void addSolution(String ProjectCode) throws MojoExecutionException {
+	private void addSolution(String wspFile) throws MojoExecutionException {
 		BufferedReader bufferedReader = null;
 		boolean errorParam = false;
 		try {
@@ -181,10 +193,12 @@ public class Deploy implements PluginConstants {
 			sb.append(SHAREPOINT_STR_FILENAME);
 			sb.append(STR_SPACE);
 			sb.append(SHAREPOINT_STR_DOUBLEQUOTES + baseDir.getPath() + "\\source" + "\\"
-					+ ProjectCode + ".wsp" + SHAREPOINT_STR_DOUBLEQUOTES);
+					+ wspFile + SHAREPOINT_STR_DOUBLEQUOTES);
 			File file = new File(baseDir.getPath() + "\\source" + "\\"
-					+ ProjectCode + ".wsp");
+					+ wspFile);
+			log.info("Add soluition file " + file);
 			if (file.exists()) {
+				log.info("Add Solution command " + sb.toString());
 				bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 				String line = null;
 				while ((line = bufferedReader.readLine()) != null) {
@@ -207,7 +221,7 @@ public class Deploy implements PluginConstants {
 	}
 
 	private void deploysolution(String protocol, String serverContext, String host,
-			String port, String projectCode) throws MojoExecutionException {
+			String port, String wspFile) throws MojoExecutionException {
 		BufferedReader bufferedReader = null;
 		boolean errorParam = false;
 		try {
@@ -221,7 +235,7 @@ public class Deploy implements PluginConstants {
 			sb.append(SHAREPOINT_STR_HYPEN);
 			sb.append(SHAREPOINT_STR_NAME);
 			sb.append(STR_SPACE);
-			sb.append(projectCode + ".wsp");
+			sb.append(wspFile);
 			sb.append(STR_SPACE);
 			sb.append(SHAREPOINT_STR_HYPEN);
 			sb.append(SHAREPOINT_STR_URL);
@@ -240,6 +254,7 @@ public class Deploy implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(SHAREPOINT_STR_HYPEN);
 			sb.append(SHAREPOINT_STR_ALLOWACDEP);
+			log.info("Deploy solution " + sb.toString());
 			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 			String line = null;
 			while ((line = bufferedReader.readLine()) != null) {
