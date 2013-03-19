@@ -274,7 +274,7 @@ public class UnitTest implements PluginConstants {
 			Process process = cl.execute();
 			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
 			while ((in.readLine()) != null) {
-				log.info("while = "+ in.readLine());
+//				log.info("while = "+ in.readLine());
 			}
 		} catch (CommandLineException e) {
 			isBuildSuccess = false;
@@ -396,7 +396,7 @@ public class UnitTest implements PluginConstants {
 				String packageVersion = packageInfo.getPackageVersion();
 				String tempFilePath = rootDir.getPath() + WP_APP_PACKAGE + File.separator + WINSTORE_UNIT_TEST_PROJECT_ROOT + STR_UNDERSCORE + packageVersion + STR_UNDERSCORE + (platform.equalsIgnoreCase("any cpu")?"AnyCPU":platform) + (config.equalsIgnoreCase("debug")? STR_UNDERSCORE + config : "") + WP_TEST;
 				
-				log.info("tempFilePath = " + tempFilePath);
+//				log.info("tempFilePath = " + tempFilePath);
 				
 				tempDir = new File(tempFilePath);
 			} else if(type.equalsIgnoreCase(WIN_PHONE)) {
