@@ -32,13 +32,13 @@ public class WPPlugin extends PhrescoBasePlugin {
 		return new DefaultExecutionStatus();
 	}
 	
-	/*@Override
-	public void runUnitTest(Configuration configuration,
+	@Override
+	public ExecutionStatus runUnitTest(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		UnitTest uTest = new UnitTest();
 		uTest.runUnitTest(configuration, mavenProjectInfo, getLog());
-		
-	}*/
+		return new DefaultExecutionStatus();
+	}
 
 
 }

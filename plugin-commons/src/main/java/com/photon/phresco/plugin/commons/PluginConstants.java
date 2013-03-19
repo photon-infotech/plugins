@@ -245,15 +245,17 @@ public interface PluginConstants {
 //	 String WP8_PLATFORM 				= "wp8";
 	 
 	// Variables related to Windows Store (Metro) unit test build process
-	 String WP_UNIT_TEST_PROJECT_ROOT 	= "Metro.UnitTests";
-	 String WP_UNIT_TEST_VSTEST 		= "vstest.console";
-	 String WP_UNIT_TEST_INISOLATION 	= "/InIsolation";
-	 String WP_UNIT_TEST_LOGGER 		= "/Logger:trx";
+	 String WINSTORE_UNIT_TEST_PROJECT_ROOT 	= "Metro.UnitTests";
+	 String WINSTORE_UNIT_TEST_VSTEST 		= "vstest.console";
+	 String WINSTORE_UNIT_TEST_INISOLATION 	= "/InIsolation";
+	 String WINSTORE_UNIT_TEST_LOGGER 		= "/Logger:trx";
 			 
 	 // Variables related to Windows Phone build process
 	 String WP7_BIN_FOLDER				= "\\bin";
 	 String WP7_RELEASE_FOLDER			= "\\release";
-	 
+	 String WP_BIN_DIR    				= "Bin/x86";
+	 String BIN 						= "Bin";
+	 String OBJ							= "obj";
 	 // Variables related to Windows Phone 7 deploy process
 	 // wptools.exe -target:emulator -xap:WindowsPhoneApplication1.xap -install
 	 String WP7_WPTOOLS_PATH			= "wptools.exe ";
@@ -266,6 +268,9 @@ public interface PluginConstants {
 	 String WP8_XAPCMD_PATH				= "XapDeployCmd.exe ";
 	 String WP8_XAPCMD_INSTALL			= "/installlaunch ";
 	 String WP8_XAPCMD_TARGET			= "/targetdevice";
+	 
+	// Variables related to Windows Phone unit test build process
+	 String WP_UNIT_TEST_PROJECT_ROOT 	= "WP.UnitTests";
 	 
  
 	 //Xcode plugin constants
