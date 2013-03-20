@@ -42,6 +42,8 @@ public class RunAndroidTest implements PluginConstants {
 				builder.append(STR_SPACE);
 				String directory = project.getBuild().getDirectory();
 				builder.append(directory + File.separator + project.getArtifactId() + DOT + POMConstants.APK);	
+				builder.append(STR_SPACE);
+				builder.append("--format html --out calabashReport.html");
 				Utility.executeStreamconsumer(builder.toString(), project.getBasedir() + File.separator + workingDir);
 				return;
 			}
