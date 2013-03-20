@@ -133,11 +133,10 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 		}
 		String browserValue = configValues.get(BROWSER);
 		String resolutionValue = configValues.get(RESOLUTION);
-		File selectedEnvFile = new File(basedir + File.separator + DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE);
 		String resultConfigFileDir = project.getProperties().getProperty(Constants.PHRESCO_FUNCTIONAL_TEST_ADAPT_DIR);
 		if(StringUtils.isNotEmpty(resultConfigFileDir)) {
 			File resultConfigXml = new File(basedir + resultConfigFileDir);
-			adaptTestConfig(selectedEnvFile, resultConfigXml, environmentName, browserValue, resolutionValue, basedir);
+			adaptTestConfig(resultConfigXml, environmentName, browserValue, resolutionValue, basedir);
 		}
 		generateMavenCommand(mavenProjectInfo, basedir + functionalTestDir);
 		
@@ -322,19 +321,15 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 		}
 	}
 	
-	public void adaptTestConfig(File SelectedEnvFile, File resultConfigXml, String envName, String browser, String resolution, String baseDir) throws PhrescoException {
-		try {
-			ConfigManager configManager = new ConfigManagerImpl(SelectedEnvFile);
-			List<com.photon.phresco.configuration.Configuration> configurations = configManager.getConfigurations(envName, "Server");
-			String techId = getTechId(new File(baseDir));
-			if(CollectionUtils.isEmpty(configurations) && !techId.equals(TechnologyTypes.JAVA_STANDALONE)) {
-				throw new PhrescoException("Configuration Not found...");
-			}
-			for (com.photon.phresco.configuration.Configuration configuration : configurations) {
-				updateTestConfiguration(envName, configuration, browser, resultConfigXml, resolution);
-			} 
-        } catch (ConfigurationException e) {
-			throw new PhrescoException(e);
+	public void adaptTestConfig(File resultConfigXml, String envName, String browser, String resolution, String baseDir) throws 	PhrescoException {
+		PluginUtils pu = new PluginUtils();
+		List<com.photon.phresco.configuration.Configuration> configurations = pu.getConfiguration(new File(baseDir), envName, Constants.SETTINGS_TEMPLATE_SERVER);
+		String techId = getTechId(new File(baseDir));
+		if(CollectionUtils.isEmpty(configurations) && !techId.equals(TechnologyTypes.JAVA_STANDALONE)) {
+			throw new PhrescoException("Configuration Not found...");
+		}
+		for (com.photon.phresco.configuration.Configuration configuration : configurations) {
+			updateTestConfiguration(envName, configuration, browser, resultConfigXml, resolution);
 		}
 	}
 	
