@@ -9,7 +9,7 @@ import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.net.UnknownHostException;
@@ -62,8 +62,9 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
-import org.htmlcleaner.PrettyXmlSerializer;
+import org.htmlcleaner.CleanerProperties;
+import org.htmlcleaner.HtmlCleaner;
+import org.htmlcleaner.SimpleHtmlSerializer;
 import org.htmlcleaner.TagNode;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
@@ -80,12 +81,21 @@ import org.xml.sax.SAXException;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.html.simpleparser.StyleSheet;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.PageSize;
 import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.tool.xml.Pipeline;
+import com.itextpdf.tool.xml.XMLWorker;
 import com.itextpdf.tool.xml.XMLWorkerHelper;
-import com.lowagie.text.pdf.PdfContentByte;
+import com.itextpdf.tool.xml.exceptions.CssResolverException;
+import com.itextpdf.tool.xml.exceptions.RuntimeWorkerException;
+import com.itextpdf.tool.xml.html.Tags;
+import com.itextpdf.tool.xml.parser.XMLParser;
+import com.itextpdf.tool.xml.pipeline.css.CSSResolver;
+import com.itextpdf.tool.xml.pipeline.css.CssResolverPipeline;
+import com.itextpdf.tool.xml.pipeline.end.PdfWriterPipeline;
+import com.itextpdf.tool.xml.pipeline.html.HtmlPipeline;
+import com.itextpdf.tool.xml.pipeline.html.HtmlPipelineContext;
 import com.photon.phresco.commons.model.ApplicationInfo;
 import com.photon.phresco.commons.model.ProjectInfo;
 import com.photon.phresco.exception.PhrescoException;
@@ -102,6 +112,7 @@ import com.phresco.pom.model.Profile;
 import com.phresco.pom.util.PomProcessor;
 
 public class GenerateReport implements PluginConstants {
+	private static final String SCRIPT = "script";
 	private static final String IS_CLASS_EMPTY = "isClassEmpty";
 	private static final String MODULE_NAME = "Module Name";
 	private static final String COPY_RIGHTS = "copyRights";
@@ -119,9 +130,8 @@ public class GenerateReport implements PluginConstants {
 	private PluginPackageUtil util;
 
 	private static final String INDEX = "index";
-	private static final String XHTML = "xhtml";
+	private static final String HTML = "html";
 	
-	// TODO: tech name and project code
 	private String techName = "";
 	private String projectCode = null;
 	
@@ -148,13 +158,76 @@ public class GenerateReport implements PluginConstants {
     
     String REPORTS_JASPER  = "";
     
+	// custom theme color
+    private static String titleColor = "#DE522F"; // TitleRectLogo
+    private static String titleLabelColor = "#333333"; // TitleRectDetail
+	
+    private static String headingForeColor = "#D0B48E"; // heading yellow color
+    private static String headingBackColor = "#DE522F";
+
+    private static String headingRowBackColor = "#A7A7A7"; //HeadingRow - light color
+    private static String headingRowLabelBackColor = "#FFFFFF"; //Done
+    private static String headingRowLabelForeColor = "#333333"; //Done - font color
+    private static String headingRowTextBackColor = "#FFFFFF"; //Done
+    private static String headingRowTextForeColor = "#333333"; //Done
+	
+    private static String copyRightBackColor = "#333333";
+    private static String copyRightForeColor = "#FFFFFF";
+	
+    private static String copyRightPageNumberForeColor = "#FFFFFF";
+    private static String copyRightPageNumberBackColor = "#DE522F";
+	
     public GenerateReport() {
     	final Date today = Calendar.getInstance().getTime();
         final DateFormat yymmdd = new SimpleDateFormat(MMM_DD_YYYY_HH_MM);
         this.fileName = yymmdd.format(today);
     }
     
-	public void generatePdfReport()  throws PhrescoException {
+	public void HtmlToPdfConverter(File targetHtmlIndexFile, String tempOutFileNameHTML, String tempOutFileNameIphoneSonarPDF)
+			throws IOException, DocumentException, CssResolverException {
+		try {
+			com.itextpdf.text.Document document = new com.itextpdf.text.Document(PageSize.A4, 10f, 10f, 10f, 10f);
+			PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(tempOutFileNameIphoneSonarPDF));
+			
+			document.open();
+			HtmlPipelineContext htmlContext = new HtmlPipelineContext();
+			htmlContext.setTagFactory(Tags.getHtmlTagProcessorFactory());
+			
+			CleanerProperties props = new CleanerProperties();
+			props.setUseCdataForScriptAndStyle(true);
+			props.setPruneTags(SCRIPT);
+			props.setOmitComments(false);
+			
+			SimpleHtmlSerializer htmlSerializer = new SimpleHtmlSerializer(props);
+			TagNode tagNode = new HtmlCleaner(props).clean(targetHtmlIndexFile);
+			htmlSerializer.writeToFile(tagNode, tempOutFileNameHTML, UTF_8);
+			CSSResolver cssResolver = XMLWorkerHelper.getInstance().getDefaultCssResolver(false);
+			cssResolver.addCss("body {font-weight: bold;font-size: 6pt;}", true);
+			cssResolver.addCss("th {font-weight: bold;font-size: 6pt;}", true);
+			cssResolver.addCss("td {font-weight: bold;font-size: 6pt;}", true);
+			cssResolver.addCss("table {border:1;}", true);
+			cssResolver.addCss("h1 {font-size: 12pt;margin: 1em 0em;" + "color:" + titleColor + "}", true);
+			cssResolver.addCss("h2 {font-size: 10pt;margin: 1em 0em;" + "color:" + titleColor + "}", true);
+			cssResolver.addCss("a {text-decoration: underline;color:blue}", true);
+			Pipeline<?> pipeline = new CssResolverPipeline(cssResolver, new HtmlPipeline(htmlContext,
+					new PdfWriterPipeline(document, writer)));
+			XMLWorker worker = new XMLWorker(pipeline, true);
+			XMLParser p = new XMLParser(worker);
+			File input = new File(tempOutFileNameHTML);
+			p.parse(new InputStreamReader(new FileInputStream(input), "UTF-8"));
+			document.close();
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		} catch (CssResolverException ce) {
+			ce.printStackTrace();
+		} catch (DocumentException de) {
+			de.printStackTrace();
+		} catch (RuntimeWorkerException re) {
+			re.printStackTrace();
+		}
+	}
+    
+	public void generatePdfReport() throws PhrescoException {
 		try {
 			// Report generation for unit and functional
 			if (UNIT.equals(testType) || FUNCTIONAL.equals(testType)) {
@@ -383,26 +456,26 @@ public class GenerateReport implements PluginConstants {
 				String outFinalFileNamePDF = baseDir + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + CUMULATIVE + semiPath;
 				new File(outFinalFileNamePDF).getParentFile().mkdirs();
 				try {
-					iphoneSonarHtmlToPdf(uuid);
-		            List<String> pdfs = new ArrayList<String>();
-		         // get all pdf from that uuid location 
-		            String codeValidationPdfs = Utility.getPhrescoTemp() + uuid;
-		            File codeValidationsPdfDir = new File(codeValidationPdfs);
-		            if (codeValidationsPdfDir.exists()) {
-			            String[] extensions = new String[] { PDF };
-			            List<File> codeReportPdfs = (List<File>) FileUtils.listFiles(codeValidationsPdfDir, extensions, false);
-			            
-			            if (codeReportPdfs != null && codeReportPdfs.size() == 0) {
-			            	FileUtils.copyFile(new File(outFileNamePDF), new File(outFinalFileNamePDF));
-			            } else {
-				            for (File codeReportPdf : codeReportPdfs) {
+					//check static checker analysis folder contains html 
+					checkStaticAnalysisHtmlFile(uuid);
+					List<String> pdfs = new ArrayList<String>();
+					// get all pdf from that uuid location 
+					String codeValidationPdfs = Utility.getPhrescoTemp() + uuid;
+					File codeValidationsPdfDir = new File(codeValidationPdfs);
+					if (codeValidationsPdfDir.exists()) {
+					    String[] extensions = new String[] { PDF };
+					    List<File> codeReportPdfs = (List<File>) FileUtils.listFiles(codeValidationsPdfDir, extensions, false);
+					    
+					    if (codeReportPdfs != null && codeReportPdfs.size() == 0) {
+					    	FileUtils.copyFile(new File(outFileNamePDF), new File(outFinalFileNamePDF));
+					    } else {
+					        for (File codeReportPdf : codeReportPdfs) {
 					            pdfs.add(codeReportPdf.getAbsolutePath());
 							}
-				            mergePdf(pdfs, outFinalFileNamePDF);
-//				            concatPDFs(pdfs, outFinalFileNamePDF, true);
-			            }
-		            }
-				} catch (PhrescoException e) {
+					        mergePdf(pdfs, outFinalFileNamePDF);
+					    }
+					}
+				} catch (Exception e) {
 					// just copy generated generated pdf to archive folder
 					FileUtils.copyFile(new File(outFileNamePDF), new File(outFinalFileNamePDF));
 				}
@@ -410,6 +483,7 @@ public class GenerateReport implements PluginConstants {
 			try {
 				FileUtils.deleteDirectory(new File(Utility.getPhrescoTemp() + uuid));
 			} catch (Exception e) {
+				// ignore the deletion failure
 			}
 		} catch(Exception e) {
 			log.error("Report generation error ");
@@ -433,111 +507,8 @@ public class GenerateReport implements PluginConstants {
 		
 	}
 	
-	// merge pdfs
-	public void mergePdf(List<String> PDFFiles,  String outputPDFFile) throws PhrescoException {
+	private void checkStaticAnalysisHtmlFile(String uuid) {
 		try {
-			  // Get the byte streams from any source (maintain order)
-			  List<InputStream> sourcePDFs = new ArrayList<InputStream>();
-			  for (String PDFFile : PDFFiles) {
-				  sourcePDFs.add(new FileInputStream(new File(PDFFile)));
-			  }
-			  // initialize the Merger utility and add pdfs to be merged
-			  PDFMergerUtility mergerUtility = new PDFMergerUtility();
-			  mergerUtility.addSources(sourcePDFs);
-			  // set the destination pdf name and merge input pdfs
-			  mergerUtility.setDestinationFileName(outputPDFFile);
-			  mergerUtility.mergeDocuments();
-		} catch (Exception e) {
-			throw new PhrescoException(e);
-		}
-	}
-	
-	//Merge the PDF's
-	public void concatPDFs(List<String> PDFFiles,  String outputPDFFile, boolean paginate) {
-		log.debug("Entering Method PhrescoReportGeneration.concatPDFs()");
-        OutputStream outputStream = null;
-		com.lowagie.text.Document document = null;
-        try {
-    		List<InputStream> pdfs = new ArrayList<InputStream>();
-    		for (String PDFFile : PDFFiles) {
-    	        pdfs.add(new FileInputStream(new File(PDFFile)));
-    		}
-    		
-    		outputStream = new FileOutputStream(outputPDFFile);
-    		document = new com.lowagie.text.Document();
-    		
-            List<com.lowagie.text.pdf.PdfReader> readers = new ArrayList<com.lowagie.text.pdf.PdfReader>();
-            int totalPages = 0;
-            Iterator<InputStream> iteratorPDFs = pdfs.iterator();
- 
-            // Create Readers for the pdfs.
-            while (iteratorPDFs.hasNext()) {
-                InputStream pdf = iteratorPDFs.next();
-                com.lowagie.text.pdf.PdfReader pdfReader = new com.lowagie.text.pdf.PdfReader(pdf);
-                readers.add(pdfReader);
-                totalPages += pdfReader.getNumberOfPages();
-            }
-            // Create a writer for the outputstream
-            com.lowagie.text.pdf.PdfWriter writer = com.lowagie.text.pdf.PdfWriter.getInstance(document, outputStream);
- 
-            document.open();
-            com.lowagie.text.pdf.BaseFont bf = com.lowagie.text.pdf.BaseFont.createFont(com.lowagie.text.pdf.BaseFont.HELVETICA,
-            		com.lowagie.text.pdf.BaseFont.CP1252, com.lowagie.text.pdf.BaseFont.NOT_EMBEDDED);
-            com.lowagie.text.pdf.PdfContentByte cb = writer.getDirectContent(); // Holds the PDF
-            // data
- 
-            com.lowagie.text.pdf.PdfImportedPage page;
-            int currentPageNumber = 0;
-            int pageOfCurrentReaderPDF = 0;
-            Iterator<com.lowagie.text.pdf.PdfReader> iteratorPDFReader = readers.iterator();
- 
-            // Loop through the PDF files and add to the output.
-            while (iteratorPDFReader.hasNext()) {
-            	com.lowagie.text.pdf.PdfReader pdfReader = iteratorPDFReader.next();
- 
-                // Create a new page in the target for each source page.
-                while (pageOfCurrentReaderPDF < pdfReader.getNumberOfPages()) {
-                    document.newPage();
-                    pageOfCurrentReaderPDF++;
-                    currentPageNumber++;
-                    page = writer.getImportedPage(pdfReader,  pageOfCurrentReaderPDF);
-                    cb.addTemplate(page, 0, 0);
- 
-                    // Code for pagination.
-                    if (paginate) {
-                        cb.beginText();
-                        cb.setFontAndSize(bf, 9);
-                        cb.showTextAligned(PdfContentByte.ALIGN_CENTER, ""
-                                + currentPageNumber + " of " + totalPages, 520,
-                                5, 0);
-                        cb.endText();
-                    }
-                }
-                pageOfCurrentReaderPDF = 0;
-            }
-            outputStream.flush();
-            document.close();
-            outputStream.close();
-        } catch (Exception e) {
-        	e.printStackTrace();
-        } finally {
-            if (document.isOpen())
-                document.close();
-            try {
-                if (outputStream != null)
-                    outputStream.close();
-            } catch (IOException ioe) {
-            	ioe.printStackTrace();
-            }
-        }
-    }
-	
-	//Conversion of Html to Pdf
-	public void iphoneSonarHtmlToPdf(String uuid) throws PhrescoException {
-		log.debug("Entering Method  PhrescoReportGeneration.iphoneSonarHtmlToPdf()");
-		try {
-			// convert all html to xhmt and to pdf
-			
 			StringBuilder codeValidatePath = new StringBuilder(baseDir.getAbsolutePath());
 	    	codeValidatePath.append(mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_VALIDATE_REPORT));
 	    	
@@ -560,37 +531,32 @@ public class GenerateReport implements PluginConstants {
 	    	}
 	    	
 	    	for (int i = 0; i < targetFiles.size(); i++) {
-	    		String tempOutFileNameXHTML = Utility.getPhrescoTemp() + uuid + File.separator + projectCode + STR_UNDERSCORE + INDEX + i + DOT + XHTML;
+	    		String tempOutFileNameHTML = Utility.getPhrescoTemp() + uuid + File.separator + projectCode + STR_UNDERSCORE + INDEX + i + DOT + HTML;
 	    		String tempOutFileNameIphoneSonarPDF = Utility.getPhrescoTemp() + uuid + File.separator + projectCode + STR_UNDERSCORE + fileName + i + DOT + PDF;
-	    		File targetFile = targetFiles.get(i);
-		        CleanerProperties props = new CleanerProperties();
-		        props.setTranslateSpecialEntities(true);
-		        props.setTransResCharsToNCR(true);
-		        props.setOmitComments(true);
-		        
-		        //checking of starting and ending tags are in proper
-		        TagNode tagNode = new HtmlCleaner(props).clean(targetFile);
-		        new PrettyXmlSerializer(props).writeToFile(tagNode, tempOutFileNameXHTML, UTF_8);
-		        
-		        File xhtmlpath = new File(tempOutFileNameXHTML);
-		        File pdfPath = new File(tempOutFileNameIphoneSonarPDF);
-		        com.itextpdf.text.Document pdfDocument = null;
-		        PdfWriter pdfWriter = null;
-		        pdfDocument = new com.itextpdf.text.Document(com.itextpdf.text.PageSize.A2); // TODO : issue need to be fixed in html
-//		        pdfDocument = new com.itextpdf.text.Document();
-		        pdfWriter = PdfWriter.getInstance(pdfDocument, new FileOutputStream(pdfPath));
-		        pdfDocument.open();
-		        
-		        // Adding heading for the pdf
-		        Font catFont = new Font(Font.FontFamily.TIMES_ROMAN, 25, Font.BOLD);
-		        pdfDocument.add(new Paragraph("XCode Target : " + targetFile.getParentFile().getName(), catFont));
-		        
-		        XMLWorkerHelper.getInstance().parseXHtml(pdfWriter, (com.itextpdf.text.Document) pdfDocument,
-		                new FileInputStream(xhtmlpath), null);
-		        pdfDocument.close();
-			}
+	    		
+	    		File targetHtmlIndexFile = targetFiles.get(i);
+	    		HtmlToPdfConverter(targetHtmlIndexFile, tempOutFileNameHTML, tempOutFileNameIphoneSonarPDF);
+	    	}
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+	}
+
+	// merge pdfs
+	public void mergePdf(List<String> PDFFiles,  String outputPDFFile) throws PhrescoException {
+		try {
+			  // Get the byte streams from any source (maintain order)
+			  List<InputStream> sourcePDFs = new ArrayList<InputStream>();
+			  for (String PDFFile : PDFFiles) {
+				  sourcePDFs.add(new FileInputStream(new File(PDFFile)));
+			  }
+			  // initialize the Merger utility and add pdfs to be merged
+			  PDFMergerUtility mergerUtility = new PDFMergerUtility();
+			  mergerUtility.addSources(sourcePDFs);
+			  // set the destination pdf name and merge input pdfs
+			  mergerUtility.setDestinationFileName(outputPDFFile);
+			  mergerUtility.mergeDocuments();
+		} catch (Exception e) {
 			throw new PhrescoException(e);
 		}
 	}
@@ -2347,29 +2313,6 @@ public class GenerateReport implements PluginConstants {
 	}
 	
 	private void applyTheme(JasperPrint jasperPrint) throws Exception {
-		String titleColor = "#DE522F"; // TitleRectLogo
-		String titleLabelColor = "#333333"; // TitleRectDetail
-		
-		String headingForeColor = "#D0B48E"; // heading yellow color
-		String headingBackColor = "#DE522F";
-
-//		String headingLabelBackColor = "#FFFFFF"; //HeadingRo
-//		String headingLabelForeColor = "#000000"; //HeadingR
-//		String headingTextBackColor = "#FFFFFF"; //HeadingRo
-//		String headingTextForeColor = "#000000"; //HeadingRoo
-
-		String headingRowBackColor = "#A7A7A7"; //HeadingRow - light color
-		String headingRowLabelBackColor = "#FFFFFF"; //Done
-		String headingRowLabelForeColor = "#333333"; //Done - font color
-		String headingRowTextBackColor = "#FFFFFF"; //Done
-		String headingRowTextForeColor = "#333333"; //Done
-		
-		String copyRightBackColor = "#333333";
-		String copyRightForeColor = "#FFFFFF";
-		
-		String copyRightPageNumberForeColor = "#FFFFFF";
-		String copyRightPageNumberBackColor = "#DE522F";
-		
 		if (MapUtils.isNotEmpty(theme)) {
 			titleColor = theme.get("PageHeaderColor");
 			titleLabelColor = theme.get("PageHeaderColor");
