@@ -14,7 +14,6 @@ import net.awired.jstest.resource.ResourceDirectory;
 import net.awired.jstest.resource.ResourceDirectoryScanner;
 import net.awired.jstest.runner.RunnerType;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
@@ -65,11 +64,7 @@ public class ProcessTestSourcesMojo extends AbstractJsTestMojo {
                 //in this case fileArgs[0] and outputLocation are directories
                 try {
                 	getInstrumentedDirectory().mkdirs();
-					DirectoryInstrumenter.instrument(getSourceDir().getAbsolutePath()+ File.separator + "js", getTargetSourceDirectory().getAbsolutePath());
-					sourceScriptDirectory = buildSrcResourceDirectory();
-					File sourceDir = new File(sourceScriptDirectory.getDirectory() + File.separator + "js");
-					sourceScriptDirectory.setDirectory(sourceDir);
-			        scan = scriptDirScanner.scan(sourceScriptDirectory);
+					DirectoryInstrumenter.instrument(getSourceDir().getAbsolutePath(), getTargetSourceDirectory().getAbsolutePath());
 				} catch (FileNotFoundException e) {
 					throw new IllegalStateException("cannot find source code to instrument", e);
 				} catch (Exception e) {

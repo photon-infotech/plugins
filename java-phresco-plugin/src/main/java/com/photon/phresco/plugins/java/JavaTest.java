@@ -1,11 +1,9 @@
 package com.photon.phresco.plugins.java;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 
 import com.photon.phresco.commons.model.ApplicationInfo;
@@ -20,11 +18,13 @@ import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.TechnologyTypes;
 import com.photon.phresco.util.Utility;
+import com.phresco.pom.exception.PhrescoPomException;
+import com.phresco.pom.util.PomProcessor;
 
 public class JavaTest implements PluginConstants {
 	private File baseDir;
-	private File unitInfoPath;
-	private File configPath;
+	private File testConfigPath;
+	
 	public void runTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException{
 		baseDir = mavenProjectInfo.getBaseDir();
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
@@ -41,25 +41,21 @@ public class JavaTest implements PluginConstants {
 
 	private void copyUnitInfoFile(String environment, String techId) throws PhrescoException {
 		try {
+			PomProcessor processor = new PomProcessor( new File(baseDir.getPath() + File.separator + POM_XML));
+			String testSourcePath = processor.getProperty("phresco.env.test.config.xml");
 			if (!techId.equals(TechnologyTypes.JAVA_STANDALONE) && !techId.equals(TechnologyTypes.JAVA_WEBSERVICE) ) {
 				PluginUtils utils = new PluginUtils();
-				File destUnitFile = new File(baseDir + File.separator + JAVA_WEBAPP_CONFIG_FILE);
-				utils.executeUtil(environment, baseDir.getPath(), destUnitFile);
-				unitInfoPath = new File(baseDir + File.separator + DOT_PHRESCO_FOLDER  + File.separator + UNIT_INFO_FILE );
-				File destPath = new File(baseDir + File.separator + JAVA_WEBAPP_UNIT_INFO_FILE);
-				FileUtils.copyFile(unitInfoPath, destPath);
-				File codeInfoFile = new File(baseDir.getPath() + File.separator + JAVA_WEBAPP_CODE_INFO_FILE );
-				File jsTestReportDir = new File(baseDir.getPath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + TARGET + File.separator + JSTEST);
-				if (codeInfoFile.exists()) {
-					codeInfoFile.delete();
-				}
-				if (jsTestReportDir.exists()) {
-					FileUtils.deleteDirectory(jsTestReportDir);
-				}
+				testConfigPath = new File(baseDir + File.separator + testSourcePath);
+				String fullPathNoEndSeparator = FilenameUtils.getFullPathNoEndSeparator(testConfigPath.getAbsolutePath());
+				File fullPathNoEndSeparatorFile = new File(fullPathNoEndSeparator);
+				fullPathNoEndSeparatorFile.mkdirs();
+				utils.executeUtil(environment, baseDir.getPath(), testConfigPath);
 			}
-		} catch (IOException e) {
-			throw new PhrescoException(e);
-		}
+		} catch (PhrescoPomException e) {
+			throw new  PhrescoException(e);
+		} catch (PhrescoException e) {
+			throw new  PhrescoException(e);
+		} 
 	}
 
 	private void buildCommand(Configuration configuration, String testAgainst) throws PhrescoException {

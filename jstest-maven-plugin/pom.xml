@@ -189,6 +189,18 @@
 			<version>1.0.0b2</version>
 		</dependency>
 		
+		<dependency>
+			<groupId>com.photon.phresco.pom</groupId>
+			<artifactId>phresco-pom</artifactId>
+			<version>2.2.0.1002-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.photon.phresco</groupId>
+			<artifactId>plugin-commons</artifactId>
+			<version>2.2.0.1002-SNAPSHOT</version>
+		</dependency>
+		
 	</dependencies>
 
 	<build>

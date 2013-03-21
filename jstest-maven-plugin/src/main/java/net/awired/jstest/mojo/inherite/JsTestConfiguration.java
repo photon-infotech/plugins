@@ -21,6 +21,13 @@ public abstract class JsTestConfiguration extends AbstractMojo {
     private File sourceDir;
 
     /**
+     * @parameter default-value="${project.basedir}" expression="${baseDir}"
+     */
+    
+    private File baseDir;
+    
+    
+    /**
      * @parameter
      */
     private List<String> sourceIncludes = ResourceDirectory.DEFAULT_INCLUDES;
@@ -170,7 +177,15 @@ public abstract class JsTestConfiguration extends AbstractMojo {
      */
     private File instrumentedDirectory;
 
-    /**
+    public File getBaseDir() {
+		return baseDir;
+	}
+
+	public void setBaseDir(File baseDir) {
+		this.baseDir = baseDir;
+	}
+
+	/**
      * @parameter default-value="${project.build.directory}${file.separator}jstest${file.separator}overlays"
      */
     private File overlayDirectory;
@@ -235,13 +250,6 @@ public abstract class JsTestConfiguration extends AbstractMojo {
     }
 
     public ResourceDirectory buildCurrentSrcDir(boolean serverMode) {
-    	RunnerType runnerType = buildAmdRunnerType();
-    	if (runnerType.equals(RunnerType.YUI) && serverMode) {
-    		ResourceDirectory buildSrcResourceDirectory = buildSrcResourceDirectory();
-    		File buildsrcResDir = new File(buildSrcResourceDirectory.getDirectory() + File.separator + "js");
-    		buildSrcResourceDirectory.setDirectory(buildsrcResDir);
-    		return buildSrcResourceDirectory;
-    	}
         if (serverMode) {
             return buildSrcResourceDirectory();
         } else if (isCoverage()) {
