@@ -7,6 +7,7 @@ import java.io.FilenameFilter;
 import java.lang.reflect.Type;
 import java.util.Map;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -83,6 +84,9 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
 					if (!techId.equals(TechnologyTypes.JAVA_STANDALONE) && !techId.equals(TechnologyTypes.JAVA_WEBSERVICE) ) {
 						PluginUtils utils = new PluginUtils();
 						testConfigPath = new File(baseDir + File.separator + testSourcePath);
+						String fullPathNoEndSeparator = FilenameUtils.getFullPathNoEndSeparator(testConfigPath.getAbsolutePath());
+						File fullPathNoEndSeparatorFile = new File(fullPathNoEndSeparator);
+						fullPathNoEndSeparatorFile.mkdirs();
 						utils.executeUtil(environmentName, baseDir.getPath(), testConfigPath);
 					}
 				} catch (PhrescoPomException e) {
