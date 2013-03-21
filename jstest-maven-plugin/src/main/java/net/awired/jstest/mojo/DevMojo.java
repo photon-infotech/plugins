@@ -23,7 +23,7 @@ import org.eclipse.jetty.webapp.WebAppContext;
 
 /**
  * @goal dev
- * @execute lifecycle="jstest-lifecycle" phase="process-test-resources"
+ * @execute lifecycle="jstest-lifecycle" phase="generate-test-sources"
  * @requiresDirectInvocation true
  */
 public class DevMojo extends AbstractJsTestMojo {
