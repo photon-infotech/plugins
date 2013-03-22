@@ -41,8 +41,8 @@ public class PreBuildStep  implements PluginConstants {
     private Log log;
     private PluginPackageUtil util;
     
-	public void performCIPreBuildStep(String jobName, String goal, String phase, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
-		log.info("CI prebuild step execution reached " + jobName);
+	public void performCIPreBuildStep(String name, String goal, String phase, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
+		log.info("CI prebuild step execution reached " + name);
 		log.info("goal is  " + goal);
 		try {
 	        this.log = log;
@@ -50,7 +50,7 @@ public class PreBuildStep  implements PluginConstants {
 	        project = mavenProjectInfo.getProject();
 	        
 	        // getting jenkins workspace job dir
-	        String jenkinsJobDirPath = getJenkinsJobDirPath(jobName);
+	        String jenkinsJobDirPath = getJenkinsJobDirPath(name);
 	        log.info("jenkinsJobDirPath ... " + jenkinsJobDirPath);
 			File jenkinsJobDir = new File(jenkinsJobDirPath);
 			
@@ -75,12 +75,12 @@ public class PreBuildStep  implements PluginConstants {
 			}
 			
 			// get job name and get the ciJob object from CIJob file and update it in phrescoPackage file using mojo
-			CIJob job = getJob(appInfo, jobName);
+			CIJob job = getJob(appInfo, name);
 			if (job == null) {
 				throw new PhrescoException("Job object is empty ");
 			}
 			
-			File phrescoPluginInfoFile = getPhrescoPluginInfoFileInJenkins(jobName, phase);
+			File phrescoPluginInfoFile = getPhrescoPluginInfoFileInJenkins(name, phase);
 			log.info("phresco Plugin Info File in phresco projects workspace ... " + phrescoPluginInfoFile.getCanonicalPath());
 			
 			MojoProcessor mojo = new MojoProcessor(phrescoPluginInfoFile);
@@ -239,7 +239,7 @@ public class PreBuildStep  implements PluginConstants {
 		return null;
 	}
 	
-	public File getPhrescoPluginInfoFileInJenkins(String jobName, String phase) throws MojoExecutionException {
+	public File getPhrescoPluginInfoFileInJenkins(String name, String phase) throws MojoExecutionException {
 		log.info("getPhrescoPluginInfoFileInJenkins method called ... ");
 		try {
 			String jenkinsHomePath = System.getenv(JENKINS_HOME);
@@ -250,7 +250,7 @@ public class PreBuildStep  implements PluginConstants {
 			builder.append(File.separator);
 	        builder.append(WORKSPACE_DIR);
 	        builder.append(File.separator);
-	        builder.append(jobName);
+	        builder.append(name);
 	        builder.append(File.separator);
 	        builder.append(DOT_PHRESCO_FOLDER);
 	        builder.append(File.separator);
@@ -260,7 +260,7 @@ public class PreBuildStep  implements PluginConstants {
 			File pluginInfoFile = new File(builder.toString());
 			log.info("getPhrescoPluginInfoFile method fiel path  ... " + builder.toString());
 			if (!pluginInfoFile.exists()) {
-				throw new MojoExecutionException("Plugin info file not found in jenkins workspace for jobaname ... " + jobName + " Searched in... " + builder.toString());
+				throw new MojoExecutionException("Plugin info file not found in jenkins workspace for jobaname ... " + name + " Searched in... " + builder.toString());
 			}
 			return pluginInfoFile;
 		} catch (Exception e) {
@@ -268,7 +268,7 @@ public class PreBuildStep  implements PluginConstants {
 		}
 	}
 	
-	private String getJenkinsJobDirPath(String jobName) throws MojoExecutionException {
+	private String getJenkinsJobDirPath(String name) throws MojoExecutionException {
 		log.info("getJenkinsJobDirPath method called ... ");
 		try {
 			String jenkinsHomePath = System.getenv(JENKINS_HOME);
@@ -279,7 +279,7 @@ public class PreBuildStep  implements PluginConstants {
 			builder.append(File.separator);
 	        builder.append(WORKSPACE_DIR);
 	        builder.append(File.separator);
-	        builder.append(jobName);
+	        builder.append(name);
 	        builder.append(File.separator);
 	        builder.append(DOT_PHRESCO_FOLDER);
 	        builder.append(File.separator);
@@ -291,10 +291,10 @@ public class PreBuildStep  implements PluginConstants {
 		}
 	}
 	
-	 public CIJob getJob(ApplicationInfo appInfo, String jobName) throws PhrescoException {
+	 public CIJob getJob(ApplicationInfo appInfo, String name) throws PhrescoException {
 		 try {
-			 log.info("Search for jobName => " + jobName);
-			 if (StringUtils.isEmpty(jobName)) {
+			 log.info("Search for name => " + name);
+			 if (StringUtils.isEmpty(name)) {
 				 throw new PhrescoException("job name is empty");
 			 }
 			 List<CIJob> jobs = getJobs(appInfo);
@@ -303,8 +303,8 @@ public class PreBuildStep  implements PluginConstants {
 			 }
 			 log.info("Job list found!!!!!");
 			 for (CIJob job : jobs) {
-				 log.info("job list job Names => " + job.getJobName());
-				 if (job.getJobName().equals(jobName)) {
+				 log.info("job list job Names => " + job.getName());
+				 if (job.getName().equals(name)) {
 					 return job;
 				 }
 			 }
