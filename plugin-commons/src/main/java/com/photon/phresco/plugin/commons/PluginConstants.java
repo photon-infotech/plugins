@@ -244,12 +244,18 @@ public interface PluginConstants {
 	 String WP_REMOVE_APPX_PACKAGE 		= "Remove-AppxPackage ";
 //	 String WP8_PLATFORM 				= "wp8";
 	 
-	// Variables related to Windows Store (Metro) unit test build process
+	
+	// Variable related to Windows Store (Metro) unit test root folder
 	 String WINSTORE_UNIT_TEST_PROJECT_ROOT 	= "Metro.UnitTests";
-	 String WINSTORE_UNIT_TEST_VSTEST 		= "vstest.console";
-	 String WINSTORE_UNIT_TEST_INISOLATION 	= "/InIsolation";
-	 String WINSTORE_UNIT_TEST_LOGGER 		= "/Logger:trx";
-			 
+	 
+	// Variable related to Windows Phone unit test root folder
+	 String WP_UNIT_TEST_PROJECT_ROOT 	= "WP.UnitTests";
+	 
+	 // Variable related to WinStore and WinPhone unit test build process
+	 String WINDOWS_UNIT_TEST_VSTEST_CONSOLE = "vstest.console";
+	 String WINDOWS_UNIT_TEST_INISOLATION 	 = "/InIsolation";
+	 String WINDOWS_UNIT_TEST_LOGGER 		 = "/Logger:trx";
+	 
 	 // Variables related to Windows Phone build process
 	 String WP7_BIN_FOLDER				= "\\bin";
 	 String WP7_RELEASE_FOLDER			= "\\release";
@@ -269,10 +275,6 @@ public interface PluginConstants {
 	 String WP8_XAPCMD_INSTALL			= "/installlaunch ";
 	 String WP8_XAPCMD_TARGET			= "/targetdevice";
 	 
-	// Variables related to Windows Phone unit test build process
-	 String WP_UNIT_TEST_PROJECT_ROOT 	= "WP.UnitTests";
-	 
- 
 	 // Ci Pre-Build Constants
 	 String PER_TEST_SERVER				= "server";
 	 String PER_TEST_DATABASE			= "database";

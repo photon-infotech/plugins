@@ -439,15 +439,15 @@ public class UnitTest implements PluginConstants {
 			
 			// vstest.console <fileName>.appx /InIsolation /Logger:trx
 			StringBuilder sb = new StringBuilder();
-			sb.append(WP_UNIT_TEST_VSTEST);
+			sb.append(WINDOWS_UNIT_TEST_VSTEST_CONSOLE);
 			sb.append(STR_SPACE);
 			sb.append(tempDir.getPath());
 			sb.append(WINDOWS_STR_BACKSLASH);
 			sb.append(appxFile[0].getName());
 			sb.append(STR_SPACE);
-			sb.append(WP_UNIT_TEST_INISOLATION);
+			sb.append(WINDOWS_UNIT_TEST_INISOLATION);
 			sb.append(STR_SPACE);
-			sb.append(WP_UNIT_TEST_LOGGER);
+			sb.append(WINDOWS_UNIT_TEST_LOGGER);
 			
 			log.info("UnitTest Command = "+ sb.toString());
 			Commandline cl = new Commandline(sb.toString());
