@@ -1,31 +1,24 @@
 package com.photon.phresco.plugins;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.util.Map;
+import java.io.*;
+import java.lang.reflect.*;
+import java.util.*;
 
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.project.MavenProject;
+import org.apache.commons.io.*;
+import org.apache.maven.plugin.*;
+import org.apache.maven.project.*;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.photon.phresco.commons.model.ApplicationInfo;
-import com.photon.phresco.commons.model.ProjectInfo;
-import com.photon.phresco.exception.PhrescoException;
-import com.photon.phresco.plugin.commons.PluginConstants;
-import com.photon.phresco.plugin.commons.PluginUtils;
-import com.photon.phresco.plugins.api.PhrescoPlugin;
+import com.google.gson.*;
+import com.google.gson.reflect.*;
+import com.photon.phresco.commons.model.*;
+import com.photon.phresco.exception.*;
+import com.photon.phresco.plugin.commons.*;
+import com.photon.phresco.plugins.api.*;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
-import com.photon.phresco.plugins.util.MojoUtil;
-import com.photon.phresco.util.Constants;
-import com.photon.phresco.util.TechnologyTypes;
-import com.phresco.pom.exception.PhrescoPomException;
-import com.phresco.pom.util.PomProcessor;
+import com.photon.phresco.plugins.util.*;
+import com.photon.phresco.util.*;
+import com.phresco.pom.exception.*;
+import com.phresco.pom.util.*;
 
 /**
  * Goal which validate the code
