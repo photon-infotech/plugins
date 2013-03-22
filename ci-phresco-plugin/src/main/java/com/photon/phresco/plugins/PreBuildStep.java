@@ -1,28 +1,38 @@
 package com.photon.phresco.plugins;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.apache.commons.beanutils.*;
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.maven.plugin.*;
-import org.apache.maven.plugin.logging.*;
-import org.apache.maven.project.*;
-import org.codehaus.plexus.util.*;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.FileUtils;
 
-import com.google.gson.*;
-import com.google.gson.reflect.*;
-import com.photon.phresco.commons.model.*;
-import com.photon.phresco.exception.*;
-import com.photon.phresco.framework.model.*;
-import com.photon.phresco.plugin.commons.*;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.photon.phresco.commons.model.ApplicationInfo;
+import com.photon.phresco.commons.model.ProjectInfo;
+import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.framework.model.CIJob;
+import com.photon.phresco.plugin.commons.MavenProjectInfo;
+import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
-import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.*;
-import com.photon.phresco.plugins.util.*;
-import com.photon.phresco.util.*;
-import com.phresco.pom.util.*;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
+import com.photon.phresco.plugins.util.MojoProcessor;
+import com.photon.phresco.plugins.util.PluginPackageUtil;
+import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.Utility;
+import com.phresco.pom.util.PomProcessor;
+
 
 public class PreBuildStep  implements PluginConstants {
 	
@@ -83,6 +93,11 @@ public class PreBuildStep  implements PluginConstants {
 				if (StringUtils.isNotEmpty(seleniumTool)) {
 					phase = phase + Constants.STR_HYPHEN + seleniumTool;
 				}
+			} else if(Constants.PHASE_PERFORMANCE_TEST.equals(phase)) {
+				// Reads the ci.info from server/database/webservice folder,
+				//inside of the performance folder and creates new json file
+				//for each values present in the ci.info file. 
+				performanceTestHandler(mavenProjectInfo, appInfo);	
 			}
 			
 			log.info("phase " + phase);
@@ -105,12 +120,84 @@ public class PreBuildStep  implements PluginConstants {
 				}
 			}
 			mojo.save();
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (Exception e) {			
 			throw new PhrescoException(e);
 		}
 	}
-	
+
+	private void performanceTestHandler(MavenProjectInfo mavenProjectInfo,
+			ApplicationInfo appInfo) throws Exception {
+		
+		BufferedReader reader = null ;	
+		
+		try {										
+			List<String> performanceTests = new ArrayList<String>(3);
+			performanceTests.add(PER_TEST_SERVER);
+			performanceTests.add(PER_TEST_DATABASE);
+			performanceTests.add(PER_TEST_WEBSERVICE);
+			
+			for (String performanceTest : performanceTests) {
+				
+				StringBuilder copyDir = new StringBuilder(baseDir.toString())				
+				.append(mavenProjectInfo.getProject().getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR))
+				.append(File.separator)
+				.append(performanceTest)
+				.append(File.separator)
+				.append(Constants.FOLDER_JSON);				
+				
+				StringBuilder infoFilePath = new StringBuilder(Utility.getProjectHome())
+				.append(appInfo.getAppDirName())
+				.append(mavenProjectInfo.getProject().getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR))
+				.append(File.separator)
+				.append(performanceTest)
+				.append(File.separator)
+				.append(Constants.FOLDER_JSON)
+				.append(File.separator)
+				.append("CITemp")
+				.append(File.separator)
+				.append(CI_INFO);
+								
+				File infoFile = new File(infoFilePath.toString());
+				if(infoFile.exists()) {						
+					reader = new BufferedReader(new FileReader(infoFilePath.toString()));
+					String lineToRead = null ;
+					while((lineToRead = reader.readLine()) != null) {
+						String [] jsonFiles = lineToRead.split("\\,");
+						for (String jsonFile : jsonFiles) {					
+							
+							// 
+							StringBuilder s = new StringBuilder(copyDir)				    	
+					    	.append(File.separator)
+					    	.append(jsonFile);								
+							
+							StringBuilder sb = new StringBuilder(Utility.getProjectHome())
+					    	.append(appInfo.getAppDirName())				
+							.append(mavenProjectInfo.getProject().getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR))
+							.append(File.separator)
+							.append(performanceTest)
+							.append(File.separator)
+							.append(Constants.FOLDER_JSON)
+							.append(File.separator)
+							.append("CITemp")
+							.append(File.separator)
+							.append(jsonFile);		
+							
+							File source = new File(sb.toString());
+							File destination = new File(s.toString());
+							// source file is exist check . . .
+							if(source.exists()) {
+								FileUtils.copyFile(source, destination);								
+							}							
+						}
+					}						
+				}					
+			}
+		} catch (Exception e) {
+			throw new PhrescoException(e);
+		} finally {
+			Utility.closeReader(reader);
+		}
+	}
 	
 	public File getPhrescoPluginInfoFile(String appDirName, String goal) throws MojoExecutionException {
 		log.info("getPhrescoPluginInfoFile goal  ... " + goal);

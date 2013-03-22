@@ -273,6 +273,12 @@ public interface PluginConstants {
 	 String WP_UNIT_TEST_PROJECT_ROOT 	= "WP.UnitTests";
 	 
  
+	 // Ci Pre-Build Constants
+	 String PER_TEST_SERVER				= "server";
+	 String PER_TEST_DATABASE			= "database";
+	 String PER_TEST_WEBSERVICE			= "webservice";	
+	 String CI_INFO						= "ci.info";
+	 String DOT_JSON					= ".json";
 	 //Xcode plugin constants
 	 String WAXSIM_HOME 				= "WAXSIM_HOME";
 	 String OCUNIT2JUNIT_HOME 			= "OCUNIT2JUNIT_HOME";
