@@ -44,7 +44,7 @@ public class RunAndroidTest implements PluginConstants {
 				builder.append(directory + File.separator + project.getArtifactId() + DOT + POMConstants.APK);	
 				builder.append(STR_SPACE);
 				builder.append("-f junit --out test-reports");
-				Utility.executeStreamconsumer(builder.toString(), project.getBasedir() + File.separator + workingDir);
+				Utility.executeStreamconsumer(builder.toString(), project.getBasedir() + File.separator + workingDir, project.getBasedir().getPath(), FUNCTIONAL);
 				return;
 			}
 			StringBuilder sb = new StringBuilder();

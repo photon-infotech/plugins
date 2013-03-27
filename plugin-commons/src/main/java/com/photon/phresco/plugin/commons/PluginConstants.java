@@ -383,6 +383,7 @@ public interface PluginConstants {
 	 String ATTR_JM_BYTES	 			= "by";
 	 String ATTR_JM_RESPONSE_CODE 		= "rc";
 	 String ATTR_ID 					= "id";
+	 String CODE_VALIDATE				= "codeValidate";
 	 String MANUAL 						= "manual";
 	 String FUNCTIONAL 					= "functional";
 	 String UNIT 						= "unit";
