@@ -30,10 +30,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
-import org.codehaus.plexus.archiver.ArchiverException;
-import org.codehaus.plexus.archiver.zip.ZipArchiver;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.Commandline;
@@ -82,6 +81,7 @@ public class UnitTest implements PluginConstants {
 	private File rootDir;
 	private Log log;
 	private PluginPackageUtil util;
+	private File unitDestPath;
 	
 	public void runUnitTest(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		
@@ -119,7 +119,7 @@ public class UnitTest implements PluginConstants {
 		if(type.equalsIgnoreCase(WIN_STORE)) {
 			try {
 				generateWP8UnitTestPackage();
-				executeUnitTest();
+				//executeUnitTest();
 			} catch (PhrescoException e) {				
 			}
 		} else if (type.equalsIgnoreCase(WIN_PHONE)) {
@@ -133,9 +133,13 @@ public class UnitTest implements PluginConstants {
 			if (type.equalsIgnoreCase(WIN_STORE)) {
 				unitTestInit();
 				extractBuild();
-				runWP8UnitTest();
+				String extension = ".appx";
+				runUnitTest(extension);
 			} else if (type.equalsIgnoreCase(WIN_PHONE)) {
 				generateBuild();
+				extractBuild();
+				String extension = ".xap";
+				runUnitTest(extension);
 			} {
 			}
 		} catch (MojoExecutionException e) {
@@ -224,11 +228,10 @@ public class UnitTest implements PluginConstants {
 		try {
 			// Get the source/<ProjectRoot> folder
 			if(type.equalsIgnoreCase(WIN_STORE)) {
-			rootDir = new File(baseDir.getPath() + winStoreUnitTestDirectory);
-			} else {
+				rootDir = new File(baseDir.getPath() + winStoreUnitTestDirectory);
+			} else if (type.equalsIgnoreCase(WIN_PHONE)) {
 				rootDir = new File(baseDir.getPath() + wpUnitTestDirectory);
 			}
-			
 			log.info("getProjectRoot = " + rootDir.getPath());
 		} catch (Exception e) {
 			log.error(e.getMessage());
@@ -419,9 +422,7 @@ public class UnitTest implements PluginConstants {
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
-
 	}
-	
 	
 	/*
 	 * Methods related to Deploy
@@ -448,44 +449,41 @@ public class UnitTest implements PluginConstants {
 		}
 	}
 
-	
 	private void extractBuild() throws MojoExecutionException {
 		try {
-			ArchiveUtil.extractArchive(buildFile.getPath(), tempDir.getPath(), ArchiveType.ZIP);
+			String zipName = util.createPackage(buildName, buildNumber, nextBuildNo, currentDate);
+			File sourcePath = new File(buildDir.getPath() + File.separator + zipName);
+			String removeExtension = FilenameUtils.removeExtension(sourcePath.getAbsolutePath());
+			unitDestPath = new File(removeExtension);
+			ArchiveUtil.extractArchive(sourcePath.getPath(), unitDestPath.getPath(), ArchiveType.ZIP);
 		} catch (PhrescoException e) {
-			throw new MojoExecutionException(e.getErrorMessage(), e);
+			log.error(e.getMessage());
+			throw new MojoExecutionException(e.getMessage(), e);
 		} 
 	}
 	
-	private void runWP8UnitTest() throws MojoExecutionException {
+	
+	private void runUnitTest(final String extension) throws MojoExecutionException {
 		BufferedReader in = null;
 		try {
-			
 			log.info("Running unit tests ...");
-			
-			// Get .appx file from the extracted contents
-			File[] appxFile = tempDir.listFiles(new FilenameFilter() { 
+			File[] appxFile = unitDestPath.listFiles(new FilenameFilter() { 
 				public boolean accept(File dir, String name) { 
-					return name.endsWith(".appx");
+					return name.endsWith(extension);
 				}
 			});
-			
 			// vstest.console <fileName>.appx /InIsolation /Logger:trx
 			StringBuilder sb = new StringBuilder();
 			sb.append(WINDOWS_UNIT_TEST_VSTEST_CONSOLE);
 			sb.append(STR_SPACE);
-			sb.append(tempDir.getPath());
-			sb.append(WINDOWS_STR_BACKSLASH);
 			sb.append(appxFile[0].getName());
 			sb.append(STR_SPACE);
 			sb.append(WINDOWS_UNIT_TEST_INISOLATION);
 			sb.append(STR_SPACE);
 			sb.append(WINDOWS_UNIT_TEST_LOGGER);
-			
 			log.info("UnitTest Command = "+ sb.toString());
 			Commandline cl = new Commandline(sb.toString());
-			cl.setWorkingDirectory(tempDir.getPath());
-			
+			cl.setWorkingDirectory(unitDestPath.getPath());
 			Process process = cl.execute();
 			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
 			while ((in.readLine()) != null) {
