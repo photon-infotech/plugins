@@ -1,3 +1,20 @@
+/*
+ * Phresco Maven Plugin
+ *
+ * Copyright (C) 1999-2013 Photon Infotech Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 YUI.add('text-accentfold-test', function (Y) {
 
 var AccentFold = Y.Text.AccentFold;
@@ -54,14 +71,14 @@ Y.Test.Runner.add(new Y.Test.Case({
 
     // -- fold() ---------------------------------------------------------------
     'fold() should fold lowercase accented letters to ASCII': function () {
-        Y.Assert.areSame('aaaaaaaaaaaaaaaaaaaaaaaaaa', AccentFold.fold('àåāăąǎǟǡǻȁȃȧḁẚạảấầẩẫậắằẳẵặ'));
+        Y.Assert.areSame('aaaaaaaaaaaaaaaaaaaaaaaaaa', AccentFold.fold('àå�?ăąǎǟǡǻ�?ȃȧ�?ẚạảấầẩẫậắằẳẵặ'));
         Y.Assert.areSame('zzzzzz', AccentFold.fold('źżžẑẓẕ'));
         Y.Assert.areSame('abcd', AccentFold.fold('abcd'));
     },
 
     'fold() should fold uppercase accented letters to lowercase ASCII': function () {
-        Y.Assert.areSame('aaaaaaaaaaaaaaaaaaaaaaaa', AccentFold.fold('ÀÅĀĂĄǍǞǠǺȀȂḀẠẢẤẦẨẪẬẮẰẲẴẶ'));
-        Y.Assert.areSame('zzzzzz', AccentFold.fold('ŹŻŽẐẒẔ'));
+        Y.Assert.areSame('aaaaaaaaaaaaaaaaaaaaaaaa', AccentFold.fold('ÀÅĀĂĄ�?ǞǠǺȀȂḀẠẢẤẦẨẪẬẮẰẲẴẶ'));
+        Y.Assert.areSame('zzzzzz', AccentFold.fold('ŹŻŽ�?ẒẔ'));
         Y.Assert.areSame('abcd', AccentFold.fold('ABCD'));
     }
 }));
