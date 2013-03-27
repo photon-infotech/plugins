@@ -1,3 +1,22 @@
+<!--
+
+    Phresco Maven Plugin
+
+    Copyright (C) 1999-2013 Photon Infotech Inc.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
@@ -246,7 +265,7 @@
                 ASSERT.areSame("1995-12-17", output, "Expected default format (%F).");
 
                 output = dateKR.format(date, {format:"%a %A"});
-                ASSERT.areSame("일 일요일", output, "Expected %a %A format.");
+                ASSERT.areSame("�?� �?�요�?�", output, "Expected %a %A format.");
 
                 output = dateKR.format(date, {format:"%b %B"});
                 ASSERT.areSame("12월 12월", output, "Expected %b %B format.");
@@ -266,10 +285,10 @@
                 
                 // provide data in Punjabi for India
                 Y.Intl.add("datatype-date-format", "pa-IN", {
-                        "a":["ਐਤ.","ਸੋਮ.","ਮੰਗਲ.","ਬੁਧ.","ਵੀਰ.","ਸ਼ੁਕਰ.","ਸ਼ਨੀ."],
-                        "A":["ਐਤਵਾਰ","ਸੋਮਵਾਰ","ਮੰਗਲਵਾਰ","ਬੁਧਵਾਰ","ਵੀਰਵਾਰ","ਸ਼ੁੱਕਰਵਾਰ","ਸ਼ਨੀਚਰਵਾਰ"],
-                        "b":["ਜਨਵਰੀ","ਫ਼ਰਵਰੀ","ਮਾਰਚ","ਅਪ੍ਰੈਲ","ਮਈ","ਜੂਨ","ਜੁਲਾਈ","ਅਗਸਤ","ਸਤੰਬਰ","ਅਕਤੂਬਰ","ਨਵੰਬਰ","ਦਸੰਬਰ"],
-                        "B":["ਜਨਵਰੀ","ਫ਼ਰਵਰੀ","ਮਾਰਚ","ਅਪ੍ਰੈਲ","ਮਈ","ਜੂਨ","ਜੁਲਾਈ","ਅਗਸਤ","ਸਤੰਬਰ","ਅਕਤੂਬਰ","ਨਵੰਬਰ","ਦਸੰਬਰ"],
+                        "a":["�?ਤ.","ਸੋਮ.","ਮੰਗਲ.","ਬ�?ਧ.","ਵੀਰ.","ਸ਼�?ਕਰ.","ਸ਼ਨੀ."],
+                        "A":["�?ਤਵਾਰ","ਸੋਮਵਾਰ","ਮੰਗਲਵਾਰ","ਬ�?ਧਵਾਰ","ਵੀਰਵਾਰ","ਸ਼�?ੱਕਰਵਾਰ","ਸ਼ਨੀਚਰਵਾਰ"],
+                        "b":["ਜਨਵਰੀ","ਫ਼ਰਵਰੀ","ਮਾਰਚ","ਅਪ�?ਰੈਲ","ਮਈ","ਜੂਨ","ਜ�?ਲਾਈ","ਅਗਸਤ","ਸਤੰਬਰ","ਅਕਤੂਬਰ","ਨਵੰਬਰ","ਦਸੰਬਰ"],
+                        "B":["ਜਨਵਰੀ","ਫ਼ਰਵਰੀ","ਮਾਰਚ","ਅਪ�?ਰੈਲ","ਮਈ","ਜੂਨ","ਜ�?ਲਾਈ","ਅਗਸਤ","ਸਤੰਬਰ","ਅਕਤੂਬਰ","ਨਵੰਬਰ","ਦਸੰਬਰ"],
                         "c":"%a, %Y %b %d %l:%M:%S %p %Z",
                         "p":["ਸਵੇਰੇ","ਸ਼ਾਮ"],
                         "P":["ਸਵੇਰੇ","ਸ਼ਾਮ"],
@@ -290,7 +309,7 @@
                 ASSERT.areSame("1995-12-17", output, "Expected default format (%F).");
 
                 output = dateIN.format(date, {format:"%a %A"});
-                ASSERT.areSame("ਐਤ. ਐਤਵਾਰ", output, "Expected %a %A format.");
+                ASSERT.areSame("�?ਤ. �?ਤਵਾਰ", output, "Expected %a %A format.");
 
                 output = dateIN.format(date, {format:"%b %B"});
                 ASSERT.areSame("ਦਸੰਬਰ ਦਸੰਬਰ", output, "Expected %b %B format.");
