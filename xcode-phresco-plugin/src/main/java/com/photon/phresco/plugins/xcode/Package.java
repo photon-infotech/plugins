@@ -48,6 +48,8 @@ public class Package implements PluginConstants {
 		    File baseDir = mavenProjectInfo.getBaseDir();
             Map<String, String> configs = MojoUtil.getAllValues(config);
             environmentName = configs.get(ENVIRONMENT_NAME);
+            String buildName = configs.get(BUILD_NAME);
+            String buildNumber = configs.get(BUILD_NUMBER);
             String sdk = configs.get(SDK);
             String target = configs.get(TARGET);
             if (StringUtils.isNotEmpty(target)) {
@@ -104,6 +106,15 @@ public class Package implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(HYPHEN_D + PLIST_FILE + EQUAL + plistFile);
 			
+			if (StringUtils.isNotEmpty(buildName)) {
+				sb.append(STR_SPACE);
+				sb.append(HYPHEN_D + BUILD_NAME + EQUAL + buildName);
+			}
+			
+			if (StringUtils.isNotEmpty(buildNumber)) {
+				sb.append(STR_SPACE);
+				sb.append(HYPHEN_D + BUILD_NUMBER + EQUAL + buildNumber);
+			}
 			
 			System.out.println("Command" + sb.toString());
 			boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath());

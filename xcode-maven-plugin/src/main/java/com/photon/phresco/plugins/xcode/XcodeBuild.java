@@ -251,6 +251,11 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 	protected String buildNumber;
 	
 	/**
+	 * @parameter expression="${buildName}" default-value=""
+	 */
+	protected String buildName;
+	
+	/**
 	 * @parameter expression="${applicationTest}"
 	 */
 	private boolean applicationTest;
@@ -379,8 +384,13 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 		// if both the files are generated, genearte fat file and pzck it
 		if (simDotAFile.exists() && deviceDotAFile.exists()) {
 			getLog().info("sim and device library file created.. Copying to Build directory....." + project.getBuild().getFinalName());
-			String buildName = project.getBuild().getFinalName() + '_' + getTimeStampForBuildName(currentDate);
-			File baseFolder = new File(baseDir + DO_NOT_CHECKIN_BUILD, buildName);
+			String archiveBuildName = "";
+			if (StringUtils.isNotEmpty(buildName)) {
+				archiveBuildName = buildName;
+			} else {
+				archiveBuildName = project.getBuild().getFinalName() + '_' + getTimeStampForBuildName(currentDate);
+			}
+			File baseFolder = new File(baseDir + DO_NOT_CHECKIN_BUILD, archiveBuildName);
 			
 			if (!baseFolder.exists()) {
 				baseFolder.mkdirs();
@@ -404,7 +414,7 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 			generateFatFile(simDotAFile, deviceDotAFile, baseFolder, fatFileName);
 			
 			// generating zip file
-			createDeliverables(buildName, baseFolder);
+			createDeliverables(archiveBuildName, baseFolder);
 			
 			// writing build info
 			File outputlibFile = getDotAFile();
@@ -651,8 +661,13 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 				getLog().info("Completed " + outputFile.getAbsolutePath());
 				getLog().info("Folder name ....." + baseDir.getName());
 				getLog().info("library file created.. Copying to Build directory....." + project.getBuild().getFinalName());
-				String buildName = project.getBuild().getFinalName() + '_' + getTimeStampForBuildName(currentDate);
-				File baseFolder = new File(baseDir + DO_NOT_CHECKIN_BUILD, buildName);
+				String archiveBuildName = "";
+				if (StringUtils.isNotEmpty(buildName)) {
+					archiveBuildName = buildName;
+				} else {
+					archiveBuildName = project.getBuild().getFinalName() + '_' + getTimeStampForBuildName(currentDate);
+				}
+				File baseFolder = new File(baseDir + DO_NOT_CHECKIN_BUILD, archiveBuildName);
 				if (!baseFolder.exists()) {
 					baseFolder.mkdirs();
 					getLog().info("build output direcory created at " + baseFolder.getAbsolutePath());
@@ -664,7 +679,7 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 				XcodeUtil.copyFolder(outputFile, baseFolder);
 				
 				// generating zip file
-				createDeliverables(buildName, baseFolder);
+				createDeliverables(archiveBuildName, baseFolder);
 				
 				// writing build info
 				File outputlibFile = getDotAFile();
@@ -694,8 +709,13 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 				getLog().info("Completed " + outputFile.getAbsolutePath());
 				getLog().info("Folder name ....." + baseDir.getName());
 				getLog().info("APP created.. Copying to Build directory....." + project.getBuild().getFinalName());
-				String buildName = project.getBuild().getFinalName() + '_' + getTimeStampForBuildName(currentDate);
-				File baseFolder = new File(baseDir + DO_NOT_CHECKIN_BUILD, buildName);
+				String archiveBuildName = "";
+				if (StringUtils.isNotEmpty(buildName)) {
+					archiveBuildName = buildName;
+				} else {
+					archiveBuildName = project.getBuild().getFinalName() + '_' + getTimeStampForBuildName(currentDate);
+				}
+				File baseFolder = new File(baseDir + DO_NOT_CHECKIN_BUILD, archiveBuildName);
 				if (!baseFolder.exists()) {
 					baseFolder.mkdirs();
 					getLog().info("build output direcory created at " + baseFolder.getAbsolutePath());
@@ -706,7 +726,7 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 				getLog().info("copied to..." + destFile.getName());
 				appFileName = destFile.getAbsolutePath();
 
-				createDeliverables(buildName, baseFolder);
+				createDeliverables(archiveBuildName, baseFolder);
 
 				// writing build info
 				boolean isDeviceBuild = Boolean.FALSE;
@@ -732,8 +752,13 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 
 			try {
 				getLog().info("dSYM created.. Copying to Build directory.....");
-				String buildName = project.getBuild().getFinalName() + '_' + getTimeStampForBuildName(currentDate);
-				File baseFolder = new File(baseDir + DO_NOT_CHECKIN_BUILD, buildName);
+				String archiveBuildName = "";
+				if (StringUtils.isNotEmpty(buildName)) {
+					archiveBuildName = buildName;
+				} else {
+					archiveBuildName = project.getBuild().getFinalName() + '_' + getTimeStampForBuildName(currentDate);
+				}
+				File baseFolder = new File(baseDir + DO_NOT_CHECKIN_BUILD, archiveBuildName);
 				if (!baseFolder.exists()) {
 					baseFolder.mkdirs();
 					getLog().info("build output direcory created at " + baseFolder.getAbsolutePath());
@@ -745,7 +770,7 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 				dSYMFileName = destFile.getAbsolutePath();
 
 				// create deliverables
-				createDeliverables(buildName, baseFolder);
+				createDeliverables(archiveBuildName, baseFolder);
 
 			} catch (IOException e) {
 				throw new MojoExecutionException("Error in writing output..." + e.getLocalizedMessage());
@@ -757,7 +782,7 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 	}
 
 
-	private void createDeliverables(String buildName, File baseFolder) throws MojoExecutionException {
+	private void createDeliverables(String archiveBuildName, File baseFolder) throws MojoExecutionException {
 		File tmpFile = null;
 		try {
 			getLog().info("Creating deliverables.....");
@@ -769,7 +794,7 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 			}
 			ZipArchiver zipArchiver = new ZipArchiver();
 			zipArchiver.addDirectory(tmpFile);
-			File deliverableZip = new File(baseDir + DO_NOT_CHECKIN_BUILD, buildName + ".zip");
+			File deliverableZip = new File(baseDir + DO_NOT_CHECKIN_BUILD, archiveBuildName + ".zip");
 			zipArchiver.setDestFile(deliverableZip);
 			zipArchiver.createArchive();
 			deliverable = deliverableZip.getAbsolutePath();
@@ -897,17 +922,25 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 	
 	private void writeBuildInfo(boolean isBuildSuccess, String appFileName1, boolean isDeviceBuild1) throws MojoExecutionException {
 		try {
-			if (buildNumber != null) {
-				buildNo = Integer.parseInt(buildNumber);
-			}
 			PluginUtils pu = new PluginUtils();
 			BuildInfo buildInfo = new BuildInfo();
 			List<String> envList = pu.csvToList(environmentName);
-			if (buildNo > 0) {
-				buildInfo.setBuildNo(buildNo);
+			
+			//Set build no in build.info
+			if (StringUtils.isNotEmpty(buildNumber) && Integer.parseInt(buildNumber) > 0) {
+				buildInfo.setBuildNo(Integer.parseInt(buildNumber));
 			} else {
 				buildInfo.setBuildNo(nextBuildNo);
 			}
+			
+			// Set build name in build.info (set zip name as build name)
+//			String appName = FilenameUtils.getName(appFileName1);
+			String appName = FilenameUtils.getName(deliverable);
+			buildInfo.setBuildName(appName);
+			
+			// Set deploy location specifies deployable files
+			buildInfo.setDeployLocation(appFileName1);
+			
 			buildInfo.setTimeStamp(getTimeStampForDisplay(currentDate));
 			if (isBuildSuccess) {
 				buildInfo.setBuildStatus(BUILD_SUCCESS);
@@ -915,7 +948,6 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 				buildInfo.setBuildStatus(BUILD_FAILURE);
 			}
 			
-			buildInfo.setBuildName(appFileName1);
 			buildInfo.setDeliverables(deliverable);
 			buildInfo.setEnvironments(envList);
 
