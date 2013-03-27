@@ -81,6 +81,7 @@ public interface PluginConstants {
 	 String MVN_PHASE_XCODE_PACKAGE		= "xcodebuild";
 	 String MVN_PHASE_XCODE_FUN_TEST	= "instruments";
 	 String MVN_PHASE_DEPLOY			= "deploy";
+	 String PACK_BEFORE_TEST			= "pack-before-test";
     
 	// Constants for Php maven plugin
 	 
