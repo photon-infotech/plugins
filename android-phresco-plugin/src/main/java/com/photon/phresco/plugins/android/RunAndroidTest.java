@@ -32,6 +32,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.photon.phresco.commons.FrameworkConstants;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
@@ -61,7 +62,7 @@ public class RunAndroidTest implements PluginConstants {
 				builder.append(directory + File.separator + project.getArtifactId() + DOT + POMConstants.APK);	
 				builder.append(STR_SPACE);
 				builder.append("-f junit --out test-reports");
-				Utility.executeStreamconsumer(builder.toString(), project.getBasedir() + File.separator + workingDir);
+				Utility.executeStreamconsumer(builder.toString(), project.getBasedir() + File.separator + workingDir, project.getBasedir().getPath(), FUNCTIONAL);
 				return;
 			}
 			StringBuilder sb = new StringBuilder();

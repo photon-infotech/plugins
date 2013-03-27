@@ -29,6 +29,7 @@ import org.apache.maven.plugin.logging.*;
 import org.apache.maven.project.*;
 import org.w3c.dom.*;
 
+import com.photon.phresco.commons.FrameworkConstants;
 import com.photon.phresco.exception.*;
 import com.photon.phresco.plugin.commons.*;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
@@ -127,7 +128,7 @@ public class Package implements PluginConstants {
 		}
 		
 		log.info("Command " + sb.toString());
-		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir);
+		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir, baseDir, FrameworkConstants.PACKAGE);
 		if(!status) {
 			try {
 				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);

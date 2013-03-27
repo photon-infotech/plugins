@@ -24,6 +24,7 @@ import org.apache.commons.lang.*;
 import org.apache.maven.plugin.*;
 import org.apache.maven.plugin.logging.*;
 
+import com.photon.phresco.commons.FrameworkConstants;
 import com.photon.phresco.exception.*;
 import com.photon.phresco.plugin.commons.*;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
@@ -72,7 +73,7 @@ public class ClangCodeValidator implements PluginConstants {
 		}
 		
 		log.debug("Command " + sb.toString());
-		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath());
+		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(), CODE_VALIDATE);
 		if(!status) {
 			try {
 				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);

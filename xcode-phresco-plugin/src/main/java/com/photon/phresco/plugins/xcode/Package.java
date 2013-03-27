@@ -31,6 +31,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 
 import com.google.gson.Gson;
+import com.photon.phresco.commons.FrameworkConstants;
 import com.photon.phresco.commons.model.ApplicationInfo;
 import com.photon.phresco.commons.model.ProjectInfo;
 import com.photon.phresco.exception.PhrescoException;
@@ -123,7 +124,7 @@ public class Package implements PluginConstants {
 			
 			
 			System.out.println("Command" + sb.toString());
-			boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath());
+			boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(), FrameworkConstants.DEPLOY);
 			if(!status) {
 				try {
 					throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);

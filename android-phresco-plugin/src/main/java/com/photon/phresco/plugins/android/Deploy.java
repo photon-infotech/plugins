@@ -23,6 +23,7 @@ import org.apache.commons.lang.*;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 
+import com.photon.phresco.commons.FrameworkConstants;
 import com.photon.phresco.exception.*;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
@@ -82,7 +83,7 @@ public class Deploy implements PluginConstants {
 		
 		log.info("Project is Deploying...");
 		log.info("Command " + sb.toString());
-		boolean status = Utility.executeStreamconsumer(sb.toString(), workingDir);
+		boolean status = Utility.executeStreamconsumer(sb.toString(), workingDir, workingDir, FrameworkConstants.DEPLOY);
 		if(!status) {
 			throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
 		}
