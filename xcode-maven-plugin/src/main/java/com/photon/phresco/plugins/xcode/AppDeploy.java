@@ -140,7 +140,7 @@ public class AppDeploy extends AbstractMojo implements PluginConstants {
 		PluginUtils pu = new PluginUtils();
 		BuildInfo buildInfo = pu.getBuildInfo(Integer.parseInt(buildNumber));
 		getLog().info("Build Name " + buildInfo);
-		appPath = buildInfo.getBuildName();
+		appPath = buildInfo.getDeployLocation();
 		getLog().info("triggerSimulator " + triggerSimulator);
 		getLog().info("deviceDeploy " + !deviceDeploy);
 		

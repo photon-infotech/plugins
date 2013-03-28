@@ -169,7 +169,8 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 		getLog().info("Project Code " + baseDir.getName());
 		PluginUtils pu = new PluginUtils();
 		BuildInfo buildInfo = pu.getBuildInfo(Integer.parseInt(buildNumber));
-		appPath = buildInfo.getBuildName();
+//		appPath = buildInfo.getBuildName();
+		appPath = buildInfo.getDeployLocation();
 		getLog().info("Application.path = " + appPath);
 		
 		// if the build is build for device, pass as param
