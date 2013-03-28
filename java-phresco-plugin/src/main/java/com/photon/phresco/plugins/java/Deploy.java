@@ -64,6 +64,7 @@ public class Deploy implements PluginConstants {
 	private Log log;
 	private String sqlPath;
 	private PluginUtils pUtil;
+	private String servertype;
 	
 	public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -119,6 +120,10 @@ public class Deploy implements PluginConstants {
 		serverVersionMap.put("jboss-5.0.x", "jboss5x");
 		serverVersionMap.put("jboss-4.2.x", "jboss42x");
 		serverVersionMap.put("jboss-4.0.x", "jboss4x");
+		serverVersionMap.put("jetty-6.x", "jetty6x");
+		serverVersionMap.put("jetty-7.x", "jetty7x");
+		serverVersionMap.put("jetty-8.x", "jetty8x");
+		serverVersionMap.put("jetty-9.x", "jetty9x");
 	}
 
 	private void callUsage() throws MojoExecutionException {
@@ -188,10 +193,10 @@ public class Deploy implements PluginConstants {
 		String serverusername = configuration.getProperties().getProperty(Constants.SERVER_ADMIN_USERNAME);
 		String serverpassword = configuration.getProperties().getProperty(Constants.SERVER_ADMIN_PASSWORD);
 		String version = configuration.getProperties().getProperty(Constants.SERVER_VERSION);
-		String servertype = configuration.getProperties().getProperty(Constants.SERVER_TYPE);
+		servertype = configuration.getProperties().getProperty(Constants.SERVER_TYPE);
 		context = configuration.getProperties().getProperty(Constants.SERVER_CONTEXT);
 		String remotedeploy = configuration.getProperties().getProperty(Constants.SERVER_REMOTE_DEPLOYMENT);
-		String certificatePath = configuration.getProperties().getProperty("certificate");
+		String certificatePath = configuration.getProperties().getProperty(Constants.CERTIFICATE);
 		
 		String containerId = "";
 		renameWar(context);
@@ -210,6 +215,10 @@ public class Deploy implements PluginConstants {
 		} else if (servertype.contains(TYPE_JBOSS)) {
 			addCargoDependency(version);
 			containerId = serverVersionMap.get("jboss-" + version);
+			deployToServer(serverprotocol, serverhost, serverport, serverusername, serverpassword, containerId, certificatePath);
+		} else if (servertype.contains(TYPE_JETTY)) {
+			removeCargoDependency();
+			containerId = serverVersionMap.get("jetty-" + version);
 			deployToServer(serverprotocol, serverhost, serverport, serverusername, serverpassword, containerId, certificatePath);
 		} else if (servertype.contains(TYPE_WEBLOGIC) && ((version.equals(Constants.WEBLOGIC_12c)) || (version.equals(Constants.WEBLOGIC_11gR1)))) {
 			deployToWeblogicServer(serverprotocol, serverhost, serverport, serverusername, serverpassword, version);
@@ -341,12 +350,24 @@ public class Deploy implements PluginConstants {
 
 			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 			String line = null;
+			if(!servertype.equalsIgnoreCase("Jetty")) {
 			while ((line = bufferedReader.readLine()) != null) {
 				if (line.startsWith("[ERROR]")) {
 					System.out.println(line); //do not use getLog() here as this line already contains the log type.
 					errorParam = true;
 				}
 			}
+		} else {
+			while ((line = bufferedReader.readLine()) != null) {
+				if (line.startsWith("[ERROR]") && line.contains("Unexpected error when trying to start the webapp")) {
+					errorParam = false;
+					break;
+				} else if (line.startsWith("[ERROR]")) {
+					System.out.println(line); //do not use getLog() here as this line already contains the log type.
+					errorParam = true;
+				}
+			}
+		}
 			if (errorParam) {
 				throw new MojoExecutionException("Remote Deployment Failed ");
 			} else {
