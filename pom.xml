@@ -41,7 +41,6 @@
 		<module>report-phresco-plugin</module>
 		<module>hybridAppLauncher-maven-plugin</module>
   </modules>
-
   <properties>
 		<siteBaseUrl>file://C:/apache-tomcat-7.0.26/webapps/ROOT/phresco-site/</siteBaseUrl>
 		<phresco-commons-version>${project.version}</phresco-commons-version>

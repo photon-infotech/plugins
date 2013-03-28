@@ -210,8 +210,7 @@
                     </execution>
                 </executions>
             </plugin>
-            
-		</plugins>
+            </plugins>
 		
 		<extensions> 
 			<extension> 
