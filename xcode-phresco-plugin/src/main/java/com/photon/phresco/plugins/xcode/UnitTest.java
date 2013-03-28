@@ -48,7 +48,7 @@ public class UnitTest implements PluginConstants {
 		// get command from plugin info
 		String unitTestType = configs.get(UNIT_TEST_TYPE);
 		String projectType = configs.get(PROJECT_TYPE);
-		String workingDir = mavenProjectInfo.getBaseDir().getPath();
+		String baseDir = mavenProjectInfo.getBaseDir().getPath();
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append(XCODE_BUILD_COMMAND);
@@ -89,7 +89,7 @@ public class UnitTest implements PluginConstants {
 		sb.append(STR_SPACE);
 		sb.append(TEST);
 		System.out.println("UnitTest Command " + sb.toString());
-		boolean status = Utility.executeStreamconsumer(sb.toString(), workingDir);
+		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir, baseDir, UNIT);
 		if(!status) {
 			try {
 				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);

@@ -25,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 
+import com.photon.phresco.commons.FrameworkConstants;
 import com.photon.phresco.commons.model.BuildInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
@@ -106,7 +107,7 @@ public class Deploy implements PluginConstants {
 			
 			System.out.println("Command " + sb.toString());
 			
-			boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath());
+			boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(), FrameworkConstants.DEPLOY);
 			if(!status) {
 				try {
 					throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
@@ -129,7 +130,7 @@ public class Deploy implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append("--args -AppCommandLineArg");
 			System.out.println("command : " + sb.toString());
-			Utility.executeStreamconsumer(sb.toString(), appPath);
+			Utility.executeStreamconsumer(sb.toString(), appPath, baseDir, FrameworkConstants.DEPLOY);
 		} catch (MojoExecutionException e) {
 			throw new PhrescoException(e);
 		}

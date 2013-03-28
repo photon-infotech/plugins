@@ -365,7 +365,7 @@ public class Package implements PluginConstants {
 		sb.append(MVN_PHASE_PACKAGE);
 		sb.append(STR_SPACE);
 		sb.append(builder.toString());
-		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath());
+		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(),"package");
 		if(!status) {
 			throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
 		}
