@@ -117,7 +117,7 @@ public class Package implements PluginConstants {
 			}
 			
 			System.out.println("Command" + sb.toString());
-			boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath());
+			boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(), CODE_VALIDATE);
 			if(!status) {
 				try {
 					throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);

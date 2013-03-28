@@ -104,7 +104,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 	    if (StringUtils.isNotEmpty(projectModule)) {
 	        workingDirectory = File.separator + projectModule + File.separator + workingDirectory;
 	    }
-	    generateMavenCommand(mavenProjectInfo, baseDir.getPath() + workingDirectory);
+	    generateMavenCommand(mavenProjectInfo, baseDir.getPath() + workingDirectory, UNIT);
 	    
 	    return new DefaultExecutionStatus();
 	}
@@ -138,7 +138,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			File resultConfigXml = new File(basedir + resultConfigFileDir);
 			adaptTestConfig(resultConfigXml, environmentName, browserValue, resolutionValue, basedir);
 		}
-		generateMavenCommand(mavenProjectInfo, basedir + functionalTestDir);
+		generateMavenCommand(mavenProjectInfo, basedir + functionalTestDir, FUNCTIONAL);
 		
 		return new DefaultExecutionStatus();
 	}
@@ -208,7 +208,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 					pluginUtils.adaptPerformanceJmx(testConfigFilePath, contextUrls, Integer.parseInt(noOfUsers), Integer.parseInt(rampUpPeriod), Integer.parseInt(loopCount));
 				}
 			}
-			generateMavenCommand(mavenProjectInfo, basedir + performanceTestDir);
+			generateMavenCommand(mavenProjectInfo, basedir + performanceTestDir, PERFORMACE);
 
 		} catch (IOException e) {
 			throw new PhrescoException(e);
@@ -254,7 +254,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 				pluginUtils.adaptTestConfig(testConfigFilePath + File.separator , config);
 				pluginUtils.adaptLoadJmx(testConfigFilePath + File.separator, Integer.parseInt(noOfUsers), Integer.parseInt(rampUpPeriod), Integer.parseInt(loopCount), headersMap);
 			}
-			generateMavenCommand(mavenProjectInfo, basedir + File.separator + loadTestDir);
+			generateMavenCommand(mavenProjectInfo, basedir + File.separator + loadTestDir, LOAD);
 
 		} catch (ConfigurationException e) {
 			throw new PhrescoException(e);
@@ -296,7 +296,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			append(STR_SPACE).
 			append("-Dsonar.branch=functional");
 		}
-		boolean status = Utility.executeStreamconsumer(sb.toString(), workingDir);
+		boolean status = Utility.executeStreamconsumer(sb.toString(), workingDir, project.getBasedir().getPath(), CODE_VALIDATE);
 		if(!status) {
 			try {
 				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
@@ -308,10 +308,10 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 	}
 
 	
-	private void generateMavenCommand(MavenProjectInfo mavenProjectInfo, String workingDirectory) throws PhrescoException {
+	private void generateMavenCommand(MavenProjectInfo mavenProjectInfo, String workingDirectory, String actionType) throws PhrescoException {
 		StringBuilder sb = new StringBuilder();
 		sb.append(TEST_COMMAND);
-		boolean status = Utility.executeStreamconsumer(sb.toString(), workingDirectory);
+		boolean status = Utility.executeStreamconsumer(sb.toString(), workingDirectory, mavenProjectInfo.getBaseDir().getPath(), actionType);
 		if(!status) {
 			try {
 				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);

@@ -27,7 +27,7 @@ public class FunctionalTest implements PluginConstants {
 			builder.append(CALABASH_IOS_COMMAND)
 			.append(STR_SPACE)
 			.append("-f junit -o test-reports -f html -o test-reports/calabash.html");
-			Utility.executeStreamconsumer(builder.toString(), baseDir + File.separator + workingDir);
+			Utility.executeStreamconsumer(builder.toString(), baseDir + File.separator + workingDir, baseDir, FUNCTIONAL);
 			return;
 		}
 		Map<String, String> configs = MojoUtil.getAllValues(config);
@@ -50,7 +50,7 @@ public class FunctionalTest implements PluginConstants {
 		}
 		
 		System.out.println("Functional test Command " + sb.toString());
-		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir);
+		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir, baseDir, FUNCTIONAL);
 		if(!status) {
 			throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
 		}

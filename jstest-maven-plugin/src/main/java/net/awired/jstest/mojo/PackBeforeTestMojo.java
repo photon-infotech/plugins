@@ -19,12 +19,11 @@ import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 
 /**
- * @component
- * @goal test
- * @phase test
- * @execute lifecycle="jstest-lifecycle" phase="process-test-resources""
+ * @goal pack-before-test
+ * @phase integration-test
+ * @execute lifecycle="jstest-lifecycle" phase="integration-test"
  */
-public class TestMojo extends AbstractJsTestMojo {
+public class PackBeforeTestMojo extends AbstractJsTestMojo {
 
     private static final String ERROR_MSG = "There are test failures.\n\nPlease refer to %s for the individual test results.";
 
@@ -61,6 +60,7 @@ public class TestMojo extends AbstractJsTestMojo {
 
             // let browsers detect that server is back
             Thread.sleep(7000);
+
             if (!resultHandler.waitAllResult(10000, 1000)) {
                 throw new MojoFailureException("Do not receive all test results from clients");
             }
