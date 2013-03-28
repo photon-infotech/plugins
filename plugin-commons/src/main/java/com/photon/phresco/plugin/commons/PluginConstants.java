@@ -116,6 +116,7 @@ public interface PluginConstants {
 	 String TYPE_TOMCAT					= "Apache Tomcat";
 	 String TYPE_JBOSS					= "JBoss";
 	 String TYPE_WEBLOGIC 				= "WebLogic";
+	 String TYPE_JETTY					= "Jetty";
 	 String PROP_SERVER_PORT			= "server.port";
 	 String PROP_SERVER_SHUTDOWN_PORT	= "server.shutdown.port";
 	 String JAVA_LOG_FILE				= "/javaLog.log";
