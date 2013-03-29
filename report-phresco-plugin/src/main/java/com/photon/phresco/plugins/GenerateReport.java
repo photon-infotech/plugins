@@ -174,7 +174,7 @@ public class GenerateReport implements PluginConstants {
     String REPORTS_JASPER  = "";
     
     // custom theme color
-    private static String titleColor = "#DE522F"; // TitleRectLogo
+    private static String titleColor = "#969696"; // TitleRectLogo
     private static String titleLabelColor = "#333333"; // TitleRectDetail
 	
     private static String headingForeColor = "#D0B48E"; // heading yellow color
