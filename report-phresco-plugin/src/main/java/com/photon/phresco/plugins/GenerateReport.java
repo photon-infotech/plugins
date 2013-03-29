@@ -72,8 +72,6 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.apache.pdfbox.util.PDFMergerUtility;
-import org.htmlcleaner.CleanerProperties;
-import org.htmlcleaner.HtmlCleaner;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -175,8 +173,8 @@ public class GenerateReport implements PluginConstants {
     
     String REPORTS_JASPER  = "";
     
-	// custom theme color
-    private static String titleColor = "#DE522F"; // TitleRectLogo
+    // custom theme color
+    private static String titleColor = "#969696"; // TitleRectLogo
     private static String titleLabelColor = "#333333"; // TitleRectDetail
 	
     private static String headingForeColor = "#D0B48E"; // heading yellow color
