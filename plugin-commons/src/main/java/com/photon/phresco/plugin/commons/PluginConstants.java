@@ -243,9 +243,8 @@ public interface PluginConstants {
 	 String WP_GET_APPX_PACKAGE 		= "Get-AppxPackage ";
 	 String WP_REMOVE_APPX_PACKAGE 		= "Remove-AppxPackage ";
 //	 String WP8_PLATFORM 				= "wp8";
-	 
-	
-	// Variable related to Windows Store (Metro) unit test root folder
+
+	 // Variable related to Windows Store (Metro) unit test root folder
 	 String WINSTORE_UNIT_TEST_PROJECT_ROOT 	= "Metro.UnitTests";
 	 
 	// Variable related to Windows Phone unit test root folder
@@ -255,13 +254,38 @@ public interface PluginConstants {
 	 String WINDOWS_UNIT_TEST_VSTEST_CONSOLE = "vstest.console";
 	 String WINDOWS_UNIT_TEST_INISOLATION 	 = "/InIsolation";
 	 String WINDOWS_UNIT_TEST_LOGGER 		 = "/Logger:trx";
-	 
+			 
 	 // Variables related to Windows Phone build process
 	 String WP7_BIN_FOLDER				= "\\bin";
 	 String WP7_RELEASE_FOLDER			= "\\release";
 	 String WP_BIN_DIR    				= "Bin/x86";
 	 String BIN 						= "Bin";
 	 String OBJ							= "obj";
+	 
+	 // Variables related to Windows Parsing TRX file process
+	 
+	 String TEST_RESULTS 		= "TestResults";
+	 String APPX_EXTENSION 		= ".appx";
+	 String XAP_EXTENSION 		= ".xap";
+	 String TRX_EXTENSION		= ".trx";
+	 String TOTAL				= "total";
+	 String PASSED				= "passed";
+	 String FAILED				= "failed";
+	 String SKIPPED				= "aborted";
+	 String ERROR				="error";
+	 String TEST_SUITE			= "testsuite";
+	 String TEST_METHOD			= "TestMethod";
+	 String TEST_CASE			= "testcase";
+	 String CLASS_NAME			= "className";
+	 String NAME				= "name";
+	 String TEST_ID				= "testId";
+	 String DURATION			= "duration";
+	 String OUTCOME				= "outcome";
+	 String ERROR_MESSAGE		= "errorMessage";
+	 String SKIPED				= "skipped";
+	 String REPORT				= "report";
+	 String UNIT_TEST_REPORT	= "UnitTest.xml";
+	 
 	 // Variables related to Windows Phone 7 deploy process
 	 // wptools.exe -target:emulator -xap:WindowsPhoneApplication1.xap -install
 	 String WP7_WPTOOLS_PATH			= "wptools.exe ";
@@ -274,7 +298,7 @@ public interface PluginConstants {
 	 String WP8_XAPCMD_PATH				= "XapDeployCmd.exe ";
 	 String WP8_XAPCMD_INSTALL			= "/installlaunch ";
 	 String WP8_XAPCMD_TARGET			= "/targetdevice";
-	 
+ 
 	 // Ci Pre-Build Constants
 	 String PER_TEST_SERVER				= "server";
 	 String PER_TEST_DATABASE			= "database";

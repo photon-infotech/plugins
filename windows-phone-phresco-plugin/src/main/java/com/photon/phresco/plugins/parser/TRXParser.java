@@ -25,8 +25,9 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.plugin.commons.PluginConstants;
 
-public class TRXParser {
+public class TRXParser implements PluginConstants {
 
 	/**
 	 * @param args
@@ -56,22 +57,22 @@ public class TRXParser {
 			String expression = "//TestDefinitions/*";
 			NodeList nodes = getNodeList(doc, expression);
 			
-			org.jdom.Element testsuite = new org.jdom.Element("testsuite");
+			org.jdom.Element testsuite = new org.jdom.Element(TEST_SUITE);
 			org.jdom.Document doc1 = new org.jdom.Document(testsuite);
 			doc1.setRootElement(testsuite);
 
 			for (int i = 0; i < nodes.getLength(); i++) {
 				Node item = nodes.item(i);
 				Element unitTests = (Element) item;
-				String id = unitTests.getAttribute("id");
+				String id = unitTests.getAttribute(ATTR_ID);
 				duration = getDuration(doc, id);
 				NodeList childNodes = item.getChildNodes();
 				for (int j = 0; j < childNodes.getLength(); j++) {
 					Node testMethod = childNodes.item(j);
-					if (testMethod.getNodeName().equalsIgnoreCase("TestMethod")) {
+					if (testMethod.getNodeName().equalsIgnoreCase(TEST_METHOD)) {
 						Element tests = (Element) testMethod;
-						className = tests.getAttribute("className");
-						name = tests.getAttribute("name");
+						className = tests.getAttribute(CLASS_NAME);
+						name = tests.getAttribute(NAME);
 					}
 				}
 				writeTestCase(doc1, duration, className, name);
@@ -99,17 +100,17 @@ public class TRXParser {
 			Node item = nodeList.item(i);
 			Element testSummary = (Element) item;
 			
-			String total = testSummary.getAttribute("total");
-			String passed = testSummary.getAttribute("passed");
-			String failed = testSummary.getAttribute("failed");
-			String skipped = testSummary.getAttribute("aborted");
-			String errors = testSummary.getAttribute("error");
+			String total = testSummary.getAttribute(TOTAL);
+			String passed = testSummary.getAttribute(PASSED);
+			String failed = testSummary.getAttribute(FAILED);
+			String skipped = testSummary.getAttribute(SKIPPED);
+			String errors = testSummary.getAttribute(ERROR);
 			
-			testSuiteMap.put("failures", failed);
-			testSuiteMap.put("errors", errors);
-			testSuiteMap.put("skipped", skipped);
-			testSuiteMap.put("tests", total);
-			testSuiteMap.put("passed", passed);
+			testSuiteMap.put(ATTR_FAILURES, failed);
+			testSuiteMap.put(ATTR_ERRORS, errors);
+			testSuiteMap.put(SKIPED, skipped);
+			testSuiteMap.put(ATTR_TESTS, total);
+			testSuiteMap.put(PASSED, passed);
 		}
 	}
 
@@ -121,20 +122,20 @@ public class TRXParser {
 		for (int i = 0; i < nodeList.getLength(); i++) {
 			Node item = nodeList.item(i);
 			Element unitTestResult = (Element) item;
-			String testId = unitTestResult.getAttribute("testId");
+			String testId = unitTestResult.getAttribute(TEST_ID);
 			if (testId.equals(id)) {
-				duration = unitTestResult.getAttribute("duration");
-				outcome = unitTestResult.getAttribute("outcome");
+				duration = unitTestResult.getAttribute(DURATION);
+				outcome = unitTestResult.getAttribute(OUTCOME);
 				StringBuffer errorMessage = new StringBuffer();
-				if (outcome.equalsIgnoreCase("Failed")) {
+				if (outcome.equalsIgnoreCase(FAILED)) {
 					String expr = "//UnitTestResult[@testId='"+testId+"']//Output//ErrorInfo//*/text()";
 					NodeList errorNode = getNodeList(doc, expr);
 					for (int j = 0; j < errorNode.getLength(); j++) {
 						errorMessage.append(errorNode.item(j).getNodeValue());
 					}
 				}
-				testSuiteMap.put("errorMessage", errorMessage.toString());
-				testSuiteMap.put("outcome", outcome);
+				testSuiteMap.put(ERROR_MESSAGE, errorMessage.toString());
+				testSuiteMap.put(OUTCOME, outcome);
 			}
 		}
 		return duration;
@@ -150,30 +151,30 @@ public class TRXParser {
 
 
 	private static void writeTestCase(org.jdom.Document doc, String duration, String className, String name) throws IOException {
-		String failures = testSuiteMap.get("failures");
-		String errors = testSuiteMap.get("errors");
-		String skipped = testSuiteMap.get("skipped");
-		String tests = testSuiteMap.get("tests");
-		String passed = testSuiteMap.get("passed");
+		String failures = testSuiteMap.get(ATTR_FAILURES);
+		String errors = testSuiteMap.get(ATTR_ERRORS);
+		String skipped = testSuiteMap.get(SKIPED);
+		String tests = testSuiteMap.get(ATTR_TESTS);
+		String passed = testSuiteMap.get(PASSED);
 		String testSuiteName = className.substring(0, className.lastIndexOf("."));
-		String errorMessage = testSuiteMap.get("errorMessage");
-		String outcome = testSuiteMap.get("outcome");
+		String errorMessage = testSuiteMap.get(ERROR_MESSAGE);
+		String outcome = testSuiteMap.get(OUTCOME);
 		
 		
-		doc.getRootElement().setAttribute("name", testSuiteName);
-		doc.getRootElement().setAttribute("failure", failures);
-		doc.getRootElement().setAttribute("errors", errors);
-		doc.getRootElement().setAttribute("skipped", skipped);
-		doc.getRootElement().setAttribute("tests", tests);
-		doc.getRootElement().setAttribute("passed", passed);
+		doc.getRootElement().setAttribute(NAME, testSuiteName);
+		doc.getRootElement().setAttribute(ELEMENT_FAILURE, failures);
+		doc.getRootElement().setAttribute(ATTR_ERRORS, errors);
+		doc.getRootElement().setAttribute(SKIPED, skipped);
+		doc.getRootElement().setAttribute(ATTR_TESTS, tests);
+		doc.getRootElement().setAttribute(PASSED, passed);
 
-		org.jdom.Element testcase = new org.jdom.Element("testcase");
-		testcase.setAttribute("time", duration);
-		testcase.setAttribute("classname", className);
-		testcase.setAttribute("name", name);
+		org.jdom.Element testcase = new org.jdom.Element(TEST_CASE);
+		testcase.setAttribute(ATTR_TIME, duration);
+		testcase.setAttribute(ATTR_CLASSNAME, className);
+		testcase.setAttribute(NAME, name);
 		
-		if (outcome.equalsIgnoreCase("Failed")) {
-			org.jdom.Element failure = new org.jdom.Element("failure");
+		if (outcome.equalsIgnoreCase(FAILED)) {
+			org.jdom.Element failure = new org.jdom.Element(ELEMENT_FAILURE);
 			failure.addContent(errorMessage);
 			testcase.addContent(failure);
 		}
@@ -182,11 +183,10 @@ public class TRXParser {
 
 		XMLOutputter output = new XMLOutputter();
 		output.setFormat(Format.getPrettyFormat());
-		File reportDir = new File(outputDir.getPath() + File.separator + "report" + File.separator +  "AllTest.xml");
+		File reportDir = new File(outputDir.getPath() + File.separator + REPORT + File.separator +  UNIT_TEST_REPORT);
 		String fullPathNoEndSeparator = FilenameUtils.getFullPathNoEndSeparator(reportDir .getAbsolutePath());
 		File fullPathNoEndSeparatorFile = new File(fullPathNoEndSeparator);
 		fullPathNoEndSeparatorFile.mkdirs();
-		
-		output.output(doc, new FileWriter(outputDir.getPath() + File.separator + "report" + File.separator +  "AllTest.xml"));
+		output.output(doc, new FileWriter(reportDir.getAbsolutePath()));
 	}
 }
