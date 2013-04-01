@@ -325,7 +325,7 @@ public class Package implements PluginConstants {
 				tempDir = new File(tempFilePath);
 			} else if(type.equalsIgnoreCase(WIN_PHONE)) {
 				String packageFolder = solutionFile[0].getName().substring(0, solutionFile[0].getName().length() - 4);
-				tempDir = new File(baseDir + sourceDirectory + File.separator + WP_SOURCE + File.separator + packageFolder + WP7_BIN_FOLDER + WP7_RELEASE_FOLDER);	
+				tempDir = new File(baseDir + sourceDirectory + File.separator + WP_SOURCE + File.separator + packageFolder + WP7_BIN_FOLDER + File.separator + config);	
 			}
 			File packageInfoFile = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + PHRESCO_PACKAGE_FILE);
 			// To Copy Contents From Package Info File
