@@ -261,6 +261,31 @@ public interface PluginConstants {
 	 String WP_BIN_DIR    				= "Bin/x86";
 	 String BIN 						= "Bin";
 	 String OBJ							= "obj";
+	 
+	 // Variables related to Windows Parsing TRX file process
+	 
+	 String TEST_RESULTS 		= "TestResults";
+	 String APPX_EXTENSION 		= ".appx";
+	 String XAP_EXTENSION 		= ".xap";
+	 String TRX_EXTENSION		= ".trx";
+	 String TOTAL				= "total";
+	 String PASSED				= "passed";
+	 String FAILED				= "failed";
+	 String SKIPPED				= "aborted";
+	 String ERROR				="error";
+	 String TEST_SUITE			= "testsuite";
+	 String TEST_METHOD			= "TestMethod";
+	 String TEST_CASE			= "testcase";
+	 String CLASS_NAME			= "className";
+	 String NAME				= "name";
+	 String TEST_ID				= "testId";
+	 String DURATION			= "duration";
+	 String OUTCOME				= "outcome";
+	 String ERROR_MESSAGE		= "errorMessage";
+	 String SKIPED				= "skipped";
+	 String REPORT				= "report";
+	 String UNIT_TEST_REPORT	= "UnitTest.xml";
+	 
 	 // Variables related to Windows Phone 7 deploy process
 	 // wptools.exe -target:emulator -xap:WindowsPhoneApplication1.xap -install
 	 String WP7_WPTOOLS_PATH			= "wptools.exe ";

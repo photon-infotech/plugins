@@ -101,6 +101,7 @@ public class Package implements PluginConstants {
 			}
 			boolean buildStatus = build();
 			writeBuildInfo(buildStatus);
+			deleteBinAndObjDir(new File(baseDir.getPath() + sourceDirectory));
 			cleanUp();
 		} catch (MojoExecutionException e) {
 			throw new PhrescoException(e);
@@ -339,6 +340,28 @@ public class Package implements PluginConstants {
 
 	private void writeBuildInfo(boolean isBuildSuccess) throws MojoExecutionException {
 		util.writeBuildInfo(isBuildSuccess, buildName, buildNumber, nextBuildNo, environmentName, buildNo, currentDate, buildInfoFile);
+	}
+	
+	private static void deleteBinAndObjDir(File path) throws MojoExecutionException {
+		try {
+			File[] listFiles = path.listFiles();
+			for (File file : listFiles) {
+				if(file.isDirectory()) {
+					deleteBinAndObjDir(file);
+					File bin = new File(file.getParent());
+					if (bin.getName().equalsIgnoreCase(BIN) || bin.getName().equalsIgnoreCase(OBJ)) {
+						FileUtils.deleteDirectory(bin); 
+					}
+				} else {
+					File bin = new File(file.getParent());
+					if (bin.getName().equalsIgnoreCase(BIN) || bin.getName().equalsIgnoreCase(OBJ)) {
+						FileUtils.deleteDirectory(bin); 
+					}
+				}
+			}
+		} catch (IOException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		}
 	}
 
 	private void cleanUp() throws MojoExecutionException {
