@@ -344,12 +344,13 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 		PluginUtils pu = new PluginUtils();
 		List<com.photon.phresco.configuration.Configuration> configurations = pu.getConfiguration(new File(baseDir), envName, Constants.SETTINGS_TEMPLATE_SERVER);
 		String techId = getTechId(new File(baseDir));
-		if(CollectionUtils.isEmpty(configurations) && !techId.equals(TechnologyTypes.JAVA_STANDALONE)) {
+		if(CollectionUtils.isNotEmpty(configurations)) {
+			for (com.photon.phresco.configuration.Configuration configuration : configurations) {
+				updateTestConfiguration(envName, configuration, browser, resultConfigXml, resolution);
+			}
+		} else if(CollectionUtils.isEmpty(configurations) && !techId.equals(TechnologyTypes.JAVA_STANDALONE)) {
 			throw new PhrescoException("Configuration Not found...");
-		}
-		for (com.photon.phresco.configuration.Configuration configuration : configurations) {
-			updateTestConfiguration(envName, configuration, browser, resultConfigXml, resolution);
-		}
+		} 
 	}
 	
 	private String getTechId(File baseDir) throws PhrescoException {
@@ -412,7 +413,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 	        configNode.appendChild(importNode);
 	        writeXml(new FileOutputStream(resultConfigXml), document);
         } catch (Exception e) {
-            throw new PhrescoException("Configuration not found to delete");
+            throw new PhrescoException("Configuration Not found...");
         }
     }
 	
