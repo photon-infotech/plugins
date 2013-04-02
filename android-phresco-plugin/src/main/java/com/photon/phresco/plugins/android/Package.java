@@ -63,6 +63,8 @@ public class Package implements PluginConstants {
 		String storepass = configs.get(STOREPASS);
 		String keypass = configs.get(KEYPASS);
 		String alias = configs.get(ALIAS);
+		String zipAlign = configs.get(ZIP_ALIGN);
+				
 		if (StringUtils.isEmpty(environmentName)) {
 			System.out.println("Environment Name is empty . ");
 			throw new PhrescoException("Environment Name is empty . ");
@@ -75,9 +77,16 @@ public class Package implements PluginConstants {
 		
 		PluginUtils.checkForConfigurations(new File(baseDir), environmentName);
 		
+		Boolean isZipAlign = Boolean.valueOf(zipAlign);
+		log.info("isZipAlign . " +isZipAlign);
 		Boolean isSigning = Boolean.valueOf(signing);
 		log.info("isSigning . " + isSigning);
-		if (isSigning) {
+		
+		if(isZipAlign) {						
+			isSigning = true;
+		}
+		
+		if (isSigning) {			
 			updateAllPOMWithProfile(keystore, storepass, keypass, alias);
 		}
 		
@@ -106,7 +115,12 @@ public class Package implements PluginConstants {
 			boolean proguradVal = Boolean.valueOf(proguard);
 			sb.append(HYPHEN_D + PROGUARD_SKIP + EQUAL + !proguradVal);
 		}
-		
+		//zip Align 
+		if(StringUtils.isNotEmpty(zipAlign)) {			
+			sb.append(STR_SPACE);
+			boolean zipAlignVal = Boolean.valueOf(zipAlign);
+			sb.append(HYPHEN_D + ZIP_ALIGN_SKIP + EQUAL + !zipAlignVal);
+		}
 		//signing
 		if (isSigning) {
 			sb.append(STR_SPACE);

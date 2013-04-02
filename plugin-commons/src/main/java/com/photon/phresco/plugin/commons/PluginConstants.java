@@ -384,6 +384,8 @@ public interface PluginConstants {
 	 String RUN							= "run"; 
 	 String ADB_SERIAL                  = "adbSerial";
 	 String CALABASH_ANDROID_COMMAND	= "calabash-android run";
+	 String ZIP_ALIGN  					= "zipAlign";
+	 String ZIP_ALIGN_SKIP				= "android.zipalign.skip";
 	 
 	 // Constants report plugin
 	 String ATTR_TIME 					= "time";
