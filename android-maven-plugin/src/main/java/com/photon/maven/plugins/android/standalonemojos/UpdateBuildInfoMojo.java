@@ -177,6 +177,7 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 				File packageInfoFile = new File(baseDir.getPath() + File.separator + ".phresco" + File.separator + PluginConstants.PHRESCO_PACKAGE_FILE);
 				ZipArchiver zipArchiver = new ZipArchiver();
 				File tmpFile = new File(buildDir, buildName);
+			
 				if(!tmpFile.exists()) {
 					tmpFile.mkdirs();
 				}
@@ -192,10 +193,12 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 				
 				deliverable = deliverableZip.getPath();
 				getLog().info("Deliverables available at " + deliverableZip.getName());
-				writeBuildInfo(true);
-				if(!tmpFile.exists()) {
+				if(tmpFile.exists()) {
+					
 					FileUtil.delete(tmpFile);
 				}
+				
+				writeBuildInfo(true);
 			} catch (IOException e) {
 				throw new MojoExecutionException("Error in writing output...");
 			} 
