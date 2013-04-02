@@ -126,21 +126,19 @@ public class Package implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(PSIGN);
 		}
-		
-		//skipTest impl
+				
 		List<Parameter> parameters = config.getParameters().getParameter();
 		for (Parameter parameter : parameters) {
-			if (SKIP_TEST.equals(parameter.getKey())) {
+			if(parameter.getPluginParameter() != null && parameter.getMavenCommands() != null) {
 				List<MavenCommand> mavenCommands = parameter.getMavenCommands().getMavenCommand();
 				for (MavenCommand mavenCommand : mavenCommands) {
-					if (mavenCommand.getKey().equals(skipTest)) {
+					if(parameter.getValue().equals(mavenCommand.getKey())) {						
 						sb.append(STR_SPACE);
 						sb.append(mavenCommand.getValue());
 					}
 				}
-			}
-		}
-		
+			}			
+		}		
 		log.info("Command " + sb.toString());
 		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir, baseDir, FrameworkConstants.PACKAGE);
 		if(!status) {

@@ -343,7 +343,7 @@ public class Package implements PluginConstants {
 	private void getMavenCommands(Configuration configuration) {
 		List<Parameter> parameters = configuration.getParameters().getParameter();
 		for (Parameter parameter : parameters) {
-			if(parameter.getPluginParameter() != null && parameter.getPluginParameter().equals(PLUGIN_PARAMETER)) {
+			if(parameter.getPluginParameter() != null && parameter.getMavenCommands() != null) {
 				List<MavenCommand> mavenCommands = parameter.getMavenCommands().getMavenCommand();
 				for (MavenCommand mavenCommand : mavenCommands) {
 					if(parameter.getValue().equals(mavenCommand.getKey())) {
