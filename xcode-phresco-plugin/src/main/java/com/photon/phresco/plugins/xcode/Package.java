@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
@@ -31,6 +32,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 
 import com.google.gson.Gson;
+import com.photon.phresco.commons.FrameworkConstants;
 import com.photon.phresco.commons.model.ApplicationInfo;
 import com.photon.phresco.commons.model.ProjectInfo;
 import com.photon.phresco.exception.PhrescoException;
@@ -43,6 +45,7 @@ import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands.MavenCommand;
 import com.photon.phresco.plugins.util.MojoProcessor;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.Constants;
@@ -133,8 +136,20 @@ public class Package implements PluginConstants {
 				sb.append(HYPHEN_D + BUILD_NUMBER + EQUAL + buildNumber);
 			}
 			
-			System.out.println("Command" + sb.toString());
-			boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(), CODE_VALIDATE);
+			List<Parameter> parameters = config.getParameters().getParameter();
+			for (Parameter parameter : parameters) {
+				if(parameter.getPluginParameter() != null && parameter.getMavenCommands() != null) {
+					List<MavenCommand> mavenCommands = parameter.getMavenCommands().getMavenCommand();
+					for (MavenCommand mavenCommand : mavenCommands) {
+						if(parameter.getValue().equals(mavenCommand.getKey())) {
+							sb.append(STR_SPACE);
+							sb.append(mavenCommand.getValue());
+						}
+					}
+				}
+			}			
+			
+			boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(), FrameworkConstants.DEPLOY);
 			if(!status) {
 				try {
 					throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
