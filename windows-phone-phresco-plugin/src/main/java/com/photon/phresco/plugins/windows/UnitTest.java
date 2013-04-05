@@ -206,7 +206,11 @@ public class UnitTest implements PluginConstants {
 				String packageVersion = packageInfo.getPackageVersion();
 				configurationInfo = new File(rootDir.getPath() + WP_APP_PACKAGE + File.separator + WINSTORE_UNIT_TEST_PROJECT_ROOT + STR_UNDERSCORE + packageVersion + STR_UNDERSCORE + (platform.equalsIgnoreCase("anycpu")?"AnyCPU":platform) + (config.equalsIgnoreCase("debug")? STR_UNDERSCORE + config : "") + WP_TEST);
 			} else if (type.equalsIgnoreCase(WIN_PHONE)) {
-				configurationInfo = new File(rootDir.getPath() + File.separator +  WP_BIN_DIR + File.separator + config);
+				if (platform.equalsIgnoreCase(WP_X86)) {
+					configurationInfo = new File(rootDir.getPath() + File.separator +  BIN + File.separator + platform + File.separator + config);
+				} else if (platform.equalsIgnoreCase(WP_ANY_CPU)) {
+					configurationInfo = new File(rootDir.getPath() + File.separator +  BIN + File.separator + config);
+				}
 			}
 			String zipName = util.createPackage(buildName, buildNumber, nextBuildNo, currentDate);
 			File destPath = new File(buildDir.getPath() +File.separator + zipName );
@@ -222,7 +226,7 @@ public class UnitTest implements PluginConstants {
 	private void deleteDir() throws IOException {
 		FileUtils.deleteDirectory(new File(rootDir.getPath() + File.separator + BIN));
 		FileUtils.deleteDirectory(new File(rootDir.getPath() + File.separator + OBJ));
-		File appDir = new File(rootDir.getPath() + File.separator + "AppPackages");
+		File appDir = new File(rootDir.getPath() + WP_APP_PACKAGE);
 		if (appDir.exists()) {
 			FileUtils.deleteDirectory(appDir);
 		}
@@ -281,6 +285,10 @@ public class UnitTest implements PluginConstants {
 			sb.append(WP_STR_PROPERTY);
 			sb.append(WP_STR_COLON);
 			sb.append(WP_STR_CONFIGURATION + "=" + config);
+			if (platform.equalsIgnoreCase("AnyCPU")) {
+				sb.append(WP_STR_SEMICOLON);
+				sb.append(WP_STR_PLATFORM + "=" + WP_STR_DOUBLEQUOTES + platform + WP_STR_DOUBLEQUOTES);
+			}
 			log.info("Command = "+ sb.toString());
 			Commandline cl = new Commandline(sb.toString());
 			cl.setWorkingDirectory(rootDir.getPath());

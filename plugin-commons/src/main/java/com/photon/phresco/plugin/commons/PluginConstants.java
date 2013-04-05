@@ -258,7 +258,8 @@ public interface PluginConstants {
 	 // Variables related to Windows Phone build process
 	 String WP7_BIN_FOLDER				= "\\bin";
 	 String WP7_RELEASE_FOLDER			= "\\release";
-	 String WP_BIN_DIR    				= "Bin/x86";
+	 String WP_X86    					= "X86";
+	 String WP_ANY_CPU    				= "AnyCPU";
 	 String BIN 						= "Bin";
 	 String OBJ							= "obj";
 	 
