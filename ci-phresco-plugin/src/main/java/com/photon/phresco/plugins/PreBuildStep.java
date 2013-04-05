@@ -170,12 +170,12 @@ public class PreBuildStep  implements PluginConstants {
 				.append(File.separator)
 				.append(Constants.FOLDER_JSON)
 				.append(File.separator)
-				.append("CITemp")
-				.append(File.separator)
+//				.append("CITemp")
+//				.append(File.separator)
 				.append(CI_INFO);
 								
 				File infoFile = new File(infoFilePath.toString());
-				if(infoFile.exists()) {						
+				if(infoFile.exists()) {	
 					reader = new BufferedReader(new FileReader(infoFilePath.toString()));
 					String lineToRead = null ;
 					while((lineToRead = reader.readLine()) != null) {
@@ -195,8 +195,8 @@ public class PreBuildStep  implements PluginConstants {
 							.append(File.separator)
 							.append(Constants.FOLDER_JSON)
 							.append(File.separator)
-							.append("CITemp")
-							.append(File.separator)
+//							.append("CITemp")
+//							.append(File.separator)
 							.append(jsonFile);		
 							
 							File source = new File(sb.toString());
