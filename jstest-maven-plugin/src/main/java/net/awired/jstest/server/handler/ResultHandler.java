@@ -126,7 +126,29 @@ public class ResultHandler {
 	    		report.reportRun(runResult);
 	            handled = true;
         	}
-        }
+        } else if (target.equals("/log")) {
+        	log.info("Inside the Log");
+        	FileWriter writer = null;
+        	BufferedWriter bufferedWriter = null;
+        	try {
+        		String stream = inputStream.toString();
+        		File outDir = new File(reportDir, runResult.userAgentToString() + '-' + runResult.getBrowserId() + File.separator + "console.log");
+        		writer = new FileWriter(outDir.getName(), Boolean.TRUE);
+        		bufferedWriter = new BufferedWriter(writer);
+        		bufferedWriter.write(stream);
+        		handled = true;
+        		log.info("end of  the Log");
+        	} catch (Exception e) {
+        		e.printStackTrace();
+        	} finally {
+        		if (writer != null) {
+        			writer.close();
+        		}
+        		if (bufferedWriter != null) {
+        			bufferedWriter.close();
+        		}
+        	}
+        } 
         
         if (handled) {
             response.setStatus(HttpServletResponse.SC_OK);
