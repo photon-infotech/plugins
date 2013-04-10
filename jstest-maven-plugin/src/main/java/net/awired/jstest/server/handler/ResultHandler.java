@@ -127,28 +127,24 @@ public class ResultHandler {
 	            handled = true;
         	}
         } else if (target.equals("/log")) {
-        	log.info("Inside the Log");
-        	FileWriter writer = null;
-        	BufferedWriter bufferedWriter = null;
+        	BufferedReader reader = null;
         	try {
-        		String stream = inputStream.toString();
-        		File outDir = new File(reportDir, runResult.userAgentToString() + '-' + runResult.getBrowserId() + File.separator + "console.log");
-        		writer = new FileWriter(outDir.getName(), Boolean.TRUE);
-        		bufferedWriter = new BufferedWriter(writer);
-        		bufferedWriter.write(stream);
+        		String line;
+        		StringBuilder sb = new StringBuilder();
+        		reader = new BufferedReader(new InputStreamReader(inputStream));
+        		while ((line = reader.readLine()) != null) {
+        			sb.append(line); 
+        		}
+        		log.info(sb);
         		handled = true;
-        		log.info("end of  the Log");
         	} catch (Exception e) {
         		e.printStackTrace();
         	} finally {
-        		if (writer != null) {
-        			writer.close();
-        		}
-        		if (bufferedWriter != null) {
-        			bufferedWriter.close();
+        		if (reader != null) {
+        			reader.close();
         		}
         	}
-        } 
+        }
         
         if (handled) {
             response.setStatus(HttpServletResponse.SC_OK);
