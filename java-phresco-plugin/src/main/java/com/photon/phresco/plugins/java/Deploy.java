@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
@@ -141,6 +142,9 @@ public class Deploy implements PluginConstants {
 			File pom = project.getFile();
 			PomProcessor pomprocessor = new PomProcessor(pom);
 			List<com.photon.phresco.configuration.Configuration> configurations = pUtil.getConfiguration(baseDir, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
+			if (CollectionUtils.isEmpty(configurations)) {
+				throw new MojoExecutionException("Configuration is not available ");
+			}
 			for (com.photon.phresco.configuration.Configuration configuration : configurations) {
 				context = configuration.getProperties().getProperty(Constants.SERVER_CONTEXT);
 				break;
