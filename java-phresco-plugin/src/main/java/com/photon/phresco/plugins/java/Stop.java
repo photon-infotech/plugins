@@ -46,10 +46,6 @@ public class Stop implements PluginConstants {
 		PluginUtils pluginutil = new PluginUtils();
 		pluginutil.stopServer(portNumber, baseDir);
 		log.info("Server stopped successfully");
-		if(runagsInfoFile.exists()) {
-            runagsInfoFile.delete();
-        }
-		
 	}
 
 	private String findPortNumber(File runagsInfoFile) throws PhrescoException {
