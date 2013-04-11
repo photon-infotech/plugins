@@ -43,9 +43,13 @@ public abstract class JsTestConfiguration extends AbstractMojo {
      */
     
     private File baseDir;
-      
+    
     /**
-
+     * @parameter default-value= ".xml,.json,.tmp" expression="${includes}"
+     */
+    private List<String> includes;
+    
+    /**
      * @parameter
      */
     private List<String> sourceIncludes = ResourceDirectory.DEFAULT_INCLUDES;
@@ -195,7 +199,15 @@ public abstract class JsTestConfiguration extends AbstractMojo {
      */
     private File instrumentedDirectory;
 
-    public File getBaseDir() {
+    public List<String> getIncludes() {
+		return includes;
+	}
+
+	public void setIncludes(List<String> fileIncludes) {
+		includes = fileIncludes;
+	}
+
+	public File getBaseDir() {
 		return baseDir;
 	}
 

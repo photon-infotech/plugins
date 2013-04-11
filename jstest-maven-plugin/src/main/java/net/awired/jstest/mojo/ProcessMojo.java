@@ -22,7 +22,7 @@ import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.webapp.WebAppContext;
 
 /**
- * @goal process-test-source
+ * @goal process-source
  * @execute lifecycle="jstest-lifecycle" phase="process-test-sources"
  * @requiresDirectInvocation true
  */
@@ -92,7 +92,7 @@ public class ProcessMojo extends AbstractJsTestMojo {
             jsTestServer.startServer(handlerCollect);
 
             getLog().info(String.format(INSTRUCTION_FORMAT, getDevPort(), getSourceDir(), getTestDir()));
-            jsTestServer.join();
+          //jsTestServer.join();
         } catch (Exception e) {
             throw new RuntimeException("Cannot start Jstest server", e);
         } finally {
