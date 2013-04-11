@@ -98,6 +98,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.tool.xml.Pipeline;
 import com.itextpdf.tool.xml.XMLWorker;
@@ -127,6 +128,9 @@ import com.phresco.pom.model.Profile;
 import com.phresco.pom.util.PomProcessor;
 
 public class GenerateReport implements PluginConstants {
+	private static final String MULTI_MODULE_UNIT_TEST_REPORTS = "multiModuleUnitTestReports";
+	private static final String IS_MULTI_MODULE_PROJECT = "isMultiModuleProject";
+	private static final String CODE_VALIDATION_REPORT = "Code Validation Report : ";
 	private static final String SCRIPT = "script";
 	private static final String IS_CLASS_EMPTY = "isClassEmpty";
 	private static final String MODULE_NAME = "Module Name";
@@ -205,6 +209,11 @@ public class GenerateReport implements PluginConstants {
 			PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(tempOutFileNameIphoneSonarPDF));
 			
 			document.open();
+			Paragraph paragraph = new Paragraph();
+			String reportnameName = targetHtmlIndexFile.getParentFile().getName();
+		    paragraph.add(CODE_VALIDATION_REPORT + reportnameName);
+		   	document.add(paragraph);
+		   	
 			HtmlPipelineContext htmlContext = new HtmlPipelineContext();
 			htmlContext.setTagFactory(Tags.getHtmlTagProcessorFactory());
 			
@@ -221,15 +230,15 @@ public class GenerateReport implements PluginConstants {
 			cssResolver.addCss("th {font-weight: bold;font-size: 6pt;}", true);
 			cssResolver.addCss("td {font-weight: bold;font-size: 6pt;}", true);
 			cssResolver.addCss("table {border:1;}", true);
-			cssResolver.addCss("h1 {font-size: 12pt;margin: 1em 0em;" + "color:" + titleColor + "}", true);
-			cssResolver.addCss("h2 {font-size: 10pt;margin: 1em 0em;" + "color:" + titleColor + "}", true);
+			cssResolver.addCss("h2,h1 {font-size: 10pt;margin: 0.5em 0em;" + "color:" + titleColor + "}", true);
 			cssResolver.addCss("a {text-decoration: underline;color:blue}", true);
+			
 			Pipeline<?> pipeline = new CssResolverPipeline(cssResolver, new HtmlPipeline(htmlContext,
 					new PdfWriterPipeline(document, writer)));
 			XMLWorker worker = new XMLWorker(pipeline, true);
 			XMLParser p = new XMLParser(worker);
 			File input = new File(tempOutFileNameHTML);
-			p.parse(new InputStreamReader(new FileInputStream(input), "UTF-8"));
+			p.parse(new InputStreamReader(new FileInputStream(input), UTF_8));
 			document.close();
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
@@ -307,7 +316,7 @@ public class GenerateReport implements PluginConstants {
 		try {
 			Map<String, Object> cumulativeReportparams = new HashMap<String,Object>();
 			cumulativeReportparams.put(COPY_RIGHTS, copyRights);
-			//unit and functional details
+//			unit and functional details
 			testType = UNIT;
 			
 			boolean isMultiModuleProject = false;
@@ -333,24 +342,49 @@ public class GenerateReport implements PluginConstants {
 						moduleWiseReports.add(msr);
 					}
 				}
-				
-				cumulativeReportparams.put("isMultiModuleProject", true);
-				cumulativeReportparams.put("multiModuleUnitTestReports", moduleWiseReports);
+				cumulativeReportparams.put(IS_MULTI_MODULE_PROJECT, true);
+				cumulativeReportparams.put(MULTI_MODULE_UNIT_TEST_REPORTS, moduleWiseReports);
 			} else {
 				SureFireReport unitTestSureFireReports = null;
 				unitTestSureFireReports = sureFireReports(null);
-				cumulativeReportparams.put("isMultiModuleProject", false);
-				cumulativeReportparams.put(UNIT_TEST_REPORTS, Arrays.asList(unitTestSureFireReports));
+				
+				List<TestSuite> testSuitesUnit = unitTestSureFireReports.getTestSuites();
+				List<AllTestSuite> allTestSuitesUnit = unitTestSureFireReports.getAllTestSuites();
+				
+				cumulativeReportparams.put(IS_MULTI_MODULE_PROJECT, false);
+				if (CollectionUtils.isNotEmpty(allTestSuitesUnit) || CollectionUtils.isNotEmpty(testSuitesUnit)) {
+					cumulativeReportparams.put(UNIT_TEST_REPORTS, Arrays.asList(unitTestSureFireReports));
+				}
 			}
 			
-//			testType = MANUAL;
-//			SureFireReport manualSureFireReports = null;
-//			manualSureFireReports = sureFireReports(null);
-			
+			//testType = MANUAL;
+			//SureFireReport manualSureFireReports = null;
+			//manualSureFireReports = sureFireReports(null);
+			//List<AllTestSuite> allTestSuitesManual = manualSureFireReports.getAllTestSuites();
+			//List<TestSuite> testSuitesfuncManual = manualSureFireReports.getTestSuites();
+			//if (CollectionUtils.isNotEmpty(testSuitesfuncManual) || CollectionUtils.isNotEmpty(allTestSuitesManual)) {
+//				cumulativeReportparams.put(MANUAL_SURE_FIRE_REPORTS, Arrays.asList(manualSureFireReports));
+			//}
 			
 			testType = FUNCTIONAL;
+			boolean isClassEmpty = true;
+			List<TestSuite> testSuitesFunctional = null;
 			SureFireReport functionalSureFireReports = null;
 			functionalSureFireReports = sureFireReports(null);
+			List<AllTestSuite> allTestSuitesFunctional = functionalSureFireReports.getAllTestSuites();
+			testSuitesFunctional = functionalSureFireReports.getTestSuites();
+			if (CollectionUtils.isNotEmpty(testSuitesFunctional) || CollectionUtils.isNotEmpty(allTestSuitesFunctional)) {
+				for (TestSuite testSuite : testSuitesFunctional) {
+					List<TestCase> testcases = testSuite.getTestCases();
+					for (TestCase testCase : testcases) {
+						if (StringUtils.isNotEmpty(testCase.getTestClass())) {
+							isClassEmpty = false;
+						}
+					}
+				}
+				cumulativeReportparams.put(FUNCTIONAL_TEST_REPORTS, Arrays.asList(functionalSureFireReports));
+			}
+			
 			
 			testType = "";
 			//performance details
@@ -365,17 +399,17 @@ public class GenerateReport implements PluginConstants {
 				jmeterTestResults = getJmeterTestResults();
 			}
 			
-			//load test details
+//			//load test details
 			List<LoadTestReport> loadTestResults = getLoadTestResults();
-			
+//			
 			cumulativeReportparams.put(PDF_PROJECT_CODE, projectCode);
 			cumulativeReportparams.put(PROJECT_NAME, projName);
 			cumulativeReportparams.put(TECH_NAME, techName);
 			cumulativeReportparams.put(VERSION, version);
 			cumulativeReportparams.put(LOGO, logo);
-			
+//			
 			cumulativeReportparams.put(REPORTS_TYPE, reportType);
-			cumulativeReportparams.put(FUNCTIONAL_TEST_REPORTS, Arrays.asList(functionalSureFireReports));
+			cumulativeReportparams.put(IS_CLASS_EMPTY, isClassEmpty);
 			
 			if(deviceReportAvail) {
 				cumulativeReportparams.put(PERFORMANCE_SPECIAL_HANDLE, true);
@@ -385,7 +419,6 @@ public class GenerateReport implements PluginConstants {
 				cumulativeReportparams.put(PERFORMANCE_TEST_REPORTS, jmeterTestResults);
 			}
 			cumulativeReportparams.put(LOAD_TEST_REPORTS, loadTestResults);
-//			cumulativeReportparams.put(MANUAL_SURE_FIRE_REPORTS, Arrays.asList(manualSureFireReports));
 			
 			if (!isClangReport) {
 				//Sonar details
@@ -417,19 +450,6 @@ public class GenerateReport implements PluginConstants {
 					cumulativeReportparams.put(SONAR_REPORT, sonarReports);
 				}
 			}
-			
-			// check class attribute is there or not in xml
-			List<TestSuite> testSuites = functionalSureFireReports.getTestSuites();
-			boolean isClassEmpty = true;
-			for (TestSuite testSuite : testSuites) {
-				List<TestCase> testcases = testSuite.getTestCases();
-				for (TestCase testCase : testcases) {
-					if (StringUtils.isNotEmpty(testCase.getTestClass())) {
-						isClassEmpty = false;
-					}
-				}
-			}
-			cumulativeReportparams.put(IS_CLASS_EMPTY, isClassEmpty);
 			generateCumulativeTestReport(cumulativeReportparams);
 		} catch (Exception e) {
 			log.error("Report generation errorr ");
@@ -478,16 +498,15 @@ public class GenerateReport implements PluginConstants {
 					String codeValidationPdfs = Utility.getPhrescoTemp() + uuid;
 					File codeValidationsPdfDir = new File(codeValidationPdfs);
 					if (codeValidationsPdfDir.exists()) {
-					    String[] extensions = new String[] { PDF };
+						String[] extensions = new String[] { PDF };
 					    List<File> codeReportPdfs = (List<File>) FileUtils.listFiles(codeValidationsPdfDir, extensions, false);
-					    
 					    if (codeReportPdfs != null && codeReportPdfs.size() == 0) {
 					    	FileUtils.copyFile(new File(outFileNamePDF), new File(outFinalFileNamePDF));
 					    } else {
 					        for (File codeReportPdf : codeReportPdfs) {
 					            pdfs.add(codeReportPdf.getAbsolutePath());
 							}
-					        mergePdf(pdfs, outFinalFileNamePDF);
+					        mergePdf(pdfs, outFinalFileNamePDF, uuid);
 					    }
 					}
 				} catch (Exception e) {
@@ -558,7 +577,7 @@ public class GenerateReport implements PluginConstants {
 	}
 
 	// merge pdfs
-	public void mergePdf(List<String> PDFFiles,  String outputPDFFile) throws PhrescoException {
+	public void mergePdf(List<String> PDFFiles,  String outputPDFFile, String uuid) throws PhrescoException {
 		try {
 			  // Get the byte streams from any source (maintain order)
 			  List<InputStream> sourcePDFs = new ArrayList<InputStream>();
@@ -1103,7 +1122,7 @@ public class GenerateReport implements PluginConstants {
 				reportFilePath = reportFilePath + File.separatorChar + module;
 			}
 			getUnitTestXmlFilesAndXpaths(reportFilePath, reportDirWithTestSuitePath);
-		} else if (MANUAL.equals(testType)){
+		} else if (MANUAL.equals(testType)) {
 			String reportFilePath = baseDir.getAbsolutePath();
 			String manualTestDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_MANUAL_RPT_DIR);
 			String reportPath = "";
@@ -1137,14 +1156,16 @@ public class GenerateReport implements PluginConstants {
 		SureFireReport sureFireReport = new SureFireReport();
 		ArrayList<TestSuite> testSuiteWithTestCase = null;
 		ArrayList<AllTestSuite> allTestSuiteDetails = null;
-		// detailed information object
-		testSuiteWithTestCase = new ArrayList<TestSuite>();
-		// crisp information of the test
-		allTestSuiteDetails = new ArrayList<AllTestSuite>();
+
 
 		// Iterate over each file
 		// testsuite path and testcase path - kalees
 		for (Map.Entry entry : reportDirWithTestSuitePath.entrySet()) {
+			// detailed information object
+			testSuiteWithTestCase = new ArrayList<TestSuite>();
+			// crisp information of the test
+			allTestSuiteDetails = new ArrayList<AllTestSuite>();
+			
 			String mapKey = (String) entry.getKey();
 			String mapValue = (String) entry.getValue();
 //			log.info("key .. " + entry.getKey());
@@ -1916,7 +1937,7 @@ public class GenerateReport implements PluginConstants {
 					performanceTestResult.getMinTs());
 			double throughPut = calThroughPut * 1000;
 
-			performanceTestResult.setThroughtPut(throughPut);
+			performanceTestResult.setThroughPut(throughPut);
 
 			results.put(label, performanceTestResult);
 		}
@@ -2000,7 +2021,7 @@ public class GenerateReport implements PluginConstants {
 			double avgBytes = (double) performanceTestResult.getTotalBytes() / performanceTestResult.getNoOfSamples();
 			performanceTestResult.setAvgBytes(Math.round(avgBytes));
 			// KB/Sec calculation
-			Double calKbPerSec = new Double(performanceTestResult.getThroughtPut());
+			Double calKbPerSec = new Double(performanceTestResult.getThroughPut());
 			calKbPerSec = calKbPerSec * (((double) avgBytes) / 1024)   ;
 			performanceTestResult.setKbPerSec(calKbPerSec);
 
