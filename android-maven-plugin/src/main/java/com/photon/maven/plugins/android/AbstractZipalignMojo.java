@@ -187,18 +187,7 @@ public abstract class AbstractZipalignMojo extends AbstractAndroidMojo {
 					getLog().info(
 							"Attach " + aligned.getAbsolutePath()
 									+ " to the project");
-					try {
-						 
-						if(aligned.exists()){
-							   FileUtils.copyFileToDirectory(aligned, buildDir);
-							}else{
-								System.out.println(" -:Source or destnation File does not exists :-");
-							}
-							
-					} catch (IOException e) {
-						
-						e.printStackTrace();
-					}
+					
 				} else {
 					getLog().error(
 							"Cannot attach " + aligned.getAbsolutePath()
@@ -320,7 +309,7 @@ public abstract class AbstractZipalignMojo extends AbstractAndroidMojo {
 		
 		if (alignedApkFile == null)
 			alignedApkFile = new File(project.getBuild().getDirectory(),
-					project.getBuild().getFinalName() +"_"+ getTimeStampForBuildName(currentDate)+ "-aligned." + APK);
+					project.getBuild().getFinalName() + "-aligned." + APK);
 		
 		   
 			
