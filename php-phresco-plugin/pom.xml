@@ -5,13 +5,13 @@
 	<parent>
 		<artifactId>phresco-plugins-root</artifactId>
 		<groupId>com.photon.phresco.plugins</groupId>
-		<version>2.2.0.4002-SNAPSHOT</version>
+		<version>2.2.0.4003-SNAPSHOT</version>
 		<relativePath>../</relativePath>
   </parent>
   
   <groupId>com.photon.phresco.plugins</groupId>
   <artifactId>php-phresco-plugin</artifactId>
-  <version>2.2.0.4002-SNAPSHOT</version>
+  <version>2.2.0.4003-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>php-phresco-plugin</name>
