@@ -17,7 +17,6 @@
  */
 package com.photon.phresco.plugins.nodejs;
 
-import java.io.File;
 import java.io.IOException;
 
 import org.apache.maven.plugin.MojoExecutionException;
@@ -27,21 +26,14 @@ import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.util.Constants;
-import com.photon.phresco.util.Utility;
 
 public class Stop implements PluginConstants {
 
 
 	public void stop(MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		try {
-		    String projectCode = mavenProjectInfo.getProjectCode();
-		    File runagsInfoFile = new File(Utility.getProjectHome() + File.separator + projectCode + File.separator
-	                + DOT_PHRESCO_FOLDER + File.separator + ENV_FILE);
 			stopNodeJS();
 			log.info("Server Stopped Successfully...");
-			if(runagsInfoFile.exists()) {
-			    runagsInfoFile.delete();
-			}
 		} catch (MojoExecutionException e) {
 			log.error("Failed to stop server " + e);
 			throw new PhrescoException(e);

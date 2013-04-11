@@ -98,7 +98,8 @@ public class PreBuildStep  implements PluginConstants {
 			}
 			
 			File phrescoPluginInfoFile = getPhrescoPluginInfoFileInJenkins(name, phase);
-			log.info("phresco Plugin Info File in phresco projects workspace ... " + phrescoPluginInfoFile.getCanonicalPath());
+			log.info("phresco Plugin Info File in phresco projects workspace ... " + phrescoPluginInfoFile.getPath());
+			log.info("phresco Plugin Info File exists ... " + phrescoPluginInfoFile.exists());
 			
 			MojoProcessor mojo = new MojoProcessor(phrescoPluginInfoFile);
 			
@@ -276,9 +277,9 @@ public class PreBuildStep  implements PluginConstants {
 	        builder.append(INFO_XML);
 			File pluginInfoFile = new File(builder.toString());
 			log.info("getPhrescoPluginInfoFile method fiel path  ... " + builder.toString());
-			if (!pluginInfoFile.exists()) {
-				throw new MojoExecutionException("Plugin info file not found in jenkins workspace for jobaname ... " + name + " Searched in... " + builder.toString());
-			}
+//			if (!pluginInfoFile.exists()) {
+//				throw new MojoExecutionException("Plugin info file not found in jenkins workspace for jobaname ... " + name + " Searched in... " + builder.toString());
+//			}
 			return pluginInfoFile;
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);

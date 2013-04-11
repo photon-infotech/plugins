@@ -17,6 +17,8 @@
  */
 package net.awired.jstest.mojo;
 
+import static java.util.Arrays.asList;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -31,6 +33,7 @@ import net.awired.jstest.resource.ResourceDirectory;
 import net.awired.jstest.resource.ResourceDirectoryScanner;
 import net.awired.jstest.runner.RunnerType;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
@@ -47,6 +50,7 @@ public class ProcessTestSourcesMojo extends AbstractJsTestMojo {
     private JsInstrumentor jsInstrumentor = new JsInstrumentor();
     private FileUtilsWrapper fileUtilsWrapper = new FileUtilsWrapper();
     private DirectoryCopier directoryCopier = new DirectoryCopier();
+    private static List<String> allowedFiles = null;
 
     @Override
     protected void run() throws MojoExecutionException, MojoFailureException {
@@ -58,6 +62,11 @@ public class ProcessTestSourcesMojo extends AbstractJsTestMojo {
         if (isSkipTests()) {
             getLog().info("Skipping JsTest");
             return;
+        }
+     
+        List<String> includes = getIncludes();
+        if (CollectionUtils.isNotEmpty(includes)) {
+        	allowedFiles = includes;
         }
         
         try {
@@ -89,7 +98,8 @@ public class ProcessTestSourcesMojo extends AbstractJsTestMojo {
 				} 
             }
             for (String file : scan) {
-                if (!file.toLowerCase().endsWith(".js") && !file.toLowerCase().endsWith(".json") && !file.toLowerCase().endsWith(".xml")) {
+            	Boolean checkFile = checkFile(file);
+            	if (!file.toLowerCase().endsWith(".js") && !checkFile) {
                     getLog().debug("Skip instrumentation of file " + file + " as its not a .js file");
                     continue;
                 }
@@ -99,10 +109,9 @@ public class ProcessTestSourcesMojo extends AbstractJsTestMojo {
                 }
 
                 try {
-
                     String fileContent = "";
-                    if (file.toLowerCase().endsWith(".json") || file.toLowerCase().endsWith(".xml")) {
-                    	getLog().info("added xml file............ " + file);
+                    if (checkFile) {
+                    	getLog().info("Added  file === " + file);
                         fileContent = fileUtilsWrapper.readFileToString(new File(sourceScriptDirectory.getDirectory(), file));
                     } else {
 
@@ -126,4 +135,13 @@ public class ProcessTestSourcesMojo extends AbstractJsTestMojo {
         }
     }
     
+    private static Boolean checkFile(String file) {
+    	Boolean status = false;
+    	for (String fileType : allowedFiles) {
+    		if (file.toLowerCase().endsWith(fileType)) {
+    			status = true;
+    		}
+    	}
+    	return status;
+    }
 }
