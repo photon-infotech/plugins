@@ -31,7 +31,14 @@ import org.apache.maven.plugin.MojoFailureException;
 public class ZipalignMojo extends AbstractZipalignMojo {
 
     public void execute() throws MojoExecutionException, MojoFailureException {
-        zipalign();
+    	
+    	
+    	if (!baseDir.getPath().endsWith("unit")
+				&& !baseDir.getPath().endsWith("functional")
+				&& !baseDir.getPath().endsWith("performance")) {
+    		
+    		zipalign();
+    	}
     }
 
 
