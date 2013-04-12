@@ -97,10 +97,9 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		File outputFile = null, outputAlignedFile = null, destFile = null, destAlignedFile = null, projectHome = null;
+		File outputFile = null, outputAlignedFile = null, destFile = null, destAlignedFile = null, packageInfoFile = null;
 		String techId;
 		try {
-			getLog().info("Base Dir === " + baseDir.getAbsolutePath());
 
 			buildInfoList = new ArrayList<BuildInfo>(); // initialization
 			// srcDir = new File(baseDir.getPath() + File.separator +
@@ -108,21 +107,22 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 			buildDir = new File(baseDir.getPath() + buildDirectory);
 			if (!buildDir.exists()) {
 				buildDir.mkdir();
-				getLog().info("Build directory created..." + buildDir.getPath());
 			}
 			buildInfoFile = new File(buildDir.getPath() + "/build.info");
 			if (baseDir.getPath().endsWith("unit")
 					|| baseDir.getPath().endsWith("functional")
 					|| baseDir.getPath().endsWith("performance")) {
-				projectHome = new File(baseDir.getParentFile().getParentFile()
+				packageInfoFile = new File(baseDir.getParentFile().getParentFile()
 						+ File.separator + ".phresco" + File.separator
 						+ "phresco-package-info.xml");
+		
 			} else {
-				projectHome = new File(baseDir.getPath() + File.separator
+				packageInfoFile = new File(baseDir.getPath() + File.separator
 						+ ".phresco" + File.separator
 						+ "phresco-package-info.xml");
 			}
-			MojoProcessor processor = new MojoProcessor(projectHome);
+			
+			MojoProcessor processor = new MojoProcessor(packageInfoFile);
 			Configuration configuration = processor.getConfiguration("package");
 			Map<String, String> configs = MojoUtil.getAllValues(configuration);
 			if (baseDir.getPath().endsWith("unit")
@@ -162,7 +162,11 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 
 		if (outputFile.exists()) {
 			try {
-				getLog().info("APK created.. Copying to Build directory.....");
+				if (StringUtils.isNotEmpty(techId)) {
+					getLog().info("APKLib created.. Copying to Build directory.....");
+				} else {
+					getLog().info("APK created.. Copying to Build directory.....");
+				}
 				String buildName = project.getBuild().getFinalName() + '_'
 						+ getTimeStampForBuildName(currentDate);
 
@@ -193,10 +197,6 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 				apkFileName = destFile.getName();
 				
 				getLog().info("Creating deliverables.....");
-				File packageInfoFile = new File(baseDir.getPath()
-						+ File.separator + ".phresco" + File.separator
-						+ PluginConstants.PHASE_PACKAGE_INFO);
-				
 				
 				ZipArchiver zipArchiver = new ZipArchiver();
 				File tmpFile = new File(buildDir, buildName);
@@ -209,7 +209,7 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 				FileUtils.copyFileToDirectory(destFile, tmpFile);
 				
 				
-				if (destAlignedFile!=null&&destAlignedFile.exists()) {
+				if (destAlignedFile!=null && destAlignedFile.exists()) {
 
 					FileUtils.copyFileToDirectory(destAlignedFile, tmpFile);
 
