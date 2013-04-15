@@ -580,9 +580,18 @@ public class GenerateReport implements PluginConstants {
 	public void mergePdf(List<String> PDFFiles,  String outputPDFFile, String uuid) throws PhrescoException {
 		try {
 			  // Get the byte streams from any source (maintain order)
-			  List<InputStream> sourcePDFs = new ArrayList<InputStream>();
-			  for (String PDFFile : PDFFiles) {
-				  sourcePDFs.add(new FileInputStream(new File(PDFFile)));
+			  List<InputStream> sourcePDFs = new ArrayList<InputStream>();//ASA-iphonehybrid_detail_Apr 09 2013 19.04.pdf
+			  String outFinalFileNamePDF = Utility.getPhrescoTemp() + uuid + File.separator + projectCode + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+//			  for (String PDFFile : PDFFiles) {
+//				  sourcePDFs.add(new FileInputStream(new File(PDFFile)));
+//			  }
+			  if (CollectionUtils.isNotEmpty(PDFFiles)) {
+				  sourcePDFs.add(new FileInputStream(new File(outFinalFileNamePDF)));
+				  for (String PDFFile : PDFFiles) {
+					  if(!PDFFile.equals(outFinalFileNamePDF)) {
+						  sourcePDFs.add(new FileInputStream(new File(PDFFile)));
+					  }
+				  }
 			  }
 			  // initialize the Merger utility and add pdfs to be merged
 			  PDFMergerUtility mergerUtility = new PDFMergerUtility();
@@ -731,57 +740,57 @@ public class GenerateReport implements PluginConstants {
 	}
 	
 	// Unit and functional pdf report generation
-		public void generateManualReport(SureFireReport sureFireReports)  throws PhrescoException {
-			InputStream reportStream = null;
-			BufferedInputStream bufferedInputStream = null;
-			try {
-				String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+	public void generateManualReport(SureFireReport sureFireReports)  throws PhrescoException {
+		InputStream reportStream = null;
+		BufferedInputStream bufferedInputStream = null;
+		try {
+			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
 
-				new File(outFileNamePDF).getParentFile().mkdirs();
-				String containerJasperFile = "PhrescoManualReport.jasper";
-				reportStream = this.getClass().getClassLoader().getResourceAsStream(REPORTS_JASPER + containerJasperFile);
-				bufferedInputStream = new BufferedInputStream(reportStream);
-				Map<String, Object> parameters = new HashMap<String,Object>();
-				parameters.put(COPY_RIGHTS, copyRights);
-				parameters.put(PDF_PROJECT_CODE, projectCode);
-				parameters.put(PROJECT_NAME, projName);
-				parameters.put(TECH_NAME, techName);
-				parameters.put(TEST_TYPE, testType.toUpperCase());
-				parameters.put(REPORTS_TYPE, reportType);
-				parameters.put(VERSION, version);
-				parameters.put(LOGO, logo);
-				parameters.put("isManualTest", "yes");
-				
-				JRBeanArrayDataSource dataSource = new JRBeanArrayDataSource(new SureFireReport[]{sureFireReports});
-				JasperReport jasperReport = (JasperReport) JRLoader.loadObject(bufferedInputStream);
-				JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
-				// applying theme
-				applyTheme(jasperPrint);
-				JRExporter exporter = new net.sf.jasperreports.engine.export.JRPdfExporter(); 
-				exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, outFileNamePDF);
-				exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
-				exporter.exportReport();
-			} catch(Exception e) {
-				log.error("manualReport  generation error");
-				throw new PhrescoException(e);
-			} finally {
-				if (reportStream != null) {
-					try {
-						reportStream.close();
-					} catch (IOException e) {
-						log.error("Report generation errorr ");
-					}
+			new File(outFileNamePDF).getParentFile().mkdirs();
+			String containerJasperFile = "PhrescoManualReport.jasper";
+			reportStream = this.getClass().getClassLoader().getResourceAsStream(REPORTS_JASPER + containerJasperFile);
+			bufferedInputStream = new BufferedInputStream(reportStream);
+			Map<String, Object> parameters = new HashMap<String,Object>();
+			parameters.put(COPY_RIGHTS, copyRights);
+			parameters.put(PDF_PROJECT_CODE, projectCode);
+			parameters.put(PROJECT_NAME, projName);
+			parameters.put(TECH_NAME, techName);
+			parameters.put(TEST_TYPE, testType.toUpperCase());
+			parameters.put(REPORTS_TYPE, reportType);
+			parameters.put(VERSION, version);
+			parameters.put(LOGO, logo);
+			parameters.put("isManualTest", "yes");
+			
+			JRBeanArrayDataSource dataSource = new JRBeanArrayDataSource(new SureFireReport[]{sureFireReports});
+			JasperReport jasperReport = (JasperReport) JRLoader.loadObject(bufferedInputStream);
+			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
+			// applying theme
+			applyTheme(jasperPrint);
+			JRExporter exporter = new net.sf.jasperreports.engine.export.JRPdfExporter(); 
+			exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, outFileNamePDF);
+			exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
+			exporter.exportReport();
+		} catch(Exception e) {
+			log.error("manualReport  generation error");
+			throw new PhrescoException(e);
+		} finally {
+			if (reportStream != null) {
+				try {
+					reportStream.close();
+				} catch (IOException e) {
+					log.error("Report generation errorr ");
 				}
-				if (bufferedInputStream != null) {
-					try {
-						bufferedInputStream.close();
-					} catch (IOException e) {
-						e.printStackTrace();
-						log.error("Report generation errorr ");
-					}
+			}
+			if (bufferedInputStream != null) {
+				try {
+					bufferedInputStream.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+					log.error("Report generation errorr ");
 				}
 			}
 		}
+	}
 	
 	
 	// Unit and functional pdf report generation
@@ -1189,62 +1198,60 @@ public class GenerateReport implements PluginConstants {
 			float successTestSuites = 0;
 			float failureTestSuites = 0;
 			float errorTestSuites = 0;
-
-			for (TestSuite testSuite : testSuites) { // test suite ll have graph
-														// details
-				List<TestCase> testCases = getTestCases(doc, testSuite.getName(), testSuitePath, testCasePath);
-
-				float tests = 0;
-				float failures = 0;
-				float errors = 0;
-				failures = getNoOfTstSuiteFailures();
-				errors = getNoOfTstSuiteErrors();
-				tests = getNoOfTstSuiteTests();
-				float success = 0;
-
-				if (failures != 0 && errors == 0) {
-					if (failures > tests) {
-						success = failures - tests;
+			
+			if(CollectionUtils.isNotEmpty(testSuites)) {
+				for (TestSuite testSuite : testSuites) { // test suite ll have graph details
+					List<TestCase> testCases = getTestCases(doc, testSuite.getName(), testSuitePath, testCasePath);
+					float tests = 0;
+					float failures = 0;
+					float errors = 0;
+					failures = getNoOfTstSuiteFailures();
+					errors = getNoOfTstSuiteErrors();
+					tests = getNoOfTstSuiteTests();
+					float success = 0;
+	
+					if (failures != 0 && errors == 0) {
+						if (failures > tests) {
+							success = failures - tests;
+						} else {
+							success = tests - failures;
+						}
+					} else if (failures == 0 && errors != 0) {
+						if (errors > tests) {
+							success = errors - tests;
+						} else {
+							success = tests - errors;
+						}
+					} else if (failures != 0 && errors != 0) {
+						float failTotal = (failures + errors);
+						if (failTotal > tests) {
+							success = failTotal - tests;
+						} else {
+							success = tests - failTotal;
+						}
 					} else {
-						success = tests - failures;
+						success = tests;
 					}
-				} else if (failures == 0 && errors != 0) {
-					if (errors > tests) {
-						success = errors - tests;
-					} else {
-						success = tests - errors;
-					}
-				} else if (failures != 0 && errors != 0) {
-					float failTotal = (failures + errors);
-					if (failTotal > tests) {
-						success = failTotal - tests;
-					} else {
-						success = tests - failTotal;
-					}
-				} else {
-					success = tests;
+	
+					totalTestSuites = totalTestSuites + tests;
+					failureTestSuites = failureTestSuites + failures;
+					errorTestSuites = errorTestSuites + errors;
+					successTestSuites = successTestSuites + success;
+					String rstValues = tests + "," + success + "," + failures + "," + errors;
+	//				log.info("rstValues ... " + rstValues);
+					AllTestSuite allTestSuiteDetail = new AllTestSuite(testSuite.getName(), tests, success, failures, errors);
+					allTestSuiteDetails.add(allTestSuiteDetail);
+					testSuite.setTestCases(testCases);
+					testSuiteWithTestCase.add(testSuite);
 				}
-
-				totalTestSuites = totalTestSuites + tests;
-				failureTestSuites = failureTestSuites + failures;
-				errorTestSuites = errorTestSuites + errors;
-				successTestSuites = successTestSuites + success;
-				String rstValues = tests + "," + success + "," + failures + "," + errors;
-//				log.info("rstValues ... " + rstValues);
-				AllTestSuite allTestSuiteDetail = new AllTestSuite(testSuite.getName(), tests, success, failures,
-						errors);
-				allTestSuiteDetails.add(allTestSuiteDetail);
-
-				testSuite.setTestCases(testCases);
-				testSuiteWithTestCase.add(testSuite);
+				// detailed info
+				sureFireReport.setTestSuites(testSuiteWithTestCase);
+				// printDetailedObj(testSuiteWithTestCase);
+				// crisp info
+				sureFireReport.setAllTestSuites(allTestSuiteDetails);
 			}
-			// }
 		}
-		// detailed info
-		sureFireReport.setTestSuites(testSuiteWithTestCase);
-		// printDetailedObj(testSuiteWithTestCase);
-		// crisp info
-		sureFireReport.setAllTestSuites(allTestSuiteDetails);
+		
 		return sureFireReport;
 	}
 
