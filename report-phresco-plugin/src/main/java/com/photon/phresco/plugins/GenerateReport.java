@@ -580,9 +580,18 @@ public class GenerateReport implements PluginConstants {
 	public void mergePdf(List<String> PDFFiles,  String outputPDFFile, String uuid) throws PhrescoException {
 		try {
 			  // Get the byte streams from any source (maintain order)
-			  List<InputStream> sourcePDFs = new ArrayList<InputStream>();
-			  for (String PDFFile : PDFFiles) {
-				  sourcePDFs.add(new FileInputStream(new File(PDFFile)));
+			  List<InputStream> sourcePDFs = new ArrayList<InputStream>();//ASA-iphonehybrid_detail_Apr 09 2013 19.04.pdf
+			  String outFinalFileNamePDF = Utility.getPhrescoTemp() + uuid + File.separator + projectCode + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+//			  for (String PDFFile : PDFFiles) {
+//				  sourcePDFs.add(new FileInputStream(new File(PDFFile)));
+//			  }
+			  if (CollectionUtils.isNotEmpty(PDFFiles)) {
+				  sourcePDFs.add(new FileInputStream(new File(outFinalFileNamePDF)));
+				  for (String PDFFile : PDFFiles) {
+					  if(!PDFFile.equals(outFinalFileNamePDF)) {
+						  sourcePDFs.add(new FileInputStream(new File(PDFFile)));
+					  }
+				  }
 			  }
 			  // initialize the Merger utility and add pdfs to be merged
 			  PDFMergerUtility mergerUtility = new PDFMergerUtility();
@@ -1157,7 +1166,6 @@ public class GenerateReport implements PluginConstants {
 		ArrayList<TestSuite> testSuiteWithTestCase = null;
 		ArrayList<AllTestSuite> allTestSuiteDetails = null;
 
-
 		// Iterate over each file
 		// testsuite path and testcase path - kalees
 		for (Map.Entry entry : reportDirWithTestSuitePath.entrySet()) {
@@ -1189,62 +1197,60 @@ public class GenerateReport implements PluginConstants {
 			float successTestSuites = 0;
 			float failureTestSuites = 0;
 			float errorTestSuites = 0;
-
-			for (TestSuite testSuite : testSuites) { // test suite ll have graph
-														// details
-				List<TestCase> testCases = getTestCases(doc, testSuite.getName(), testSuitePath, testCasePath);
-
-				float tests = 0;
-				float failures = 0;
-				float errors = 0;
-				failures = getNoOfTstSuiteFailures();
-				errors = getNoOfTstSuiteErrors();
-				tests = getNoOfTstSuiteTests();
-				float success = 0;
-
-				if (failures != 0 && errors == 0) {
-					if (failures > tests) {
-						success = failures - tests;
+			
+			if(CollectionUtils.isNotEmpty(testSuites)) {
+				for (TestSuite testSuite : testSuites) { // test suite ll have graph details
+					List<TestCase> testCases = getTestCases(doc, testSuite.getName(), testSuitePath, testCasePath);
+					float tests = 0;
+					float failures = 0;
+					float errors = 0;
+					failures = getNoOfTstSuiteFailures();
+					errors = getNoOfTstSuiteErrors();
+					tests = getNoOfTstSuiteTests();
+					float success = 0;
+	
+					if (failures != 0 && errors == 0) {
+						if (failures > tests) {
+							success = failures - tests;
+						} else {
+							success = tests - failures;
+						}
+					} else if (failures == 0 && errors != 0) {
+						if (errors > tests) {
+							success = errors - tests;
+						} else {
+							success = tests - errors;
+						}
+					} else if (failures != 0 && errors != 0) {
+						float failTotal = (failures + errors);
+						if (failTotal > tests) {
+							success = failTotal - tests;
+						} else {
+							success = tests - failTotal;
+						}
 					} else {
-						success = tests - failures;
+						success = tests;
 					}
-				} else if (failures == 0 && errors != 0) {
-					if (errors > tests) {
-						success = errors - tests;
-					} else {
-						success = tests - errors;
-					}
-				} else if (failures != 0 && errors != 0) {
-					float failTotal = (failures + errors);
-					if (failTotal > tests) {
-						success = failTotal - tests;
-					} else {
-						success = tests - failTotal;
-					}
-				} else {
-					success = tests;
+	
+					totalTestSuites = totalTestSuites + tests;
+					failureTestSuites = failureTestSuites + failures;
+					errorTestSuites = errorTestSuites + errors;
+					successTestSuites = successTestSuites + success;
+					String rstValues = tests + "," + success + "," + failures + "," + errors;
+	//				log.info("rstValues ... " + rstValues);
+					AllTestSuite allTestSuiteDetail = new AllTestSuite(testSuite.getName(), tests, success, failures, errors);
+					allTestSuiteDetails.add(allTestSuiteDetail);
+					testSuite.setTestCases(testCases);
+					testSuiteWithTestCase.add(testSuite);
 				}
-
-				totalTestSuites = totalTestSuites + tests;
-				failureTestSuites = failureTestSuites + failures;
-				errorTestSuites = errorTestSuites + errors;
-				successTestSuites = successTestSuites + success;
-				String rstValues = tests + "," + success + "," + failures + "," + errors;
-//				log.info("rstValues ... " + rstValues);
-				AllTestSuite allTestSuiteDetail = new AllTestSuite(testSuite.getName(), tests, success, failures,
-						errors);
-				allTestSuiteDetails.add(allTestSuiteDetail);
-
-				testSuite.setTestCases(testCases);
-				testSuiteWithTestCase.add(testSuite);
+				// detailed info
+				sureFireReport.setTestSuites(testSuiteWithTestCase);
+				// printDetailedObj(testSuiteWithTestCase);
+				// crisp info
+				sureFireReport.setAllTestSuites(allTestSuiteDetails);
 			}
-			// }
 		}
-		// detailed info
-		sureFireReport.setTestSuites(testSuiteWithTestCase);
-		// printDetailedObj(testSuiteWithTestCase);
-		// crisp info
-		sureFireReport.setAllTestSuites(allTestSuiteDetails);
+		
 		return sureFireReport;
 	}
 
