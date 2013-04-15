@@ -41,11 +41,9 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.input.SAXBuilder;
 
-import com.photon.phresco.commons.model.BuildInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
-import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.model.WP8PackageInfo;
 import com.photon.phresco.plugins.parser.TRXParser;
@@ -98,13 +96,6 @@ public class UnitTest implements PluginConstants {
         type = configs.get(WINDOWS_PLATFORM_TYPE);
         util = new PluginPackageUtil();
         
-        
-        log.info("base dir for unit test = " + baseDir);
-		log.info("platform = " + platform);
-		log.info("config = " + config);
-		log.info("type = " + type);
-		log.info("buildNumber = " + buildNumber);
-		
 		try {
 			executePackage();
 			executeUnitTest();
@@ -119,8 +110,8 @@ public class UnitTest implements PluginConstants {
 		packageInit();
 		if(type.equalsIgnoreCase(WIN_STORE)) {
 			try {
-				generateWP8UnitTestPackage();
-				//executeUnitTest();
+				Boolean status = generateWP8UnitTestPackage();
+				writeBuildInfo(status);
 			} catch (PhrescoException e) {				
 			}
 		} else if (type.equalsIgnoreCase(WIN_PHONE)) {
@@ -132,14 +123,15 @@ public class UnitTest implements PluginConstants {
 	private void executeUnitTest() throws MojoExecutionException {
 		try {
 			if (type.equalsIgnoreCase(WIN_STORE)) {
-				unitTestInit();
+				generateBuild();
 				extractBuild();
-				String extension = ".appx";
+				String extension = APPX_EXTENSION;
 				runUnitTest(extension);
+				parseTrx();
 			} else if (type.equalsIgnoreCase(WIN_PHONE)) {
 				generateBuild();
 				extractBuild();
-				String extension = ".xap";
+				String extension = XAP_EXTENSION;
 				runUnitTest(extension);
 				parseTrx();
 			} 
@@ -152,10 +144,10 @@ public class UnitTest implements PluginConstants {
 
 	private void parseTrx() throws PhrescoException {
 		TRXParser parser = new TRXParser();
-		File trxFile = new File(unitDestPath + File.separator + "TestResults");
+		File trxFile = new File(unitDestPath + File.separator + TEST_RESULTS);
 		File[] files = trxFile.listFiles(new FilenameFilter() {
 			public boolean accept(File dir, String fileName) {
-				return  fileName.endsWith(".trx");
+				return  fileName.endsWith(TRX_EXTENSION);
 			}
 		});
 
@@ -180,12 +172,10 @@ public class UnitTest implements PluginConstants {
 			log.info("csproject file name = " + csprojFile[0].getName());
 			
 			if(type.equalsIgnoreCase(WIN_STORE)) {
-				
 				packageInfo = new WP8PackageInfo(rootDir);
-				buildDir = new File(rootDir.getPath() + BUILD_DIRECTORY);
+				buildDir = new File(rootDir.getParent() + BUILD_DIRECTORY);
 				if (buildDir.exists()) {
 					FileUtils.deleteDirectory(buildDir);
-					log.info("Build directory deleted..");
 				}
 				buildDir.mkdirs();
 			} else if(type.equalsIgnoreCase(WIN_PHONE)) {
@@ -197,15 +187,12 @@ public class UnitTest implements PluginConstants {
 				buildDir.mkdirs();
 			}
 			
-			log.info("Build directory created..." + buildDir.getPath());
 			
 			buildInfoFile = new File(buildDir.getPath() + BUILD_INFO_FILE);
 			
 			nextBuildNo = util.generateNextBuildNo(buildInfoFile);
 			currentDate = Calendar.getInstance().getTime();
 			
-			log.info("nextBuildNo:..." + nextBuildNo);
-			log.info("buildInfoFile:..." + buildInfoFile.getPath());
 		} catch (Exception e) {
 			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
@@ -213,26 +200,36 @@ public class UnitTest implements PluginConstants {
 	}
 	
 	private void generateBuild() {
-		System.out.println("Inside the Generate build");
+		File configurationInfo = null;
 		try {
-			File configurationInfo = new File(rootDir.getPath() + File.separator +  WP_BIN_DIR + File.separator + config);
+			if(type.equalsIgnoreCase(WIN_STORE)) {
+				String packageVersion = packageInfo.getPackageVersion();
+				configurationInfo = new File(rootDir.getPath() + WP_APP_PACKAGE + File.separator + WINSTORE_UNIT_TEST_PROJECT_ROOT + STR_UNDERSCORE + packageVersion + STR_UNDERSCORE + (platform.equalsIgnoreCase("anycpu")?"AnyCPU":platform) + (config.equalsIgnoreCase("debug")? STR_UNDERSCORE + config : "") + WP_TEST);
+			} else if (type.equalsIgnoreCase(WIN_PHONE)) {
+				if (platform.equalsIgnoreCase(WP_X86)) {
+					configurationInfo = new File(rootDir.getPath() + File.separator +  BIN + File.separator + platform + File.separator + config);
+				} else if (platform.equalsIgnoreCase(WP_ANY_CPU)) {
+					configurationInfo = new File(rootDir.getPath() + File.separator +  BIN + File.separator + config);
+				}
+			}
 			String zipName = util.createPackage(buildName, buildNumber, nextBuildNo, currentDate);
 			File destPath = new File(buildDir.getPath() +File.separator + zipName );
-			System.out.println("Build dir = " + buildDir.getPath());
 			ArchiveUtil.createArchive(configurationInfo.getPath(), destPath.getPath(), ArchiveType.ZIP);
 			deleteDir();
 		} catch (PhrescoException e) {
 			e.printStackTrace();
-		}
-		
-		catch (IOException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
 	private void deleteDir() throws IOException {
 		FileUtils.deleteDirectory(new File(rootDir.getPath() + File.separator + BIN));
-		FileUtils.deleteDirectory(new File(rootDir.getPath() + File.separator + OBJ));	
+		FileUtils.deleteDirectory(new File(rootDir.getPath() + File.separator + OBJ));
+		File appDir = new File(rootDir.getPath() + WP_APP_PACKAGE);
+		if (appDir.exists()) {
+			FileUtils.deleteDirectory(appDir);
+		}
 	}
 
 	private void packageCallUsage() throws MojoExecutionException {
@@ -250,7 +247,6 @@ public class UnitTest implements PluginConstants {
 			} else if (type.equalsIgnoreCase(WIN_PHONE)) {
 				rootDir = new File(baseDir.getPath() + wpUnitTestDirectory);
 			}
-			log.info("getProjectRoot = " + rootDir.getPath());
 		} catch (Exception e) {
 			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
@@ -289,6 +285,10 @@ public class UnitTest implements PluginConstants {
 			sb.append(WP_STR_PROPERTY);
 			sb.append(WP_STR_COLON);
 			sb.append(WP_STR_CONFIGURATION + "=" + config);
+			if (platform.equalsIgnoreCase("AnyCPU")) {
+				sb.append(WP_STR_SEMICOLON);
+				sb.append(WP_STR_PLATFORM + "=" + WP_STR_DOUBLEQUOTES + platform + WP_STR_DOUBLEQUOTES);
+			}
 			log.info("Command = "+ sb.toString());
 			Commandline cl = new Commandline(sb.toString());
 			cl.setWorkingDirectory(rootDir.getPath());
@@ -311,20 +311,18 @@ public class UnitTest implements PluginConstants {
 		return isBuildSuccess;
 	}
 	
-	private void generateWP8UnitTestPackage() throws MojoExecutionException, PhrescoException {
+	private Boolean generateWP8UnitTestPackage() throws MojoExecutionException, PhrescoException {
 		BufferedReader in = null;
+		boolean isBuildSuccess = true;
 		try {
-			
+			String packageVersion = packageInfo.getPackageVersion();
 			checkPackageVersionNo();
-			
 			log.info("Building unit test project ...");
 			
 			// MSBuild MyApp.sln /t:Rebuild /p:Configuration=Release;Platform="Any CPU"
 			StringBuilder sb = new StringBuilder();
 			sb.append(WP_MSBUILD_PATH);
 			sb.append(STR_SPACE);
-			sb.append(rootDir.getPath());
-			sb.append(WINDOWS_STR_BACKSLASH);
 			sb.append(csprojFile[0].getName());
 			sb.append(STR_SPACE);
 			sb.append(WP_STR_TARGET);
@@ -346,14 +344,18 @@ public class UnitTest implements PluginConstants {
 			while ((in.readLine()) != null) {
 			}
 		} catch (CommandLineException e) {
+			isBuildSuccess = false;
 			throw new MojoExecutionException(e.getMessage(), e);
 		} catch (IOException e) {
+			isBuildSuccess = false;
 			throw new MojoExecutionException(e.getMessage(), e);
 		} catch (PhrescoException e) {
+			isBuildSuccess = false;
 			throw new PhrescoException(e);
 		} finally {
 			Utility.closeStream(in);
 		}
+		return isBuildSuccess;
 	}
 
 	
@@ -361,7 +363,6 @@ public class UnitTest implements PluginConstants {
 		try {
 			SAXBuilder builder = new SAXBuilder();
 			File path = new File (rootDir.getPath() + File.separator + csprojFile[0].getName());
-			
 			Document doc = (Document) builder.build(path);
 			Element rootNode = doc.getRootElement();
 			Namespace ns = rootNode.getNamespace();
@@ -393,78 +394,9 @@ public class UnitTest implements PluginConstants {
 		} catch (Exception e) {
 		}
 	}
-	
-	private boolean build() throws MojoExecutionException {
-		boolean isBuildSuccess = true;
-		try {
-			createPackage();
-		} catch (Exception e) {
-			isBuildSuccess = false;
-			log.error(e.getMessage());
-			throw new MojoExecutionException(e.getMessage(), e);
-		}
-		return isBuildSuccess;
-	}
-
-	private void createPackage() throws MojoExecutionException {
-		try {
-			zipName = util.createPackage(buildName, buildNumber, nextBuildNo, currentDate);
-			String zipFilePath = buildDir.getPath() + File.separator + zipName;
-			
-			log.info("zip file path = " + zipFilePath);
-			
-			if(type.equalsIgnoreCase(WIN_STORE)) {
-				String packageVersion = packageInfo.getPackageVersion();
-				String tempFilePath = rootDir.getPath() + WP_APP_PACKAGE + File.separator + WINSTORE_UNIT_TEST_PROJECT_ROOT + STR_UNDERSCORE + packageVersion + STR_UNDERSCORE + (platform.equalsIgnoreCase("any cpu")?"AnyCPU":platform) + (config.equalsIgnoreCase("debug")? STR_UNDERSCORE + config : "") + WP_TEST;
-				
-//				log.info("tempFilePath = " + tempFilePath);
-				
-				tempDir = new File(tempFilePath);
-			} else if(type.equalsIgnoreCase(WIN_PHONE)) {
-				String packageFolder = solutionFile[0].getName().substring(0, solutionFile[0].getName().length() - 4);
-				tempDir = new File(baseDir + winStoreUnitTestDirectory + File.separator + WP_SOURCE + File.separator + packageFolder + WP7_BIN_FOLDER + WP7_RELEASE_FOLDER);	
-			}
-			ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
-		} catch (PhrescoException e) {
-			throw new MojoExecutionException(e.getErrorMessage(), e);
-		}
-	}
 
 	private void writeBuildInfo(boolean isBuildSuccess) throws MojoExecutionException {
 		util.writeBuildInfo(isBuildSuccess, buildName, buildNumber, nextBuildNo, environmentName, buildNo, currentDate, buildInfoFile);
-	}
-
-	private void packageCleanUp() throws MojoExecutionException {
-		try {
-			FileUtils.deleteDirectory(tempDir);
-		} catch (IOException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
-		}
-	}
-	
-	/*
-	 * Methods related to Deploy
-	 */
-	
-	private void unitTestInit() throws MojoExecutionException {
-		try {
-
-			buildDir = new File(rootDir.getPath() + BUILD_DIRECTORY);
-			PluginUtils utils = new PluginUtils();
-			BuildInfo buildInfo = utils.getBuildInfo(Integer.parseInt(buildNumber));
-			
-			log.info("unitTestInit: buildDir == " + buildDir.getPath());
-			
-			buildFile = new File(buildDir.getPath() + File.separator + buildInfo.getBuildName());
-			tempDir = new File(buildDir.getPath() + File.separator + buildFile.getName().substring(0, buildFile.getName().length() - 4));
-			tempDir.mkdirs();
-			log.info("unitTestInit: buildFile " + buildFile.getPath());
-			log.info("unitTestInit: tempDir " + tempDir.getPath());
-			
-		} catch (Exception e) {
-			log.error(e.getMessage());
-			throw new MojoExecutionException(e.getMessage(), e);
-		}
 	}
 
 	private void extractBuild() throws MojoExecutionException {
@@ -479,7 +411,6 @@ public class UnitTest implements PluginConstants {
 			throw new MojoExecutionException(e.getMessage(), e);
 		} 
 	}
-	
 	
 	private void runUnitTest(final String extension) throws MojoExecutionException {
 		BufferedReader in = null;

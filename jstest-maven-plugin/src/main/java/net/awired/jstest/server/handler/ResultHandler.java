@@ -126,6 +126,24 @@ public class ResultHandler {
 	    		report.reportRun(runResult);
 	            handled = true;
         	}
+        } else if (target.equals("/log")) {
+        	BufferedReader reader = null;
+        	try {
+        		String line;
+        		StringBuilder sb = new StringBuilder();
+        		reader = new BufferedReader(new InputStreamReader(inputStream));
+        		while ((line = reader.readLine()) != null) {
+        			sb.append(line); 
+        		}
+        		log.info(sb);
+        		handled = true;
+        	} catch (Exception e) {
+        		e.printStackTrace();
+        	} finally {
+        		if (reader != null) {
+        			reader.close();
+        		}
+        	}
         }
         
         if (handled) {

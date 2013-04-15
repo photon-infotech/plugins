@@ -258,9 +258,35 @@ public interface PluginConstants {
 	 // Variables related to Windows Phone build process
 	 String WP7_BIN_FOLDER				= "\\bin";
 	 String WP7_RELEASE_FOLDER			= "\\release";
-	 String WP_BIN_DIR    				= "Bin/x86";
+	 String WP_X86    					= "X86";
+	 String WP_ANY_CPU    				= "AnyCPU";
 	 String BIN 						= "Bin";
 	 String OBJ							= "obj";
+	 
+	 // Variables related to Windows Parsing TRX file process
+	 
+	 String TEST_RESULTS 		= "TestResults";
+	 String APPX_EXTENSION 		= ".appx";
+	 String XAP_EXTENSION 		= ".xap";
+	 String TRX_EXTENSION		= ".trx";
+	 String TOTAL				= "total";
+	 String PASSED				= "passed";
+	 String FAILED				= "failed";
+	 String SKIPPED				= "aborted";
+	 String ERROR				="error";
+	 String TEST_SUITE			= "testsuite";
+	 String TEST_METHOD			= "TestMethod";
+	 String TEST_CASE			= "testcase";
+	 String CLASS_NAME			= "className";
+	 String NAME				= "name";
+	 String TEST_ID				= "testId";
+	 String DURATION			= "duration";
+	 String OUTCOME				= "outcome";
+	 String ERROR_MESSAGE		= "errorMessage";
+	 String SKIPED				= "skipped";
+	 String REPORT				= "report";
+	 String UNIT_TEST_REPORT	= "UnitTest.xml";
+	 
 	 // Variables related to Windows Phone 7 deploy process
 	 // wptools.exe -target:emulator -xap:WindowsPhoneApplication1.xap -install
 	 String WP7_WPTOOLS_PATH			= "wptools.exe ";
@@ -359,6 +385,8 @@ public interface PluginConstants {
 	 String RUN							= "run"; 
 	 String ADB_SERIAL                  = "adbSerial";
 	 String CALABASH_ANDROID_COMMAND	= "calabash-android run";
+	 String ZIP_ALIGN  					= "zipAlign";
+	 String ZIP_ALIGN_SKIP				= "android.zipalign.skip";
 	 
 	 // Constants report plugin
 	 String ATTR_TIME 					= "time";

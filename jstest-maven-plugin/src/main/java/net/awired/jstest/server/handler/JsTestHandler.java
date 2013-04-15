@@ -98,7 +98,7 @@ public class JsTestHandler extends AbstractHandler {
                 baseRequest.setHandled(true);
                 response.getWriter().write(runnerGenerator.generate(generateBrowserId(), isEmulator(request), runId));
                 // give root page
-            } else if (target.startsWith("/result/")) {
+            } else if (target.startsWith("/result/") || target.startsWith("/log")) {
                 resultHandler.handle(target, baseRequest, request, response);
             } else if (target.equals("/runId")) {
                 response.getWriter().print(runId);

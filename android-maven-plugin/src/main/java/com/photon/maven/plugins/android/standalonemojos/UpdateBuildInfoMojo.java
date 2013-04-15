@@ -51,57 +51,43 @@ import com.photon.phresco.plugins.util.MojoProcessor;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.FileUtil;
 
-
 /**
  * Creates the apk file. By default signs it with debug keystore.<br/>
  * Change that by setting configuration parameter
  * <code>&lt;sign&gt;&lt;debug&gt;false&lt;/debug&gt;&lt;/sign&gt;</code>.
- *
+ * 
  * @goal updatebuildinfo
  * @phase package
  * @requiresDependencyResolution apk
  */
 public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 
-	
-
 	/*
-	 * <p>
-	 * Additional source directories that contain resources to be packaged into
-	 * the apk.
-	 * </p>
-	 * <p>
-	 * These are not source directories, that contain java classes to be
-	 * compiled. It corresponds to the -df option of the apkbuilder program. It
-	 * allows you to specify directories, that contain additional resources to
-	 * be packaged into the apk.
-	 * </p>
-	 * So an example inside the plugin configuration could be:
-	 *
-	 * <pre>
-	 * &lt;configuration&gt;
-	 * 	  ...
-	 *    &lt;sourceDirectories&gt;
-	 *      &lt;sourceDirectory&gt;${project.basedir}/additionals&lt;/sourceDirectory&gt;
-	 *   &lt;/sourceDirectories&gt;
-	 *   ...
-	 * &lt;/configuration&gt;
-	 * </pre>
-	 *
+	 * <p> Additional source directories that contain resources to be packaged
+	 * into the apk. </p> <p> These are not source directories, that contain
+	 * java classes to be compiled. It corresponds to the -df option of the
+	 * apkbuilder program. It allows you to specify directories, that contain
+	 * additional resources to be packaged into the apk. </p> So an example
+	 * inside the plugin configuration could be:
+	 * 
+	 * <pre> &lt;configuration&gt; ... &lt;sourceDirectories&gt;
+	 * &lt;sourceDirectory
+	 * &gt;${project.basedir}/additionals&lt;/sourceDirectory&gt;
+	 * &lt;/sourceDirectories&gt; ... &lt;/configuration&gt; </pre>
+	 * 
 	 * @parameter expression="${android.sourceDirectories}" default-value=""
 	 */
-//	private File[] sourceDirectories;
+	// private File[] sourceDirectories;
 
-	
 	/**
 	 * Build location
-	 *
+	 * 
 	 * @parameter expression="/do_not_checkin/build"
 	 */
 	private String buildDirectory;
 
 	private File buildDir;
-	
+
 	private File buildInfoFile;
 	private List<BuildInfo> buildInfoList;
 	private int nextBuildNo;
@@ -109,101 +95,153 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 	private String apkFileName;
 	private String deliverable;
 
-
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		File outputFile = null, destFile = null , projectHome = null;
+		File outputFile = null, outputAlignedFile = null, destFile = null, destAlignedFile = null, packageInfoFile = null;
 		String techId;
 		try {
-			getLog().info("Base Dir === "  + baseDir.getAbsolutePath());
-			
+
 			buildInfoList = new ArrayList<BuildInfo>(); // initialization
-//			srcDir = new File(baseDir.getPath() + File.separator + sourceDirectory);
+			// srcDir = new File(baseDir.getPath() + File.separator +
+			// sourceDirectory);
 			buildDir = new File(baseDir.getPath() + buildDirectory);
 			if (!buildDir.exists()) {
 				buildDir.mkdir();
-				getLog().info("Build directory created..." + buildDir.getPath());
 			}
 			buildInfoFile = new File(buildDir.getPath() + "/build.info");
-			if (baseDir.getPath().endsWith("unit") || baseDir.getPath().endsWith("functional") || baseDir.getPath().endsWith("performance")) {
-				projectHome = new File(baseDir.getParentFile().getParentFile() + File.separator + ".phresco" + File.separator + "phresco-package-info.xml");
+			if (baseDir.getPath().endsWith("unit")
+					|| baseDir.getPath().endsWith("functional")
+					|| baseDir.getPath().endsWith("performance")) {
+				packageInfoFile = new File(baseDir.getParentFile().getParentFile()
+						+ File.separator + ".phresco" + File.separator
+						+ "phresco-package-info.xml");
+		
 			} else {
-				projectHome = new File(baseDir.getPath() + File.separator + ".phresco" + File.separator + "phresco-package-info.xml");
+				packageInfoFile = new File(baseDir.getPath() + File.separator
+						+ ".phresco" + File.separator
+						+ "phresco-package-info.xml");
 			}
-			MojoProcessor processor = new MojoProcessor(projectHome);
+			
+			MojoProcessor processor = new MojoProcessor(packageInfoFile);
 			Configuration configuration = processor.getConfiguration("package");
 			Map<String, String> configs = MojoUtil.getAllValues(configuration);
-			if (baseDir.getPath().endsWith("unit") || baseDir.getPath().endsWith("functional") || baseDir.getPath().endsWith("performance")) {
+			if (baseDir.getPath().endsWith("unit")
+					|| baseDir.getPath().endsWith("functional")
+					|| baseDir.getPath().endsWith("performance")) {
 				buildDir = baseDir.getParentFile().getParentFile();
-				buildInfoFile = new File(baseDir.getPath() + buildDirectory + "/build.info");
+				buildInfoFile = new File(baseDir.getPath() + buildDirectory
+						+ "/build.info");
 			}
-			
+
 			techId = configs.get("techId");
-			if (StringUtils.isNotEmpty(techId)) {
-				outputFile = new File(project.getBuild().getDirectory(), project.getBuild().getFinalName() + '.' + APKLIB);
-			} else {
-				outputFile = new File(project.getBuild().getDirectory(), project.getBuild().getFinalName() + '.' + APK);
-			}
 			
+			if (StringUtils.isNotEmpty(techId)) {
+
+				outputFile = new File(project.getBuild().getDirectory(),
+						project.getBuild().getFinalName() + '.' + APKLIB);
+				
+			} else {
+				
+				outputFile = new File(project.getBuild().getDirectory(),
+						project.getBuild().getFinalName() + '.' + APK);
+				outputAlignedFile = new File(project.getBuild().getDirectory(),
+						project.getBuild().getFinalName() + "-aligned." + APK);
+
+			}
 
 			nextBuildNo = generateNextBuildNo();
 
 			currentDate = Calendar.getInstance().getTime();
 		} catch (IOException e) {
-			throw new MojoFailureException("APK could not initialize " + e.getLocalizedMessage());
+			throw new MojoFailureException("APK could not initialize "
+					+ e.getLocalizedMessage());
 		} catch (PhrescoException e) {
-			throw new MojoFailureException("APK could not initialize " + e.getLocalizedMessage());
+			throw new MojoFailureException("APK could not initialize "
+					+ e.getLocalizedMessage());
 		}
-		
+
 		if (outputFile.exists()) {
 			try {
-				getLog().info("APK created.. Copying to Build directory.....");
-				String buildName = project.getBuild().getFinalName() + '_' + getTimeStampForBuildName(currentDate);
-				
-				if (baseDir.getPath().endsWith("unit") || baseDir.getPath().endsWith("functional") || baseDir.getPath().endsWith("performance")) {
+				if (StringUtils.isNotEmpty(techId)) {
+					getLog().info("APKLib created.. Copying to Build directory.....");
+				} else {
+					getLog().info("APK created.. Copying to Build directory.....");
+				}
+				String buildName = project.getBuild().getFinalName() + '_'
+						+ getTimeStampForBuildName(currentDate);
+
+				if (baseDir.getPath().endsWith("unit")
+						|| baseDir.getPath().endsWith("functional")
+						|| baseDir.getPath().endsWith("performance")) {
 					buildDir = new File(baseDir.getPath() + buildDirectory);
 				}
-				
+
 				if (StringUtils.isNotEmpty(techId)) {
 					destFile = new File(buildDir, buildName + '.' + APKLIB);
+					
 				} else {
+					
 					destFile = new File(buildDir, buildName + '.' + APK);
+					destAlignedFile = new File(buildDir, buildName+ "-aligned." + APK);
+
 				}
-				
+
 				FileUtils.copyFile(outputFile, destFile);
 				getLog().info("copied to..." + destFile.getName());
+
+				if (outputAlignedFile != null && outputAlignedFile.exists()) {
+					
+					FileUtils.copyFile(outputAlignedFile, destAlignedFile);
+					
+				}
 				apkFileName = destFile.getName();
+				
 				getLog().info("Creating deliverables.....");
-				File packageInfoFile = new File(baseDir.getPath() + File.separator + ".phresco" + File.separator + PluginConstants.PHRESCO_PACKAGE_FILE);
+				
 				ZipArchiver zipArchiver = new ZipArchiver();
 				File tmpFile = new File(buildDir, buildName);
-				if(!tmpFile.exists()) {
+				
+				if (!tmpFile.exists()) {
+					
 					tmpFile.mkdirs();
+					
 				}
 				FileUtils.copyFileToDirectory(destFile, tmpFile);
-				if(packageInfoFile.exists()) {
-					PluginUtils.createBuildResources(packageInfoFile, baseDir, tmpFile);
+				
+				
+				if (destAlignedFile!=null && destAlignedFile.exists()) {
+
+					FileUtils.copyFileToDirectory(destAlignedFile, tmpFile);
+
+				}
+				if (!packageInfoFile.exists()) {
+					PluginUtils.createBuildResources(packageInfoFile, baseDir,
+							tmpFile);
 				}
 				File inputFile = new File(apkFileName);
 				zipArchiver.addDirectory(tmpFile);
 				File deliverableZip = new File(buildDir, buildName + ".zip");
 				zipArchiver.setDestFile(deliverableZip);
 				zipArchiver.createArchive();
-				
+
 				deliverable = deliverableZip.getPath();
-				getLog().info("Deliverables available at " + deliverableZip.getName());
-				writeBuildInfo(true);
-				if(!tmpFile.exists()) {
+				getLog().info(
+						"Deliverables available at " + deliverableZip.getName());
+				if (tmpFile.exists()) {
 					FileUtil.delete(tmpFile);
+
 				}
+
+				writeBuildInfo(true);
 			} catch (IOException e) {
 				throw new MojoExecutionException("Error in writing output...");
-			} 
+			}
 
 		}
 	}
 
-	private void writeBuildInfo(boolean isBuildSuccess) throws MojoExecutionException {
+	private void writeBuildInfo(boolean isBuildSuccess)
+			throws MojoExecutionException {
 		try {
 			PluginUtils pu = new PluginUtils();
 			BuildInfo buildInfo = new BuildInfo();
@@ -230,17 +268,19 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 	}
 
 	private String getTimeStampForDisplay(Date currentDate) {
-		SimpleDateFormat formatter = new SimpleDateFormat("dd/MMM/yyyy HH:mm:ss");
+		SimpleDateFormat formatter = new SimpleDateFormat(
+				"dd/MMM/yyyy HH:mm:ss");
 		String timeStamp = formatter.format(currentDate.getTime());
 		return timeStamp;
 	}
 
 	private String getTimeStampForBuildName(Date currentDate) {
-		SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy-HH-mm-ss");
+		SimpleDateFormat formatter = new SimpleDateFormat(
+				"dd-MMM-yyyy-HH-mm-ss");
 		String timeStamp = formatter.format(currentDate.getTime());
 		return timeStamp;
 	}
-	
+
 	private int generateNextBuildNo() throws IOException {
 		int nextBuildNo = 1;
 		if (!buildInfoFile.exists()) {
@@ -249,7 +289,6 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 
 		BufferedReader read = new BufferedReader(new FileReader(buildInfoFile));
 		String content = read.readLine();
-
 
 		Gson gson = new Gson();
 		java.lang.reflect.Type listType = new TypeToken<List<BuildInfo>>() {
@@ -268,9 +307,11 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 
 		Arrays.sort(buildArray); // sort to the array to find the max build no
 
-		nextBuildNo = buildArray[buildArray.length - 1] + 1; // increment 1 to the max in the build list
+		nextBuildNo = buildArray[buildArray.length - 1] + 1; // increment 1 to
+																// the max in
+																// the build
+																// list
 		return nextBuildNo;
 	}
 
 }
-
