@@ -1938,8 +1938,12 @@ public class GenerateReport implements PluginConstants {
 			}
 
 			Double calThroughPut = new Double(performanceTestResult.getNoOfSamples());
-			calThroughPut = calThroughPut / (performanceTestResult.getMaxTs() + performanceTestResult.getLastTime() -
-					performanceTestResult.getMinTs());
+			double timeSpan = performanceTestResult.getMaxTs() + performanceTestResult.getLastTime() - performanceTestResult.getMinTs();
+			if (timeSpan > 0) {
+				calThroughPut = calThroughPut / timeSpan;
+			} else {
+				calThroughPut=0.0;
+			}
 			double throughPut = calThroughPut * 1000;
 
 			performanceTestResult.setThroughPut(throughPut);
@@ -1948,7 +1952,13 @@ public class GenerateReport implements PluginConstants {
 		}
 		
 		// Total Throughput calculation
-		double totalThroughput = (noOfSamples /((maxTs + lastTime) - minTs)) * 1000;
+		double totalThroughput;
+		double timeSpan = ((maxTs + lastTime) - minTs);
+		if (timeSpan > 0) {
+			totalThroughput = (noOfSamples / timeSpan) * 1000;
+		} else {
+			totalThroughput = 0.0;
+		}
 		double stdDev = setStdDevToResults(results);
 		
 		// Getting all performance result objects
