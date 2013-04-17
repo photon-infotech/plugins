@@ -1044,7 +1044,7 @@ public class GenerateReport implements PluginConstants {
         List<String> testResultFiles = getTestResultFiles(performanceReportDir);
 		
 		// List of performance test reports
-        List<AndroidPerfReport> androidPerfFilesWithDatas = new ArrayList<AndroidPerfReport>(); //kalees
+        List<AndroidPerfReport> androidPerfFilesWithDatas = new ArrayList<AndroidPerfReport>();
         for (String testResultFile : testResultFiles) {
         	Document document = getDocumentOfFile(performanceReportDir, testResultFile);
 
@@ -1166,15 +1166,14 @@ public class GenerateReport implements PluginConstants {
 		ArrayList<TestSuite> testSuiteWithTestCase = null;
 		ArrayList<AllTestSuite> allTestSuiteDetails = null;
 
+		// detailed information object
+		testSuiteWithTestCase = new ArrayList<TestSuite>();
+		// crisp information of the test
+		allTestSuiteDetails = new ArrayList<AllTestSuite>();
 
 		// Iterate over each file
-		// testsuite path and testcase path - kalees
+		// testsuite path and testcase path
 		for (Map.Entry entry : reportDirWithTestSuitePath.entrySet()) {
-			// detailed information object
-			testSuiteWithTestCase = new ArrayList<TestSuite>();
-			// crisp information of the test
-			allTestSuiteDetails = new ArrayList<AllTestSuite>();
-			
 			String mapKey = (String) entry.getKey();
 			String mapValue = (String) entry.getValue();
 //			log.info("key .. " + entry.getKey());
@@ -1528,7 +1527,7 @@ public class GenerateReport implements PluginConstants {
 				unitTestDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_RPT_DIR_START + unitTestTech + Constants.POM_PROP_KEY_UNITTEST_RPT_DIR_END);
 				String unitTestSuitePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_RPT_DIR_START + unitTestTech + Constants.POM_PROP_KEY_UNITTEST_TESTSUITE_XPATH_END);
 				String unitTestCasePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_RPT_DIR_START + unitTestTech + Constants.POM_PROP_KEY_UNITTEST_TESTCASE_PATH_END);
-				if (StringUtils.isNotEmpty(unitTestDir)) { // kalees
+				if (StringUtils.isNotEmpty(unitTestDir)) {
 					String reportPath = reportFilePath + unitTestDir;
 					List<File> testResultFiles = getTestResultFilesAsList(reportPath);
 					for (File testResultFile : testResultFiles) {
@@ -1755,7 +1754,8 @@ public class GenerateReport implements PluginConstants {
 				NodeList childNodes = node.getChildNodes();
 				NamedNodeMap nameNodeMap = node.getAttributes();
 				TestCase testCase = new TestCase();
-
+				
+				//For Error Failure
 				if (childNodes != null && childNodes.getLength() > 0) {
 
 					for (int j = 0; j < childNodes.getLength(); j++) {
