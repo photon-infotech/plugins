@@ -20,6 +20,7 @@ package net.awired.jstest.mojo;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.File;
 
 import net.awired.jstest.executor.RunnerExecutor;
 import net.awired.jstest.mojo.inherite.AbstractJsTestMojo;
@@ -55,6 +56,15 @@ public class TestMojo extends AbstractJsTestMojo {
         JsTestServer jsTestServer = new JsTestServer(getLog(), getTestPort(), isTestPortFindFree());
         RunnerExecutor executor = null;
         try {
+			String testSourceDir = buildTestResourceDirectory().getDirectory().getPath();
+        	File testSourcedir = new File(testSourceDir);
+        
+        	// skipping jstest when source js directory or test js directory not exists 
+        	
+        	if (!testSourcedir.exists() || !getSourceDir().exists()) {
+        		getLog().info("Source js files does not exist");
+        		return;
+        	}
             ResourceResolver resourceResolver = new ResourceResolver(getLog(), buildCurrentSrcDir(false),
                     buildTestResourceDirectory(), buildOverlaysResourceDirectories(),
                     new ArrayList<ResourceDirectory>());
