@@ -70,7 +70,9 @@ public class ProcessTestSourcesMojo extends AbstractJsTestMojo {
         }
         
         try {
-            directoryCopier.copyDirectory(getSourceDir(), getTargetSourceDirectory());
+            if (getSourceDir().exists()) {
+        		directoryCopier.copyDirectory(getSourceDir(), getTargetSourceDirectory());
+        	}
         } catch (IOException e) {
             throw new RuntimeException("Cannot copy source directory to target", e);
         }
@@ -83,6 +85,9 @@ public class ProcessTestSourcesMojo extends AbstractJsTestMojo {
     private void processInstrumentSources() {
         if (isCoverage()) {
             ResourceDirectory sourceScriptDirectory = buildSrcResourceDirectory();
+			if (!sourceScriptDirectory.getDirectory().exists()) {
+            	return;
+            }
             List<String> scan = scriptDirScanner.scan(sourceScriptDirectory);
             RunnerType runnerType = buildAmdRunnerType();
             if (runnerType.equals(RunnerType.YUI)) {
