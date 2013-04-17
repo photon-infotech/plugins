@@ -1166,14 +1166,14 @@ public class GenerateReport implements PluginConstants {
 		ArrayList<TestSuite> testSuiteWithTestCase = null;
 		ArrayList<AllTestSuite> allTestSuiteDetails = null;
 
+		// detailed information object
+			testSuiteWithTestCase = new ArrayList<TestSuite>();
+		// crisp information of the test
+			allTestSuiteDetails = new ArrayList<AllTestSuite>();
 		// Iterate over each file
 		// testsuite path and testcase path - kalees
 		for (Map.Entry entry : reportDirWithTestSuitePath.entrySet()) {
-			// detailed information object
-			testSuiteWithTestCase = new ArrayList<TestSuite>();
-			// crisp information of the test
-			allTestSuiteDetails = new ArrayList<AllTestSuite>();
-			
+		
 			String mapKey = (String) entry.getKey();
 			String mapValue = (String) entry.getValue();
 //			log.info("key .. " + entry.getKey());
