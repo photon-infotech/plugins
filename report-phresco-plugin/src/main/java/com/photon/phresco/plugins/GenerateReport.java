@@ -578,10 +578,7 @@ public class GenerateReport implements PluginConstants {
 		try {
 			  // Get the byte streams from any source (maintain order)
 			  List<InputStream> sourcePDFs = new ArrayList<InputStream>();//ASA-iphonehybrid_detail_Apr 09 2013 19.04.pdf
-			  String outFinalFileNamePDF = Utility.getPhrescoTemp() + uuid + File.separator + projectCode + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
-//			  for (String PDFFile : PDFFiles) {
-//				  sourcePDFs.add(new FileInputStream(new File(PDFFile)));
-//			  }
+			  String outFinalFileNamePDF = Utility.getPhrescoTemp() + uuid + File.separator + baseDir.getName() + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
 			  if (CollectionUtils.isNotEmpty(PDFFiles)) {
 				  sourcePDFs.add(new FileInputStream(new File(outFinalFileNamePDF)));
 				  for (String PDFFile : PDFFiles) {
@@ -1164,15 +1161,15 @@ public class GenerateReport implements PluginConstants {
 		ArrayList<TestSuite> testSuiteWithTestCase = null;
 		ArrayList<AllTestSuite> allTestSuiteDetails = null;
 
-
+		// detailed information object
+			testSuiteWithTestCase = new ArrayList<TestSuite>();
+		// crisp information of the test
+			allTestSuiteDetails = new ArrayList<AllTestSuite>();
+			
 		// Iterate over each file
 		// testsuite path and testcase path - kalees
 		for (Map.Entry entry : reportDirWithTestSuitePath.entrySet()) {
-			// detailed information object
-			testSuiteWithTestCase = new ArrayList<TestSuite>();
-			// crisp information of the test
-			allTestSuiteDetails = new ArrayList<AllTestSuite>();
-			
+		
 			String mapKey = (String) entry.getKey();
 			String mapValue = (String) entry.getValue();
 //			log.info("key .. " + entry.getKey());
