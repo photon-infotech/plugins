@@ -39,27 +39,21 @@
 	    xmlHttpReq.send(JSON.stringify(obj));
 	}
 	
-	function log(strURL, obj, callback) {
-	    var xmlHttpReq = false;
-	    // Mozilla/Safari
-	    if (window.XMLHttpRequest) {
-	        xmlHttpReq = new XMLHttpRequest();
-	    }
-	    // IE
-	    else if (window.ActiveXObject) {
-	        xmlHttpReq = new ActiveXObject("Microsoft.XMLHTTP");
-	    }
-	    xmlHttpReq.open('POST', strURL, true);
-	    xmlHttpReq.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-	    xmlHttpReq.onreadystatechange = function() {
-	        if (xmlHttpReq.readyState == 4) {
-	        	if (callback != undefined) {
-	        		callback(xmlHttpReq.responseText);
-	        	}
-	        }
-	    }
-	    xmlHttpReq.send(obj);
+	function logs(obj) {
+		var xmlHttpReq = false;
+		// Mozilla/Safari
+		if (window.XMLHttpRequest) {
+			xmlHttpReq = new XMLHttpRequest();
+		}
+		// IE
+		else if (window.ActiveXObject) {
+			xmlHttpReq = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+		xmlHttpReq.open('POST', generateUrl('/log', 0, false), true);
+		xmlHttpReq.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+		xmlHttpReq.send(obj);
 	}
+
 	
 	
 	function changeFavicon(src) {
