@@ -136,7 +136,7 @@ public class GenerateReport implements PluginConstants {
 	private static final String MODULE_NAME = "Module Name";
 	private static final String COPY_RIGHTS = "copyRights";
 	private static final String SONAR_REPORT = "sonarReport";
-	private static final String DEFAULT_COPYRIGHTS = "© 2013 Photon Infotech Pvt.Ltd";
+	private static final String DEFAULT_COPYRIGHTS = "Â© 2013 Photon Infotech Pvt.Ltd";
 	private static final String PHRESCO_UNIT_TEST = "phresco.unitTest";
 	private static final String REPORTS_TYPE = "reportsDataType";
 	private static final String PROJECT_NAME = "projectName";
@@ -2299,7 +2299,7 @@ public class GenerateReport implements PluginConstants {
 	        this.reportType = reportType;
 	        this.appDir = appInfo.getAppDirName();
 	        this.projectCode = appInfo.getName();
-	        this.techName = appInfo.getTechInfo().getId();
+	        this.techName = configs.get("technologyName");
 	        this.version = appVersion;
 	        this.sonarUrl = sonarUrl;
 	        
