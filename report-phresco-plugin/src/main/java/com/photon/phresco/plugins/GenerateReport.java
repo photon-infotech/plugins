@@ -2298,7 +2298,7 @@ public class GenerateReport implements PluginConstants {
 	        this.reportType = reportType;
 	        this.appDir = appInfo.getAppDirName();
 	        this.projectCode = appInfo.getName();
-	        this.techName = appInfo.getTechInfo().getId();
+	        this.techName = configs.get("technologyName");
 	        this.version = appVersion;
 	        this.sonarUrl = sonarUrl;
 	        
