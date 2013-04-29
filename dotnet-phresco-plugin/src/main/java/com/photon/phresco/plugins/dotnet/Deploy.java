@@ -52,11 +52,9 @@ public class Deploy implements PluginConstants {
 	private File buildDir;
 	private File buildFile;
 	private File targetDir;
-	private String applicationName;
 	private String siteName;
 	private String serverport;
 	private String serverprotocol;
-	private String deploylocation;
 	private Log log;
 	private PluginUtils pUtil;
 	
@@ -93,11 +91,9 @@ public class Deploy implements PluginConstants {
 
 			List<com.photon.phresco.configuration.Configuration> configurations = pUtil.getConfiguration(baseDir, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
 			for (com.photon.phresco.configuration.Configuration configuration : configurations) {
-				applicationName = configuration.getProperties().getProperty(Constants.APPLICATION_NAME);
 				siteName = configuration.getProperties().getProperty(Constants.SITE_NAME);
 				serverport = configuration.getProperties().getProperty(Constants.SERVER_PORT);
 				serverprotocol = configuration.getProperties().getProperty(Constants.SERVER_PROTOCOL);
-				deploylocation = configuration.getProperties().getProperty(Constants.SERVER_DEPLOY_DIR);
 				break;
 			}
 		} catch (Exception e) {
@@ -119,43 +115,19 @@ public class Deploy implements PluginConstants {
 		BufferedReader in = null;
 		try {
 			StringBuilder sb = new StringBuilder();
-			sb.append("APPCMD list sites");
+			sb.append(LIST_SITES);
 			Commandline cl = new Commandline(sb.toString());
-			cl.setWorkingDirectory("C:/Windows/System32/inetsrv");
+			cl.setWorkingDirectory(WORKING_DIR);
 			Process process = cl.execute();
 			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
 			String line = null;
 			while ((line = in.readLine()) != null) {
 				if (line.contains(siteName)) {
-					listApp();
-				} 
-			}
-			executeAddSite();
-			executeAddApp();
-		} catch (CommandLineException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
-		} catch (IOException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
-		}
-	}
-
-	private void listApp() throws MojoExecutionException {
-		BufferedReader in = null;
-		try {
-			StringBuilder sb = new StringBuilder();
-			sb.append("APPCMD  list app /site.name:");
-			sb.append(siteName);
-			Commandline cl = new Commandline(sb.toString());
-			cl.setWorkingDirectory("C:/Windows/System32/inetsrv");
-			Process process = cl.execute();
-			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			String line = null;
-			while ((line = in.readLine()) != null) {
-				if (line.contains(applicationName)) {
 					throw new MojoExecutionException(
-							"Application Already Exists in Site . Please configure new Application or delete the already existing one ");
-				}
-			}
+					"Site Already Exists in Site . Please configure new Site or delete the already existing one ");
+		}
+				} 
+			executeAddSite();
 		} catch (CommandLineException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		} catch (IOException e) {
@@ -168,17 +140,18 @@ public class Deploy implements PluginConstants {
 		log.info("Creation of Site executed...");
 		try {
 			StringBuilder sb = new StringBuilder();
-			sb.append("APPCMD add site /name:");
+			sb.append(ADD_SITE);
 			sb.append(siteName);
 			sb.append(STR_SPACE);
-			sb.append("/bindings:");
-			sb.append(serverprotocol + "/*:" + serverport + ":");
+			sb.append(BINDINGS);
+			sb.append(serverprotocol + "/*" + COLON  + serverport + COLON);
 			sb.append(STR_SPACE);
-			sb.append("/physicalPath:");
-			sb.append("\"" + deploylocation + "\"");
+			sb.append(PHYSICAL_PATH);
+			sb.append(WP_STR_DOUBLEQUOTES + targetDir.getPath() + WP_STR_DOUBLEQUOTES);
+			log.info("executeAddSite() : " + sb.toString());
 			Commandline cl = new Commandline(sb.toString());
 
-			cl.setWorkingDirectory("C:/Windows/System32/inetsrv");
+			cl.setWorkingDirectory(WORKING_DIR);
 			Process process = cl.execute();
 			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
 			String line = null;
@@ -197,33 +170,6 @@ public class Deploy implements PluginConstants {
 			ArchiveUtil.extractArchive(buildFile.getPath(), targetDir.getPath(), ArchiveType.ZIP);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getErrorMessage(), e);
-		}
-	}
-
-	private void executeAddApp() throws MojoExecutionException {
-		BufferedReader in = null;
-		log.info("Creation of Application executed...");
-		try {
-			StringBuilder sb = new StringBuilder();
-			sb.append("APPCMD add app /site.name:");
-			sb.append(siteName);
-			sb.append(STR_SPACE);
-			sb.append("/path:/" + applicationName);
-			sb.append(STR_SPACE);
-			sb.append("/physicalPath:");
-			sb.append("\"" + targetDir.getPath() + "\"");
-			Commandline cl = new Commandline(sb.toString());
-			cl.setWorkingDirectory("C:/Windows/System32/inetsrv");
-			Process process = cl.execute();
-			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			String line = null;
-			while ((line = in.readLine()) != null) {
-				System.out.println(line); // do not use getLog() here as this line already contains the log type.
-			}
-		} catch (CommandLineException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
-		} catch (IOException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
 }
