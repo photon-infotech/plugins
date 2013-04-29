@@ -244,7 +244,6 @@ public interface PluginConstants {
 	 String WP_STR_PLATFORM				= "Platform";
 	 String WP_APP_PACKAGE				= "\\AppPackages";
 	 String WP_TEST						= "_Test";
-	 String WP_PROJECT_ROOT 			= "Metro.UI";
 	 String WP_PROPERTYGROUP 			= "PropertyGroup";
 	 String WP_AUTO_INCREMENT_PKG_VERSION_NO = "AppxAutoIncrementPackageRevision";
 	 
@@ -255,14 +254,7 @@ public interface PluginConstants {
 	 String WP_ADD_APPX_PACKAGE 		= "Add-AppxPackage ";
 	 String WP_GET_APPX_PACKAGE 		= "Get-AppxPackage ";
 	 String WP_REMOVE_APPX_PACKAGE 		= "Remove-AppxPackage ";
-//	 String WP8_PLATFORM 				= "wp8";
 
-	 // Variable related to Windows Store (Metro) unit test root folder
-	 String WINSTORE_UNIT_TEST_PROJECT_ROOT 	= "Metro.UnitTests";
-	 
-	// Variable related to Windows Phone unit test root folder
-	 String WP_UNIT_TEST_PROJECT_ROOT 	= "WP.UnitTests";
-	 
 	 // Variable related to WinStore and WinPhone unit test build process
 	 String WINDOWS_UNIT_TEST_VSTEST_CONSOLE = "vstest.console";
 	 String WINDOWS_UNIT_TEST_INISOLATION 	 = "/InIsolation";
@@ -275,6 +267,8 @@ public interface PluginConstants {
 	 String WP_ANY_CPU    				= "AnyCPU";
 	 String BIN 						= "Bin";
 	 String OBJ							= "obj";
+	 String WIN_CLEAN					= "Clean";
+	 String REBUILD						= "Rebuild";
 	 
 	 // Variables related to Windows Parsing TRX file process
 	 
@@ -427,6 +421,7 @@ public interface PluginConstants {
 	 String MANUAL 						= "manual";
 	 String FUNCTIONAL 					= "functional";
 	 String UNIT 						= "unit";
+	 String COMPONENT 					= "component";
 	 String LOAD 						= "load";
 	 String PERFORMACE 					= "performance";
      String ELEMENT_FAILURE 			= "failure";
@@ -444,6 +439,7 @@ public interface PluginConstants {
      String LOAD_TEST_RESULTS 			= "loadTestResults";
      String LOAD_TEST_REPORTS 			= "loadTestReports";
      String FUNCTIONAL_TEST_REPORTS 	= "functionalTestReports";
+     String COMPONENT_TEST_REPORTS 	    = "componentTestReports";
      String UNIT_TEST_REPORTS 			= "unitTestReports";
      String FUNCTIONAL_SURE_FIRE_REPORTS = "functionalSureFireReports";
      String MANUAL_SURE_FIRE_REPORTS     = "manualSureFireReports";

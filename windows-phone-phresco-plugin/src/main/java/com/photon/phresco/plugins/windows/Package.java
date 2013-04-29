@@ -177,22 +177,40 @@ public class Package implements PluginConstants {
 		}
 	}
 
-	private void getProjectRoot() throws MojoExecutionException {
+	private void getProjectRoot() throws PhrescoException {
 		try {
-			// Get the source/<ProjectRoot> folder
-			rootDir = new File(baseDir.getPath() + sourceDirectory + File.separator + WP_SOURCE + File.separator + WP_PROJECT_ROOT);
+			String solutionFilename = solutionFile[0].getName().substring(0, (solutionFile[0].getName().length())-4);
+			rootDir = new File(baseDir.getPath() + sourceDirectory + File.separator + WP_SOURCE + File.separator + solutionFilename);
+			Boolean checkRootDir = checkRootDir(rootDir);
+			if (!checkRootDir) {
+				throw new PhrescoException();
+			}
 		} catch (Exception e) {
 			log.error(e.getMessage());
-			throw new MojoExecutionException(e.getMessage(), e);
+			throw new PhrescoException("Startup project must be placed in a folder named same as solution (.sln) file name.");
 		}
 	}
+	
+	public static Boolean checkRootDir(File fileObject) throws PhrescoException {
+		Boolean dirExists =  false;
+		try {
+			if (fileObject.exists()) {
+				dirExists = true;
+			}
+			
+		} catch (Exception e) {
+			throw new PhrescoException(e);
+		}
+		return dirExists;
+	}
+	
 	
 	private void generateWP7Package() throws MojoExecutionException {
 		BufferedReader in = null;
 		try {
 			log.info("Building project ...");
 						
-			// MSBuild MyApp.sln /t:Rebuild /p:Configuration=Release;Platform="Any CPU"
+			// MSBuild MyApp.sln /t:Clean;Rebuild /p:Configuration=Release;Platform="Any CPU"
 			StringBuilder sb = new StringBuilder();
 			sb.append(WP_MSBUILD_PATH);
 			sb.append(STR_SPACE);
@@ -200,7 +218,9 @@ public class Package implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(WP_STR_TARGET);
 			sb.append(WP_STR_COLON);
-			sb.append("Rebuild");
+			sb.append(WIN_CLEAN);
+			sb.append(WP_STR_SEMICOLON);
+			sb.append(REBUILD);
 			sb.append(STR_SPACE);
 			sb.append(WP_STR_PROPERTY);
 			sb.append(WP_STR_COLON);
@@ -232,7 +252,7 @@ public class Package implements PluginConstants {
 			
 			log.info("Building project ...");
 			
-			// MSBuild MyApp.sln /t:Rebuild /p:Configuration=Release;Platform="Any CPU"
+			// MSBuild MyApp.sln /t:Clean;Rebuild /p:Configuration=Release;Platform="Any CPU"
 			StringBuilder sb = new StringBuilder();
 			sb.append(WP_MSBUILD_PATH);
 			sb.append(STR_SPACE);
@@ -240,7 +260,9 @@ public class Package implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(WP_STR_TARGET);
 			sb.append(WP_STR_COLON);
-			sb.append("Rebuild");
+			sb.append(WIN_CLEAN);
+			sb.append(WP_STR_SEMICOLON);
+			sb.append(REBUILD);
 			sb.append(STR_SPACE);
 			sb.append(WP_STR_PROPERTY);
 			sb.append(WP_STR_COLON);
@@ -319,14 +341,18 @@ public class Package implements PluginConstants {
 		try {
 			zipName = util.createPackage(buildName, buildNumber, nextBuildNo, currentDate);
 			String zipFilePath = buildDir.getPath() + File.separator + zipName;
+			String solutionFilename = solutionFile[0].getName().substring(0, (solutionFile[0].getName().length())-4);
 			if(type.equalsIgnoreCase(WIN_STORE)) {
 				String packageVersion = packageInfo.getPackageVersion();
-				String tempFilePath = rootDir.getPath() + WP_APP_PACKAGE + File.separator + WP_PROJECT_ROOT + STR_UNDERSCORE + packageVersion + STR_UNDERSCORE + (platform.equalsIgnoreCase("any cpu")?"AnyCPU":platform) + (config.equalsIgnoreCase("debug")? STR_UNDERSCORE + config : "") + WP_TEST;
+				String tempFilePath = rootDir.getPath() + WP_APP_PACKAGE + File.separator + solutionFilename + STR_UNDERSCORE + packageVersion + STR_UNDERSCORE + (platform.equalsIgnoreCase("any cpu")?"AnyCPU":platform) + (config.equalsIgnoreCase("debug")? STR_UNDERSCORE + config : "") + WP_TEST;
 				tempDir = new File(tempFilePath);
 			} else if(type.equalsIgnoreCase(WIN_PHONE)) {
-				String packageFolder = solutionFile[0].getName().substring(0, solutionFile[0].getName().length() - 4);
-				tempDir = new File(baseDir + sourceDirectory + File.separator + WP_SOURCE + File.separator + packageFolder + WP7_BIN_FOLDER + File.separator + config);	
+				tempDir = new File(baseDir + sourceDirectory + File.separator + WP_SOURCE + File.separator + solutionFilename + WP7_BIN_FOLDER + File.separator + config);
 			}
+			if (!tempDir.exists()) {
+				throw new PhrescoException("Startup project must be placed in a folder named same as solution (.sln) file name");
+			}
+			
 			File packageInfoFile = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + PHRESCO_PACKAGE_FILE);
 			// To Copy Contents From Package Info File
 			if(packageInfoFile.exists()) {
