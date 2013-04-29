@@ -84,6 +84,15 @@ public abstract class AbstractPhrescoPlugin2 implements PhrescoPlugin2 {
 		return new DefaultExecutionStatus();
 
 	}
+	
+	/* (non-Javadoc)
+	 * @see com.photon.phresco.plugins.api.PhrescoPlugin#runComponentTest(com.photon.phresco.plugins.model.Mojos.Mojo.Configuration, com.photon.phresco.plugin.commons.MavenProjectInfo)
+	 */
+	public ExecutionStatus runComponentTest(Configuration configuration,
+			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		return new DefaultExecutionStatus();
+
+	}
 
 	/* (non-Javadoc)
 	 * @see com.photon.phresco.plugins.api.PhrescoPlugin#runFunctionalTest(com.photon.phresco.plugins.model.Mojos.Mojo.Configuration, com.photon.phresco.plugin.commons.MavenProjectInfo)

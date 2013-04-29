@@ -125,6 +125,25 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 	    
 	    return new DefaultExecutionStatus();
 	}
+	
+	public ExecutionStatus runComponentTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		File baseDir = mavenProjectInfo.getBaseDir();
+		MavenProject project = mavenProjectInfo.getProject();
+		String workingDirectory = project.getProperties().getProperty(Constants.POM_PROP_KEY_COMPONENTTEST_DIR);
+		if (StringUtils.isEmpty(workingDirectory)) {
+			workingDirectory = "";
+		}
+		Map<String, String> configs = MojoUtil.getAllValues(configuration);
+		String environmentName = configs.get(ENVIRONMENT_NAME);
+		PluginUtils pluginUtils = new PluginUtils();
+
+		String configXmlFile = project.getProperties().getProperty(Constants.POM_PROP_KEY_COMPONENTTEST_ADAPT_CONFIG);
+		File configXMLFile = new File(baseDir.getPath() + configXmlFile);
+		pluginUtils.executeUtil(environmentName, baseDir.getPath(), configXMLFile);
+		generateMavenCommand(mavenProjectInfo, baseDir.getPath() + workingDirectory, COMPONENT);
+
+		return new DefaultExecutionStatus();
+	}
 
 	public ExecutionStatus runFunctionalTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		MavenProject project = mavenProjectInfo.getProject();

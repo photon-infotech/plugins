@@ -414,6 +414,7 @@ public interface PluginConstants {
 	 String MANUAL 						= "manual";
 	 String FUNCTIONAL 					= "functional";
 	 String UNIT 						= "unit";
+	 String COMPONENT 					= "component";
 	 String LOAD 						= "load";
 	 String PERFORMACE 					= "performance";
      String ELEMENT_FAILURE 			= "failure";
@@ -431,6 +432,7 @@ public interface PluginConstants {
      String LOAD_TEST_RESULTS 			= "loadTestResults";
      String LOAD_TEST_REPORTS 			= "loadTestReports";
      String FUNCTIONAL_TEST_REPORTS 	= "functionalTestReports";
+     String COMPONENT_TEST_REPORTS 	    = "componentTestReports";
      String UNIT_TEST_REPORTS 			= "unitTestReports";
      String FUNCTIONAL_SURE_FIRE_REPORTS = "functionalSureFireReports";
      String MANUAL_SURE_FIRE_REPORTS     = "manualSureFireReports";
