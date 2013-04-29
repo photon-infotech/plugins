@@ -207,6 +207,19 @@ public interface PluginConstants {
 	 String COMPILE_LOG_FILE			= "/sourcecompile.log";
 	 String RUN_AGS_LOG_FILE			= "/runagainstsource.log";
 	 
+	 //Constants for Dotnet Plugin
+	 
+	 String BUILD_CONFIG                = "configuration";
+	 String MS_BUILD					= "msbuild";
+	 String DEPLOY_ON_BUILD				= "DeployOnBuild=true";
+	 String DEPLOY_TARGET				= "DeployTarget=Package";
+	 String DEPLOY_TEMP_DIR				= "_PackageTempDir=..\\..\\..\\do_not_checkin\\target";
+	 String LIST_SITES					= "APPCMD list sites";
+	 String WORKING_DIR					= "C:/Windows/System32/inetsrv";
+	 String ADD_SITE					= "APPCMD add site /name:";
+	 String BINDINGS					= "/bindings:";
+	 String PHYSICAL_PATH				= "/physicalPath:";
+	 
 	 // Constants for Windows Phone Plugin
 	 // Author: Viral
 	 // Date: July 27, 2012
