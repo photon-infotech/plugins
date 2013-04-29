@@ -137,14 +137,9 @@ public class Deploy implements PluginConstants {
 					return name.endsWith(WP_SLN);
 				}
 			});
-
-			// projectRootFolder = solutionFile[0].getName().substring(0,
-			// solutionFile[0].getName().length() - 4);
-
-			// Get the source/<ProjectRoot> folder
-			rootDir = new File(baseDir.getPath() + sourceDirectory
-					+ File.separator + WP_SOURCE + File.separator
-					+ WP_PROJECT_ROOT);
+			String solutionFilename = solutionFile[0].getName().substring(0, (solutionFile[0].getName().length())-4);
+			rootDir = new File(baseDir.getPath() + sourceDirectory + File.separator + WP_SOURCE + File.separator + solutionFilename);
+			
 		} catch (Exception e) {
 			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
@@ -208,7 +203,6 @@ public class Deploy implements PluginConstants {
 	public String getOSArchitecture() {
 		String osArch = "";
 		for (Map.Entry<Object, Object> e : System.getProperties().entrySet()) {
-
 			if (e.getKey().toString().equalsIgnoreCase("os.arch")) {
 				osArch = e.getValue().toString();
 				break;
