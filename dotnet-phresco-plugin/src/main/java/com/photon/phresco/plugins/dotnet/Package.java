@@ -21,7 +21,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
@@ -29,8 +28,6 @@ import java.util.Map;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.cli.CommandLineException;
-import org.codehaus.plexus.util.cli.Commandline;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
@@ -50,6 +47,7 @@ public class Package implements PluginConstants {
 	private String environmentName;
 	private String buildName;
 	private String buildNumber;
+	private String configuaration;
 	private int buildNo;
 	
 	private File buildDir;
@@ -70,6 +68,8 @@ public class Package implements PluginConstants {
         environmentName = configs.get(ENVIRONMENT_NAME);
         buildName = configs.get(BUILD_NAME);
         buildNumber = configs.get(BUILD_NUMBER);
+        configuaration = configs.get(BUILD_CONFIG);
+        
         util = new PluginPackageUtil();
         PluginUtils.checkForConfigurations(baseDir, environmentName);
 		try {
@@ -103,7 +103,6 @@ public class Package implements PluginConstants {
 		boolean isBuildSuccess = true;
 		try {
 			executeMSBuildCmd();
-			executeASPCompilerCmd();
 			createPackage();
 		} catch (Exception e) {
 			isBuildSuccess = false;
@@ -114,24 +113,36 @@ public class Package implements PluginConstants {
 
 	private void executeMSBuildCmd() throws MojoExecutionException {
 		BufferedReader in = null;
+		boolean errorParam = false;
 		try {
 			String[] list = srcDir.list(new CsFileNameFilter());
 			StringBuilder sb = new StringBuilder();
-			sb.append("msbuild.exe");
+			sb.append(MS_BUILD);
 			sb.append(STR_SPACE);
 			sb.append(list[0]);
 			sb.append(STR_SPACE);
-			sb.append("/t:rebuild");
-			Commandline cl = new Commandline(sb.toString());
-			cl.setWorkingDirectory(srcDir.getPath());
-			Process process = cl.execute();
-			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			sb.append(WP_STR_PROPERTY);
+			sb.append(COLON);
+			sb.append(WP_STR_CONFIGURATION + EQUAL + configuaration);
+			sb.append(WP_STR_SEMICOLON);
+			sb.append(DEPLOY_ON_BUILD);
+			sb.append(WP_STR_SEMICOLON);
+			sb.append(DEPLOY_TARGET);
+			sb.append(WP_STR_SEMICOLON);
+			sb.append(DEPLOY_TEMP_DIR);
+		log.info("executeMSBuildCmd() : " + sb.toString());
+//			sb.append("/p:Configuration=Release;DeployOnBuild=true;DeployTarget=Package;_PackageTempDir=..\\..\\..\\do_not_checkin\\target");
 			String line = null;
+			in = Utility.executeCommand(sb.toString(), srcDir.getPath());
 			while ((line = in.readLine()) != null) {
+				if (line.contains("Build FAILED")) {
+					errorParam = true;
+				}
 				System.out.println(line); // do not use getLog() here as this line already contains the log type.
 			}
-		} catch (CommandLineException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
+			if (errorParam) {
+				throw new MojoExecutionException("resolve above errros ..");
+			}
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		} finally {
@@ -139,33 +150,6 @@ public class Package implements PluginConstants {
 		}
 	}
 
-	private void executeASPCompilerCmd() throws MojoExecutionException {
-		BufferedReader in = null;
-		try {
-			StringBuilder sb = new StringBuilder();
-			sb.append("aspnet_compiler -v / -p ");
-			sb.append("\"" + srcDir.getPath() + "\"");
-			sb.append(STR_SPACE);
-			sb.append("-u");
-			sb.append(STR_SPACE);
-			sb.append("\"" + targetDir.getPath() + "\"");
-			Commandline cl = new Commandline(sb.toString());
-			cl.setWorkingDirectory(srcDir.getPath());
-			Process process = cl.execute();
-			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			String line = null;
-			while ((line = in.readLine()) != null) {
-				System.out.println(line); // do not use getLog() here as this line already contains the log type.
-			}
-		} catch (CommandLineException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
-		} catch (IOException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
-		} finally {
-			Utility.closeStream(in);
-		}
-	}
-	
 	private void createPackage() throws MojoExecutionException {
 		try {
 			zipName = util.createPackage(buildName, buildNumber, nextBuildNo, currentDate);
