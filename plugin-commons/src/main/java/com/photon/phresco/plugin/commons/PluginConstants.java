@@ -218,10 +218,10 @@ public interface PluginConstants {
 	 String WINDOWS_STR_BACKSLASH   	= "\\";
 	 String WP_STR_DOUBLEQUOTES 		= "\"";
 	 String WP_SOURCE					= "src";
-	 String WP8							= "wp8";
-	 String WP7							= "wp7";
 	 String WIN_STORE					= "winstore";
 	 String WIN_PHONE					= "winphone";
+	 String WIN_CLEAN					= "Clean";
+	 String REBUILD						= "Rebuild";
 	 
 	 String WP_SLN 						= ".sln";
 	 String WP_CSPROJ 					= ".csproj";
@@ -242,13 +242,6 @@ public interface PluginConstants {
 	 String WP_ADD_APPX_PACKAGE 		= "Add-AppxPackage ";
 	 String WP_GET_APPX_PACKAGE 		= "Get-AppxPackage ";
 	 String WP_REMOVE_APPX_PACKAGE 		= "Remove-AppxPackage ";
-//	 String WP8_PLATFORM 				= "wp8";
-
-	 // Variable related to Windows Store (Metro) unit test root folder
-	 String WINSTORE_UNIT_TEST_PROJECT_ROOT 	= "Metro.UnitTests";
-	 
-	// Variable related to Windows Phone unit test root folder
-	 String WP_UNIT_TEST_PROJECT_ROOT 	= "WP.UnitTests";
 	 
 	 // Variable related to WinStore and WinPhone unit test build process
 	 String WINDOWS_UNIT_TEST_VSTEST_CONSOLE = "vstest.console";

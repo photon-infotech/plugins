@@ -67,14 +67,9 @@ public class UnitTest implements PluginConstants {
 
 	private File buildDir;
 	private File buildInfoFile;
-	private File tempDir;
 	private int nextBuildNo;
-	private String zipName;
 	private Date currentDate;
-	private String winStoreUnitTestDirectory = "\\source\\test\\" + WINSTORE_UNIT_TEST_PROJECT_ROOT;
-	private String wpUnitTestDirectory = "\\source\\test\\" + WP_UNIT_TEST_PROJECT_ROOT;
-	private File buildFile;
-	private File[] solutionFile;
+	private String unitTestDirectory = "\\source\\test\\";
 	private File[] csprojFile;
 	private WP8PackageInfo packageInfo;
 	private File rootDir;
@@ -88,8 +83,6 @@ public class UnitTest implements PluginConstants {
 		baseDir = mavenProjectInfo.getBaseDir();
 		
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
-        /*environmentName = configs.get(ENVIRONMENT_NAME);
-        buildName = configs.get(BUILD_NAME); */
         buildNumber = configs.get(BUILD_NUMBER); 
         platform = configs.get(PLATFORM);
         config = configs.get(CONFIG);
@@ -204,7 +197,9 @@ public class UnitTest implements PluginConstants {
 		try {
 			if(type.equalsIgnoreCase(WIN_STORE)) {
 				String packageVersion = packageInfo.getPackageVersion();
-				configurationInfo = new File(rootDir.getPath() + WP_APP_PACKAGE + File.separator + WINSTORE_UNIT_TEST_PROJECT_ROOT + STR_UNDERSCORE + packageVersion + STR_UNDERSCORE + (platform.equalsIgnoreCase("anycpu")?"AnyCPU":platform) + (config.equalsIgnoreCase("debug")? STR_UNDERSCORE + config : "") + WP_TEST);
+				File unitDir = new File(baseDir.getPath() + unitTestDirectory);
+				String unitTestDirName = getUnitTestFolderName(unitDir);
+				configurationInfo = new File(rootDir.getPath() + WP_APP_PACKAGE + File.separator + unitTestDirName + STR_UNDERSCORE + packageVersion + STR_UNDERSCORE + (platform.equalsIgnoreCase("anycpu")?"AnyCPU":platform) + (config.equalsIgnoreCase("debug")? STR_UNDERSCORE + config : "") + WP_TEST);
 			} else if (type.equalsIgnoreCase(WIN_PHONE)) {
 				if (platform.equalsIgnoreCase(WP_X86)) {
 					configurationInfo = new File(rootDir.getPath() + File.separator +  BIN + File.separator + platform + File.separator + config);
@@ -239,17 +234,34 @@ public class UnitTest implements PluginConstants {
 		throw new MojoExecutionException("Invalid Usage. Please see the Usage of UnitTest Goal");
 	}
 	
-	private void getProjectRoot() throws MojoExecutionException {
+	public static String getUnitTestFolderName(File fileObject) throws PhrescoException {
+		String fileName =  "";
 		try {
-			// Get the source/<ProjectRoot> folder
-			if(type.equalsIgnoreCase(WIN_STORE)) {
-				rootDir = new File(baseDir.getPath() + winStoreUnitTestDirectory);
-			} else if (type.equalsIgnoreCase(WIN_PHONE)) {
-				rootDir = new File(baseDir.getPath() + wpUnitTestDirectory);
+			File allFiles[] = fileObject.listFiles();
+			for(File aFile : allFiles){
+				if (aFile.isDirectory()) {
+					if (aFile.getName().contains("Unit") || aFile.getName().contains("unit")) {
+						fileName = aFile.getName();
+					}
+				}
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage());
-			throw new MojoExecutionException(e.getMessage(), e);
+			throw new PhrescoException(e);
+		}
+		return fileName;
+	}
+	
+	private void getProjectRoot() throws PhrescoException {
+		try {
+			// Get the source/<ProjectRoot> folder
+			rootDir = new File(baseDir.getPath() + unitTestDirectory);
+			String unitTestFolderName = getUnitTestFolderName(rootDir);
+			if (StringUtils.isEmpty(unitTestFolderName)) {
+				throw new PhrescoException();
+			}
+			rootDir = new File(rootDir.getPath() + File.separator + unitTestFolderName);
+		} catch (Exception e) {
+			throw new PhrescoException("Test project directory must contain word Unit. Check the test project directory name.");
 		}
 	}
 	
@@ -280,7 +292,9 @@ public class UnitTest implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(WP_STR_TARGET);
 			sb.append(WP_STR_COLON);
-			sb.append("Rebuild");
+			sb.append(WIN_CLEAN);
+			sb.append(WP_STR_SEMICOLON);
+			sb.append(REBUILD);
 			sb.append(STR_SPACE);
 			sb.append(WP_STR_PROPERTY);
 			sb.append(WP_STR_COLON);
@@ -327,7 +341,9 @@ public class UnitTest implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(WP_STR_TARGET);
 			sb.append(WP_STR_COLON);
-			sb.append("Rebuild");
+			sb.append(WIN_CLEAN);
+			sb.append(WP_STR_SEMICOLON);
+			sb.append(REBUILD);
 			sb.append(STR_SPACE);
 			sb.append(WP_STR_PROPERTY);
 			sb.append(WP_STR_COLON);
