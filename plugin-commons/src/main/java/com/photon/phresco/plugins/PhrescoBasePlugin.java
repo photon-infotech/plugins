@@ -301,6 +301,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 	}
 
 	public ExecutionStatus validate(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		String pomFile = mavenProjectInfo.getProject().getFile().getName();
 		StringBuilder sb = new StringBuilder();
 		sb.append(SONAR_COMMAND);
 		Map<String, String> config = MojoUtil.getAllValues(configuration);
@@ -332,6 +333,13 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			append(STR_SPACE).
 			append("-Dsonar.branch=functional");
 		}
+		File workingFile = new File(workingDir + File.separator + pomFile);
+		if(workingFile.exists()) {
+			sb.append(STR_SPACE);
+			sb.append(Constants.HYPHEN_F);
+			sb.append(STR_SPACE);
+			sb.append(pomFile);
+		}
 		boolean status = Utility.executeStreamconsumer(sb.toString(), workingDir, project.getBasedir().getPath(), CODE_VALIDATE);
 		if(!status) {
 			try {
@@ -345,8 +353,16 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 
 	
 	private void generateMavenCommand(MavenProjectInfo mavenProjectInfo, String workingDirectory, String actionType) throws PhrescoException {
+		String pomFile = mavenProjectInfo.getProject().getFile().getName();
 		StringBuilder sb = new StringBuilder();
+		File workingFile = new File(workingDirectory + File.separator + pomFile);
 		sb.append(TEST_COMMAND);
+		if(workingFile.exists()) {
+			sb.append(STR_SPACE);
+			sb.append(Constants.HYPHEN_F);
+			sb.append(STR_SPACE);
+			sb.append(pomFile);
+		}
 		boolean status = Utility.executeStreamconsumer(sb.toString(), workingDirectory, mavenProjectInfo.getBaseDir().getPath(), actionType);
 		if(!status) {
 			try {

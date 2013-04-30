@@ -22,11 +22,13 @@ import java.io.File;
 import java.io.InputStreamReader;
 
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.cli.Commandline;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+import com.photon.phresco.util.Constants;
 
 public class SharePointTest
 {
@@ -36,9 +38,13 @@ public class SharePointTest
   private static String TEST_FILE_LOC = "\\source\\test\\AllTest\\bin\\Release\\";
   private static String TEST_FILE_NAME = "AllTest.dll";
   private File baseDir;
+  private MavenProject project;
+  private String pomFile;
   
   public void runUnitTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 	  baseDir = mavenProjectInfo.getBaseDir();
+	  project = mavenProjectInfo.getProject();
+	  pomFile = project.getFile().getName();
 	  init();
 	  try {
 		  fetchNUnit();
@@ -55,25 +61,31 @@ public class SharePointTest
   }
 
   private void fetchNUnit() throws MojoExecutionException {
-    StringBuilder sb;
-    try {
-      sb = new StringBuilder();
-      sb.append("mvn");
-      sb.append(STR_SPACE);
-      sb.append("validate");
-
-      Commandline cl = new Commandline(sb.toString());
-      Process p = cl.execute();
-      BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
-      String line = null;
-      while ((line = in.readLine()) != null) {
-    	  System.out.println(line);
-      }
-    }
-    catch (Exception e) {
-      throw new MojoExecutionException(e.getMessage(), e);
-    }
-  }
+	    StringBuilder sb;
+	    try {
+	      sb = new StringBuilder();
+	      sb.append(Constants.MVN_COMMAND);
+	      sb.append(STR_SPACE);
+	      sb.append(Constants.PHASE);
+	      if(!Constants.POM_NAME.equals(pomFile)) {
+	    	  sb.append(STR_SPACE);
+		      sb.append(Constants.HYPHEN_F);
+		      sb.append(STR_SPACE);
+		      sb.append(pomFile);
+	      }
+	      
+	      Commandline cl = new Commandline(sb.toString());
+	      Process p = cl.execute();
+	      BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
+	      String line = null;
+	      while ((line = in.readLine()) != null) {
+	    	  System.out.println(line);
+	      }
+	    }
+	    catch (Exception e) {
+	      throw new MojoExecutionException(e.getMessage(), e);
+	    }
+	  }
 
   private void executeTest() throws MojoExecutionException {
     System.out.println("-----------------------------------------");

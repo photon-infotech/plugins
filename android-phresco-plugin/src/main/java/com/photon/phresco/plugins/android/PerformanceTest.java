@@ -35,8 +35,10 @@ public class PerformanceTest implements PluginConstants {
 	public void performanceTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		try {
 			Map<String, String> configs = MojoUtil.getAllValues(configuration);
+			String baseDir = mavenProjectInfo.getBaseDir().getPath();
 			String deviceList= configs.get(DEVICES_LIST);
 			String signing = configs.get(SIGNING);
+			MavenProject project = mavenProjectInfo.getProject();
 			
 			if (StringUtils.isEmpty(deviceList)) {
 				System.out.println("Device list is empty . ");
@@ -61,12 +63,16 @@ public class PerformanceTest implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(HYPHEN_D + DEVICES_LIST + EQUAL + deviceList);
 			
-			MavenProject project = mavenProjectInfo.getProject();
 			String workingDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR);
-			
+			File WorkingFile = new File(baseDir + workingDir + File.separator + project.getFile().getName());
+			if(WorkingFile.exists()) {
+				sb.append(STR_SPACE);
+				sb.append(Constants.HYPHEN_F);
+				sb.append(STR_SPACE);
+				sb.append(project.getFile().getName());
+			}
 			System.out.println("Command " + sb.toString());
 			Commandline commandline = new Commandline(sb.toString());
-			String baseDir = mavenProjectInfo.getBaseDir().getPath();
 			if (StringUtils.isNotEmpty(workingDir)) {
 				commandline.setWorkingDirectory(baseDir + workingDir);
 			}

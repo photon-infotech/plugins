@@ -91,11 +91,13 @@ public class Package implements PluginConstants {
 	private PluginUtils pu;
 	private String sourceDir;
 	private StringBuilder builder;
+	private String pomName;
 	
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
         project = mavenProjectInfo.getProject();
+        pomName = project.getFile().getName();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
         buildName = configs.get(BUILD_NAME);
@@ -258,7 +260,7 @@ public class Package implements PluginConstants {
 		if(CollectionUtils.isNotEmpty(modules)) {
 			for (String mavenProject : modules) {
 				File pomFile = new File(project.getBasedir(), File.separator
-						+ mavenProject + File.separator + POM_XML);
+						+ mavenProject + File.separator + pomName);
 				if (pomFile.exists()) {
 					PomProcessor processor = new PomProcessor(pomFile);
 					if (processor.getPackage().equals(PACKAGING_TYPE_WAR)) {
@@ -363,7 +365,13 @@ public class Package implements PluginConstants {
 		sb.append(MVN_PHASE_CLEAN);
 		sb.append(STR_SPACE);
 		sb.append(MVN_PHASE_PACKAGE);
-		sb.append(STR_SPACE);
+		if(!Constants.POM_NAME.equals(pomName)) {
+			sb.append(STR_SPACE);
+			sb.append(Constants.HYPHEN_F);
+			sb.append(STR_SPACE);
+			sb.append(pomName);
+			sb.append(STR_SPACE);
+		}
 		sb.append(builder.toString());
 		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(),"package");
 		if(!status) {

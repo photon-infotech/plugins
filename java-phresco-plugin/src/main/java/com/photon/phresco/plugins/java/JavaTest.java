@@ -25,6 +25,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.commons.model.ApplicationInfo;
 import com.photon.phresco.exception.PhrescoException;
@@ -46,9 +47,13 @@ import com.phresco.pom.util.PomProcessor;
 public class JavaTest implements PluginConstants {
 	private File baseDir;
 	private File testConfigPath;
+	private MavenProject project;
+	private String pomFile;
 	
 	public void runTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException{
 		baseDir = mavenProjectInfo.getBaseDir();
+		project = mavenProjectInfo.getProject();
+		pomFile = project.getFile().getName();
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
 		String testAgainst = configs.get(TEST_AGAINST);
 		String environment = configs.get(ENVIRONMENT_NAME);
@@ -65,7 +70,7 @@ public class JavaTest implements PluginConstants {
 
 	private void copyUnitInfoFile(String environment, String techId) throws PhrescoException {
 		try {
-			PomProcessor processor = new PomProcessor( new File(baseDir.getPath() + File.separator + POM_XML));
+			PomProcessor processor = new PomProcessor( new File(baseDir.getPath() + File.separator + pomFile));
 			String testSourcePath = processor.getProperty("phresco.env.test.config.xml");
 			if (!techId.equals(TechnologyTypes.JAVA_STANDALONE) && !techId.equals(TechnologyTypes.JAVA_WEBSERVICE) ) {
 				PluginUtils utils = new PluginUtils();
@@ -113,6 +118,12 @@ public class JavaTest implements PluginConstants {
 			}
 			sb.append(STR_SPACE).
 			append(mavenCommandValue);
+			if(!Constants.POM_NAME.equals(pomFile)) {
+				sb.append(STR_SPACE);
+				sb.append(Constants.HYPHEN_F);
+				sb.append(STR_SPACE);
+				sb.append(pomFile);
+			}
 			boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(), UNIT);
 			if(!status) {
 				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
@@ -124,7 +135,7 @@ public class JavaTest implements PluginConstants {
 	
 	private String getGoalPackBeforeTest(File baseDir) throws PhrescoException {
 		try {
-			PomProcessor processor = new PomProcessor(new File(baseDir.getPath() + File.separator + POM_XML));
+			PomProcessor processor = new PomProcessor(new File(baseDir.getPath() + File.separator + pomFile));
 			Plugin plugin = processor.getPlugin("net.awired.jstest", "jstest-maven-plugin");
 			if(plugin.getExecutions() != null && CollectionUtils.isNotEmpty(plugin.getExecutions().getExecution())) {
 				List<PluginExecution> execution = plugin.getExecutions().getExecution();

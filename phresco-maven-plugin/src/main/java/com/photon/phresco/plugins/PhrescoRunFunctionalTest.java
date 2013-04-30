@@ -57,7 +57,7 @@ public class PhrescoRunFunctionalTest extends PhrescoAbstractMojo implements Plu
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
-			File pomPath = new File(baseDir + File.separator + Constants.POM_NAME);
+			File pomPath = new File(baseDir + File.separator + project.getFile().getName());
 			PomProcessor processor = new PomProcessor(pomPath);
 			String property = processor.getProperty(FUNCTIONAL_TEST_SELENIUM_TYPE);
 			String goal = "";

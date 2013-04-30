@@ -49,6 +49,7 @@ public class UnitTest implements PluginConstants {
 		String unitTestType = configs.get(UNIT_TEST_TYPE);
 		String projectType = configs.get(PROJECT_TYPE);
 		String baseDir = mavenProjectInfo.getBaseDir().getPath();
+		String pomFile = mavenProjectInfo.getProject().getFile().getName();
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append(XCODE_BUILD_COMMAND);
@@ -88,6 +89,12 @@ public class UnitTest implements PluginConstants {
 		
 		sb.append(STR_SPACE);
 		sb.append(TEST);
+		if(!Constants.POM_NAME.equals(pomFile)) {
+			sb.append(STR_SPACE);
+			sb.append(Constants.HYPHEN_F);
+			sb.append(STR_SPACE);
+			sb.append(pomFile);
+		}
 		System.out.println("UnitTest Command " + sb.toString());
 		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir, baseDir, UNIT);
 		if(!status) {
