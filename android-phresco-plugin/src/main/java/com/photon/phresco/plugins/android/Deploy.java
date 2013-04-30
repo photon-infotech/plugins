@@ -42,6 +42,7 @@ public class Deploy implements PluginConstants {
 		String deviceValue = configs.get(DEVICES);
 		String serialNumber = configs.get(SERIAL_NUMBER);
 		String workingDir = mavenProjectInfo.getBaseDir().getPath();
+		String pomFile = mavenProjectInfo.getProject().getFile().getName();
 		
 		if (StringUtils.isEmpty(buildNumber)) {
 			System.out.println("buildNumber is empty . ");
@@ -80,6 +81,13 @@ public class Deploy implements PluginConstants {
 		
 		sb.append(STR_SPACE);
 		sb.append(HYPHEN_D + ANDROID_EMULATOR + EQUAL + DEFAULT);
+		
+		if(!Constants.POM_NAME.equals(pomFile)) {
+			sb.append(STR_SPACE);
+			sb.append(Constants.HYPHEN_F);
+			sb.append(STR_SPACE);
+			sb.append(pomFile);
+		}
 		
 		log.info("Project is Deploying...");
 		log.info("Command " + sb.toString());

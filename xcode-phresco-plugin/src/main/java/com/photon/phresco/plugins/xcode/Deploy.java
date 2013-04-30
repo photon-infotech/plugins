@@ -51,6 +51,7 @@ public class Deploy implements PluginConstants {
 			this.log = log;
 			Map<String, String> configs = MojoUtil.getAllValues(config);
 			File baseDir = mavenProjectInfo.getBaseDir();
+			String pomFile = mavenProjectInfo.getProject().getFile().getName();
 			String buildNumber = configs.get(BUILD_NUMBER);
 			String family = configs.get(FAMILY);
 			String simVersion = configs.get(SIM_VERSION);
@@ -104,6 +105,13 @@ public class Deploy implements PluginConstants {
 			
 			sb.append(STR_SPACE);
 			sb.append(HYPHEN_D + TRIGGER_SIMULATOR + EQUAL + triggerSimulator);
+			
+			if(!Constants.POM_NAME.equals(pomFile)) {
+				sb.append(STR_SPACE);
+				sb.append(Constants.HYPHEN_F);
+				sb.append(STR_SPACE);
+				sb.append(pomFile);
+			}
 			
 			System.out.println("Command " + sb.toString());
 			

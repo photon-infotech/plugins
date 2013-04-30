@@ -23,6 +23,7 @@ import java.util.*;
 import org.apache.commons.lang.*;
 import org.apache.maven.plugin.*;
 import org.apache.maven.plugin.logging.*;
+import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.exception.*;
 import com.photon.phresco.plugin.commons.*;
@@ -41,7 +42,8 @@ public class ClangCodeValidator implements PluginConstants {
 		this.log = log;
 		log.debug("Iphone code validation started ");
 		Map<String, String> configs = MojoUtil.getAllValues(config);
-		
+		MavenProject project = mavenProjectInfo.getProject();
+		String pomFile = project.getFile().getName();
 		String target = configs.get(TARGET);
 		if (StringUtils.isNotEmpty(target)) {
 			target = target.replace(STR_SPACE, SHELL_SPACE);
@@ -70,7 +72,12 @@ public class ClangCodeValidator implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(HYPHEN_D + SDK + EQUAL + sdk);
 		}
-		
+		if(!Constants.POM_NAME.equals(pomFile)) {
+			sb.append(STR_SPACE);
+			sb.append(Constants.HYPHEN_F);
+			sb.append(STR_SPACE);
+			sb.append(pomFile);
+		}
 		log.debug("Command " + sb.toString());
 		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(), CODE_VALIDATE);
 		if(!status) {

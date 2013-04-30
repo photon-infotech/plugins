@@ -45,10 +45,12 @@ public class Package implements PluginConstants {
 	private Log log;
 	private String baseDir;
 	private MavenProject project;
+	private String pomFile;
 	public void pack(com.photon.phresco.plugins.model.Mojos.Mojo.Configuration config, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir().getPath();
 		project = mavenProjectInfo.getProject();
+		pomFile = project.getFile().getName();
 		
 		Map<String, String> configs = MojoUtil.getAllValues(config);
 		String environmentName = configs.get(ENVIRONMENT_NAME);
@@ -139,6 +141,14 @@ public class Package implements PluginConstants {
 				}
 			}			
 		}		
+		
+		if(!Constants.POM_NAME.equals(pomFile)) {
+			sb.append(STR_SPACE);
+			sb.append(Constants.HYPHEN_F);
+			sb.append(STR_SPACE);
+			sb.append(pomFile);
+		}
+		
 		log.info("Command " + sb.toString());
 		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir, baseDir, FrameworkConstants.PACKAGE);
 		if(!status) {
@@ -169,7 +179,7 @@ public class Package implements PluginConstants {
 			}
 			// pom file
 			sb.append(File.separatorChar);
-			sb.append(POM_XML);
+			sb.append(pomFile);
 			projPoms.add(sb.toString());
 		}
 		

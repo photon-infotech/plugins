@@ -423,7 +423,7 @@ public class GenerateReport implements PluginConstants {
 			if (!isClangReport) {
 				//Sonar details
 				List<SonarReport> sonarReports = new ArrayList<SonarReport>();
-				String pomPath =  baseDir + File.separator + POM_XML;
+				String pomPath =  baseDir + File.separator + mavenProject.getFile().getName();
 				if (StringUtils.isNotEmpty(sonarUrl)) {
 					List<String> sonarTechReports = getSonarProfiles(pomPath);
 					if (sonarTechReports != null) {
@@ -616,7 +616,12 @@ public class GenerateReport implements PluginConstants {
 			}
             
             builder.append(File.separatorChar);
-        	builder.append(POM_XML);
+        	File pomFile = new File(builder.toString() + mavenProject.getFile().getName());
+            if(pomFile.exists()) {
+            	builder.append(pomFile.getName());
+            } else {
+            	builder.append(POM_XML);
+            }
         	log.debug("Sonar pom path => " + builder.toString());
         	File pomPath = new File(builder.toString());
         	

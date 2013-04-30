@@ -68,6 +68,7 @@ public class DefaultSeleniumPlugin implements SeleniumPlugin {
 	public ExecutionStatus startHub(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		File baseDir = mavenProjectInfo.getBaseDir();
 		MavenProject project = mavenProjectInfo.getProject();
+		
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
 		Integer port = Integer.parseInt(configs.get("port"));
 		int newSessionTimeout = 0;
@@ -122,7 +123,7 @@ public class DefaultSeleniumPlugin implements SeleniumPlugin {
 			String funcDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
 			pluginUtils.updateHubConfigInfo(baseDir, funcDir, hubConfig);
 			log.info("Starting the Hub...");
-			pluginUtils.startHub(baseDir);
+			pluginUtils.startHub(baseDir, pomFile.getName());
 		} catch (PhrescoPomException e) {
 			throw new PhrescoException(e);
 		} catch (UnknownHostException e) {
@@ -134,7 +135,8 @@ public class DefaultSeleniumPlugin implements SeleniumPlugin {
 	public ExecutionStatus stopHub(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		try {
 			File baseDir = mavenProjectInfo.getBaseDir();
-			File pomFile = new File(baseDir  + File.separator + Constants.POM_NAME);
+			MavenProject project = mavenProjectInfo.getProject();
+			File pomFile = new File(baseDir  + File.separator + project.getFile().getName());
 			PomProcessor processor = new PomProcessor(pomFile);
 			String funcDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
 			File configFile = new File(baseDir + funcDir + File.separator + Constants.HUB_CONFIG_JSON);
@@ -219,7 +221,7 @@ public class DefaultSeleniumPlugin implements SeleniumPlugin {
 			PluginUtils plugniutil = new PluginUtils();
 			plugniutil.updateNodeConfigInfo(baseDir, funcDir, nodeConfiguration);
 			log.info("Starting the Node...");
-			plugniutil.startNode(baseDir);
+			plugniutil.startNode(baseDir, pomFile.getName());
 		}  catch (PhrescoPomException e) {
 			throw new PhrescoException(e);
 		} catch (IOException e) {
@@ -231,7 +233,8 @@ public class DefaultSeleniumPlugin implements SeleniumPlugin {
 	public ExecutionStatus stopNode(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		try {
 			File baseDir = mavenProjectInfo.getBaseDir();
-			File pomFile = new File(baseDir  + File.separator + Constants.POM_NAME);
+			MavenProject project = mavenProjectInfo.getProject();
+			File pomFile = new File(baseDir  + File.separator + project.getFile().getName());
 			PomProcessor processor = new PomProcessor(pomFile);
 			String funcDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
 			File configFile = new File(baseDir + funcDir + File.separator + Constants.NODE_CONFIG_JSON);

@@ -57,6 +57,7 @@ public class PreBuildStep  implements PluginConstants {
     private File baseDir;
     private Log log;
     private PluginPackageUtil util;
+    private String pom;
     
 	public void performCIPreBuildStep(String name, String goal, String phase, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		log.info("CI prebuild step execution reached " + name);
@@ -65,6 +66,7 @@ public class PreBuildStep  implements PluginConstants {
 	        this.log = log;
 	        baseDir = mavenProjectInfo.getBaseDir();
 	        project = mavenProjectInfo.getProject();
+	        pom = project.getFile().getName();
 	        
 	        // getting jenkins workspace job dir
 	        String jenkinsJobDirPath = getJenkinsJobDirPath(name);
@@ -104,7 +106,7 @@ public class PreBuildStep  implements PluginConstants {
 			MojoProcessor mojo = new MojoProcessor(phrescoPluginInfoFile);
 			
 			if (Constants.PHASE_FUNCTIONAL_TEST.equals(phase)) {
-				File pomFile = new File(baseDir, POM_XML);
+				File pomFile = new File(baseDir, pom);
 				log.info("Pom path " + pomFile.getPath());
 				PomProcessor pm = new PomProcessor(pomFile);
 				String seleniumTool = pm.getProperty(Constants.POM_PROP_KEY_FUNCTEST_SELENIUM_TOOL);

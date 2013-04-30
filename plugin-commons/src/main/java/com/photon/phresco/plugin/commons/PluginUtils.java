@@ -738,14 +738,14 @@ public class PluginUtils {
 		}
 	}
 
-	public void startNode(File baseDir) throws PhrescoException {
+	public void startNode(File baseDir, String pomFile) throws PhrescoException {
 		FileOutputStream fos = null;
 		try {
 			File LogDir = new File(baseDir + File.separator + Constants.DO_NOT_CHECKIN_DIRY + File.separator + Constants.LOG_DIRECTORY);
 			if (!LogDir.exists()) {
 				LogDir.mkdirs();
 			}
-			File pomPath = new File(baseDir + File.separator + Constants.POM_NAME);
+			File pomPath = new File(baseDir + File.separator + pomFile);
             PomProcessor processor = new PomProcessor(pomPath);
             String functionalTestDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
             StringBuilder builder = new StringBuilder()
@@ -766,7 +766,7 @@ public class PluginUtils {
 			sb.append(functionalTestDir.substring(1, functionalTestDir.length()))
 			.append(PluginConstants.LIB_SELENIUM_SERVER_STANDALONE)
 			.append(PluginConstants.HYPEN)
-			.append(getVersion(baseDir))
+			.append(getVersion(baseDir, pomFile))
 			.append(PluginConstants.DOT_JAR)
 			.append(PluginConstants.ROLE_NODE_NODE_CONFIG)
 			.append(functionalTestDir.substring(1, functionalTestDir.length()))
@@ -780,8 +780,8 @@ public class PluginUtils {
         }
 	}
 	
-	private String getVersion(File baseDir) throws PhrescoPomException {
-		File pomFile = new File(baseDir + File.separator + Constants.POM_NAME);
+	private String getVersion(File baseDir, String pom) throws PhrescoPomException {
+		File pomFile = new File(baseDir + File.separator + pom);
 		PomProcessor processor = new PomProcessor(pomFile);
 		String functionalDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
 		File funcPomFile = new File(baseDir + File.separator + functionalDir + File.separator + Constants.POM_NAME);
@@ -790,10 +790,10 @@ public class PluginUtils {
 		return dependency.getVersion();
 	}
 
-	public void startHub(File baseDir) throws PhrescoException {
+	public void startHub(File baseDir, String pomFile) throws PhrescoException {
 	    FileOutputStream fos = null;
 	    try {
-	        File pomPath = new File(baseDir + File.separator + Constants.POM_NAME);
+	        File pomPath = new File(baseDir + File.separator + pomFile);
             PomProcessor processor = new PomProcessor(pomPath);
             String functionalTestDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
             StringBuilder builder = new StringBuilder()
@@ -811,7 +811,7 @@ public class PluginUtils {
 	        .append(functionalTestDir.substring(1, functionalTestDir.length()))
 	        .append(PluginConstants.LIB_SELENIUM_SERVER_STANDALONE)
 	        .append(PluginConstants.HYPEN)
-			.append(getVersion(baseDir))
+			.append(getVersion(baseDir, pomFile))
 			.append(PluginConstants.DOT_JAR)
 	        .append(PluginConstants.ROLE_HUB_HUB_CONFIG)
 	        .append(functionalTestDir.substring(1, functionalTestDir.length()))
@@ -827,7 +827,11 @@ public class PluginUtils {
 	
 	private void executeValidatePhase(String workingDir) throws PhrescoException {
 	    try {
-	        BufferedReader breader = Utility.executeCommand("mvn validate", workingDir);
+	    	StringBuilder sb = new StringBuilder();
+	    	sb.append(Constants.MVN_COMMAND);
+	    	sb.append(Constants.STR_BLANK_SPACE);
+	    	sb.append(Constants.PHASE);
+	        BufferedReader breader = Utility.executeCommand(sb.toString(), workingDir);
 	        String line = null;
 	        while ((line = breader.readLine()) != null) {
 	            if (line.startsWith("[ERROR]")) {
