@@ -87,6 +87,7 @@ import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.framework.model.ContextUrls;
 import com.photon.phresco.framework.model.DbContextUrls;
 import com.photon.phresco.framework.model.Headers;
+import com.photon.phresco.framework.model.Parameters;
 import com.photon.phresco.impl.ConfigManagerImpl;
 import com.photon.phresco.plugins.filter.FileListFilter;
 import com.photon.phresco.util.Constants;
@@ -398,7 +399,8 @@ public class PluginUtils {
 			 }
 
 			 for (ContextUrls contextUrl : contextUrls) {
-				 Node appendHttpSamplerProxy = appendHttpSamplerProxy(document, hashTree, contextUrl.getName(), "${context}/" + contextUrl.getContext(), contextUrl.getContextType(), contextUrl.getContextPostData(), contextUrl.getEncodingType());
+				 Node appendHttpSamplerProxy = appendHttpSamplerProxy(document, hashTree, contextUrl.getName(), "${context}/" + contextUrl.getContext(), contextUrl.getContextType(), 
+						 	contextUrl.getContextPostData(), contextUrl.getEncodingType(), contextUrl);
 				 hashTree.appendChild(appendHttpSamplerProxy);
 				 List<Headers> headers = contextUrl.getHeaders();
 				 if (CollectionUtils.isNotEmpty(headers)) {
@@ -411,20 +413,21 @@ public class PluginUtils {
 		 saveDocument(jmxFile, document);
 	 }
 	 
-	 private Node appendHttpSamplerProxy(Document document, Node hashTree, String name, String context, String contextType, String contextPostData, String encodingType) {
+	 private Node appendHttpSamplerProxy(Document document, Node hashTree, String name, String context, String contextType, String contextPostData, 
+			 String encodingType, ContextUrls contextUrl) {
 			Node httpSamplerProxy = document.createElement("HTTPSamplerProxy");
 			String contentEncoding = null;
-			if(contextType.equals(FrameworkConstants.POST)) {
-				contentEncoding = encodingType;
+			if(FrameworkConstants.POST.equals(contextUrl.getContextType())) {
+				contentEncoding = contextUrl.getEncodingType();
 			}
 			
 			NamedNodeMap attributes = httpSamplerProxy.getAttributes();
 			attributes.setNamedItem(createAttribute(document, "guiclass", "HttpTestSampleGui"));
 			attributes.setNamedItem(createAttribute(document, "testclass", "HTTPSamplerProxy"));
-			attributes.setNamedItem(createAttribute(document, "testname", name)); //url name
+			attributes.setNamedItem(createAttribute(document, "testname", contextUrl.getName())); //url name
 			attributes.setNamedItem(createAttribute(document, "enabled", "true"));
 
-			appendElementProp(document, httpSamplerProxy, contextType, contextPostData);
+			appendElementProp(document, httpSamplerProxy, contextUrl.getContextType(), contextUrl.getContextPostData(), contextUrl);
 
 			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.domain", null);
 			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.port", null);
@@ -432,14 +435,15 @@ public class PluginUtils {
 			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.response_timeout", null);
 			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.protocol", null);
 			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.contentEncoding", contentEncoding);
-			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.path", context); // server url
-			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.method", contextType);
+			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.path", "${context}/" + contextUrl.getContext()); // server url
+			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.method", contextUrl.getContextType());
 
-			appendTypeProp(document, httpSamplerProxy, "boolProp", "HTTPSampler.follow_redirects", "false");
-			appendTypeProp(document, httpSamplerProxy, "boolProp", "HTTPSampler.auto_redirects", "true");
-			appendTypeProp(document, httpSamplerProxy, "boolProp", "HTTPSampler.use_keepalive", "true");
-			appendTypeProp(document, httpSamplerProxy, "boolProp", "HTTPSampler.DO_MULTIPART_POST", "false");
-
+			appendTypeProp(document, httpSamplerProxy, "boolProp", "HTTPSampler.follow_redirects", String.valueOf(contextUrl.isFollowRedirects()));
+			appendTypeProp(document, httpSamplerProxy, "boolProp", "HTTPSampler.auto_redirects", String.valueOf(contextUrl.isRedirectAutomatically()));
+			appendTypeProp(document, httpSamplerProxy, "boolProp", "HTTPSampler.use_keepalive", String.valueOf(contextUrl.isKeepAlive()));
+			appendTypeProp(document, httpSamplerProxy, "boolProp", "HTTPSampler.DO_MULTIPART_POST", String.valueOf(contextUrl.isMultipartData()));
+			appendTypeProp(document, httpSamplerProxy, "boolProp", "HTTPSampler.BROWSER_COMPATIBLE_MULTIPART", String.valueOf(contextUrl.isCompatibleHeaders()));
+			
 			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.implementation", "Java");
 			appendTypeProp(document, httpSamplerProxy, "boolProp", "HTTPSampler.monitor", "false");
 			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.embedded_url_re", null);
@@ -447,7 +451,7 @@ public class PluginUtils {
 			return httpSamplerProxy;
 		}
 	 
-	 private void appendElementProp(Document document, Node parentNode, String contextType, String contextPostData) { // eleme prop
+	 private void appendElementProp(Document document, Node parentNode, String contextType, String contextPostData, ContextUrls contextUrl) { // eleme prop
 			Node elementProp = document.createElement("elementProp");
 			NamedNodeMap attributes = elementProp.getAttributes();
 
@@ -457,13 +461,13 @@ public class PluginUtils {
 			attributes.setNamedItem(createAttribute(document, "testclass", "Arguments"));
 			attributes.setNamedItem(createAttribute(document, "testname", "User Defined Variables"));
 			attributes.setNamedItem(createAttribute(document, "enabled", "true"));
-			appendCollectionProp(document, elementProp, contextType, contextPostData);
+			appendCollectionProp(document, elementProp, contextType, contextPostData, contextUrl);
 
 			//parentNode.setTextContent(null);
 			parentNode.appendChild(elementProp);
 		}
 	 
-	 private void appendCollectionProp(Document document, Node elementProp, String contextType, String contextPostData) { // collection append in prop
+	 private void appendCollectionProp(Document document, Node elementProp, String contextType, String contextPostData, ContextUrls contextUrl) { // collection append in prop
 		 String argumentValue = null;
 		 if(contextType.equals(FrameworkConstants.POST)) {
 			 argumentValue = contextPostData;
@@ -471,17 +475,22 @@ public class PluginUtils {
 		 Node collectionProp = document.createElement("collectionProp");
 		 NamedNodeMap attributes = collectionProp.getAttributes();
 		 attributes.setNamedItem(createAttribute(document, "name", "Arguments.arguments"));
-
-		 Node subElementProp = document.createElement("elementProp");
-		 NamedNodeMap subElementAttributes = subElementProp.getAttributes();
-		 subElementAttributes.setNamedItem(createAttribute(document, "name", ""));
-		 subElementAttributes.setNamedItem(createAttribute(document, "elementType", "HTTPArgument"));
-		 collectionProp.appendChild(subElementProp);
-		 appendTypeProp(document, subElementProp, "boolProp", "HTTPArgument.always_encode", "false");
-		 appendTypeProp(document, subElementProp, "stringProp", "Argument.value", argumentValue);
-		 appendTypeProp(document, subElementProp, "stringProp", "Argument.metadata", "=");
-		 appendTypeProp(document, subElementProp, "boolProp", "HTTPArgument.use_equals", "true");
-
+		 List<Parameters> parameters = contextUrl.getParameters();
+		 if (CollectionUtils.isNotEmpty(parameters)) {
+			 for (Parameters parameter : parameters) {
+				 Node subElementProp = document.createElement("elementProp");
+				 NamedNodeMap subElementAttributes = subElementProp.getAttributes();
+				 subElementAttributes.setNamedItem(createAttribute(document, "name", parameter.getName()));
+				 subElementAttributes.setNamedItem(createAttribute(document, "elementType", "HTTPArgument"));
+				 collectionProp.appendChild(subElementProp);
+				 appendTypeProp(document, subElementProp, "boolProp", "HTTPArgument.always_encode", String.valueOf(parameter.isEncode()));
+				 appendTypeProp(document, subElementProp, "stringProp", "Argument.value", parameter.getValue());
+				 appendTypeProp(document, subElementProp, "stringProp", "Argument.metadata", "=");
+				 appendTypeProp(document, subElementProp, "boolProp", "HTTPArgument.use_equals", "true");
+				 appendTypeProp(document, subElementProp, "stringProp", "Argument.name", parameter.getName());
+			 }
+		 }
+		 
 		 elementProp.setTextContent(null);
 		 elementProp.appendChild(collectionProp);
 	 }
