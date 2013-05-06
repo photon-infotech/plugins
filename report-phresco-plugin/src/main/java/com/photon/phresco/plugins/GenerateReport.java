@@ -254,7 +254,7 @@ public class GenerateReport implements PluginConstants {
 	public void generatePdfReport() throws PhrescoException {
 		try {
 			// Report generation for unit and functional
-			if (UNIT.equals(testType) || FUNCTIONAL.equals(testType)) {
+			if (UNIT.equals(testType) || FUNCTIONAL.equals(testType) || COMPONENT.equals(testType)) {
 				List<String> modules = mavenProject.getModules();
 				boolean isMultiModuleProject = false;
 				if (CollectionUtils.isNotEmpty(modules)) {
@@ -385,6 +385,16 @@ public class GenerateReport implements PluginConstants {
 				cumulativeReportparams.put(FUNCTIONAL_TEST_REPORTS, Arrays.asList(functionalSureFireReports));
 			}
 			
+			testType = COMPONENT;
+			List<TestSuite> testSuitesComponent = null;
+			SureFireReport componentSureFireReports = sureFireReports(null);
+			List<AllTestSuite> allTestSuitesComponent = null;
+			allTestSuitesComponent = componentSureFireReports.getAllTestSuites();
+			testSuitesComponent = componentSureFireReports.getTestSuites();
+			if (CollectionUtils.isNotEmpty(testSuitesComponent) || CollectionUtils.isNotEmpty(allTestSuitesComponent)) {
+				cumulativeReportparams.put(COMPONENT_TEST_REPORTS, Arrays.asList(componentSureFireReports));
+			}
+			
 			
 			testType = "";
 			//performance details
@@ -407,7 +417,7 @@ public class GenerateReport implements PluginConstants {
 			cumulativeReportparams.put(TECH_NAME, techName);
 			cumulativeReportparams.put(VERSION, version);
 			cumulativeReportparams.put(LOGO, logo);
-//			
+			
 			cumulativeReportparams.put(REPORTS_TYPE, reportType);
 			cumulativeReportparams.put(IS_CLASS_EMPTY, isClassEmpty);
 			
@@ -692,7 +702,6 @@ public class GenerateReport implements PluginConstants {
 					}
 				}
 			}
-			
 			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
 			new File(outFileNamePDF).getParentFile().mkdirs();
 			String containerJasperFile = "PhrescoSureFireReport.jasper";
@@ -703,7 +712,7 @@ public class GenerateReport implements PluginConstants {
 			parameters.put(PDF_PROJECT_CODE, projectCode);
 			parameters.put(PROJECT_NAME, projName);
 			parameters.put(TECH_NAME, techName);
-			parameters.put(TEST_TYPE, testType.toUpperCase());
+			parameters.put(TEST_TYPE, testType);
 			parameters.put(REPORTS_TYPE, reportType);
 			parameters.put(VERSION, version);
 			parameters.put(LOGO, logo);
@@ -1146,7 +1155,7 @@ public class GenerateReport implements PluginConstants {
 				sureFireReport.setTestSuites(testSuites);
 				return sureFireReport;
 			}
-		} else {
+		} else if (FUNCTIONAL.equals(testType)){
 			String reportFilePath = baseDir.getAbsolutePath();
 			String functionalTestDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_RPT_DIR);
 			String unitTestSuitePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_TESTSUITE_XPATH);
@@ -1162,8 +1171,21 @@ public class GenerateReport implements PluginConstants {
 			for (File testResultFile : testResultFiles) {
 				reportDirWithTestSuitePath.put(testResultFile.getPath(), unitTestSuitePath + "," + unitTestCasePath);
 			}
+		} else if (COMPONENT.equals(testType)){
+			String reportFilePath = baseDir.getAbsolutePath();
+			String componentTestDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_COMPONENTTEST_RPT_DIR);
+			String componentTestSuitePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_COMPONENTTEST_TESTSUITE_XPATH);
+			String componentTestCasePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_COMPONENTTEST_TESTCASE_PATH);
+			String reportPath = "";
+			if (StringUtils.isNotEmpty(componentTestDir)) {
+				reportPath = reportFilePath + componentTestDir;
+			}
+			List<File> testResultFiles = getTestResultFilesAsList(reportPath);
+			for (File testResultFile : testResultFiles) {
+				reportDirWithTestSuitePath.put(testResultFile.getPath(), componentTestSuitePath + "," + componentTestCasePath);
+			}
 		}
-
+		
 		SureFireReport sureFireReport = new SureFireReport();
 		ArrayList<TestSuite> testSuiteWithTestCase = null;
 		ArrayList<AllTestSuite> allTestSuiteDetails = null;
@@ -1193,7 +1215,6 @@ public class GenerateReport implements PluginConstants {
 			}
 
 			List<TestSuite> testSuites = getTestSuite(doc, testSuitePath);
-
 			// crisp info
 			float totalTestSuites = 0;
 			float successTestSuites = 0;
@@ -2324,6 +2345,7 @@ public class GenerateReport implements PluginConstants {
 	        if ("All".equalsIgnoreCase(testType)) {
 	        	log.info("all report generation started ... "); // all report
 	        	cumalitiveTestReport();
+	        	
 	        } else {
 	        	log.info("indivudal report generation started ... "); // specified type report
 	        	generatePdfReport();
