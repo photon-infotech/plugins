@@ -693,15 +693,18 @@ public class GenerateReport implements PluginConstants {
 		BufferedInputStream bufferedInputStream = null;
 		try {
 			boolean isClassEmpty = true;
-			List<TestSuite> testSuites = sureFireReports.getTestSuites();
-			for (TestSuite testSuite : testSuites) {
-				List<TestCase> testcases = testSuite.getTestCases();
-				for (TestCase testCase : testcases) {
-					if (StringUtils.isNotEmpty(testCase.getTestClass())) {
-						isClassEmpty = false;
+			if (FUNCTIONAL.equals(testType)) {
+				List<TestSuite> testSuites = sureFireReports.getTestSuites();
+				for (TestSuite testSuite : testSuites) {
+					List<TestCase> testcases = testSuite.getTestCases();
+					for (TestCase testCase : testcases) {
+						if (StringUtils.isNotEmpty(testCase.getTestClass())) {
+							isClassEmpty = false;
+						}
 					}
 				}
 			}
+			
 			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
 			new File(outFileNamePDF).getParentFile().mkdirs();
 			String containerJasperFile = "PhrescoSureFireReport.jasper";
