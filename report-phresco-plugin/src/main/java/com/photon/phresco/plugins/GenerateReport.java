@@ -117,6 +117,7 @@ import com.photon.phresco.commons.model.ProjectInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
+import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.plugins.util.PluginPackageUtil;
@@ -255,7 +256,7 @@ public class GenerateReport implements PluginConstants {
 		try {
 			// Report generation for unit and functional
 			if (UNIT.equals(testType) || FUNCTIONAL.equals(testType) || COMPONENT.equals(testType)) {
-				List<String> modules = mavenProject.getModules();
+				List<String> modules = PluginUtils.getProjectModules(mavenProject);
 				boolean isMultiModuleProject = false;
 				if (CollectionUtils.isNotEmpty(modules)) {
 					isMultiModuleProject = true;
@@ -320,7 +321,7 @@ public class GenerateReport implements PluginConstants {
 			testType = UNIT;
 			
 			boolean isMultiModuleProject = false;
-			List<String> modules = mavenProject.getModules();
+			List<String> modules = PluginUtils.getProjectModules(mavenProject);
 			if (CollectionUtils.isNotEmpty(modules)) {
 				isMultiModuleProject = true;
 			}

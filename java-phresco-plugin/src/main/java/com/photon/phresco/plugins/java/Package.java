@@ -249,9 +249,9 @@ public class Package implements PluginConstants {
 		}
 	}
 	
-	private boolean isJarProject(MavenProject project) throws PhrescoPomException {
+	private boolean isJarProject(MavenProject project) throws PhrescoPomException, PhrescoException {
 		boolean jarProject = true;
-		List<String> modules = project.getModules();
+		List<String> modules = PluginUtils.getProjectModules(project);
 		if(CollectionUtils.isEmpty(modules)) {
 			if(project.getModel().getPackaging().equals(PACKAGING_TYPE_WAR)) {
 				jarProject = false;

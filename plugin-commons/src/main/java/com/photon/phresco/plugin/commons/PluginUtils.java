@@ -59,6 +59,7 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.project.MavenProject;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -95,6 +96,7 @@ import com.photon.phresco.util.NodeConfiguration;
 import com.photon.phresco.util.Utility;
 import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.model.Dependency;
+import com.phresco.pom.model.Model.Modules;
 import com.phresco.pom.util.PomProcessor;
 
 public class PluginUtils {
@@ -1190,4 +1192,29 @@ public class PluginUtils {
 			}
 		}
 	}
+	
+	public static List<String> getProjectModules(MavenProject project) throws PhrescoException {
+    	try {
+            StringBuilder builder = new StringBuilder();
+            builder.append(project.getFile());
+    		File pomPath = new File(builder.toString());
+    		PomProcessor processor = new PomProcessor(pomPath);
+    		Modules pomModule = processor.getPomModule();
+    		List<String> moduleList = new ArrayList<String>();
+    		if (pomModule != null) {
+    			List<String> modules = pomModule.getModule();
+    			for (String module : modules) {
+					String[] split = module.split("/");
+					if(split != null) {
+						module = split[0];
+					}
+					moduleList.add(module);
+				}
+    			return moduleList;
+    		}
+    	} catch (PhrescoPomException e) {
+    		 throw new PhrescoException(e);
+    	}
+    	return null;
+    }
 }
