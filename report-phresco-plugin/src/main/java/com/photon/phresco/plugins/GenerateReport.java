@@ -112,6 +112,7 @@ import com.itextpdf.tool.xml.pipeline.css.CssResolverPipeline;
 import com.itextpdf.tool.xml.pipeline.end.PdfWriterPipeline;
 import com.itextpdf.tool.xml.pipeline.html.HtmlPipeline;
 import com.itextpdf.tool.xml.pipeline.html.HtmlPipelineContext;
+import com.phloc.css.parser.ParseUtils;
 import com.photon.phresco.commons.model.ApplicationInfo;
 import com.photon.phresco.commons.model.ProjectInfo;
 import com.photon.phresco.exception.PhrescoException;
@@ -256,7 +257,7 @@ public class GenerateReport implements PluginConstants {
 		try {
 			// Report generation for unit and functional
 			if (UNIT.equals(testType) || FUNCTIONAL.equals(testType) || COMPONENT.equals(testType)) {
-				List<String> modules = mavenProject.getModules();
+				List<String> modules = PluginUtils.getProjectModules(mavenProject);
 				boolean isMultiModuleProject = false;
 				if (CollectionUtils.isNotEmpty(modules)) {
 					isMultiModuleProject = true;
@@ -321,7 +322,7 @@ public class GenerateReport implements PluginConstants {
 			testType = UNIT;
 			
 			boolean isMultiModuleProject = false;
-			List<String> modules = mavenProject.getModules();
+			List<String> modules = PluginUtils.getProjectModules(mavenProject);
 			if (CollectionUtils.isNotEmpty(modules)) {
 				isMultiModuleProject = true;
 			}
