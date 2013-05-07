@@ -531,6 +531,7 @@ public interface PluginConstants {
     String UIAUTOMATION = "UIAutomation";
     String HYPEN = "-";
     String CALABASH		= "calabash";
+    String CAPYBARA		= "capybara";
     String JAVA_JAR = "java -jar ";
     String HUBCONFIG_JSON = "/hubconfig.json";
     String ROLE_HUB_HUB_CONFIG = " -role hub -hubConfig ";
