@@ -174,6 +174,13 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			File resultConfigXml = new File(basedir + resultConfigFileDir);
 			adaptTestConfig(resultConfigXml, environmentName, browserValue, resolutionValue, basedir);
 		}
+		String seleniumToolType = project.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_SELENIUM_TOOL);
+		if(StringUtils.isNotEmpty((seleniumToolType)) && seleniumToolType.equals(CAPYBARA)) {
+			StringBuilder builder = new StringBuilder();
+			builder.append("cucumber -f junit -o target -f html -o target/cuke.html");
+			Utility.executeStreamconsumer(builder.toString(), project.getBasedir() + File.separator + functionalTestDir, project.getBasedir().getPath(), FUNCTIONAL);
+			return new DefaultExecutionStatus();
+		}
 		generateMavenCommand(mavenProjectInfo, basedir + functionalTestDir, FUNCTIONAL);
 		
 		return new DefaultExecutionStatus();

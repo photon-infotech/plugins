@@ -249,9 +249,9 @@ public class Package implements PluginConstants {
 		}
 	}
 	
-	private boolean isJarProject(MavenProject project) throws PhrescoPomException {
+	private boolean isJarProject(MavenProject project) throws PhrescoPomException, PhrescoException {
 		boolean jarProject = true;
-		List<String> modules = project.getModules();
+		List<String> modules = PluginUtils.getProjectModules(project);
 		if(CollectionUtils.isEmpty(modules)) {
 			if(project.getModel().getPackaging().equals(PACKAGING_TYPE_WAR)) {
 				jarProject = false;
@@ -365,10 +365,12 @@ public class Package implements PluginConstants {
 		sb.append(MVN_PHASE_CLEAN);
 		sb.append(STR_SPACE);
 		sb.append(MVN_PHASE_PACKAGE);
-		sb.append(STR_SPACE);
-		sb.append(Constants.HYPHEN_F);
-		sb.append(STR_SPACE);
-		sb.append(pomName);
+		if(!Constants.POM_NAME.equals(pomName)) {
+			sb.append(STR_SPACE);
+			sb.append(Constants.HYPHEN_F);
+			sb.append(STR_SPACE);
+			sb.append(pomName);
+		}
 		sb.append(STR_SPACE);
 		sb.append(builder.toString());
 		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(),"package");
