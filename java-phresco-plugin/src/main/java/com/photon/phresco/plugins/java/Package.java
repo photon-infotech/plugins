@@ -370,8 +370,8 @@ public class Package implements PluginConstants {
 			sb.append(Constants.HYPHEN_F);
 			sb.append(STR_SPACE);
 			sb.append(pomName);
-			sb.append(STR_SPACE);
 		}
+		sb.append(STR_SPACE);
 		sb.append(builder.toString());
 		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(),"package");
 		if(!status) {
