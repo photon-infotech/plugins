@@ -52,7 +52,7 @@ public class Deploy implements PluginConstants {
 	private File buildDir;
 	private File buildFile;
 	private File targetDir;
-	private String siteName;
+	private String context;
 	private String serverport;
 	private String serverprotocol;
 	private Log log;
@@ -91,7 +91,7 @@ public class Deploy implements PluginConstants {
 
 			List<com.photon.phresco.configuration.Configuration> configurations = pUtil.getConfiguration(baseDir, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
 			for (com.photon.phresco.configuration.Configuration configuration : configurations) {
-				siteName = configuration.getProperties().getProperty(Constants.SITE_NAME);
+				context = configuration.getProperties().getProperty(Constants.SERVER_CONTEXT);
 				serverport = configuration.getProperties().getProperty(Constants.SERVER_PORT);
 				serverprotocol = configuration.getProperties().getProperty(Constants.SERVER_PROTOCOL);
 				break;
@@ -122,7 +122,7 @@ public class Deploy implements PluginConstants {
 			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
 			String line = null;
 			while ((line = in.readLine()) != null) {
-				if (line.contains(siteName)) {
+				if (line.contains(context)) {
 					throw new MojoExecutionException(
 					"Site Already Exists in Site . Please configure new Site or delete the already existing one ");
 		}
@@ -141,7 +141,7 @@ public class Deploy implements PluginConstants {
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append(ADD_SITE);
-			sb.append(siteName);
+			sb.append(context);
 			sb.append(STR_SPACE);
 			sb.append(BINDINGS);
 			sb.append(serverprotocol + "/*" + COLON  + serverport + COLON);
