@@ -409,6 +409,8 @@ public class PluginUtils {
 					 NodeList headerMngrNodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/hashTree/HeaderManager/collectionProp");
 					 Node appendHeaderManager = appendUrlHeaderManager(document, headers);
 					 hashTree.appendChild(appendHeaderManager);
+				 } else {
+					 hashTree.appendChild(document.createElement("hashTree"));
 				 }
 			 }
 		 }
