@@ -74,6 +74,7 @@ public class Package implements PluginConstants {
         PluginUtils.checkForConfigurations(baseDir, environmentName);
 		try {
 			init();
+			executeMSBuildCmd();
 			boolean buildStatus = build();
 			writeBuildInfo(buildStatus);
 		} catch (MojoExecutionException e) {
@@ -102,7 +103,6 @@ public class Package implements PluginConstants {
 	private boolean build() throws MojoExecutionException {
 		boolean isBuildSuccess = true;
 		try {
-			executeMSBuildCmd();
 			createPackage();
 		} catch (Exception e) {
 			isBuildSuccess = false;
