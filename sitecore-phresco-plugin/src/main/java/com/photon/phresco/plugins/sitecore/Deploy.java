@@ -58,7 +58,7 @@ public class Deploy implements PluginConstants {
 	private File buildFile;
 	private File targetDir;
 	private String applicationName;
-	private String siteName;
+	private String context;
 	private String serverport;
 	private String serverprotocol;
 	private String deploylocation;
@@ -100,8 +100,8 @@ public class Deploy implements PluginConstants {
 
 			List<com.photon.phresco.configuration.Configuration> configurations = pUtil.getConfiguration(baseDir, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
 			for (com.photon.phresco.configuration.Configuration configuration : configurations) {
-				applicationName = configuration.getProperties().getProperty(Constants.APPLICATION_NAME);
-				siteName = configuration.getProperties().getProperty(Constants.SITE_NAME);
+//				applicationName = configuration.getProperties().getProperty(Constants.APPLICATION_NAME);
+				context = configuration.getProperties().getProperty(Constants.SERVER_CONTEXT);
 				serverport = configuration.getProperties().getProperty(Constants.SERVER_PORT);
 				serverprotocol = configuration.getProperties().getProperty(Constants.SERVER_PROTOCOL);
 				deploylocation = configuration.getProperties().getProperty(Constants.SITECORE_INST_PATH);
@@ -172,12 +172,13 @@ public class Deploy implements PluginConstants {
 			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
 			String line = null;
 			while ((line = in.readLine()) != null) {
-				if (line.contains(siteName)) {
-					listApp();
-				}
+				if (line.contains(context)) {
+					throw new MojoExecutionException(
+					"Stie Already Exists . Please configure new Application or delete the already existing one ");
+		}
 			}
 			executeAddSite();
-			executeAddApp();
+//			executeAddApp();
 		} catch (CommandLineException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		} catch (IOException e) {
@@ -190,20 +191,16 @@ public class Deploy implements PluginConstants {
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append("APPCMD  list app /site.name:");
-			sb.append(siteName);
+			sb.append(context);
 			Commandline cl = new Commandline(sb.toString());
 			cl.setWorkingDirectory("C:/Windows/System32/inetsrv");
 			Process process = cl.execute();
 			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
 			String line = null;
 			while ((line = in.readLine()) != null) {
-				if (line.contains(applicationName)) {
-					throw new MojoExecutionException(
-							"Application Already Exists in Site . Please configure new Application or delete the already existing one ");
-				}
 			}
 			executeAddSite();
-			executeAddApp();
+//			executeAddApp();
 		} catch (CommandLineException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		} catch (IOException e) {
@@ -216,13 +213,13 @@ public class Deploy implements PluginConstants {
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append("APPCMD add site /name:");
-			sb.append(siteName);
+			sb.append(context);
 			sb.append(STR_SPACE);
 			sb.append("/bindings:");
 			sb.append(serverprotocol + "/*:" + serverport + ":");
 			sb.append(STR_SPACE);
 			sb.append("/physicalPath:");
-			sb.append("\"" + deploylocation + "\"");
+			sb.append("\"" + deploylocation  + "/Website" + "\"");
 			Commandline cl = new Commandline(sb.toString());
 
 			cl.setWorkingDirectory("C:/Windows/System32/inetsrv");
@@ -252,7 +249,7 @@ public class Deploy implements PluginConstants {
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append("APPCMD add app /site.name:");
-			sb.append(siteName);
+			sb.append(context);
 			sb.append(STR_SPACE);
 			sb.append("/path:/" + applicationName);
 			sb.append(STR_SPACE);
