@@ -209,9 +209,11 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			String testName = configs.get(KEY_TEST_NAME);
 			String environmentName = configs.get(ENVIRONMENT_NAME);
 			String configurationsName = configs.get(KEY_CONFIGURATION);
-			String noOfUsers = configs.get(KEY_NO_OF_USERS);
 			String rampUpPeriod = configs.get(KEY_RAMP_UP_PERIOD);
-			String loopCount = configs.get(KEY_LOOP_COUNT);
+			//String noOfUsers = configs.get(KEY_NO_OF_USERS);
+			//String loopCount = configs.get(KEY_LOOP_COUNT);
+			int noOfUsers = 1;
+			int loopCount = 1;
 			ConfigManager configManager = new ConfigManagerImpl(new File(basedir + File.separator + DOT_PHRESCO_FOLDER + File.separator + CONFIG_FILE));
 			com.photon.phresco.configuration.Configuration config = configManager.getConfiguration(environmentName, testAgainstType, configurationsName);
 			String performanceTestDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR) + File.separator + testAgainstType;
@@ -246,9 +248,9 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 					DatabaseUtil.initDriverMap();
 					DatabaseUtil du = new DatabaseUtil();
 					driver = du.getDbDriver(type);
-					pluginUtils.adaptDBPerformanceJmx(testConfigFilePath, dbContextUrls, configurationsName, Integer.parseInt(noOfUsers), Integer.parseInt(rampUpPeriod), Integer.parseInt(loopCount), dbUrl, driver, userName, passWord);
+					pluginUtils.adaptDBPerformanceJmx(testConfigFilePath, dbContextUrls, configurationsName, noOfUsers, Integer.parseInt(rampUpPeriod), loopCount, dbUrl, driver, userName, passWord);
 				} else {
-					pluginUtils.adaptPerformanceJmx(testConfigFilePath, contextUrls, Integer.parseInt(noOfUsers), Integer.parseInt(rampUpPeriod), Integer.parseInt(loopCount));
+					pluginUtils.adaptPerformanceJmx(testConfigFilePath, contextUrls, noOfUsers, Integer.parseInt(rampUpPeriod), loopCount);
 				}
 			}
 			generateMavenCommand(mavenProjectInfo, basedir + performanceTestDir, PERFORMACE);
