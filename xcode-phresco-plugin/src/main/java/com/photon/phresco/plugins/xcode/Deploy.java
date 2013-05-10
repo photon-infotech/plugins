@@ -131,7 +131,7 @@ public class Deploy implements PluginConstants {
 		PluginUtils pu = new PluginUtils();
 		try {
 			BuildInfo buildInfo = pu.getBuildInfo(buildNumber);
-			String appPath = buildInfo.getBuildName();
+			String appPath = buildInfo.getDeployLocation();
 			StringBuilder sb = new StringBuilder();
 			sb.append("open -n .");
 			sb.append(STR_SPACE);
