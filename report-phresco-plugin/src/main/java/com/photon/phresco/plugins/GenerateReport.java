@@ -2313,7 +2313,7 @@ public class GenerateReport implements PluginConstants {
 	        String reportType = configs.get(REPORT_TYPE);
 	        String testType = configs.get(TEST_TYPE);
 	        String sonarUrl = configs.get("sonarUrl");
-	        String appVersion = appInfo.getVersion();
+	        String appVersion = mavenProjectInfo.getProject().getVersion();
 	        String pdfReportName = configs.get("reportName");
 	        
 	        logo = configs.get("logo");
