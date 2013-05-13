@@ -477,10 +477,10 @@ public class GenerateReport implements PluginConstants {
 		String outFileNamePDF = "";
 		String semiPath = File.separator + baseDir.getName() + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
 		try {
-			if (isClangReport) {
+			if (isClangReport) { // iphone
 				outFileNamePDF = Utility.getPhrescoTemp() + uuid + semiPath;
 			} else {
-				outFileNamePDF = baseDir + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + CUMULATIVE + semiPath;
+				outFileNamePDF = baseDir + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + CUMULATIVE + File.separator + fileName + DOT + PDF;
 			}
 			
 			new File(outFileNamePDF).getParentFile().mkdirs();
@@ -493,13 +493,13 @@ public class GenerateReport implements PluginConstants {
 			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, cumulativeReportparams, dataSource);
 			//applying theme
 			applyTheme(jasperPrint);
-			JRExporter exporter = new net.sf.jasperreports.engine.export.JRPdfExporter(); 
+			JRExporter exporter = new net.sf.jasperreports.engine.export.JRPdfExporter();
 			exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, outFileNamePDF);
 			exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
 			exporter.exportReport();
 			
 			if (isClangReport) {
-				String outFinalFileNamePDF = baseDir + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + CUMULATIVE + semiPath;
+				String outFinalFileNamePDF = baseDir + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + CUMULATIVE + File.separator + fileName + DOT + PDF;;
 				new File(outFinalFileNamePDF).getParentFile().mkdirs();
 				try {
 					//check static checker analysis folder contains html 
@@ -627,7 +627,7 @@ public class GenerateReport implements PluginConstants {
 			}
             
             builder.append(File.separatorChar);
-            File pomFile = new File(builder.toString() + mavenProject.getFile().getName());
+        	File pomFile = new File(builder.toString() + mavenProject.getFile().getName());
             if(pomFile.exists()) {
             	builder.append(pomFile.getName());
             } else {
@@ -706,7 +706,7 @@ public class GenerateReport implements PluginConstants {
 				}
 			}
 			
-			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + fileName + DOT + PDF;
 			new File(outFileNamePDF).getParentFile().mkdirs();
 			String containerJasperFile = "PhrescoSureFireReport.jasper";
 			reportStream = this.getClass().getClassLoader().getResourceAsStream(REPORTS_JASPER + containerJasperFile);
@@ -813,7 +813,7 @@ public class GenerateReport implements PluginConstants {
 		InputStream reportStream = null;
 		BufferedInputStream bufferedInputStream = null;
 		try {
-			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + fileName + DOT + PDF;
 
 			new File(outFileNamePDF).getParentFile().mkdirs();
 			String containerJasperFile = "PhrescoModuleSureFireReport.japer";
@@ -865,7 +865,7 @@ public class GenerateReport implements PluginConstants {
 	public void generateJmeterPerformanceReport(ArrayList<JmeterTypeReport> jmeterTestResults)  throws PhrescoException {
 		try {
 			ArrayList<JmeterTypeReport> jmeterTstResults = jmeterTestResults;
-			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + fileName + DOT + PDF;
 
 			String jasperFile = "PhrescoPerfContain.jasper";
 			Map<String, Object> parameters = new HashMap<String,Object>();
@@ -888,7 +888,7 @@ public class GenerateReport implements PluginConstants {
 	// performance test report
 	public void generateAndroidPerformanceReport(List<AndroidPerfReport> androidPerReports)  throws PhrescoException {
 		try {
-			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + fileName + DOT + PDF;
 
 			String jasperFile = "PhrescoAndroidPerfContain.jasper";
 			Map<String, Object> parameters = new HashMap<String,Object>();
@@ -911,7 +911,7 @@ public class GenerateReport implements PluginConstants {
 	// load test report
 	public void generateLoadTestReport(List<LoadTestReport> loadTestResults)  throws PhrescoException {
 		try {
-			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + fileName + DOT + PDF;
 
 			String jasperFile = "PhrescoLoadTestContain.jasper";
 			Map<String, Object> parameters = new HashMap<String,Object>();
@@ -2311,6 +2311,7 @@ public class GenerateReport implements PluginConstants {
 	        String testType = configs.get(TEST_TYPE);
 	        String sonarUrl = configs.get("sonarUrl");
 	        String appVersion = appInfo.getVersion();
+	        String pdfReportName = configs.get("reportName");
 	        
 	        logo = configs.get("logo");
 	        // Default copyrights
@@ -2332,6 +2333,15 @@ public class GenerateReport implements PluginConstants {
 	        this.techName = configs.get("technologyName");
 	        this.version = appVersion;
 	        this.sonarUrl = sonarUrl;
+	        if (StringUtils.isEmpty(pdfReportName)) {
+	        	if (testType.equals("All")) {
+	        		this.fileName = baseDir.getName() + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName;
+	        	} else {
+	        		this.fileName = testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName; // time
+	        	}
+	        } else {
+	        	this.fileName = pdfReportName + STR_UNDERSCORE + reportType;
+	        }
 	        
 	        if (StringUtils.isEmpty(reportType)) {
 	        	throw new PhrescoException("Report type is empty ");
