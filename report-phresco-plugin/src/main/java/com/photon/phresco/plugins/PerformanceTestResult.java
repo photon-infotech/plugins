@@ -34,7 +34,7 @@ public class PerformanceTestResult {
 	double minTs;
 	double avg;
 	double stdDev;
-	double throughtPut;
+	double throughPut;
 	double kbPerSec;
 	String label;
 	List<Integer> times = new ArrayList<Integer>(100);
@@ -137,12 +137,12 @@ public class PerformanceTestResult {
 		this.err = err;
 	}
 	
-	public double getThroughtPut() {
-		return throughtPut;
+	public double getThroughPut() {
+		return throughPut;
 	}
 	
-	public void setThroughtPut(double throughPut) {
-		this.throughtPut = throughPut;
+	public void setThroughPut(double throughPut) {
+		this.throughPut = throughPut;
 	}
 	
 	public double getKbPerSec() {

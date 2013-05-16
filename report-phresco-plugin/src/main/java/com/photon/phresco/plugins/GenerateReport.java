@@ -785,8 +785,6 @@ public class GenerateReport implements PluginConstants {
 				}
 			}
 		}
-	}
-	
 	
 	// Unit and functional pdf report generation
 	public void generateUnitAndFunctionalReport(List<ModuleSureFireReport> moduleWiseReports)  throws PhrescoException {
