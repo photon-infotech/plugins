@@ -104,7 +104,7 @@ public class PreBuildStep  implements PluginConstants {
 			log.info("phresco Plugin Info File exists ... " + phrescoPluginInfoFile.exists());
 			
 			MojoProcessor mojo = new MojoProcessor(phrescoPluginInfoFile);
-			
+			String testDirectory = "";
 			if (Constants.PHASE_FUNCTIONAL_TEST.equals(phase)) {
 				File pomFile = new File(baseDir, pom);
 				log.info("Pom path " + pomFile.getPath());
@@ -116,8 +116,14 @@ public class PreBuildStep  implements PluginConstants {
 			} else if(Constants.PHASE_PERFORMANCE_TEST.equals(phase)) {
 				// Reads the ci.info from server/database/webservice folder,
 				//inside of the performance folder and creates new json file
-				//for each values present in the ci.info file. 
-				performanceTestHandler(mavenProjectInfo, appInfo);	
+				//for each values present in the ci.info file.
+				log.info("Execute Performance Test");
+				testDirectory = Constants.POM_PROP_KEY_PERFORMANCETEST_DIR;
+				loadPerformanceTestHandler(mavenProjectInfo, appInfo, testDirectory, phase);	
+			} else if(Constants.PHASE_LOAD_TEST.equals(phase)) {
+				log.info("Execute Load Test");
+				testDirectory = Constants.POM_PROP_KEY_LOADTEST_DIR;
+				loadPerformanceTestHandler(mavenProjectInfo, appInfo, testDirectory, phase);
 			}
 			
 			log.info("phase " + phase);
@@ -145,56 +151,59 @@ public class PreBuildStep  implements PluginConstants {
 		}
 	}
 
-	private void performanceTestHandler(MavenProjectInfo mavenProjectInfo,
-			ApplicationInfo appInfo) throws Exception {
+	private void loadPerformanceTestHandler(MavenProjectInfo mavenProjectInfo,
+			ApplicationInfo appInfo, String testDirectory, String phase) throws Exception {
 		
 		BufferedReader reader = null ;	
 		
 		try {										
-			List<String> performanceTests = new ArrayList<String>(3);
-			performanceTests.add(PER_TEST_SERVER);
-			performanceTests.add(PER_TEST_DATABASE);
-			performanceTests.add(PER_TEST_WEBSERVICE);
+			List<String> tests = new ArrayList<String>(3);
+			tests.add(PER_TEST_SERVER);
+			tests.add(PER_TEST_WEBSERVICE);
 			
-			for (String performanceTest : performanceTests) {
+			if(Constants.PHASE_PERFORMANCE_TEST.equals(phase)) {
+				tests.add(PER_TEST_DATABASE);
+			}
+			
+			for (String test : tests) {
 				
 				StringBuilder copyDir = new StringBuilder(baseDir.toString())				
-				.append(mavenProjectInfo.getProject().getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR))
+				.append(mavenProjectInfo.getProject().getProperties().getProperty(testDirectory))
 				.append(File.separator)
-				.append(performanceTest)
+				.append(test)
 				.append(File.separator)
 				.append(Constants.FOLDER_JSON);				
 				
 				StringBuilder infoFilePath = new StringBuilder(Utility.getProjectHome())
 				.append(appInfo.getAppDirName())
-				.append(mavenProjectInfo.getProject().getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR))
+				.append(mavenProjectInfo.getProject().getProperties().getProperty(testDirectory))
 				.append(File.separator)
-				.append(performanceTest)
+				.append(test)
 				.append(File.separator)
 				.append(Constants.FOLDER_JSON)
 				.append(File.separator)
 //				.append("CITemp")
 //				.append(File.separator)
 				.append(CI_INFO);
-								
+				
 				File infoFile = new File(infoFilePath.toString());
 				if(infoFile.exists()) {	
 					reader = new BufferedReader(new FileReader(infoFilePath.toString()));
 					String lineToRead = null ;
 					while((lineToRead = reader.readLine()) != null) {
 						String [] jsonFiles = lineToRead.split("\\,");
-						for (String jsonFile : jsonFiles) {					
-							
+						for (String jsonFile : jsonFiles) {	
 							// 
 							StringBuilder s = new StringBuilder(copyDir)				    	
 					    	.append(File.separator)
 					    	.append(jsonFile);								
 							
+							
 							StringBuilder sb = new StringBuilder(Utility.getProjectHome())
 					    	.append(appInfo.getAppDirName())				
-							.append(mavenProjectInfo.getProject().getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR))
+							.append(mavenProjectInfo.getProject().getProperties().getProperty(testDirectory))
 							.append(File.separator)
-							.append(performanceTest)
+							.append(test)
 							.append(File.separator)
 							.append(Constants.FOLDER_JSON)
 							.append(File.separator)

@@ -567,7 +567,7 @@ public class PluginUtils {
 			return hashTree;
 		}
 	 
-	 public void adaptLoadJmx(String jmxFileLocation, int noOfUsers, int rampUpPeriod, int loopCount, Map<String, String> headersMap) throws Exception {
+	 public void adaptLoadJmx(String jmxFileLocation, int noOfUsers, int rampUpPeriod, int loopCount, Map<String, String> headersMap, List<ContextUrls> contextUrls) throws Exception {
 	        File jmxFile = null;
 	        File jmxDir = new File(jmxFileLocation);
 	        if(jmxDir.isDirectory()){
@@ -577,17 +577,36 @@ public class PluginUtils {
 	        }
 	        Document document = getDocument(jmxFile);
 	        appendThreadProperties(document, noOfUsers, rampUpPeriod, loopCount);
-	        if (MapUtils.isNotEmpty(headersMap)) {
-	        	NodeList hashTree = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree");
-				NodeList headerMngrNodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/HeaderManager/collectionProp");
-				if (headerMngrNodelist != null && headerMngrNodelist.getLength() > 0) {
-					createHeaderElementProp(document, headersMap, headerMngrNodelist.item(0));
-				} else {
-					Node appendHeaderManager = appendHeaderManager(document, headersMap);
-					hashTree.item(0).appendChild(appendHeaderManager);
-					hashTree.item(0).appendChild(document.createElement("hashTree"));
-				}
-			}
+	       NodeList nodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/HTTPSamplerProxy");
+			 if (nodelist != null && nodelist.getLength() > 0) {
+				 NodeList headerManagerNodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/HeaderManager");
+
+				 Node hashTree = nodelist.item(0).getParentNode();
+				 hashTree = removeAllChilds(hashTree);
+				 hashTree.setTextContent(null);
+
+				 if (headerManagerNodelist != null && headerManagerNodelist.getLength() > 0) {
+					 for(int i = 0; i < headerManagerNodelist.getLength(); i++) {
+						 hashTree.appendChild(headerManagerNodelist.item(i));
+					 }
+					 hashTree.appendChild(document.createElement("hashTree"));
+				 }
+
+				 for (ContextUrls contextUrl : contextUrls) {
+					 Node appendHttpSamplerProxy = appendHttpSamplerProxy(document, hashTree, contextUrl.getName(), "${context}/" + contextUrl.getContext(), contextUrl.getContextType(), 
+							 	contextUrl.getContextPostData(), contextUrl.getEncodingType(), contextUrl);
+					 hashTree.appendChild(appendHttpSamplerProxy);
+					 List<Headers> headers = contextUrl.getHeaders();
+					 if (CollectionUtils.isNotEmpty(headers)) {
+						 NodeList headerMngrNodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/hashTree/HeaderManager/collectionProp");
+						 Node appendHeaderManager = appendUrlHeaderManager(document, headers);
+						 hashTree.appendChild(appendHeaderManager);
+					 } else {
+						 hashTree.appendChild(document.createElement("hashTree"));
+					 }
+				 }
+			 }
+			 
 	        saveDocument(jmxFile, document);
 	    }
 	 
@@ -609,8 +628,7 @@ public class PluginUtils {
 			}
 		}
 	 
-	 private static void createHeaderElementProp(Document document,
-			 Map<String, String> headersMap, Node collectionProp) {
+	 private static void createHeaderElementProp(Document document, List<Headers> headers, Node collectionProp) {
 		 //To remove already added header key,values
 		 NodeList childNodes = collectionProp.getChildNodes();
 		 for (int i = 0; i < childNodes.getLength(); i++) {
@@ -621,14 +639,14 @@ public class PluginUtils {
 		 }
 		 
 		 //To append header key values newly
-		 for (Map.Entry<String, String> entry : headersMap.entrySet()) {
+		 for (Headers header : headers) {
 			 Node subElementProp = document.createElement("elementProp");
 			 NamedNodeMap subElementAttributes = subElementProp.getAttributes();
 			 subElementAttributes.setNamedItem(createAttribute(document, "name", ""));
 			 subElementAttributes.setNamedItem(createAttribute(document, "elementType", "Header"));
 			 collectionProp.appendChild(subElementProp);
-			 appendTypeProp(document, subElementProp, "stringProp", "Header.name", entry.getKey());
-			 appendTypeProp(document, subElementProp, "stringProp", "Header.value", entry.getValue());
+			 appendTypeProp(document, subElementProp, "stringProp", "Header.name", header.getKey());
+			 appendTypeProp(document, subElementProp, "stringProp", "Header.value", header.getValue());
 		 }
 	 }
 
@@ -646,14 +664,14 @@ public class PluginUtils {
 		 parentProp.appendChild(typeProp);
 	 }
 	 
-	 private static Node appendHeaderManager(Document document, Map<String, String> headersMap) {
+	 private static Node appendHeaderManager(Document document, List<Headers> headers) {
 		 Node headerManager = document.createElement("HeaderManager");
 		 NamedNodeMap attributes = headerManager.getAttributes();
 		 attributes.setNamedItem(createAttribute(document, "guiclass", "HeaderPanel"));
 		 attributes.setNamedItem(createAttribute(document, "testclass", "HeaderManager"));
 		 attributes.setNamedItem(createAttribute(document, "testname", "HTTP Header Manager"));
 		 attributes.setNamedItem(createAttribute(document, "enabled", "true"));
-		 appendHeaderManagerCollectionProp(document, headerManager, headersMap);
+		 appendHeaderManagerCollectionProp(document, headerManager, headers);
 		 return headerManager;
 	 }
 	 
@@ -665,21 +683,17 @@ public class PluginUtils {
 		 attributes.setNamedItem(createAttribute(document, "testclass", "HeaderManager"));
 		 attributes.setNamedItem(createAttribute(document, "testname", "HTTP Header Manager"));
 		 attributes.setNamedItem(createAttribute(document, "enabled", "true"));
-		 Map<String, String> headersMap = new HashMap<String, String>();
-		 for (Headers header : headers) {
-			 headersMap.put(header.getKey(), header.getValue());
-		 }
-		 appendHeaderManagerCollectionProp(document, headerManager, headersMap);
+		 appendHeaderManagerCollectionProp(document, headerManager, headers);
 		 createElement.appendChild(headerManager);
 		 createElement.appendChild(document.createElement("hashTree"));
 		 return createElement;
 	 }
 	 
-	 private static void appendHeaderManagerCollectionProp(Document document, Node elementProp, Map<String, String> headersMap) {
+	 private static void appendHeaderManagerCollectionProp(Document document, Node elementProp, List<Headers> headers) {
 			Node collectionProp = document.createElement("collectionProp");
 			NamedNodeMap attributes = collectionProp.getAttributes();
 			attributes.setNamedItem(createAttribute(document, "name", "HeaderManager.headers"));
-			createHeaderElementProp(document, headersMap, collectionProp);
+			createHeaderElementProp(document, headers, collectionProp);
 			elementProp.setTextContent(null);
 			elementProp.appendChild(collectionProp);
 		}

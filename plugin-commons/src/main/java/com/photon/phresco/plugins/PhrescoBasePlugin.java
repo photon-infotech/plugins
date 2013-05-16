@@ -289,15 +289,22 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 					headersMap.put(key, props.getProperty(key));
 				}
 			}
+			
 			ConfigManager configManager = new ConfigManagerImpl(new File(basedir + File.separator + DOT_PHRESCO_FOLDER + File.separator + CONFIG_FILE));
 			com.photon.phresco.configuration.Configuration config = configManager.getConfiguration(environmentName, testAgainstType, type);
-			String loadTestDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_LOADTEST_DIR);
+			String loadTestDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_LOADTEST_DIR) + File.separator;
 			if(StringUtils.isNotEmpty(loadTestDir)) {
 				loadTestDir = loadTestDir  + File.separator + testAgainstType;
 				pluginUtils.changeTestName(basedir + loadTestDir + File.separator, testName);
 				String testConfigFilePath = basedir + File.separator + loadTestDir + File.separator + "tests";
 				pluginUtils.adaptTestConfig(testConfigFilePath + File.separator , config);
-				pluginUtils.adaptLoadJmx(testConfigFilePath + File.separator, Integer.parseInt(noOfUsers), Integer.parseInt(rampUpPeriod), Integer.parseInt(loopCount), headersMap);
+				String jsonFile = basedir + File.separator + loadTestDir + File.separator + Constants.FOLDER_JSON + File.separator+ testName + Constants.DOT_JSON;
+				BufferedReader bufferedReader = new BufferedReader(new FileReader(jsonFile));
+				Gson gson = new Gson();
+				PerformanceDetails fromJson = gson.fromJson(bufferedReader, PerformanceDetails.class);
+				List<ContextUrls> contextUrls = fromJson.getContextUrls();
+				
+				pluginUtils.adaptLoadJmx(testConfigFilePath + File.separator, Integer.parseInt(noOfUsers), Integer.parseInt(rampUpPeriod), Integer.parseInt(loopCount), headersMap, contextUrls);
 			}
 			generateMavenCommand(mavenProjectInfo, basedir + File.separator + loadTestDir, LOAD);
 
