@@ -52,6 +52,7 @@ import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Assembly.FileSets.FileSet;
 import com.photon.phresco.plugins.model.Assembly.FileSets.FileSet.Excludes;
+import com.photon.phresco.plugins.model.Assembly.FileSets.FileSet.Includes;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands.MavenCommand;
@@ -129,6 +130,7 @@ public class Package implements PluginConstants {
 					excludes.add("/css/**/*.min.css");
 					setFileSetExcludes(configProcessor, EXCLUDE_FILE, excludes);
 				}
+				includeLibraryJsFiles(configProcessor);
 				configProcessor.save();
 			}
 			getMavenCommands(configuration);
@@ -154,6 +156,34 @@ public class Package implements PluginConstants {
 			}
 			for (String exclue : exclues) {
 				fileSet.getExcludes().getExclude().add(exclue);
+			}
+		} catch (JAXBException e) {
+			throw new PhrescoException(e);
+		} 
+	}
+	
+	private void includeLibraryJsFiles(WarConfigProcessor configProcessor) throws PhrescoException {
+		try {
+			FileSet fileSet = configProcessor.getFileSet("includeLibJs");
+			if (fileSet == null) {
+				FileSet fs = new FileSet();
+				fs.setId("includeLibJs");
+				fs.setDirectory("src/main/webapp");
+				fs.setOutputDirectory("/");
+				
+				List<String> inlcudeFiles = new ArrayList<String>();
+				inlcudeFiles.add("/js/**/lib/**/*-min.js");
+				inlcudeFiles.add("/js/**/lib/**/*.min.js");
+				inlcudeFiles.add("/js/**/libs/**/*-min.js");
+				inlcudeFiles.add("/js/**/libs/**/*.min.js");
+				
+				Includes includes = new Includes();
+				fs.setIncludes(includes);
+				
+				for (String inlcudeFile : inlcudeFiles) {
+					fs.getIncludes().getInclude().add(inlcudeFile);
+				}
+				configProcessor.createFileSet(fs);
 			}
 		} catch (JAXBException e) {
 			throw new PhrescoException(e);
