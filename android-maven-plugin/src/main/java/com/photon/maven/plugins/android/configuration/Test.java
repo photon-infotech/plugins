@@ -25,85 +25,123 @@ import java.util.List;
  * {@link com.photon.maven.plugins.android.AbstractInstrumentationMojo} and used there.
  *
  */
-public class Test {
+public class Test
+{
     /**
      * Mirror of {@link com.photon.maven.plugins.android.AbstractInstrumentationMojo#testSkip}
      */
-   private String skip;
-   /**
+    private String skip;
+    /**
      * Mirror of {@link com.photon.maven.plugins.android.AbstractInstrumentationMojo#testInstrumentationPackage}
      */
-   private String instrumentationPackage;
-   /**
+    private String instrumentationPackage;
+    /**
      * Mirror of {@link com.photon.maven.plugins.android.AbstractInstrumentationMojo#testInstrumentationRunner}
      */
-   private String instrumentationRunner;
-   /**
+    private String instrumentationRunner;
+    /**
      * Mirror of {@link com.photon.maven.plugins.android.AbstractInstrumentationMojo#testDebug}
      */
-   private Boolean debug;
-   /**
+    private Boolean debug;
+    /**
      * Mirror of {@link com.photon.maven.plugins.android.AbstractInstrumentationMojo#testCoverage}
      */
-   private Boolean coverage;
-   /**
+    private Boolean coverage;
+    /**
+     * Mirror of {@link com.photon.maven.plugins.android.AbstractInstrumentationMojo#testCoverageFile}
+     */
+    private String coverageFile;
+    /**
      * Mirror of {@link com.photon.maven.plugins.android.AbstractInstrumentationMojo#testLogOnly}
      */
-   private Boolean logOnly;
-   /**
-     * Mirror of {@link com.photon.maven.plugins.android.AbstractInstrumentationMojo#testSize}
+    private Boolean logOnly;
+    /**
+     * Mirror of {@link com.photon.maven.plugins.android.AbstractInstrumentationMojo#testTestSize}
      */
-   private String testSize;
-   /**
+    private String testSize;
+    /**
      * Mirror of {@link com.photon.maven.plugins.android.AbstractInstrumentationMojo#testCreateReport}
      */
-   private Boolean createReport;
-   /**
+    private Boolean createReport;
+    /**
      * Mirror of {@link com.photon.maven.plugins.android.AbstractInstrumentationMojo#testPackages}
      */
-   protected List<String> packages;
-   /**
+    protected List<String> packages;
+    /**
      * Mirror of {@link com.photon.maven.plugins.android.AbstractInstrumentationMojo#testClasses}
      */
-   protected List<String> classes;
+    protected List<String> classes;
+    /**
+     * Mirror of {@link com.photon.maven.plugins.android.AbstractInstrumentationMojo#testAnnotations}
+     */
+    private List<String> annotations;
+    /**
+     * Mirror of {@link com.photon.maven.plugins.android.AbstractInstrumentationMojo#testExcludeAnnotations}
+     */
+    private List<String> excludeAnnotations;
 
-   public String getSkip() {
-       return skip;
-   }
+    public String getSkip()
+    {
+        return skip;
+    }
 
-   public String getInstrumentationPackage() {
-       return instrumentationPackage;
-   }
+    public String getInstrumentationPackage()
+    {
+        return instrumentationPackage;
+    }
 
-   public String getInstrumentationRunner() {
-       return instrumentationRunner;
-   }
+    public String getInstrumentationRunner()
+    {
+        return instrumentationRunner;
+    }
 
-   public Boolean isDebug() {
-       return debug;
-   }
+    public Boolean isDebug()
+    {
+        return debug;
+    }
 
-   public Boolean isCoverage() {
-       return coverage;
-   }
+    public Boolean isCoverage()
+    {
+        return coverage;
+    }
 
-   public Boolean isLogOnly() {
-       return logOnly;
-   }
+    public String getCoverageFile()
+    {
+        return coverageFile;
+    }
 
-   public String getTestSize() {
-       return testSize;
-   }
+    public Boolean isLogOnly()
+    {
+        return logOnly;
+    }
 
-   public Boolean isCreateReport() {
-       return createReport;
-   }
+    public String getTestSize()
+    {
+        return testSize;
+    }
 
-   public List<String> getPackages() {
-	   return packages;
-   }
+    public Boolean isCreateReport()
+    {
+        return createReport;
+    }
 
-   public List<String> getClasses() {
-       return classes;
-   }
+    public List<String> getPackages()
+    {
+        return packages;
+    }
+
+    public List<String> getClasses()
+    {
+        return classes;
+    }
+
+    public List<String> getAnnotations()
+    {
+        return annotations;
+    }
+
+    public List<String> getExcludeAnnotations()
+    {
+        return excludeAnnotations;
+    }
 }

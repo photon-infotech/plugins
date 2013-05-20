@@ -44,7 +44,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
+
 import org.apache.maven.plugin.MojoExecutionException;
 
 import com.photon.maven.plugins.android.configuration.Zipalign;
@@ -122,7 +122,7 @@ public abstract class AbstractZipalignMojo extends AbstractAndroidMojo {
 	private String parsedInputApk;
 	private String parsedOutputApk;
 	private File buildDir;
-	private Date currentDate = Calendar.getInstance().getTime();
+	
 	/**
 	 * Build location
 	 * 
@@ -180,14 +180,14 @@ public abstract class AbstractZipalignMojo extends AbstractAndroidMojo {
 				// Attach the resulting artifact (Issue 88)
 				// http://code.google.com/p/maven-android-plugin/issues/detail?id=88
 				File aligned = new File(parsedOutputApk);
-				
+
 				if (aligned.exists()) {
 					projectHelper.attachArtifact(project, APK, "aligned",
 							aligned);
 					getLog().info(
 							"Attach " + aligned.getAbsolutePath()
 									+ " to the project");
-					
+
 				} else {
 					getLog().error(
 							"Cannot attach " + aligned.getAbsolutePath()
@@ -231,9 +231,9 @@ public abstract class AbstractZipalignMojo extends AbstractAndroidMojo {
 
 			} else {
 				parsedOutputApk = determineOutputApk();
-				
+
 			}
-			
+
 
 		}
 		// command line options
@@ -242,8 +242,8 @@ public abstract class AbstractZipalignMojo extends AbstractAndroidMojo {
 			parsedVerbose = determineVerbose();
 			parsedInputApk = determineInputApk();
 			parsedOutputApk = determineOutputApk();
-			
-			
+
+
 		}
 
 		getLog().debug("skip:" + parsedSkip);
@@ -306,19 +306,19 @@ public abstract class AbstractZipalignMojo extends AbstractAndroidMojo {
 	 * @throws IOException
 	 */
 	private String getAlignedApkLocation() {
-		
+
 		if (alignedApkFile == null)
 			alignedApkFile = new File(project.getBuild().getDirectory(),
 					project.getBuild().getFinalName() + "-aligned." + APK);
-		
-		   
-			
+
+
+
 			buildDir = new File(baseDir.getPath() + buildDirectory);
-			System.out.println("BuildDir created ====="+ buildDir);
 			
+
 			if (!buildDir.exists()) {
 				buildDir.mkdir();
-				System.out.println("**BuildDir created*****");
+				
 			}
 			return alignedApkFile.getAbsolutePath();
 
@@ -356,15 +356,9 @@ public abstract class AbstractZipalignMojo extends AbstractAndroidMojo {
 			getLog().debug(
 					"Using default for zipalign.outputApk: " + outputPath);
 			outputApk = outputPath;
-			
+
 		}
 		return outputApk;
-	}
-	
-	private String getTimeStampForBuildName(Date currentDate) {
-		SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy-HH-mm-ss");
-		String timeStamp = formatter.format(currentDate.getTime());
-		return timeStamp;
 	}
 
 }

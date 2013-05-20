@@ -21,8 +21,10 @@ package com.photon.maven.plugins.android;
  * Exception for notifying about an invalidly configured Android SDK.
  *
  */
-public class InvalidSdkException extends RuntimeException {
-    public InvalidSdkException(String message) {
-        super(message);
+public class InvalidSdkException extends RuntimeException
+{
+    public InvalidSdkException( String message )
+    {
+        super( message );
     }
 }

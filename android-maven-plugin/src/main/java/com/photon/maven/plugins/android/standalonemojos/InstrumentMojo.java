@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.photon.maven.plugins.android.standalonemojos;
 
 import com.photon.maven.plugins.android.AbstractInstrumentationMojo;
@@ -28,9 +27,16 @@ import org.apache.maven.plugin.MojoFailureException;
  *
  * @goal instrument
  */
-public class InstrumentMojo extends AbstractInstrumentationMojo {
+public class InstrumentMojo extends AbstractInstrumentationMojo
+{
 
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    /**
+     *
+     * @throws MojoExecutionException
+     * @throws MojoFailureException
+     */
+    public void execute() throws MojoExecutionException, MojoFailureException
+    {
         instrument();
     }
 

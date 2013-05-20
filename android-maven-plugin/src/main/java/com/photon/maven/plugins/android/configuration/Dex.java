@@ -23,37 +23,60 @@ package com.photon.maven.plugins.android.configuration;
  * {@link com.photon.maven.plugins.android.phase08preparepackage.DexMojo} and used there.
  *
  */
-public class Dex {
+public class Dex
+{
     /**
-      * Mirror of {@link com.photon.maven.plugins.android.phase08preparepackage.DexMojo#dexJvmArguments}
-      */
+     * Mirror of {@link com.photon.maven.plugins.android.phase08preparepackage.DexMojo#dexJvmArguments}
+     */
     private String[] jvmArguments;
     /**
-      * Mirror of {@link com.photon.maven.plugins.android.phase08preparepackage.DexMojo#dexCoreLibrary}
-      */
+     * Mirror of {@link com.photon.maven.plugins.android.phase08preparepackage.DexMojo#dexCoreLibrary}
+     */
     private Boolean coreLibrary;
     /**
-      * Mirror of {@link com.photon.maven.plugins.android.phase08preparepackage.DexMojo#dexNoLocals}
-      */
+     * Mirror of {@link com.photon.maven.plugins.android.phase08preparepackage.DexMojo#dexNoLocals}
+     */
     private Boolean noLocals;
     /**
-      * Mirror of {@link com.photon.maven.plugins.android.phase08preparepackage.DexMojo#dexOptimize}
-      */
+     * Mirror of {@link com.photon.maven.plugins.android.phase08preparepackage.DexMojo#dexOptimize}
+     */
     private Boolean optimize;
+    /**
+     * Mirror of {@link com.photon.maven.plugins.android.phase08preparepackage.DexMojo#dexPreDex}
+     */
+    private Boolean preDex;
+    /**
+     * Mirror of {@link com.photon.maven.plugins.android.phase08preparepackage.DexMojo#dexPreDexLibLocation}
+     */
+    private String preDexLibLocation;
 
-    public String[] getJvmArguments() {
+    public String[] getJvmArguments()
+    {
         return jvmArguments;
     }
 
-    public Boolean isCoreLibrary() {
+    public Boolean isCoreLibrary()
+    {
         return coreLibrary;
     }
 
-    public Boolean isNoLocals() {
+    public Boolean isNoLocals()
+    {
         return noLocals;
     }
 
-    public Boolean isOptimize() {
+    public Boolean isOptimize()
+    {
         return optimize;
+    }
+
+    public Boolean isPreDex()
+    {
+        return preDex;
+    }
+
+    public String getPreDexLibLocation()
+    {
+      return preDexLibLocation;
     }
 }

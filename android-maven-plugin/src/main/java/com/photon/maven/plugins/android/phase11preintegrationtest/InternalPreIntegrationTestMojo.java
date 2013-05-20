@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.photon.maven.plugins.android.phase11preintegrationtest;
 
 import com.photon.maven.plugins.android.AbstractInstrumentationMojo;
@@ -31,10 +30,13 @@ import org.apache.maven.plugin.MojoFailureException;
  * @goal internal-pre-integration-test
  * @phase pre-integration-test
  */
-public class InternalPreIntegrationTestMojo extends AbstractInstrumentationMojo {
+public class InternalPreIntegrationTestMojo extends AbstractInstrumentationMojo
+{
 
-    public void execute() throws MojoExecutionException, MojoFailureException {
-        if (isEnableIntegrationTest()) {
+    public void execute() throws MojoExecutionException, MojoFailureException
+    {
+        if ( isEnableIntegrationTest() )
+        {
             deployDependencies();
             deployBuiltApk();
         }

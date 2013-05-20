@@ -23,21 +23,24 @@ package com.photon.maven.plugins.android.configuration;
  * {@link com.photon.maven.plugins.android.standalonemojos.PushMojo} and used there.
  *
  */
-public class Push {
+public class Push
+{
     /**
-      * Mirror of {@link com.photon.maven.plugins.android.standalonemojos.PushMojo#source}
-      */
+     * Mirror of {@link com.photon.maven.plugins.android.standalonemojos.PushMojo#source}
+     */
     private String source;
     /**
-      * Mirror of {@link com.photon.maven.plugins.android.standalonemojos.PushMojo#destination}
-      */
+     * Mirror of {@link com.photon.maven.plugins.android.standalonemojos.PushMojo#destination}
+     */
     private String destination;
 
-    public String getSource() {
+    public String getSource()
+    {
         return source;
     }
 
-    public String getDestination() {
+    public String getDestination()
+    {
         return destination;
     }
 }

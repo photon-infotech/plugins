@@ -21,8 +21,10 @@ package com.photon.maven.plugins.android;
  * Exception for notifying about an invalidly configured Android NDK.
  *
  */
-public class InvalidNdkException extends RuntimeException {
-    public InvalidNdkException(String message) {
-        super(message);
+public class InvalidNdkException extends RuntimeException
+{
+    public InvalidNdkException( String message )
+    {
+        super( message );
     }
 }

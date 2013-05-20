@@ -21,48 +21,66 @@ package com.photon.maven.plugins.android;
  * Can sign Android applications (apk's).
  *
  */
-public class AndroidSigner {
+public class AndroidSigner
+{
 
-    public enum Debug {TRUE, FALSE, BOTH, AUTO}
+    /**
+     *
+     */
+    public enum Debug
+    {
+        TRUE, FALSE, BOTH, AUTO
+    }
 
     ;
 
     private final Debug debug;
 
-    public AndroidSigner(String debug) {
-        if (debug == null) {
-            throw new IllegalArgumentException("android.sign.debug must be 'true', 'false', 'both' or 'auto'.");
+    public AndroidSigner( String debug )
+    {
+        if ( debug == null )
+        {
+            throw new IllegalArgumentException( "android.sign.debug must be 'true', 'false', 'both' or 'auto'." );
         }
-        try {
-            this.debug = Debug.valueOf(debug.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("android.sign.debug must be 'true', 'false', 'both' or 'auto'.", e);
+        try
+        {
+            this.debug = Debug.valueOf( debug.toUpperCase() );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            throw new IllegalArgumentException( "android.sign.debug must be 'true', 'false', 'both' or 'auto'.", e );
         }
     }
 
-    public AndroidSigner(Debug debug) {
+    public AndroidSigner( Debug debug )
+    {
         this.debug = debug;
     }
 
-    public boolean isSignWithDebugKeyStore() {
-//    	System.out.println("Debug Value - isSignWithDebugKeyStore() ===============>>>>>>>>>>>>>>>>> " + debug.toString());
-        if (debug == Debug.TRUE) {
+    public boolean isSignWithDebugKeyStore()
+    {
+        if ( debug == Debug.TRUE )
+        {
             return true;
         }
-        if (debug == Debug.BOTH) {
+        if ( debug == Debug.BOTH )
+        {
             return true;
         }
-        if (debug == Debug.FALSE) {
+        if ( debug == Debug.FALSE )
+        {
             return false;
         }
-        if (debug == Debug.AUTO) {
+        if ( debug == Debug.AUTO )
+        {
             //TODO: This is where to add logic for skipping debug sign if there are other keystores configured.
             return true;
         }
-        throw new IllegalStateException("Could not determine whether to sign with debug keystore.");
+        throw new IllegalStateException( "Could not determine whether to sign with debug keystore." );
     }
 
-    public boolean shouldCreateBothSignedAndUnsignedApk() {
+    public boolean shouldCreateBothSignedAndUnsignedApk()
+    {
         return debug == Debug.BOTH;
     }
 
