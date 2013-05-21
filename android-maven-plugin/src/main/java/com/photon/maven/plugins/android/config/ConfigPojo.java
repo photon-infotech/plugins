@@ -15,24 +15,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.photon.maven.plugins.android.standalonemojos;
+package com.photon.maven.plugins.android.config;
 
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-
-import com.photon.maven.plugins.android.AbstractAndroidMojo;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * @goal package
- * @execute phase = "package"
+ * ConfigPojo is an annotation identifying a pojo as a configuration holder for ConfigHandler.
  *
+ * @see ConfigHandler
  */
-public class PackageMojo extends AbstractAndroidMojo {
+@Target( { ElementType.FIELD } )
+@Retention( RetentionPolicy.RUNTIME )
+public @interface ConfigPojo
+{
 
-	@Override
-	public void execute() throws MojoExecutionException, MojoFailureException {
-
-		
-	}
-
+    String prefix() default "parsed";
 }

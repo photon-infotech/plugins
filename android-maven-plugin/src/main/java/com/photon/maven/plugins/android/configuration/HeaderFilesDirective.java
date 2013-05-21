@@ -1,5 +1,6 @@
 /**
  * Android Maven Plugin - android-maven-plugin
+ *
  * Copyright (C) 1999-2013 Photon Infotech Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,12 +17,12 @@
  */
 package com.photon.maven.plugins.android.configuration;
 
-/**
- */
-public class HeaderFilesDirective {
 
-    /** Base directory from where to include/exclude files from.
-     *
+public class HeaderFilesDirective
+{
+
+    /**
+     * Base directory from where to include/exclude files from.
      */
     private String directory;
 
@@ -45,27 +46,33 @@ public class HeaderFilesDirective {
      */
     private String[] excludes;
 
-    public String getDirectory() {
+    public String getDirectory()
+    {
         return directory;
     }
 
-    public void setDirectory(String directory) {
+    public void setDirectory( String directory )
+    {
         this.directory = directory;
     }
 
-    public String[] getExcludes() {
+    public String[] getExcludes()
+    {
         return excludes;
     }
 
-    public void setExcludes(String[] excludes) {
+    public void setExcludes( String[] excludes )
+    {
         this.excludes = excludes;
     }
 
-    public String[] getIncludes() {
+    public String[] getIncludes()
+    {
         return includes;
     }
 
-    public void setIncludes(String[] includes) {
+    public void setIncludes( String[] includes )
+    {
         this.includes = includes;
     }
 }

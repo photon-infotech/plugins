@@ -22,14 +22,16 @@ package com.photon.maven.plugins.android.configuration;
  *
  * @see com.photon.maven.plugins.android.standalonemojos.RunMojo
  */
-public class Run {
+public class Run
+{
 
     /**
-      * Mirror of {@link com.photon.maven.plugins.android.standalonemojos.RunMojo#runDebug}
-      */
-	protected Boolean debug;
+     * Mirror of {@link com.photon.maven.plugins.android.standalonemojos.RunMojo#runDebug}
+     */
+    protected Boolean debug;
 
-	public Boolean isDebug() {
-		return debug;
-	}
+    public Boolean isDebug()
+    {
+        return debug;
+    }
 }

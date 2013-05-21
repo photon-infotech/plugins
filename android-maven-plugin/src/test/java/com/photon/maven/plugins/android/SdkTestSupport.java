@@ -21,10 +21,9 @@ import org.junit.Assert;
 
 import com.photon.maven.plugins.android.AndroidSdk;
 
+
 import java.io.File;
 
-/**
- */
 public class SdkTestSupport {
     private final String env_ANDROID_HOME = System.getenv("ANDROID_HOME");
 

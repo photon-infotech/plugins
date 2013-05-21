@@ -182,13 +182,19 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 				} else {
 					
 					destFile = new File(buildDir, buildName + '.' + APK);
+					// Creating the file in build folder for copying the aligned APK - Created by Hari - 20-May-2013
 					destAlignedFile = new File(buildDir, buildName+ "-aligned." + APK);
 
 				}
 
 				FileUtils.copyFile(outputFile, destFile);
 				getLog().info("copied to..." + destFile.getName());
-
+				
+				/* If outputAlignedFile exists in target folder,
+				 * Then we are copying it to destinationFile in build folder
+				 * Added By - Hari - May, 20 , 2013
+				 */
+		
 				if (outputAlignedFile != null && outputAlignedFile.exists()) {
 					
 					FileUtils.copyFile(outputAlignedFile, destAlignedFile);
@@ -208,7 +214,10 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 				}
 				FileUtils.copyFileToDirectory(destFile, tmpFile);
 				
-				
+				/*To Copy the aligned apk into zip file in build folder,
+				*It is for downloading the aligned apk from build Tab
+				* Added by - Hari -May, 20 ,2013
+				*/
 				if (destAlignedFile!=null && destAlignedFile.exists()) {
 
 					FileUtils.copyFileToDirectory(destAlignedFile, tmpFile);

@@ -1,5 +1,6 @@
 /**
  * Android Maven Plugin - android-maven-plugin
+ *
  * Copyright (C) 1999-2013 Photon Infotech Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,21 +23,24 @@ package com.photon.maven.plugins.android.configuration;
  * {@link com.photon.maven.plugins.android.AbstractInstrumentationMojo} and used there.
  *
  */
-public class Pull {
+public class Pull
+{
     /**
-      * Mirror of {@link com.photon.maven.plugins.android.standalonemojos.PullMojo#source}
-      */
+     * Mirror of {@link com.photon.maven.plugins.android.standalonemojos.PullMojo#source}
+     */
     private String source;
     /**
-      * Mirror of {@link com.photon.maven.plugins.android.standalonemojos.PullMojo#destination}
-      */
+     * Mirror of {@link com.photon.maven.plugins.android.standalonemojos.PullMojo#destination}
+     */
     private String destination;
 
-    public String getSource() {
+    public String getSource()
+    {
         return source;
     }
 
-    public String getDestination() {
+    public String getDestination()
+    {
         return destination;
     }
 }

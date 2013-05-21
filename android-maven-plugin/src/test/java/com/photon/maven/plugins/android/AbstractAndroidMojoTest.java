@@ -1,13 +1,11 @@
-/**
- * Android Maven Plugin - android-maven-plugin
- *
- * Copyright (C) 1999-2013 Photon Infotech Inc.
+/*
+ * Copyright (C) 2009, 2010 Jayway AB
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,6 +26,7 @@ import org.junit.Test;
 import com.photon.maven.plugins.android.AbstractAndroidMojo;
 import com.photon.maven.plugins.android.AndroidSdk;
 
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,8 +35,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-/**
- */
+
 public class AbstractAndroidMojoTest {
     protected AbstractAndroidMojo androidMojo;
 
@@ -46,7 +44,7 @@ public class AbstractAndroidMojoTest {
         androidMojo = new DefaultTestAndroidMojo();
     }
 
-    //@Test
+    @Test
     public void givenNoPathThenUseAndroidHomePath() throws MojoExecutionException
     {
         SdkTestSupport testSupport = new SdkTestSupport();
@@ -58,7 +56,7 @@ public class AbstractAndroidMojoTest {
         Assert.assertEquals(new File(testSupport.getEnv_ANDROID_HOME()).getAbsolutePath(), path.getAbsolutePath());
     }
 
-    //@Test
+    @Test
     public void givenAndroidManifestThenTargetPackageIsFound() throws MalformedURLException, URISyntaxException, MojoExecutionException {
         final URL    url                = this.getClass().getResource("AndroidManifest.xml");
         final URI    uri                = url.toURI();
@@ -67,7 +65,7 @@ public class AbstractAndroidMojoTest {
         Assert.assertEquals("com.example.android.apis.tests", foundTargetPackage);
     }
 
-    //@Test
+    @Test
     public void givenAndroidManifestThenInstrumentationRunnerIsFound() throws MalformedURLException, URISyntaxException, MojoExecutionException {
         final URL    url             = this.getClass().getResource("AndroidManifest.xml");
         final URI    uri             = url.toURI();
@@ -76,7 +74,7 @@ public class AbstractAndroidMojoTest {
         Assert.assertEquals("android.test.InstrumentationTestRunner", foundInstrumentationRunner);
     }
 
-    //@Test
+    @Test
     public void givenAndroidManifestWithoutInstrumentationThenInstrumentationRunnerIsNotFound() throws MalformedURLException, URISyntaxException, MojoExecutionException {
         final URL    url             = this.getClass().getResource("AndroidManifestWithoutInstrumentation.xml");
         final URI    uri             = url.toURI();
@@ -85,7 +83,7 @@ public class AbstractAndroidMojoTest {
         Assert.assertNull(foundInstrumentationRunner);
     }
 
-    //@Test
+    @Test
     public void givenValidAndroidManifestXmlTreeThenPackageIsFound() throws IOException {
         final URL         resource               = this.getClass().getResource("AndroidManifestXmlTree.txt");
         final InputStream inputStream            = resource.openStream();
@@ -94,17 +92,17 @@ public class AbstractAndroidMojoTest {
         Assert.assertEquals("com.example.android.apis", foundPackage);
     }
 
-    //@Test
-    public void givenApidemosApkThenPackageIsFound() throws IOException, MojoExecutionException {
+    @Test
+    public void givenApidemosApkThenPackageIsFound() throws IOException, MojoExecutionException, URISyntaxException {
         final URL    resource     = this.getClass().getResource("apidemos-0.1.0-SNAPSHOT.apk");
-        final String foundPackage = androidMojo.extractPackageNameFromApk(new File(resource.getFile()));
+        final String foundPackage = androidMojo.extractPackageNameFromApk(new File(new URI(resource.toString())));
         Assert.assertEquals("com.example.android.apis", foundPackage);
     }
 
-    //@Test
-    public void givenApidemosPlatformtestsApkThenPackageIsFound() throws IOException, MojoExecutionException {
+    @Test
+    public void givenApidemosPlatformtestsApkThenPackageIsFound() throws IOException, MojoExecutionException, URISyntaxException {
         final URL    resource     = this.getClass().getResource("apidemos-platformtests-0.1.0-SNAPSHOT.apk");
-        final String foundPackage = androidMojo.extractPackageNameFromApk(new File(resource.getFile()));
+        final String foundPackage = androidMojo.extractPackageNameFromApk(new File(new URI(resource.toString())));
         Assert.assertEquals("com.example.android.apis.tests", foundPackage);
     }
 

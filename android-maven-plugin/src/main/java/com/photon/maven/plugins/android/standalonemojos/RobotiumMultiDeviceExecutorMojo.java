@@ -65,7 +65,7 @@ public class RobotiumMultiDeviceExecutorMojo extends
 		
 		testRunListener.writeJunitReportToAllTestsFile(xmlReportNameForConnectedDevices);
 	};
-
+      
 	/**
 	 * Check the deviceList parameter
 	 */

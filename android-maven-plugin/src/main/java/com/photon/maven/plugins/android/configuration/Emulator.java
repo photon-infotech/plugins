@@ -1,5 +1,6 @@
 /**
  * Android Maven Plugin - android-maven-plugin
+ *
  * Copyright (C) 1999-2013 Photon Infotech Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,8 +22,8 @@ package com.photon.maven.plugins.android.configuration;
  * {@link com.photon.maven.plugins.android.AbstractAndroidMojo} and used there.
  *
  */
-public class Emulator {
-
+public class Emulator
+{
     /**
      * Mirror of {@link com.photon.maven.plugins.android.AbstractEmulatorMojo#emulatorAvd}
      */
@@ -38,15 +39,28 @@ public class Emulator {
      */
     private String options;
 
-    public String getAvd() {
+    /**
+     * Override default emulator executable
+     */
+    private String executable;
+
+    public String getAvd()
+    {
         return avd;
     }
 
-    public String getWait() {
+    public String getWait()
+    {
         return wait;
     }
 
-    public String getOptions() {
+    public String getOptions()
+    {
         return options;
+    }
+
+    public String getExecutable()
+    {
+        return executable;
     }
 }
