@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="PhrescoXmlReport" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="org.apache.commons.codec.binary.Base64"/>
+	<style name="PPCTitle"/>
+	<style name="PPCTitleRect"/>
+	<style name="PPCTitleRectLogo"/>
+	<style name="PPCTitleRectDetail"/>
+	<style name="PPCTitleLabel"/>
+	<style name="PPCTitleLabelValue"/>
+	<style name="PPCHeading"/>
+	<style name="PPCHeadingLabel"/>
+	<style name="PPCHeadingLabelValue"/>
+	<style name="PPCHeadingRow"/>
+	<style name="PPCHeadingRowLabel"/>
+	<style name="PPCHeadingRowLabelValue"/>
+	<style name="PPCCopyRightPageNo"/>
+	<style name="PPCCopyRight"/>
+	<parameter name="testType" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="projectCode" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="reportsDataType" class="java.lang.String"/>
+	<parameter name="projectName" class="java.lang.String"/>
+	<parameter name="techName" class="java.lang.String"/>
+	<parameter name="version" class="java.lang.String"/>
+	<parameter name="logo" class="java.lang.String"/>
+	<parameter name="logoBase64Img" class="java.io.InputStream">
+		<defaultValueExpression><![CDATA[new ByteArrayInputStream(new Base64().decodeBase64($P{logo}.getBytes("UTF-8")))]]></defaultValueExpression>
+	</parameter>
+	<parameter name="copyRights" class="java.lang.String"/>
+	<field name="type" class="java.lang.String"/>
+	<field name="fileReport" class="java.util.List"/>
+	<variable name="isShowGraphs" class="java.lang.Boolean">
+		<variableExpression><![CDATA[Boolean.TRUE]]></variableExpression>
+		<initialValueExpression><![CDATA[Boolean.TRUE]]></initialValueExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="154" splitType="Stretch">
+			<frame>
+				<reportElement x="0" y="0" width="555" height="120"/>
+				<rectangle radius="3">
+					<reportElement style="PPCTitleRectLogo" x="0" y="2" width="555" height="115"/>
+				</rectangle>
+				<rectangle radius="10">
+					<reportElement style="PPCTitleRectDetail" x="176" y="5" width="376" height="108"/>
+				</rectangle>
+				<staticText>
+					<reportElement style="PPCTitleLabel" x="20" y="27" width="55" height="18">
+						<printWhenExpression><![CDATA[$P{logo}.equals("")]]></printWhenExpression>
+					</reportElement>
+					<textElement verticalAlignment="Bottom">
+						<font fontName="Times New Roman" size="13" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Photon]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="PPCTitleLabel" x="18" y="38" width="158" height="41">
+						<printWhenExpression><![CDATA[$P{logo}.equals("")]]></printWhenExpression>
+					</reportElement>
+					<textElement verticalAlignment="Top" rotation="None">
+						<font fontName="Times New Roman" size="28" isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[PHRESCO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="PPCTitleLabel" x="176" y="9" width="112" height="20"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Project Name :]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="PPCTitleLabel" x="176" y="29" width="112" height="20"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Application Name :]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="PPCTitleLabel" x="176" y="49" width="112" height="20"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Technology :]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="PPCTitleLabel" x="176" y="69" width="112" height="20"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Version :]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="PPCTitleLabel" x="176" y="89" width="112" height="20"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Date :]]></text>
+				</staticText>
+				<textField>
+					<reportElement style="PPCTitleLabelValue" x="290" y="9" width="257" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{projectName}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement style="PPCTitleLabelValue" x="290" y="29" width="257" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{projectCode}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement style="PPCTitleLabelValue" x="290" y="49" width="257" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{techName}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement style="PPCTitleLabelValue" x="290" y="89" width="257" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement style="PPCTitleLabelValue" x="290" y="69" width="257" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{version}]]></textFieldExpression>
+				</textField>
+				<image hAlign="Center" vAlign="Middle" onErrorType="Blank">
+					<reportElement x="6" y="5" width="170" height="108"/>
+					<imageExpression><![CDATA[$P{logoBase64Img}]]></imageExpression>
+				</image>
+			</frame>
+			<rectangle>
+				<reportElement style="PPCTitleRectLogo" x="0" y="127" width="554" height="23"/>
+			</rectangle>
+			<textField>
+				<reportElement x="4" y="130" width="344" height="20" forecolor="#FFFFFF"/>
+				<textElement>
+					<font fontName="Times New Roman" size="15" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{testType} + " TEST REPORT"]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<detail>
+		<band height="63" splitType="Stretch">
+			<frame>
+				<reportElement x="0" y="0" width="555" height="63" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[!$F{fileReport}.isEmpty()]]></printWhenExpression>
+				</reportElement>
+				<subreport>
+					<reportElement x="2" y="27" width="553" height="36" isRemoveLineWhenBlank="true">
+						<printWhenExpression><![CDATA[!$F{fileReport}.isEmpty()]]></printWhenExpression>
+					</reportElement>
+					<subreportParameter name="reportsDataType">
+						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="showGraphs">
+						<subreportParameterExpression><![CDATA[$V{isShowGraphs}]]></subreportParameterExpression>
+					</subreportParameter>
+					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{fileReport})]]></dataSourceExpression>
+					<subreportExpression><![CDATA["PhrescoPerfFiles.jasper"]]></subreportExpression>
+				</subreport>
+				<rectangle radius="10">
+					<reportElement style="PPCHeadingRow" x="0" y="5" width="554" height="20"/>
+				</rectangle>
+				<textField>
+					<reportElement style="PPCHeadingRowLabelValue" x="83" y="5" width="377" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{type}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement style="PPCHeadingRowLabelValue" x="15" y="5" width="68" height="19" forecolor="#FFFFFF"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="11" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Test Type :]]></text>
+				</staticText>
+			</frame>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="29" splitType="Stretch">
+			<frame>
+				<reportElement style="PPCCopyRight" mode="Opaque" x="0" y="5" width="555" height="24"/>
+				<textField evaluationTime="Report">
+					<reportElement style="PPCCopyRightPageNo" x="513" y="0" width="40" height="24"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement style="PPCCopyRightPageNo" x="433" y="0" width="80" height="24"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Page "+$V{PAGE_NUMBER}+" of "]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement style="PPCCopyRight" x="4" y="0" width="419" height="24"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{copyRights}]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</pageFooter>
+</jasperReport>
