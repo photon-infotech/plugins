@@ -215,64 +215,45 @@
         
   </dependencies>
   
-<!--      <build> -->
-<!--         <plugins> -->
-<!--             <plugin> -->
-<!--                 <groupId>org.codehaus.mojo</groupId> -->
-<!--                 <artifactId>jasperreports-maven-plugin</artifactId> -->
-<!--                 <version>1.0-beta-2</version> -->
-<!--                 <executions> -->
-<!--                     <execution> -->
-<!--                         <goals> -->
-<!--                             <goal>compile-reports</goal> -->
-<!--                         </goals> -->
-<!--                         <configuration> -->
-<!--                             define where is your jrxml file -->
-<!--                             <sourceDirectory>src\\main\\resources\\reports\\template</sourceDirectory> -->
-<!--                             <sourceFileExt>.jrxml</sourceFileExt> -->
-<!--                             <compiler>net.sf.jasperreports.engine.design.JRJavacCompiler</compiler> -->
-<!--                             define where is the jasper file will be generated -->
-<!--                             <outputDirectory>src\\main\\resources\\reports\\jasper</outputDirectory> -->
-<!--                         </configuration> -->
-<!--                     </execution> -->
-<!--                 </executions> -->
-<!--                 <dependencies> -->
-<!--                     Note this must be repeated here to pick up correct xml validation -->
-					
-<!--                     <dependency> -->
-<!--                         <groupId>net.sf.jasperreports</groupId> -->
-<!--                         <artifactId>jasperreports</artifactId> -->
-<!--                         <version>4.5.0</version> -->
-<!--                     </dependency> -->
+     <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jasperreports-maven-plugin</artifactId>
+                <version>1.0-beta-2</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile-reports</goal>
+                        </goals>
+                        <configuration>
+							<!-- define where is your jrxml file -->
+                            <sourceDirectory>src\\main\\resources\\template</sourceDirectory>
+                            <sourceFileExt>.jrxml</sourceFileExt>
+                            <compiler>net.sf.jasperreports.engine.design.JRJavacCompiler</compiler>
+							<!-- define where is the jasper file will be generated -->
+                            <outputDirectory>src\\main\\resources\\</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+					<!-- Note this must be repeated here to pick up correct xml validation -->
+                    <dependency>
+                        <groupId>net.sf.jasperreports</groupId>
+                        <artifactId>jasperreports</artifactId>
+                        <version>4.5.0</version>
+                    </dependency>
                     
-<!--                     <dependency> -->
-<!--                         <groupId>log4j</groupId> -->
-<!--                         <artifactId>log4j</artifactId> -->
-<!--                         <version>1.2.16</version> -->
-<!--                     </dependency> -->
+                    <dependency>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                        <version>1.2.16</version>
+                    </dependency>
         
-<!--                 </dependencies> -->
-<!--             </plugin> -->
+                </dependencies>
+            </plugin>
 
-<!--         </plugins> -->
-        
-<!--         <resources> -->
-<!--           <resource> -->
-<!--             <directory>src/main/resources</directory> -->
-<!--             <filtering>true</filtering> -->
-<!-- 	        <includes> -->
-<!-- 	          <include>framework.config</include> -->
-<!-- 	        </includes> -->
-<!--           </resource> -->
-<!--           <resource> -->
-<!--             <directory>src/main/resources</directory> -->
-<!--             <filtering>false</filtering> -->
-<!-- 	        <excludes> -->
-<!-- 	          <exclude>*.jasper</exclude> -->
-<!-- 	          <exclude>*.jrxml</exclude> -->
-<!-- 	        </excludes> -->
-<!--           </resource> -->
-<!--         </resources> -->
-<!--     </build> -->
+        </plugins>
+    </build>
     
 </project>

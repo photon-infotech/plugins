@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="PhrescoJmeterResultSubReport" pageWidth="555" pageHeight="802" columnWidth="535" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.1000000000000005"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="java.util.*"/>
+	<style name="PPFDTitle"/>
+	<style name="PPFDTitleRect"/>
+	<style name="PPFDTitleRectLogo"/>
+	<style name="PPFDTitleRectDetail"/>
+	<style name="PPFDTitleLabel"/>
+	<style name="PPFDTitleLabelValue"/>
+	<style name="PPFDHeading"/>
+	<style name="PPFDHeadingLabel"/>
+	<style name="PPFDHeadingLabelValue"/>
+	<style name="PPFDHeadingRow"/>
+	<style name="PPFDHeadingRowLabel"/>
+	<style name="PPFDHeadingRowLabelValue"/>
+	<style name="table" fontName="Times New Roman" fontSize="12">
+		<box>
+			<pen lineWidth="1.0" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TH" mode="Opaque" fontName="Times New Roman" fontSize="12">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_CH" mode="Opaque" fontName="Times New Roman" fontSize="12">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TD" mode="Opaque" fontName="Times New Roman" fontSize="12">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TH_Label"/>
+	<style name="table_CH_Label"/>
+	<style name="table_TD_Label"/>
+	<subDataset name="Table Dataset 1">
+		<parameter name="totalNoOfSample" class="java.lang.String"/>
+		<parameter name="totalAvg" class="java.lang.String"/>
+		<parameter name="min" class="java.lang.String"/>
+		<parameter name="max" class="java.lang.String"/>
+		<parameter name="totalStdDev" class="java.lang.String"/>
+		<parameter name="totalErr" class="java.lang.String"/>
+		<parameter name="totalThroughput" class="java.lang.String"/>
+		<parameter name="totalKbPerSec" class="java.lang.String"/>
+		<parameter name="totalAvgBytes" class="java.lang.String"/>
+		<parameter name="reportsDataType" class="java.lang.String"/>
+		<field name="label" class="java.lang.String"/>
+		<field name="noOfSamples" class="java.lang.Integer"/>
+		<field name="avg" class="java.lang.Double"/>
+		<field name="min" class="java.lang.Integer"/>
+		<field name="max" class="java.lang.Integer"/>
+		<field name="stdDev" class="java.lang.Double"/>
+		<field name="err" class="java.lang.Integer"/>
+		<field name="throughPut" class="java.lang.Double"/>
+		<field name="kbPerSec" class="java.lang.Double"/>
+		<field name="avgBytes" class="java.lang.Double"/>
+	</subDataset>
+	<parameter name="totalNoOfSample" class="java.lang.String"/>
+	<parameter name="totalAvg" class="java.lang.String"/>
+	<parameter name="min" class="java.lang.String"/>
+	<parameter name="max" class="java.lang.String"/>
+	<parameter name="totalStdDev" class="java.lang.String"/>
+	<parameter name="totalErr" class="java.lang.String"/>
+	<parameter name="totalThroughput" class="java.lang.String"/>
+	<parameter name="totalKbPerSec" class="java.lang.String"/>
+	<parameter name="totalAvgBytes" class="java.lang.String"/>
+	<parameter name="reportsDataType" class="java.lang.String"/>
+	<parameter name="jmeterTestResult" class="java.util.List"/>
+	<parameter name="showGraphs" class="java.lang.Boolean" isForPrompting="false"/>
+	<detail>
+		<band height="50">
+			<frame>
+				<reportElement x="0" y="0" width="555" height="50"/>
+				<componentElement>
+					<reportElement key="table" x="0" y="0" width="555" height="50"/>
+					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+						<datasetRun subDataset="Table Dataset 1">
+							<datasetParameter name="totalNoOfSample">
+								<datasetParameterExpression><![CDATA[$P{totalNoOfSample}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="totalAvg">
+								<datasetParameterExpression><![CDATA[$P{totalAvg}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="min">
+								<datasetParameterExpression><![CDATA[$P{min}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="max">
+								<datasetParameterExpression><![CDATA[$P{max}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="totalStdDev">
+								<datasetParameterExpression><![CDATA[$P{totalStdDev}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="totalErr">
+								<datasetParameterExpression><![CDATA[$P{totalErr}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="totalThroughput">
+								<datasetParameterExpression><![CDATA[$P{totalThroughput}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="totalKbPerSec">
+								<datasetParameterExpression><![CDATA[$P{totalKbPerSec}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="totalAvgBytes">
+								<datasetParameterExpression><![CDATA[$P{totalAvgBytes}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="reportsDataType">
+								<datasetParameterExpression><![CDATA[$P{reportsDataType}]]></datasetParameterExpression>
+							</datasetParameter>
+							<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{jmeterTestResult})]]></dataSourceExpression>
+						</datasetRun>
+						<jr:column width="129">
+							<jr:tableFooter style="table_CH" height="30" rowSpan="1">
+								<staticText>
+									<reportElement style="table_CH_Label" x="0" y="0" width="129" height="30"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman" isBold="true"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<text><![CDATA[Total]]></text>
+								</staticText>
+							</jr:tableFooter>
+							<jr:columnHeader style="table_CH" height="30" rowSpan="1">
+								<staticText>
+									<reportElement style="table_CH_Label" x="0" y="0" width="129" height="30"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman" size="12" isBold="true"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<text><![CDATA[Label]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="table_TD" height="23" rowSpan="1">
+								<textField>
+									<reportElement style="table_TD_Label" x="0" y="0" width="129" height="20"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman" size="12"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{label}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="53">
+							<jr:tableFooter style="table_CH" height="30" rowSpan="1">
+								<textField>
+									<reportElement style="table_CH_Label" x="0" y="0" width="53" height="30"/>
+									<textElement textAlignment="Left" verticalAlignment="Middle">
+										<font fontName="Times New Roman"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$P{totalNoOfSample}]]></textFieldExpression>
+								</textField>
+							</jr:tableFooter>
+							<jr:columnHeader style="table_CH" height="30" rowSpan="1">
+								<staticText>
+									<reportElement style="table_CH_Label" x="0" y="0" width="53" height="30"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman" size="12" isBold="true"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<text><![CDATA[# Sample]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="table_TD" height="23" rowSpan="1">
+								<textField isStretchWithOverflow="true">
+									<reportElement style="table_TD_Label" x="0" y="0" width="53" height="20"/>
+									<textElement textAlignment="Left" verticalAlignment="Middle">
+										<font fontName="Times New Roman" size="12"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<textFieldExpression><![CDATA[""+$F{noOfSamples}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="48">
+							<jr:tableFooter style="table_CH" height="30" rowSpan="1">
+								<textField pattern="">
+									<reportElement style="table_CH_Label" x="0" y="0" width="48" height="30"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<textFieldExpression><![CDATA[""+Math.round((Double.valueOf($P{totalAvg})))]]></textFieldExpression>
+								</textField>
+							</jr:tableFooter>
+							<jr:columnHeader style="table_CH" height="30" rowSpan="1">
+								<staticText>
+									<reportElement style="table_CH_Label" x="0" y="0" width="48" height="30"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman" size="12" isBold="true"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<text><![CDATA[Average]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="table_TD" height="23" rowSpan="1">
+								<textField isStretchWithOverflow="true">
+									<reportElement style="table_TD_Label" x="0" y="0" width="48" height="20"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman" size="12"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<textFieldExpression><![CDATA[""+$F{avg}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="35">
+							<jr:tableFooter style="table_CH" height="30" rowSpan="1">
+								<textField>
+									<reportElement style="table_CH_Label" x="0" y="0" width="35" height="30"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$P{min}]]></textFieldExpression>
+								</textField>
+							</jr:tableFooter>
+							<jr:columnHeader style="table_CH" height="30" rowSpan="1">
+								<staticText>
+									<reportElement style="table_CH_Label" x="0" y="0" width="35" height="30"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman" size="12" isBold="true"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<text><![CDATA[Min]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="table_TD" height="23" rowSpan="1">
+								<textField isStretchWithOverflow="true">
+									<reportElement style="table_TD_Label" x="0" y="0" width="35" height="20"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman" size="12"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<textFieldExpression><![CDATA[""+$F{min}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="39">
+							<jr:tableFooter style="table_CH" height="30" rowSpan="1">
+								<textField>
+									<reportElement style="table_CH_Label" x="0" y="0" width="39" height="30"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$P{max}]]></textFieldExpression>
+								</textField>
+							</jr:tableFooter>
+							<jr:columnHeader style="table_CH" height="30" rowSpan="1">
+								<staticText>
+									<reportElement style="table_CH_Label" x="0" y="0" width="39" height="30"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman" size="12" isBold="true"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<text><![CDATA[Max]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="table_TD" height="23" rowSpan="1">
+								<textField isStretchWithOverflow="true">
+									<reportElement style="table_TD_Label" x="0" y="0" width="39" height="20"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman" size="12"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<textFieldExpression><![CDATA[""+$F{max}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="43">
+							<jr:tableFooter style="table_CH" height="30" rowSpan="1">
+								<textField>
+									<reportElement style="table_CH_Label" x="0" y="0" width="43" height="30"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$P{totalStdDev}]]></textFieldExpression>
+								</textField>
+							</jr:tableFooter>
+							<jr:columnHeader style="table_CH" height="30" rowSpan="1">
+								<staticText>
+									<reportElement style="table_CH_Label" x="0" y="0" width="42" height="30"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman" size="12" isBold="true"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<text><![CDATA[Std.Dev]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="table_TD" height="23" rowSpan="1">
+								<textField isStretchWithOverflow="true" pattern="###0.00">
+									<reportElement style="table_TD_Label" x="0" y="0" width="42" height="20"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman" size="12"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{stdDev}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="49">
+							<jr:tableFooter style="table_CH" height="30" rowSpan="1">
+								<textField>
+									<reportElement style="table_CH_Label" x="0" y="0" width="49" height="30"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$P{totalErr}]]></textFieldExpression>
+								</textField>
+							</jr:tableFooter>
+							<jr:columnHeader style="table_CH" height="30" rowSpan="1">
+								<staticText>
+									<reportElement style="table_CH_Label" x="0" y="0" width="49" height="30"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman" size="12" isBold="true"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<text><![CDATA[Error %]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="table_TD" height="23" rowSpan="1">
+								<textField isStretchWithOverflow="true">
+									<reportElement style="table_TD_Label" x="0" y="0" width="40" height="20"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman" size="12"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<textFieldExpression><![CDATA[""+$F{err}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="50">
+							<jr:tableFooter style="table_CH" height="30" rowSpan="1">
+								<textField>
+									<reportElement style="table_CH_Label" x="0" y="0" width="50" height="30"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$P{totalThroughput}]]></textFieldExpression>
+								</textField>
+							</jr:tableFooter>
+							<jr:columnHeader style="table_CH" height="30" rowSpan="1">
+								<staticText>
+									<reportElement style="table_CH_Label" x="0" y="0" width="48" height="30"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman" size="12" isBold="true"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<text><![CDATA[Thr.put]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="table_TD" height="23" rowSpan="1">
+								<textField isStretchWithOverflow="true" pattern="###0.00" isBlankWhenNull="false">
+									<reportElement style="table_TD_Label" x="0" y="0" width="48" height="20"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman" size="12"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{throughPut}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="50">
+							<jr:tableFooter style="table_CH" height="30" rowSpan="1">
+								<textField>
+									<reportElement style="table_CH_Label" x="0" y="0" width="50" height="30"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$P{totalKbPerSec}]]></textFieldExpression>
+								</textField>
+							</jr:tableFooter>
+							<jr:columnHeader style="table_CH" height="30" rowSpan="1">
+								<staticText>
+									<reportElement style="table_CH_Label" x="0" y="0" width="50" height="30"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman" size="12" isBold="true"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<text><![CDATA[Kb/sec]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="table_TD" height="23" rowSpan="1">
+								<textField isStretchWithOverflow="true" pattern="###0.00">
+									<reportElement style="table_TD_Label" x="0" y="0" width="50" height="20"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman" size="12"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{kbPerSec}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="58">
+							<jr:tableFooter style="table_CH" height="30" rowSpan="1">
+								<textField pattern="">
+									<reportElement style="table_CH_Label" x="0" y="0" width="58" height="30"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<textFieldExpression><![CDATA[""+Math.round((Double.valueOf($P{totalAvgBytes})))]]></textFieldExpression>
+								</textField>
+							</jr:tableFooter>
+							<jr:columnHeader style="table_CH" height="30" rowSpan="1">
+								<staticText>
+									<reportElement style="table_CH_Label" x="0" y="0" width="58" height="30"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman" size="12" isBold="true"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<text><![CDATA[Avg bytes]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="table_TD" height="23" rowSpan="1">
+								<textField isStretchWithOverflow="true" pattern="###0">
+									<reportElement style="table_TD_Label" x="0" y="0" width="58" height="20"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="Times New Roman" size="12"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{avgBytes}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+					</jr:table>
+				</componentElement>
+			</frame>
+		</band>
+	</detail>
+	<summary>
+		<band height="231">
+			<printWhenExpression><![CDATA[$P{showGraphs}.booleanValue()]]></printWhenExpression>
+			<frame>
+				<reportElement x="1" y="0" width="554" height="229"/>
+				<subreport>
+					<reportElement x="0" y="0" width="554" height="229"/>
+					<subreportParameter name="reportsDataType">
+						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
+					</subreportParameter>
+					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{jmeterTestResult})]]></dataSourceExpression>
+					<subreportExpression><![CDATA["PhrescoPerfFiles_subreport1.jasper"]]></subreportExpression>
+				</subreport>
+			</frame>
+		</band>
+	</summary>
+</jasperReport>
