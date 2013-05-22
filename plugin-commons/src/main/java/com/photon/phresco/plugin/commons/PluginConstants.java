@@ -38,6 +38,8 @@ public interface PluginConstants {
      String FORWARD_SLASH               = "/";
      String CONFIG_FILE					= "phresco-env-config.xml";
      String UNIT_INFO_FILE				= "phresco-unit-test-info.xml";
+	 String FUNCTIONAL_INFO_FILE	    = "phresco-functional-test-info.xml";
+	 String PERFORMANCE_INFO_FILE	    = "phresco-performance-test-info.xml";
      String VALIDATE_INFO_INFO_FILE		= "phresco-validate-code-info.xml";
      String SETTINGS_FILE				= "-settings.xml";
      String BASH 						= "bash";
