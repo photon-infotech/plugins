@@ -17,38 +17,49 @@
  */
 package com.photon.phresco.plugins.android;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-import javax.xml.parsers.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.commons.jxpath.ri.parser.ParseException;
-import org.apache.commons.lang.*;
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.logging.*;
-import org.apache.maven.project.*;
-import org.w3c.dom.*;
+import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.project.MavenProject;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import com.photon.phresco.commons.FrameworkConstants;
-import com.photon.phresco.exception.*;
-import com.photon.phresco.plugin.commons.*;
+import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.plugin.commons.MavenProjectInfo;
+import com.photon.phresco.plugin.commons.PluginConstants;
+import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands.MavenCommand;
-import com.photon.phresco.plugins.util.*;
-import com.photon.phresco.util.*;
-import com.phresco.pom.android.*;
-import com.phresco.pom.model.*;
+import com.photon.phresco.plugins.util.MojoProcessor;
+import com.photon.phresco.plugins.util.MojoUtil;
+import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.Utility;
+import com.phresco.pom.android.AndroidProfile;
+import com.phresco.pom.model.Plugin;
+import com.phresco.pom.model.PluginExecution;
 import com.phresco.pom.model.PluginExecution.Goals;
-import com.phresco.pom.util.*;
+import com.phresco.pom.util.AndroidPomProcessor;
 
 public class Package implements PluginConstants {
 	private Log log;
 	private String baseDir;
 	private MavenProject project;
+	private String pomFile;
+	
 	public void pack(com.photon.phresco.plugins.model.Mojos.Mojo.Configuration config, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir().getPath();
 		project = mavenProjectInfo.getProject();
+		pomFile = project.getFile().getName();
 		
 		Map<String, String> configs = MojoUtil.getAllValues(config);
 		String environmentName = configs.get(ENVIRONMENT_NAME);
@@ -89,6 +100,9 @@ public class Package implements PluginConstants {
 		if (isSigning) {			
 			updateAllPOMWithProfile(keystore, storepass, keypass, alias);
 		}
+		
+		updateDotPhrescoInfoFiles(isSigning, mavenProjectInfo);
+		
 		
 		log.info("Project is Building...");
 		StringBuilder sb = new StringBuilder();
@@ -139,6 +153,12 @@ public class Package implements PluginConstants {
 				}
 			}			
 		}		
+		if(!Constants.POM_NAME.equals(pomFile)) {
+			sb.append(STR_SPACE);
+			sb.append(Constants.HYPHEN_F);
+			sb.append(STR_SPACE);
+			sb.append(pomFile);
+		}
 		log.info("Command " + sb.toString());
 		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir, baseDir, FrameworkConstants.PACKAGE);
 		if(!status) {
@@ -148,6 +168,46 @@ public class Package implements PluginConstants {
 				throw new PhrescoException(e);
 			}
 		}
+	}
+	
+	/**
+	 * This function is used to change the Unit,functional and performance info files
+	 * for displaying the signing check box on Unit,functional and performance build 
+	 * pop-up's based on signing value from main build pop-up
+	 * @param isSigning
+	 * @param mavenProjectInfo
+	 */
+	private void updateDotPhrescoInfoFiles(Boolean isSigning, MavenProjectInfo mavenProjectInfo){
+		
+		
+			
+			String baseDir = mavenProjectInfo.getBaseDir().toString();
+			
+			
+			String unitXmlFile = baseDir + File.separator + DOT_PHRESCO_FOLDER + File.separator + UNIT_INFO_FILE;
+			String functionalXmlFile = baseDir + File.separator +DOT_PHRESCO_FOLDER + File.separator + FUNCTIONAL_INFO_FILE;
+			String performanceXmlFile = baseDir + File.separator +DOT_PHRESCO_FOLDER + File.separator + PERFORMANCE_INFO_FILE;
+			MojoProcessor mojoObj;
+			try {
+				mojoObj = new MojoProcessor(new File(unitXmlFile));
+				Parameter unitSigningParameter = mojoObj.getParameter("unit-test", "signing");
+				unitSigningParameter.setShow(isSigning);
+				mojoObj.save();
+				
+				mojoObj = new MojoProcessor(new File(functionalXmlFile));
+				Parameter functionalSigningParameter = mojoObj.getParameter("functional-test-webdriver", "signing");
+				functionalSigningParameter.setShow(isSigning);
+				mojoObj.save();
+				
+				mojoObj = new MojoProcessor(new File(performanceXmlFile));
+				Parameter performanceSigningParameter = mojoObj.getParameter("performance-test", "signing");
+				performanceSigningParameter.setShow(isSigning);
+				mojoObj.save();
+				
+			} catch (PhrescoException e) {
+				
+				e.printStackTrace();
+			}
 	}
 	
 	private void updateAllPOMWithProfile(String keystore, String storepass, String keypass, String alias) throws PhrescoException {
@@ -169,7 +229,7 @@ public class Package implements PluginConstants {
 			}
 			// pom file
 			sb.append(File.separatorChar);
-			sb.append(POM_XML);
+			sb.append(pomFile);
 			projPoms.add(sb.toString());
 		}
 		
