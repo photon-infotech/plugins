@@ -29,7 +29,7 @@ import org.w3c.dom.Element;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.phresco.pom.util.PomProcessor;
 
-public class GenerateReport1Test extends TestCase implements PluginConstants {
+public class GenerateReportTest extends TestCase implements PluginConstants {
 	
 //	private static final String DOT_REPORT_FILE = ".jasper";
 	private static final String DOT_REPORT_FILE = ".jrxml";
