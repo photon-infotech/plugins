@@ -38,6 +38,8 @@ public interface PluginConstants {
      String FORWARD_SLASH               = "/";
      String CONFIG_FILE					= "phresco-env-config.xml";
      String UNIT_INFO_FILE				= "phresco-unit-test-info.xml";
+	 String FUNCTIONAL_INFO_FILE	    = "phresco-functional-test-info.xml";
+	 String PERFORMANCE_INFO_FILE	    = "phresco-performance-test-info.xml";
      String VALIDATE_INFO_INFO_FILE		= "phresco-validate-code-info.xml";
      String SETTINGS_FILE				= "-settings.xml";
      String BASH 						= "bash";
@@ -238,11 +240,15 @@ public interface PluginConstants {
 	 
 	 String WP_SLN 						= ".sln";
 	 String WP_CSPROJ 					= ".csproj";
+	 String VB_CSPROJ 					= ".vbproj";
+	 String WP_COMMA 					= ",";
+	 String METRO_BUILD_SEPERATOR 		= "~";
 	 
 	// Variables related to Windows Store (Metro) build process
 	 String WP_STR_CONFIGURATION		= "Configuration";
 	 String WP_STR_PLATFORM				= "Platform";
 	 String WP_APP_PACKAGE				= "\\AppPackages";
+	 String WP_APP_PACKAGE_FOLDER		= "AppPackages";
 	 String WP_TEST						= "_Test";
 	 String WP_PROPERTYGROUP 			= "PropertyGroup";
 	 String WP_AUTO_INCREMENT_PKG_VERSION_NO = "AppxAutoIncrementPackageRevision";
@@ -264,7 +270,7 @@ public interface PluginConstants {
 	 String WP7_BIN_FOLDER				= "\\bin";
 	 String WP7_RELEASE_FOLDER			= "\\release";
 	 String WP_X86    					= "X86";
-	 String WP_ANY_CPU    				= "AnyCPU";
+	 String WP_ANY_CPU    				= "Any CPU";
 	 String BIN 						= "Bin";
 	 String OBJ							= "obj";
 	 String WIN_CLEAN					= "Clean";
