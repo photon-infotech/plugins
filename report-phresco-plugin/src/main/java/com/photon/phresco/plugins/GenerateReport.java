@@ -72,7 +72,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
@@ -151,8 +150,7 @@ public class GenerateReport implements PluginConstants {
 	private static final String MMM_DD_YYYY_HH_MM = "MMM dd yyyy HH.mm";
 	private MavenProject mavenProject;
 	private File baseDir;
-//	private Log log;
-	private static final Logger log = Logger.getLogger(GenerateReport1.class);
+	private Log log;
 	private PluginPackageUtil util;
 
 	private static final String INDEX = "index";
@@ -2363,7 +2361,7 @@ public class GenerateReport implements PluginConstants {
 	
 	public void generate(Configuration config, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		try {
-//			this.log = log;
+			this.log = log;
 	        baseDir = mavenProjectInfo.getBaseDir();
 	        mavenProject = mavenProjectInfo.getProject();
 	        
@@ -2440,6 +2438,7 @@ public class GenerateReport implements PluginConstants {
 		}
 	}
 	
+	// This method is used by test cases for testing purpose
 	public void generateTest(String baseDirPath, String dotPhrescoFilePath,
 			String testType, String reportType, String sonarUrl,
 			Properties properties, String logoimage64, String themeJson1, String technologyName, String pomPath)
