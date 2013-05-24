@@ -80,8 +80,8 @@ public class GenerateReportTest extends TestCase implements PluginConstants {
 		}
 	}
 	
-	@Test
-	public void testReport() throws Exception {
+//	@Test
+	public void Report() throws Exception {
 		try {
 //			genReport.compileReports();
 			
