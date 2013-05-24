@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="PhrescoXmlReport" pageWidth="555" pageHeight="842" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="PhrescoXmlReport" pageWidth="555" pageHeight="842" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" scriptletClass="com.photon.phresco.plugins.Scriptlet">
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
@@ -16,6 +16,10 @@
 	<style name="SJJWRTHeadingRowLabel"/>
 	<style name="SJJWRTHeadingRowLabelValue"/>
 	<parameter name="reportsDataType" class="java.lang.String"/>
+	<parameter name="masterPageNo" class="java.lang.Integer"/>
+	<parameter name="headingsMap" class="java.util.HashMap">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
 	<field name="nonCommentLinesOfCode" class="java.lang.String"/>
 	<field name="classes" class="java.lang.String"/>
 	<field name="lines" class="java.lang.String"/>
@@ -59,6 +63,15 @@
 	<background>
 		<band splitType="Stretch"/>
 	</background>
+	<title>
+		<band height="2">
+			<line>
+				<reportElement x="1" y="1" width="1" height="1">
+					<printWhenExpression><![CDATA[$P{REPORT_SCRIPTLET}.updateTOC("SonarReport", $P{masterPageNo})]]></printWhenExpression>
+				</reportElement>
+			</line>
+		</band>
+	</title>
 	<detail>
 		<band height="625" splitType="Stretch">
 			<frame>
