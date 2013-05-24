@@ -22,10 +22,13 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -36,6 +39,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
@@ -84,15 +88,19 @@ public class Package implements PluginConstants {
 	private Date currentDate;
 	private Log log;
 	private PluginPackageUtil util;
+	private StringBuilder builder;
+	private String params;
 	
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
+		builder = new StringBuilder();
 		baseDir = mavenProjectInfo.getBaseDir();
         project = mavenProjectInfo.getProject();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
         buildName = configs.get(BUILD_NAME);
         buildNumber = configs.get(BUILD_NUMBER);
+        params = configs.get("msBuildParams");
 		util = new PluginPackageUtil();
 		PluginUtils.checkForConfigurations(baseDir, environmentName);
         try {
@@ -183,6 +191,7 @@ public class Package implements PluginConstants {
 		} catch (Exception e) {
 			isBuildSuccess = false;
 			log.error(e);
+			throw new MojoExecutionException(e.getMessage(), e);
 		}
 		return isBuildSuccess;
 	}
@@ -190,13 +199,32 @@ public class Package implements PluginConstants {
 	private void executeMSBuildCmd() throws MojoExecutionException {
 		BufferedReader in = null;
 		try {
+			if (StringUtils.isNotEmpty(params)) {
+				StringReader reader = new StringReader(params);
+				Properties props = new Properties();
+				props.load(reader);
+				Set<String> propertyNames = props.stringPropertyNames();
+				for (String key : propertyNames) {
+					if (StringUtils.isNotEmpty(key)) {
+						builder.append(key);
+						builder.append(COLON);
+						builder.append(props.getProperty(key));
+						builder.append(STR_SPACE);
+					}
+				}
+			}
 			String[] list = srcDir.list(new CSFileNameFilter());
 			StringBuilder sb = new StringBuilder();
-			sb.append("msbuild.exe");
+			sb.append(MS_BUILD);
 			sb.append(STR_SPACE);
 			sb.append(list[0]);
 			sb.append(STR_SPACE);
 			sb.append("/t:rebuild");
+			sb.append(STR_SPACE);
+			sb.append(builder.toString());
+			
+			log.info("executeMSBuildCmd() : " + sb.toString());
+			
 			Commandline cl = new Commandline(sb.toString());
 			cl.setWorkingDirectory(srcDir.getPath());
 			Process process = cl.execute();
