@@ -67,10 +67,11 @@ public class Package implements PluginConstants {
 	private File tempDir;
 	private int nextBuildNo;
 	private String zipName;
+	private String zipFilePath;
 	private Date currentDate;
 	private String sourceDirectory = "\\source";
 	private File[] solutionFile;
-	private File[] csprojFile;
+	private File[] projFile;
 	private WP8PackageInfo packageInfo;
 	private File rootDir;
 	private Log log;
@@ -91,24 +92,30 @@ public class Package implements PluginConstants {
         PluginUtils.checkForConfigurations(baseDir, environmentName);
 		try {
 			init();
+			WinBuildInfo info = new WinBuildInfo();
 			if(type.equalsIgnoreCase(WIN_STORE)) {
 				try {
-					generateWP8Package();
+					String[] platforms = platform.split(WP_COMMA);
+					for (String platform : platforms) {
+						generateWP8Package(platform);
+						boolean buildStatus = build(platform);
+						writeBuildInfo(buildStatus, (platform.equalsIgnoreCase("any cpu")?"AnyCPU":platform), info);
+					}
 				} catch (PhrescoException e) {				
 				}
 			} else {
 				generateWP7Package();
+				boolean buildStatus = build(platform);
+				writeBuildInfo(buildStatus, platform, info);
 			}
-			boolean buildStatus = build();
-			writeBuildInfo(buildStatus);
-			deleteBinAndObjDir(new File(baseDir.getPath() + sourceDirectory));
+			
+			 deleteOutputDir(new File(baseDir.getPath() + sourceDirectory));
 			cleanUp();
 		} catch (MojoExecutionException e) {
 			throw new PhrescoException(e);
 		}
 		
 	}
-
 
 	private void init() throws MojoExecutionException {
 		try {
@@ -120,14 +127,13 @@ public class Package implements PluginConstants {
 			
 			if(type.equalsIgnoreCase(WIN_STORE)) {
 				getProjectRoot();
-				getCSProjectFile();
+				getProjectFile();
 				packageInfo = new WP8PackageInfo(rootDir);
 			}
 			
 			buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
 			if (!buildDir.exists()) {
 				buildDir.mkdirs();
-//				log.info("Build directory created..." + buildDir.getPath());
 			}
 			buildInfoFile = new File(buildDir.getPath() + BUILD_INFO_FILE);
 			nextBuildNo = util.generateNextBuildNo(buildInfoFile);
@@ -162,13 +168,13 @@ public class Package implements PluginConstants {
 	}
 	
 	
-	private void getCSProjectFile() throws MojoExecutionException {
+	private void getProjectFile() throws MojoExecutionException {
 		try {
 			// Get .csproj file from the source folder
 			File projRootDir = new File(rootDir.getPath());
-			csprojFile = projRootDir.listFiles(new FilenameFilter() { 
+			projFile = projRootDir.listFiles(new FilenameFilter() { 
 				public boolean accept(File dir, String name) { 
-					return name.endsWith(WP_CSPROJ);
+					return name.endsWith(WP_CSPROJ) || name.endsWith(VB_CSPROJ);
 				}
 			});			
 		} catch (Exception e) {
@@ -244,7 +250,7 @@ public class Package implements PluginConstants {
 		}
 	}
 	
-	private void generateWP8Package() throws MojoExecutionException, PhrescoException {
+	private void generateWP8Package(String platform) throws MojoExecutionException, PhrescoException {
 		BufferedReader in = null;
 		try {
 			
@@ -291,7 +297,7 @@ public class Package implements PluginConstants {
 	private void checkPackageVersionNo() throws PhrescoException {
 		try {
 			SAXBuilder builder = new SAXBuilder();
-			File path = new File (rootDir.getPath() + File.separator + csprojFile[0].getName());
+			File path = new File (rootDir.getPath() + File.separator + projFile[0].getName());
 			
 			Document doc = (Document) builder.build(path);
 			Element rootNode = doc.getRootElement();
@@ -325,10 +331,10 @@ public class Package implements PluginConstants {
 		}
 	}
 	
-	private boolean build() throws MojoExecutionException {
+	private boolean build(String platform) throws MojoExecutionException {
 		boolean isBuildSuccess = true;
 		try {
-			createPackage();
+			createPackage(platform);
 		} catch (Exception e) {
 			isBuildSuccess = false;
 			log.error(e.getMessage());
@@ -337,10 +343,10 @@ public class Package implements PluginConstants {
 		return isBuildSuccess;
 	}
 
-	private void createPackage() throws MojoExecutionException {
+	private void createPackage(String platform) throws MojoExecutionException {
 		try {
-			zipName = util.createPackage(buildName, buildNumber, nextBuildNo, currentDate);
-			String zipFilePath = buildDir.getPath() + File.separator + zipName;
+			zipName = util.createPackage(buildName, buildNumber, nextBuildNo, new Date());
+			zipFilePath = buildDir.getPath() + File.separator + (platform.equalsIgnoreCase("any cpu")?"AnyCPU":platform) + METRO_BUILD_SEPERATOR + zipName;
 			String solutionFilename = solutionFile[0].getName().substring(0, (solutionFile[0].getName().length())-4);
 			if(type.equalsIgnoreCase(WIN_STORE)) {
 				String packageVersion = packageInfo.getPackageVersion();
@@ -364,24 +370,26 @@ public class Package implements PluginConstants {
 		}
 	}
 
-	private void writeBuildInfo(boolean isBuildSuccess) throws MojoExecutionException {
-		util.writeBuildInfo(isBuildSuccess, buildName, buildNumber, nextBuildNo, environmentName, buildNo, currentDate, buildInfoFile);
+	private void writeBuildInfo(boolean isBuildSuccess, String platform, WinBuildInfo wInfo) throws MojoExecutionException {
+		wInfo.generateBuildInfo(isBuildSuccess, platform, buildNumber, nextBuildNo, environmentName, buildName, new Date(), buildInfoFile, zipName);
 	}
 	
-	private static void deleteBinAndObjDir(File path) throws MojoExecutionException {
+	
+	
+	private static void deleteOutputDir(File path) throws MojoExecutionException {
 		try {
 			File[] listFiles = path.listFiles();
 			for (File file : listFiles) {
 				if(file.isDirectory()) {
-					deleteBinAndObjDir(file);
-					File bin = new File(file.getParent());
-					if (bin.getName().equalsIgnoreCase(BIN) || bin.getName().equalsIgnoreCase(OBJ)) {
-						FileUtils.deleteDirectory(bin); 
+					deleteOutputDir(file);
+					File outputFolder = new File(file.getParent());
+					if (outputFolder.getName().equalsIgnoreCase(BIN) || outputFolder.getName().equalsIgnoreCase(OBJ) || outputFolder.getName().equalsIgnoreCase(WP_APP_PACKAGE_FOLDER)) {
+						FileUtils.deleteDirectory(outputFolder); 
 					}
 				} else {
-					File bin = new File(file.getParent());
-					if (bin.getName().equalsIgnoreCase(BIN) || bin.getName().equalsIgnoreCase(OBJ)) {
-						FileUtils.deleteDirectory(bin); 
+					File outputFolder = new File(file.getParent());
+					if (outputFolder.getName().equalsIgnoreCase(BIN) || outputFolder.getName().equalsIgnoreCase(OBJ) || outputFolder.getName().equalsIgnoreCase(WP_APP_PACKAGE_FOLDER)) {
+						FileUtils.deleteDirectory(outputFolder); 
 					}
 				}
 			}

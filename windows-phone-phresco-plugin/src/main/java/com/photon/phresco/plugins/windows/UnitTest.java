@@ -201,10 +201,10 @@ public class UnitTest implements PluginConstants {
 				String unitTestDirName = getUnitTestFolderName(unitDir);
 				configurationInfo = new File(rootDir.getPath() + WP_APP_PACKAGE + File.separator + unitTestDirName + STR_UNDERSCORE + packageVersion + STR_UNDERSCORE + (platform.equalsIgnoreCase("anycpu")?"AnyCPU":platform) + (config.equalsIgnoreCase("debug")? STR_UNDERSCORE + config : "") + WP_TEST);
 			} else if (type.equalsIgnoreCase(WIN_PHONE)) {
-				if (platform.equalsIgnoreCase(WP_X86)) {
-					configurationInfo = new File(rootDir.getPath() + File.separator +  BIN + File.separator + platform + File.separator + config);
-				} else if (platform.equalsIgnoreCase(WP_ANY_CPU)) {
+				if (platform.equalsIgnoreCase(WP_ANY_CPU)) {
 					configurationInfo = new File(rootDir.getPath() + File.separator +  BIN + File.separator + config);
+				} else {
+					configurationInfo = new File(rootDir.getPath() + File.separator +  BIN + File.separator + platform + File.separator + config);
 				}
 			}
 			String zipName = util.createPackage(buildName, buildNumber, nextBuildNo, currentDate);
@@ -299,9 +299,9 @@ public class UnitTest implements PluginConstants {
 			sb.append(WP_STR_PROPERTY);
 			sb.append(WP_STR_COLON);
 			sb.append(WP_STR_CONFIGURATION + "=" + config);
-			if (platform.equalsIgnoreCase("AnyCPU")) {
+			if (platform.equalsIgnoreCase("Any CPU")) {
 				sb.append(WP_STR_SEMICOLON);
-				sb.append(WP_STR_PLATFORM + "=" + WP_STR_DOUBLEQUOTES + platform + WP_STR_DOUBLEQUOTES);
+				sb.append(WP_STR_PLATFORM + "=" + WP_STR_DOUBLEQUOTES + platform.replaceAll("\\s+", "") + WP_STR_DOUBLEQUOTES);
 			}
 			log.info("Command = "+ sb.toString());
 			Commandline cl = new Commandline(sb.toString());
