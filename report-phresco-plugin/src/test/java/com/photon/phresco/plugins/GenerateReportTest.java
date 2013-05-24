@@ -41,6 +41,11 @@ public class GenerateReportTest extends TestCase implements PluginConstants {
 
 	protected void tearDown() throws Exception {
 	}
+
+	@Test
+	public void test()  throws Exception {
+		System.out.println("Test case");
+	}
 	
 //	@Test
 	public void PdfWithImageAsStream() throws Exception {
