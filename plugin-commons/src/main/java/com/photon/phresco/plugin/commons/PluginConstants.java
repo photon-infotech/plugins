@@ -54,6 +54,15 @@ public interface PluginConstants {
      String XLSX 						= "xlsx";
      String XML 						= "xml";
      String POM_XML 					= "pom.xml";
+     String CSV_PATTERN 				= "\\s*,\\s*";
+     String JMETER_MAVEN_PLUGIN 		= "jmeter-maven-plugin";
+ 	 String COM_LAZERYCODE_JMETER 		= "com.lazerycode.jmeter";
+	 String TESTS_SLASH  				= "tests/";
+	 String PHRESCO_FRAME_WORK_TEST_PLAN_JMX = "PhrescoFrameWork_TestPlan.jmx";
+	 String SEP 						= "#SEP#";
+	 String JMETER_TEST_FILE 			= "jMeterTestFile";
+	 String TEST_FILES_INCLUDED 		= "testFilesIncluded";
+	 String TEST_FILES_DIRECTORY 		= "testFilesDirectory";
      String STATIC_ANALYSIS_REPORT 		= "static-analysis-report";
      String INDEX_HTML 					= "index.html";
      String ARCHIVES 					= "archives";
@@ -481,6 +490,10 @@ public interface PluginConstants {
 	 String SIM_VERSION 				= "sdkVersion";
 	 String PSIGN 						= "-Psign";
 	 String TEST_AGAINST				= "testAgainst";
+	 String TEST_BASIS					= "testBasis";
+	 String CUSTOM_TEST_AGAINST			= "customTestAgainst";
+	 String AVAILABLE_JMX 				= "availableJmx";
+	 String CUSTOMISE 					= "customise";
 	 String SERVER						= "server";
 	 String BUILD						= "build";
 	 String JAR							= "jar";

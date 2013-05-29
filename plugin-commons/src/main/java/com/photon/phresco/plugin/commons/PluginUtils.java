@@ -380,7 +380,12 @@ public class PluginUtils {
 		 if(jmxDir.isDirectory()) {
 			 FilenameFilter filter = new FileListFilter("", "jmx");
 			 File[] jmxFiles = jmxDir.listFiles(filter);
-			 jmxFile = jmxFiles[0];
+			 for (File file : jmxFiles) {
+				if ("PhrescoFrameWork_TestPlan.jmx".equals(file.getName())) {
+					jmxFile = file;
+					break;
+				}
+			}
 		 }
 
 		 Document document = getDocument(jmxFile);
@@ -510,7 +515,12 @@ public class PluginUtils {
 		 if(jmxDir.isDirectory()){
 			 FilenameFilter filter = new FileListFilter("", "jmx");
 			 File[] jmxFiles = jmxDir.listFiles(filter);
-			 jmxFile = jmxFiles[0];
+			 for (File file : jmxFiles) {
+				 if ("PhrescoFrameWork_TestPlan.jmx".equals(file.getName())) {
+					 jmxFile = file;
+					 break;
+				 }
+			 }
 		 }
 
 		 Document document = getDocument(jmxFile);
