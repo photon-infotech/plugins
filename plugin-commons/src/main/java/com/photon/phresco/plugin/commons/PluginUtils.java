@@ -380,7 +380,12 @@ public class PluginUtils {
 		 if(jmxDir.isDirectory()) {
 			 FilenameFilter filter = new FileListFilter("", "jmx");
 			 File[] jmxFiles = jmxDir.listFiles(filter);
-			 jmxFile = jmxFiles[0];
+			 for (File file : jmxFiles) {
+				if ("PhrescoFrameWork_TestPlan.jmx".equals(file.getName())) {
+					jmxFile = file;
+					break;
+				}
+			}
 		 }
 
 		 Document document = getDocument(jmxFile);
@@ -425,6 +430,11 @@ public class PluginUtils {
 				contentEncoding = contextUrl.getEncodingType();
 			}
 			
+			String cntxt = "${context}";
+			if (StringUtils.isNotEmpty(contextUrl.getContext())) {
+				cntxt = cntxt + "/" + contextUrl.getContext();
+			}
+			 
 			NamedNodeMap attributes = httpSamplerProxy.getAttributes();
 			attributes.setNamedItem(createAttribute(document, "guiclass", "HttpTestSampleGui"));
 			attributes.setNamedItem(createAttribute(document, "testclass", "HTTPSamplerProxy"));
@@ -439,7 +449,7 @@ public class PluginUtils {
 			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.response_timeout", null);
 			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.protocol", null);
 			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.contentEncoding", contentEncoding);
-			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.path", "${context}/" + contextUrl.getContext()); // server url
+			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.path", cntxt); // server url
 			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.method", contextUrl.getContextType());
 
 			appendTypeProp(document, httpSamplerProxy, "boolProp", "HTTPSampler.follow_redirects", String.valueOf(contextUrl.isFollowRedirects()));
@@ -505,7 +515,12 @@ public class PluginUtils {
 		 if(jmxDir.isDirectory()){
 			 FilenameFilter filter = new FileListFilter("", "jmx");
 			 File[] jmxFiles = jmxDir.listFiles(filter);
-			 jmxFile = jmxFiles[0];
+			 for (File file : jmxFiles) {
+				 if ("PhrescoFrameWork_TestPlan.jmx".equals(file.getName())) {
+					 jmxFile = file;
+					 break;
+				 }
+			 }
 		 }
 
 		 Document document = getDocument(jmxFile);
