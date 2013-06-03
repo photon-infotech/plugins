@@ -68,7 +68,6 @@ import org.w3c.dom.Node;
 
 import com.google.gson.Gson;
 import com.photon.phresco.api.ConfigManager;
-import com.photon.phresco.commons.model.ApplicationInfo;
 import com.photon.phresco.commons.model.ProjectInfo;
 import com.photon.phresco.commons.model.TechnologyInfo;
 import com.photon.phresco.exception.ConfigurationException;
@@ -93,7 +92,6 @@ import com.photon.phresco.util.ProjectUtils;
 import com.photon.phresco.util.TechnologyTypes;
 import com.photon.phresco.util.Utility;
 import com.phresco.pom.exception.PhrescoPomException;
-import com.phresco.pom.model.Plugin;
 import com.phresco.pom.util.PomProcessor;
 
 public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginConstants {
@@ -207,8 +205,6 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			MavenProject project = mavenProjectInfo.getProject();
 			String basedir = project.getBasedir().getPath();
 			Map<String, String> configs = MojoUtil.getAllValues(configuration);
-			String testBasis = configs.get(TEST_BASIS);
-			String customTestAgainst = configs.get(CUSTOM_TEST_AGAINST);
 			String testAgainstType = configs.get(TEST_AGAINST);
 			String testName = configs.get(KEY_TEST_NAME);
 			String environmentName = configs.get(ENVIRONMENT_NAME);
@@ -216,78 +212,45 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			String noOfUsers = configs.get(KEY_NO_OF_USERS);
 			String rampUpPeriod = configs.get(KEY_RAMP_UP_PERIOD);
 			String loopCount = configs.get(KEY_LOOP_COUNT);
-			String jmxs = configs.get(AVAILABLE_JMX);
-			
-			String performanceAgainst = "";
-			if (StringUtils.isNotEmpty(testBasis) && CUSTOMISE.equals(testBasis)) {
-				performanceAgainst = customTestAgainst;
-			} else {
-				performanceAgainst = testAgainstType;
-			}
 			ConfigManager configManager = new ConfigManagerImpl(new File(basedir + File.separator + DOT_PHRESCO_FOLDER + File.separator + CONFIG_FILE));
-			com.photon.phresco.configuration.Configuration config = configManager.getConfiguration(environmentName, performanceAgainst, configurationsName);
-			String performanceTestDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR) + File.separator + performanceAgainst;
+			com.photon.phresco.configuration.Configuration config = configManager.getConfiguration(environmentName, testAgainstType, configurationsName);
+			String performanceTestDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR) + File.separator + testAgainstType;
 			if(StringUtils.isNotEmpty(performanceTestDir)) {
-				StringBuilder testPomPath = new StringBuilder(basedir)
-				.append(performanceTestDir)
-				.append(File.separator)
-				.append(POM_XML);
-				File testPomFile = new File(testPomPath.toString());
-				PomProcessor pomProcessor = new PomProcessor(testPomFile);
-				Plugin plugin = pomProcessor.getPlugin(COM_LAZERYCODE_JMETER, JMETER_MAVEN_PLUGIN);
-				
-				DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
-				DocumentBuilder docBuilder = dbfac.newDocumentBuilder();
-				Document doc = docBuilder.newDocument();
-				com.phresco.pom.model.Plugin.Configuration jmeterConfiguration = plugin.getConfiguration();
-				//If test basis is customise
-				if (StringUtils.isNotEmpty(testBasis) && CUSTOMISE.equals(testBasis)) {
-					List<String> jmxFiles = Arrays.asList(jmxs.split(CSV_PATTERN));
-					if (testPomFile.exists()) {
-						List<Element> configList = createTestFilesIncludedTagInPom(doc, jmeterConfiguration, jmxFiles);
-						pomProcessor.addConfiguration(COM_LAZERYCODE_JMETER, JMETER_MAVEN_PLUGIN, configList);
-						pomProcessor.save();
+				pluginUtils.changeTestName(basedir + File.separator + performanceTestDir + File.separator, testName);
+				String testConfigFilePath = basedir + File.separator + performanceTestDir + File.separator + TESTS_FOLDER;
+				pluginUtils.adaptTestConfig(testConfigFilePath + File.separator , config);
+				String jsonFile = basedir + File.separator + performanceTestDir + File.separator + Constants.FOLDER_JSON + File.separator+ testName + Constants.DOT_JSON;
+				BufferedReader bufferedReader = new BufferedReader(new FileReader(jsonFile));
+				Gson gson = new Gson();
+				PerformanceDetails fromJson = gson.fromJson(bufferedReader, PerformanceDetails.class);
+				List<ContextUrls> contextUrls = fromJson.getContextUrls();
+				List<DbContextUrls> dbContextUrls = fromJson.getDbContextUrls();
+				if(TEST_AGAINST_DB.equalsIgnoreCase(testAgainstType)) {
+					String host = config.getProperties().getProperty(Constants.DB_HOST);
+					String port = config.getProperties().getProperty(Constants.DB_PORT);
+					String dbname = config.getProperties().getProperty(Constants.DB_NAME);
+					String type = config.getProperties().getProperty(Constants.DB_TYPE);
+					String userName = config.getProperties().getProperty(Constants.DB_USERNAME);
+					String passWord = config.getProperties().getProperty(Constants.DB_PASSWORD);
+					String dbUrl = "";
+					String driver = "";
+					if(type.equalsIgnoreCase(Constants.MYSQL_DB)) {
+						dbUrl = "jdbc:mysql://" +host +":" +port+"/"+dbname;
+					} else if(type.equalsIgnoreCase(Constants.ORACLE_DB)) {
+						dbUrl = "jdbc:oracle:thin:@"+host +":" +port+":"+dbname;
+					} else if(type.equalsIgnoreCase(Constants.MSSQL_DB)) {
+						dbUrl = "jdbc:sqlserver://"+host +":" +port+";databaseName="+dbname;
+					} else if(type.equalsIgnoreCase(Constants.DB2_DB)) {
+						dbUrl = "jdbc:db2://"+host +":" +port+"/"+dbname;
 					}
+					DatabaseUtil.initDriverMap();
+					DatabaseUtil du = new DatabaseUtil();
+					driver = du.getDbDriver(type);
+					pluginUtils.adaptDBPerformanceJmx(testConfigFilePath, dbContextUrls, configurationsName, Integer.parseInt(noOfUsers), Integer.parseInt(rampUpPeriod), Integer.parseInt(loopCount), dbUrl, driver, userName, passWord);
 				} else {
-					List<Element> configList = updateTestPomPluginConfiguration(doc, jmeterConfiguration);
-					pomProcessor.addConfiguration(COM_LAZERYCODE_JMETER, JMETER_MAVEN_PLUGIN, configList);
-					pomProcessor.save();
-					pluginUtils.changeTestName(basedir + File.separator + performanceTestDir + File.separator, testName);
-					String testConfigFilePath = basedir + File.separator + performanceTestDir + File.separator + TESTS_FOLDER;
-					pluginUtils.adaptTestConfig(testConfigFilePath + File.separator , config);
-					String jsonFile = basedir + File.separator + performanceTestDir + File.separator + Constants.FOLDER_JSON + File.separator+ testName + Constants.DOT_JSON;
-					BufferedReader bufferedReader = new BufferedReader(new FileReader(jsonFile));
-					Gson gson = new Gson();
-					PerformanceDetails fromJson = gson.fromJson(bufferedReader, PerformanceDetails.class);
-					List<ContextUrls> contextUrls = fromJson.getContextUrls();
-					List<DbContextUrls> dbContextUrls = fromJson.getDbContextUrls();
-					if(TEST_AGAINST_DB.equalsIgnoreCase(testAgainstType)) {
-						String host = config.getProperties().getProperty(Constants.DB_HOST);
-						String port = config.getProperties().getProperty(Constants.DB_PORT);
-						String dbname = config.getProperties().getProperty(Constants.DB_NAME);
-						String type = config.getProperties().getProperty(Constants.DB_TYPE);
-						String userName = config.getProperties().getProperty(Constants.DB_USERNAME);
-						String passWord = config.getProperties().getProperty(Constants.DB_PASSWORD);
-						String dbUrl = "";
-						String driver = "";
-						if(type.equalsIgnoreCase(Constants.MYSQL_DB)) {
-							dbUrl = "jdbc:mysql://" +host +":" +port+"/"+dbname;
-						} else if(type.equalsIgnoreCase(Constants.ORACLE_DB)) {
-							dbUrl = "jdbc:oracle:thin:@"+host +":" +port+":"+dbname;
-						} else if(type.equalsIgnoreCase(Constants.MSSQL_DB)) {
-							dbUrl = "jdbc:sqlserver://"+host +":" +port+";databaseName="+dbname;
-						} else if(type.equalsIgnoreCase(Constants.DB2_DB)) {
-							dbUrl = "jdbc:db2://"+host +":" +port+"/"+dbname;
-						}
-						DatabaseUtil.initDriverMap();
-						DatabaseUtil du = new DatabaseUtil();
-						driver = du.getDbDriver(type);
-						pluginUtils.adaptDBPerformanceJmx(testConfigFilePath, dbContextUrls, configurationsName, Integer.parseInt(noOfUsers), Integer.parseInt(rampUpPeriod), Integer.parseInt(loopCount), dbUrl, driver, userName, passWord);
-					} else {
-						pluginUtils.adaptPerformanceJmx(testConfigFilePath, contextUrls, Integer.parseInt(noOfUsers), Integer.parseInt(rampUpPeriod), Integer.parseInt(loopCount));
-					}
+					pluginUtils.adaptPerformanceJmx(testConfigFilePath, contextUrls, Integer.parseInt(noOfUsers), Integer.parseInt(rampUpPeriod), Integer.parseInt(loopCount));
 				}
-			}		
+			}
 			generateMavenCommand(mavenProjectInfo, basedir + performanceTestDir, PERFORMACE);
 
 		} catch (IOException e) {
@@ -299,64 +262,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 		}
 		return new DefaultExecutionStatus();
 	}
-	
-	
-	private List<Element> createTestFilesIncludedTagInPom(Document doc, com.phresco.pom.model.Plugin.Configuration configuration, List<String> jmxFiles) {
-		
-		List<Element> configList = configuration.getAny();
-		List<Element> newList = new ArrayList<Element>();
-		for (Element element : configList) {
-			if(TEST_FILES_DIRECTORY.equals(element.getTagName())) {
-				element.setTextContent(jmxFiles.get(0).split(SEP)[0]);
-				newList.add(element);
-			} else if(!TEST_FILES_INCLUDED.equals(element.getTagName())) {
-				newList.add(element);
-			} 
-		} 
-		
-		Element testFilesIncludedElement = doc.createElement(TEST_FILES_INCLUDED);
-		for (String jmxFile : jmxFiles) {
-			appendChildElement(doc, testFilesIncludedElement, JMETER_TEST_FILE, jmxFile.split(SEP)[1]);
-		}
-		newList.add(testFilesIncludedElement);
-		
-		return newList;
-	}
-	
-	private List<Element> updateTestPomPluginConfiguration(Document doc, com.phresco.pom.model.Plugin.Configuration configuration) {
-		
-		List<Element> configList = configuration.getAny();
-		List<Element> newList = new ArrayList<Element>();
-		for (Element element : configList) {
-			if(TEST_FILES_DIRECTORY.equals(element.getTagName())) {
-				element.setTextContent(TESTS_SLASH);
-				newList.add(element);
-			} else if(!TEST_FILES_INCLUDED.equals(element.getTagName())) {
-				newList.add(element);
-			} 
-		} 
-		
-		Element testFilesIncludedElement = doc.createElement(TEST_FILES_INCLUDED);
-		appendChildElement(doc, testFilesIncludedElement, JMETER_TEST_FILE, PHRESCO_FRAME_WORK_TEST_PLAN_JMX);
-		newList.add(testFilesIncludedElement);
-		
-		return newList;
-	}
-	
-	private Element appendChildElement(Document doc, Element parent, String elementName, String textContent) {
-		Element childElement = createElement(doc, elementName, textContent);
-		parent.appendChild(childElement);
-		return childElement;
-	}
-	
-	private Element createElement(Document doc, String elementName, String textContent) {
-		Element element = doc.createElement(elementName);
-		if (StringUtils.isNotEmpty(textContent)) {
-			element.setTextContent(textContent);
-		}
-		return element;
-	}
-	
+
 	public ExecutionStatus runLoadTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		try {
 			PluginUtils pluginUtils = new PluginUtils();
