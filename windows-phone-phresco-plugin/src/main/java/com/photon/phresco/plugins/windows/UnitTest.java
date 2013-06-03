@@ -299,17 +299,15 @@ public class UnitTest implements PluginConstants {
 			sb.append(WP_STR_PROPERTY);
 			sb.append(WP_STR_COLON);
 			sb.append(WP_STR_CONFIGURATION + "=" + config);
-			if (platform.equalsIgnoreCase("Any CPU")) {
-				sb.append(WP_STR_SEMICOLON);
-				sb.append(WP_STR_PLATFORM + "=" + WP_STR_DOUBLEQUOTES + platform.replaceAll("\\s+", "") + WP_STR_DOUBLEQUOTES);
-			}
+			sb.append(WP_STR_SEMICOLON);
+			sb.append(WP_STR_PLATFORM + "=" + WP_STR_DOUBLEQUOTES + (platform.equalsIgnoreCase("any cpu")?"AnyCPU":platform)  + WP_STR_DOUBLEQUOTES);
+			
 			log.info("Command = "+ sb.toString());
 			Commandline cl = new Commandline(sb.toString());
 			cl.setWorkingDirectory(rootDir.getPath());
 			Process process = cl.execute();
 			in = new BufferedReader(new InputStreamReader(process.getInputStream()));
 			while ((in.readLine()) != null) {
-//				log.info("while = "+ in.readLine());
 			}
 		} catch (CommandLineException e) {
 			isBuildSuccess = false;
@@ -428,7 +426,7 @@ public class UnitTest implements PluginConstants {
 		} 
 	}
 	
-	private void runUnitTest(final String extension) throws MojoExecutionException {
+	private void runUnitTest(final String extension) throws MojoExecutionException, PhrescoException {
 		BufferedReader in = null;
 		try {
 			log.info("Running unit tests ...");
@@ -437,6 +435,14 @@ public class UnitTest implements PluginConstants {
 					return name.endsWith(extension);
 				}
 			});
+			try {
+				if (appxFile.length <= 0) {
+					throw new MojoExecutionException(extension + " file not found. Check the project type.");
+				}
+			} catch (MojoExecutionException e) {
+				throw new MojoExecutionException(extension + " file not found. Check the project type.");
+			}
+			
 			// vstest.console <fileName>.appx /InIsolation /Logger:trx
 			StringBuilder sb = new StringBuilder();
 			sb.append(WINDOWS_UNIT_TEST_VSTEST_CONSOLE);
@@ -457,7 +463,7 @@ public class UnitTest implements PluginConstants {
 			throw new MojoExecutionException(e.getMessage(), e);
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
-		}  finally {
+		}   finally {
 			Utility.closeStream(in);
 		}
 	}
