@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.ListUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
@@ -465,6 +467,10 @@ public class Deploy implements PluginConstants {
 			if (list.length > 0) {
 				File warFile = new File(tempDir.getPath() + File.separator + list[0]);
 				FileUtils.copyFileToDirectory(warFile, deployDir);
+			}
+			if(ArrayUtils.isEmpty(list)) {
+				File file = tempDir.listFiles()[0];
+				org.apache.commons.io.FileUtils.copyDirectoryToDirectory(file, deployDir);
 			}
 //			FileUtils.copyDirectoryStructure(tempDir.getAbsoluteFile(), deployDir);
 			log.info("Project is deployed successfully");
