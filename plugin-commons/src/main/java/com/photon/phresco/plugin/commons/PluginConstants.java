@@ -63,6 +63,7 @@ public interface PluginConstants {
 	 String SEP 						= "#SEP#";
 	 String JMETER_TEST_FILE 			= "jMeterTestFile";
 	 String TEST_FILES_INCLUDED 		= "testFilesIncluded";
+	 String RESULT_FILES_NAME			= "resultFilesName";
 	 String TEST_FILES_DIRECTORY 		= "testFilesDirectory";
      String STATIC_ANALYSIS_REPORT 		= "static-analysis-report";
      String INDEX_HTML 					= "index.html";
@@ -543,6 +544,12 @@ public interface PluginConstants {
 	String ADD_HEADER				= "addHeader";
 	String EXECUTE_SQL			    = "executeSql";
 	String FETCH_SQL                = "fetchSql";
+	String KEY_AUTH_MANAGER			= "authManager";
+	String KEY_AUTHORIZATION_URL	= "authorizationUrl";
+	String KEY_AUTHORIZATION_USER_NAME = "authorizationUserName";
+	String KEY_AUTHORIZATION_PASSWORD = "authorizationPassword";
+	String KEY_AUTHORIZATION_DOMAIN = "authorizationDomain";
+	String KEY_AUTHORIZATION_REALM = "authorizationRealm";
 	
 	 /**
      * 
