@@ -32,6 +32,7 @@ public class TestCase {
 	private String time = "";;
 	private TestCaseFailure testCaseFailure;
 	private TestCaseError testCaseError;
+	private String bugComment = "";
 
 	public TestCase() {
 
@@ -149,6 +150,14 @@ public class TestCase {
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+
+	public String getBugComment() {
+		return bugComment;
+	}
+
+	public void setBugComment(String bugComment) {
+		this.bugComment = bugComment;
 	}
 
 }

@@ -25,12 +25,16 @@ public class TestSuite {
 	private String file;
 	private String assertions;
 	private float tests;
+	private float success;
 	private float failures;
 	private float errors;
 	private float total;
 	private float testCoverage;
 	private String time;
 	private List<TestCase> testCases;
+	private float notExecuted;
+	private float notApplicable;
+	private float blocked;
 
 	public TestSuite() {
 	}
@@ -124,6 +128,38 @@ public class TestSuite {
 
 	public void setTestCoverage(float testCoverage) {
 		this.testCoverage = testCoverage;
+	}
+
+	public float getNotExecuted() {
+		return notExecuted;
+	}
+
+	public void setNotExecuted(float notExecuted) {
+		this.notExecuted = notExecuted;
+	}
+
+	public float getNotApplicable() {
+		return notApplicable;
+	}
+
+	public void setNotApplicable(float notApplicable) {
+		this.notApplicable = notApplicable;
+	}
+
+	public float getBlocked() {
+		return blocked;
+	}
+
+	public void setBlocked(float blocked) {
+		this.blocked = blocked;
+	}
+
+	public float getSuccess() {
+		return success;
+	}
+
+	public void setSuccess(float success) {
+		this.success = success;
 	}
 
 }

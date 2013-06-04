@@ -24,6 +24,9 @@ public class AllTestSuite {
 	private float failure;
 	private float error;
 	private float testCoverage;
+	private float notExecuted;
+	private float notApplicable;
+	private float blocked;
 	
 	public AllTestSuite(String testSuiteName, float total, float success, float failure, float error) {
 		this.testSuiteName = testSuiteName;
@@ -81,6 +84,30 @@ public class AllTestSuite {
 
 	public void setTestCoverage(float testCoverage) {
 		this.testCoverage = testCoverage;
+	}
+
+	public float getNotExecuted() {
+		return notExecuted;
+	}
+
+	public void setNotExecuted(float notExecuted) {
+		this.notExecuted = notExecuted;
+	}
+
+	public float getNotApplicable() {
+		return notApplicable;
+	}
+
+	public void setNotApplicable(float notApplicable) {
+		this.notApplicable = notApplicable;
+	}
+
+	public float getBlocked() {
+		return blocked;
+	}
+
+	public void setBlocked(float blocked) {
+		this.blocked = blocked;
 	}
 
 }
