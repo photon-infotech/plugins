@@ -52,6 +52,7 @@ public interface PluginConstants {
      String TRUE 						= "true";
      String PDF 						= "pdf";
      String XLSX 						= "xlsx";
+     String XLS 						= "xls";
      String XML 						= "xml";
      String POM_XML 					= "pom.xml";
      String CSV_PATTERN 				= "\\s*,\\s*";
@@ -578,6 +579,5 @@ public interface PluginConstants {
     String PHRESCO_PACKAGE_FILE = "phresco-build.xml";
     String ELEMENT_DIRECTORIES  = "directories";
     String ELEMENT_FILES        = "files";
-    String ATTR_TODIR           = "toDirectory"; 
-	
+    String ATTR_TODIR           = "toDirectory";
 }
