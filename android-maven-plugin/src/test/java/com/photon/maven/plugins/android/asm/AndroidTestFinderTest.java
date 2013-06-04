@@ -32,12 +32,12 @@ import java.io.File;
 public class AndroidTestFinderTest {
     @Test
     public void givenDirectoryWithoutTestsThenNoTests() throws MojoExecutionException {
-        final boolean result = AndroidTestFinder.containsAndroidTests(new File("target/test-classes/com/photon/maven/plugins/android/asm/withouttests"));
+        final boolean result = AndroidTestFinder.containsAndroidTests(new File("target/test-classes/com/jayway/maven/plugins/android/asm/withouttests"));
         Assert.assertFalse("'withouttests' should not contain any tests.", result);
     }
     @Test
     public void givenDirectoryWithTestsThenItContainsTests() throws MojoExecutionException {
-        final boolean result = AndroidTestFinder.containsAndroidTests(new File("target/test-classes/com/photon/maven/plugins/android/asm/withtests"));
+        final boolean result = AndroidTestFinder.containsAndroidTests(new File("target/test-classes/com/jayway/maven/plugins/android/asm/withtests"));
         Assert.assertTrue("'withtests' should contain tests.", result);
     }
 

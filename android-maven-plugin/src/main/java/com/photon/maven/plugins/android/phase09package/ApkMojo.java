@@ -279,26 +279,29 @@ public class ApkMojo extends AbstractAndroidMojo {
 		if (!generateApk) {
 			return;
 		}
-
+        
 		buildInfoList = new ArrayList<BuildInfo>(); // initialization
 		srcDir = new File(baseDir.getPath() + File.separator + sourceDirectory);
+		
 		buildDir = new File(baseDir.getPath() + buildDirectory);
+		
 		if (!buildDir.exists()) {
 			buildDir.mkdir();
-			getLog().info("Build directory created..." + buildDir.getPath());
+			
 		}
 		buildInfoFile = new File(buildDir.getPath() + "/build.info");
+		
 
 		//			nextBuildNo = generateNextBuildNo();
 
 		currentDate = Calendar.getInstance().getTime();
-
+		
 		configure();
 		generateIntermediateAp_();
 
 		// Initialize apk build configuration
 		File outputFile = new File(project.getBuild().getDirectory(), project.getBuild().getFinalName() + '.' + APK);
-
+	
 		final boolean signWithDebugKeyStore = getAndroidSigner().isSignWithDebugKeyStore();
 
 		if (getAndroidSigner().shouldCreateBothSignedAndUnsignedApk()) {
@@ -351,7 +354,9 @@ public class ApkMojo extends AbstractAndroidMojo {
 	private void configure() throws MojoExecutionException {
 			try {
 			if (StringUtils.isEmpty(environmentName)) {
+				
 				return;
+				
 			}
 			getLog().info("Configuring the project....");
 			

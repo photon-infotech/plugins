@@ -26,14 +26,16 @@ import org.apache.maven.plugin.MojoFailureException;
  * Internal. Do not use.<br/>
  * Called automatically when the lifecycle reaches phase <code>integration-test</code>. Figures out whether to
  * call goals in this phase; and if so, calls <code>android:instrument</code>.
- *
  * @goal internal-integration-test
  * @phase integration-test
  */
-public class InternalIntegrationTestMojo extends AbstractInstrumentationMojo {
+public class InternalIntegrationTestMojo extends AbstractInstrumentationMojo
+{
 
-    public void execute() throws MojoExecutionException, MojoFailureException {
-        if (isEnableIntegrationTest()) {
+    public void execute() throws MojoExecutionException, MojoFailureException
+    {
+        if ( isEnableIntegrationTest() )
+        {
             instrument();
         }
     }

@@ -32,7 +32,11 @@ public class ZipalignMojo extends AbstractZipalignMojo {
 
     public void execute() throws MojoExecutionException, MojoFailureException {
     	
-    	
+    	/* ZipalignMojo should not be called when we running any tests.
+    	 * This if condition will skip the ZipalignMojo,
+		 * When we are running the unit,functional and performance tests
+		 * Added By - Hari - May, 20 , 2013
+		 */
     	if (!baseDir.getPath().endsWith("unit")
 				&& !baseDir.getPath().endsWith("functional")
 				&& !baseDir.getPath().endsWith("performance")) {

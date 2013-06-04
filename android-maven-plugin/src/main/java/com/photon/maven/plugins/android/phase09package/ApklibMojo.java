@@ -17,10 +17,11 @@
  */
 package com.photon.maven.plugins.android.phase09package;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import com.photon.maven.plugins.android.AbstractAndroidMojo;
+import com.photon.maven.plugins.android.CommandExecutor;
+import com.photon.maven.plugins.android.ExecutionException;
+import com.photon.maven.plugins.android.common.NativeHelper;
+import com.photon.maven.plugins.android.config.PullParameter;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -31,10 +32,12 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
 import org.codehaus.plexus.archiver.util.DefaultFileSet;
-import com.photon.phresco.plugin.commons.PluginUtils;
-import com.photon.maven.plugins.android.AbstractAndroidMojo;
-import com.photon.maven.plugins.android.CommandExecutor;
-import com.photon.maven.plugins.android.ExecutionException;
+
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.photon.maven.plugins.android.common.AndroidExtension.APKLIB;
 
@@ -47,53 +50,178 @@ import static com.photon.maven.plugins.android.common.AndroidExtension.APKLIB;
  * @phase package
  * @requiresDependencyResolution compile
  */
-public class ApklibMojo extends AbstractAndroidMojo {
+public class ApklibMojo extends AbstractAndroidMojo
+{
+    /**
+     * The name of the top level folder in the APKLIB where native libraries are found.
+     * NOTE: This is inconsistent with APK where the folder is called "lib"
+     */
+    public static final String NATIVE_LIBRARIES_FOLDER = "libs";
+    
+    /**
+     * Build folder to place built native libraries into
+     *
+     * @parameter expression="${android.ndk.build.ndk-output-directory}"
+     * default-value="${project.build.directory}/ndk-libs"
+     */
+    private File ndkOutputDirectory;
+    
+    /**
+     * <p>Classifier to add to the artifact generated. If given, the artifact will be an attachment instead.</p>
+     *
+     * @parameter
+     */
+    private String classifier;
 
-    public void execute() throws MojoExecutionException, MojoFailureException {
-        generateIntermediateAp_();
+    /**
+     * Specifies the application makefile to use for the build (if other than the default Application.mk).
+     *
+     * @parameter
+     */
+    @PullParameter
+    private String applicationMakefile;
+
+    /**
+     * Defines the architecture for the NDK build
+     *
+     * @parameter expression="${android.ndk.build.architecture}"
+     */
+    @PullParameter
+    private String ndkArchitecture;
+
+    /**
+     * Specifies the classifier with which the artifact should be stored in the repository
+     *
+     * @parameter expression="${android.ndk.build.native-classifier}"
+     */
+    @PullParameter
+    private String ndkClassifier;
+
+    /**
+     *
+     * @throws MojoExecutionException
+     * @throws MojoFailureException
+     */
+    public void execute() throws MojoExecutionException, MojoFailureException
+    {
+        generateIntermediateApk();
 
         CommandExecutor executor = CommandExecutor.Factory.createDefaultCommmandExecutor();
-        executor.setLogger(this.getLog());
+        executor.setLogger( this.getLog() );
 
         File outputFile = createApkLibraryFile();
 
-        // Set the generated .apklib file as the main artifact (because the pom states <packaging>apklib</packaging>)
-        project.getArtifact().setFile(outputFile);
+        if ( classifier == null )
+        {
+            // Set the generated file as the main artifact (because the pom states <packaging>apklib</packaging>)
+            project.getArtifact().setFile( outputFile );
+        }
+        else
+        {
+            // If there is a classifier specified, attach the artifact using that
+            projectHelper.attachArtifact( project, outputFile, classifier );
+        }
     }
-    
-    protected File createApkLibraryFile() throws MojoExecutionException {
-        final File apklibrary = new File(project.getBuild().getDirectory(), project.getBuild().getFinalName() + "." + APKLIB);
-        FileUtils.deleteQuietly(apklibrary);
 
-        try {
+    /**
+     *
+     * @return
+     * @throws MojoExecutionException
+     */
+    protected File createApkLibraryFile() throws MojoExecutionException
+    {
+        final File apklibrary = new File( project.getBuild().getDirectory(),
+                project.getBuild().getFinalName() + "." + APKLIB );
+        FileUtils.deleteQuietly( apklibrary );
+
+        try
+        {
             JarArchiver jarArchiver = new JarArchiver();
-            jarArchiver.setDestFile(apklibrary);
+            jarArchiver.setDestFile( apklibrary );
 
-            jarArchiver.addFile(androidManifestFile, "AndroidManifest.xml");
-            addDirectory(jarArchiver, assetsDirectory, "assets");
-            addDirectory(jarArchiver, resourceDirectory, "res");
-            addDirectory(jarArchiver, sourceDirectory, "src");
-            addJavaResources(jarArchiver, project.getBuild().getResources(), "src");
+            jarArchiver.addFile( androidManifestFile, "AndroidManifest.xml" );
+            addDirectory( jarArchiver, assetsDirectory, "assets" );
+            addDirectory( jarArchiver, resourceDirectory, "res" );
+            addDirectory( jarArchiver, sourceDirectory, "src" );
+
+            File[] overlayDirectories = getResourceOverlayDirectories();
+            for ( File resOverlayDir : overlayDirectories )
+            {
+                if ( resOverlayDir != null && resOverlayDir.exists() )
+                {
+                    addDirectory( jarArchiver, resOverlayDir, "res" );
+                }
+            }
+
+            addJavaResources( jarArchiver, project.getBuild().getResources(), "src" );
 
             // Lastly, add any native libraries
-            addNativeLibraries(jarArchiver);
+            addNativeLibraries( jarArchiver );
 
             jarArchiver.createArchive();
-        } catch (ArchiverException e) {
-            throw new MojoExecutionException("ArchiverException while creating ."+APKLIB+" file.", e);
-        } catch (IOException e) {
-            throw new MojoExecutionException("IOException while creating ."+APKLIB+" file.", e);
+        }
+        catch ( ArchiverException e )
+        {
+            throw new MojoExecutionException( "ArchiverException while creating ." + APKLIB + " file.", e );
+        }
+        catch ( IOException e )
+        {
+            throw new MojoExecutionException( "IOException while creating ." + APKLIB + " file.", e );
         }
 
         return apklibrary;
     }
 
-    private void addNativeLibraries(final JarArchiver jarArchiver) throws MojoExecutionException {
+    private void addNativeLibraries( final JarArchiver jarArchiver ) throws MojoExecutionException
+    {
 
-        try {
-            addDirectory(jarArchiver, nativeLibrariesDirectory, "libs");
-        } catch (ArchiverException e) {
-            throw new MojoExecutionException("IOException while creating ."+APKLIB+" file.", e);
+        try
+        {
+            if ( nativeLibrariesDirectory.exists() )
+            {
+                getLog().info( nativeLibrariesDirectory + " exists, adding libraries." );
+                addDirectory( jarArchiver, nativeLibrariesDirectory, NATIVE_LIBRARIES_FOLDER );
+            }
+            else
+            {
+                getLog().info( nativeLibrariesDirectory 
+                        + " does not exist, looking for libraries in target directory." );
+                // Add native libraries built and attached in this build
+                String[] ndkArchitectures = NativeHelper.getNdkArchitectures( ndkClassifier,
+                                                                              ndkArchitecture,
+                                                                              applicationMakefile,
+                                                                              project.getBasedir() );
+                for ( String ndkArchitecture : ndkArchitectures )
+                {
+                    final File ndkLibsDirectory = new File( ndkOutputDirectory, ndkArchitecture );
+                    addSharedLibraries( jarArchiver, ndkLibsDirectory, ndkArchitecture );
+                
+                    // Add native library dependencies
+                    // FIXME: Remove as causes duplicate libraries when building final APK if this set includes
+                    //        libraries from dependencies of the APKLIB
+                    //final File dependentLibs = new File( ndkOutputDirectory.getAbsolutePath(), ndkArchitecture );
+                    //addSharedLibraries( jarArchiver, dependentLibs, prefix );
+
+                    // get native libs from other apklibs
+                    for ( Artifact apkLibraryArtifact : getAllRelevantDependencyArtifacts() )
+                    {
+                        if ( apkLibraryArtifact.getType().equals( APKLIB ) )
+                        {
+                            final File apklibLibsDirectory = new File( getLibraryUnpackDirectory( apkLibraryArtifact )
+                                                                       + "/" + NATIVE_LIBRARIES_FOLDER + "/"
+                                                                       + ndkArchitecture );
+                            if ( apklibLibsDirectory.exists() )
+                            {
+                                addSharedLibraries( jarArchiver, apklibLibsDirectory, ndkArchitecture );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        catch ( ArchiverException e )
+        {
+            throw new MojoExecutionException( "IOException while creating ." + APKLIB + " file.", e );
         }
         // TODO: Next is to check for any:
         // TODO: - compiled in (as part of this build) libs
@@ -102,9 +230,12 @@ public class ApklibMojo extends AbstractAndroidMojo {
         // TODO:        - But where is that directory configured?
     }
 
-    protected void addJavaResources(JarArchiver jarArchiver, List<Resource> javaResources, String prefix) throws  IOException {
-        for (Resource javaResource : javaResources) {
-            addJavaResource(jarArchiver, javaResource, prefix);
+    protected void addJavaResources( JarArchiver jarArchiver, List<Resource> javaResources, String prefix )
+            throws IOException
+    {
+        for ( Resource javaResource : javaResources )
+        {
+            addJavaResource( jarArchiver, javaResource, prefix );
         }
     }
 
@@ -113,22 +244,26 @@ public class ApklibMojo extends AbstractAndroidMojo {
      *
      * @param jarArchiver
      * @param javaResource The Java resource to add.
-     * @param prefix An optional prefix for where in the Jar file the directory's contents should go.
-     * @throws ArchiverException
-     * @throws java.io.IOException in case the resource path can not be resolved
+     * @param prefix       An optional prefix for where in the Jar file the directory's contents should go.
+     * @throws IOException in case the resource path can not be resolved
      */
-    protected void addJavaResource(JarArchiver jarArchiver, Resource javaResource, String prefix) throws  IOException {
-        if (javaResource != null) {
-            final File javaResourceDirectory = new File(javaResource.getDirectory());
-            if (javaResourceDirectory.exists()) {
+    protected void addJavaResource( JarArchiver jarArchiver, Resource javaResource, String prefix )
+            throws IOException
+    {
+        if ( javaResource != null )
+        {
+            final File javaResourceDirectory = new File( javaResource.getDirectory() );
+            if ( javaResourceDirectory.exists() )
+            {
                 final String resourcePath = javaResourceDirectory.getCanonicalPath();
                 final String apkLibUnpackBasePath = unpackedApkLibsDirectory.getCanonicalPath();
                 // Don't include our dependencies' resource dirs.
-                if (!resourcePath.startsWith(apkLibUnpackBasePath)) {
+                if ( ! resourcePath.startsWith( apkLibUnpackBasePath ) )
+                {
                     final DefaultFileSet javaResourceFileSet = new DefaultFileSet();
-                    javaResourceFileSet.setDirectory(javaResourceDirectory);
-                    javaResourceFileSet.setPrefix(endWithSlash(prefix));
-                    jarArchiver.addFileSet(javaResourceFileSet);
+                    javaResourceFileSet.setDirectory( javaResourceDirectory );
+                    javaResourceFileSet.setPrefix( endWithSlash( prefix ) );
+                    jarArchiver.addFileSet( javaResourceFileSet );
                 }
             }
         }
@@ -140,27 +275,61 @@ public class ApklibMojo extends AbstractAndroidMojo {
      * @param prefix any string, or null.
      * @return the prefix with a "/" at the end, never null.
      */
-    protected String endWithSlash(String prefix) {
-        prefix = StringUtils.defaultIfEmpty(prefix, "/");
-        if (!prefix.endsWith("/")) {
+    protected String endWithSlash( String prefix )
+    {
+        prefix = StringUtils.defaultIfEmpty( prefix, "/" );
+        if ( ! prefix.endsWith( "/" ) )
+        {
             prefix = prefix + "/";
         }
         return prefix;
     }
+
     /**
      * Adds a directory to a {@link JarArchiver} with a directory prefix.
      *
      * @param jarArchiver
      * @param directory   The directory to add.
      * @param prefix      An optional prefix for where in the Jar file the directory's contents should go.
-     * @throws ArchiverException
      */
-    protected void addDirectory(JarArchiver jarArchiver, File directory, String prefix)  {
-        if (directory != null && directory.exists()) {
+    protected void addDirectory( JarArchiver jarArchiver, File directory, String prefix )
+    {
+        if ( directory != null && directory.exists() )
+        {
             final DefaultFileSet fileSet = new DefaultFileSet();
-            fileSet.setPrefix(endWithSlash(prefix));
-            fileSet.setDirectory(directory);
-            jarArchiver.addFileSet(fileSet);
+            fileSet.setPrefix( endWithSlash( prefix ) );
+            fileSet.setDirectory( directory );
+            jarArchiver.addFileSet( fileSet );
+            getLog().debug( "Added files from " + directory );
+        }
+    }
+    
+    /**
+     * Adds all shared libraries (.so) to a {@link JarArchiver} under 'libs'.
+     * 
+     * @param jarArchiver The jarArchiver to add files to
+     * @param directory   The directory to scan for .so files
+     * @param ndkArchitecture      The prefix for where in the jar the .so files will go.
+     */
+    protected void addSharedLibraries( JarArchiver jarArchiver, File directory, String ndkArchitecture )
+    {
+        getLog().debug( "Searching for shared libraries in " + directory );
+        File[] libFiles = directory.listFiles( new FilenameFilter()
+        {
+            public boolean accept( final File dir, final String name )
+            {
+                return name.startsWith( "lib" ) && name.endsWith( ".so" );
+            }
+        } );
+
+        if ( libFiles != null )
+        {
+            for ( File libFile : libFiles )
+            {
+                String dest = "libs/" + ndkArchitecture + "/" + libFile.getName();
+                getLog().debug( "Adding " + libFile + " as " + dest );
+                jarArchiver.addFile( libFile, dest );
+            }
         }
     }
 
@@ -169,69 +338,82 @@ public class ApklibMojo extends AbstractAndroidMojo {
      *
      * @throws MojoExecutionException
      */
-    private void generateIntermediateAp_() throws MojoExecutionException {
+    private void generateIntermediateApk() throws MojoExecutionException
+    {
 
         CommandExecutor executor = CommandExecutor.Factory.createDefaultCommmandExecutor();
-        executor.setLogger(this.getLog());
-        File[] overlayDirectories;
-
-        if (resourceOverlayDirectories == null || resourceOverlayDirectories.length == 0) {
-            overlayDirectories = new File[]{resourceOverlayDirectory};
-        } else {
-            overlayDirectories = resourceOverlayDirectories;
-        }
+        executor.setLogger( this.getLog() );
+        File[] overlayDirectories = getResourceOverlayDirectories();
 
         File androidJar = getAndroidSdk().getAndroidJar();
-        File outputFile = new File(project.getBuild().getDirectory(), project.getBuild().getFinalName() + ".ap_");
+        File outputFile = new File( project.getBuild().getDirectory(), project.getBuild().getFinalName() + ".ap_" );
 
         List<String> commands = new ArrayList<String>();
-        commands.add("package");
-        commands.add("-f");
-        commands.add("-M");
-        commands.add(androidManifestFile.getAbsolutePath());
-        for (File resOverlayDir : overlayDirectories) {
-            if (resOverlayDir != null && resOverlayDir.exists()) {
-                commands.add("-S");
-                commands.add(resOverlayDir.getAbsolutePath());
+        commands.add( "package" );
+        commands.add( "-f" );
+        commands.add( "-M" );
+        commands.add( androidManifestFile.getAbsolutePath() );
+        for ( File resOverlayDir : overlayDirectories )
+        {
+            if ( resOverlayDir != null && resOverlayDir.exists() )
+            {
+                commands.add( "-S" );
+                commands.add( resOverlayDir.getAbsolutePath() );
             }
         }
-        if (combinedRes.exists()) {
-            commands.add("-S");
-            commands.add(combinedRes.getAbsolutePath());
-        } else {
-            if (resourceDirectory.exists()) {
-                commands.add("-S");
-                commands.add(resourceDirectory.getAbsolutePath());
+        if ( combinedRes.exists() )
+        {
+            commands.add( "-S" );
+            commands.add( combinedRes.getAbsolutePath() );
+        }
+        else
+        {
+            if ( resourceDirectory.exists() )
+            {
+                commands.add( "-S" );
+                commands.add( resourceDirectory.getAbsolutePath() );
             }
         }
-        for (Artifact apkLibraryArtifact: getRelevantDependencyArtifacts()) {
-        	if (apkLibraryArtifact.getType().equals(APKLIB)) {
-        		commands.add("-S");
-        		commands.add(getLibraryUnpackDirectory(apkLibraryArtifact)+"/res");
-        	}
+        for ( Artifact apkLibraryArtifact : getAllRelevantDependencyArtifacts() )
+        {
+            if ( apkLibraryArtifact.getType().equals( APKLIB ) )
+            {
+                String apklibResDirectory = getLibraryUnpackDirectory( apkLibraryArtifact ) + "/res";
+                if ( new File( apklibResDirectory ).exists() )
+                {
+                    commands.add( "-S" );
+                    commands.add( apklibResDirectory );
+                }
+            }
         }
-		commands.add("--auto-add-overlay");
-        if (assetsDirectory.exists()) {
-            commands.add("-A");
-            commands.add(assetsDirectory.getAbsolutePath());
+        commands.add( "--auto-add-overlay" );
+        if ( assetsDirectory.exists() )
+        {
+            commands.add( "-A" );
+            commands.add( assetsDirectory.getAbsolutePath() );
         }
-        if (extractedDependenciesAssets.exists()) {
-            commands.add("-A");
-            commands.add(extractedDependenciesAssets.getAbsolutePath());
+        if ( extractedDependenciesAssets.exists() )
+        {
+            commands.add( "-A" );
+            commands.add( extractedDependenciesAssets.getAbsolutePath() );
         }
-        commands.add("-I");
-        commands.add(androidJar.getAbsolutePath());
-        commands.add("-F");
-        commands.add(outputFile.getAbsolutePath());
-        if (StringUtils.isNotBlank(configurations)) {
-            commands.add("-c");
-            commands.add(configurations);
+        commands.add( "-I" );
+        commands.add( androidJar.getAbsolutePath() );
+        commands.add( "-F" );
+        commands.add( outputFile.getAbsolutePath() );
+        if ( StringUtils.isNotBlank( configurations ) )
+        {
+            commands.add( "-c" );
+            commands.add( configurations );
         }
-        getLog().info(getAndroidSdk().getPathForTool("aapt") + " " + commands.toString());
-        try {
-            executor.executeCommand(getAndroidSdk().getPathForTool("aapt"), commands, project.getBasedir(), false);
-        } catch (ExecutionException e) {
-            throw new MojoExecutionException("", e);
+        getLog().info( getAndroidSdk().getPathForTool( "aapt" ) + " " + commands.toString() );
+        try
+        {
+            executor.executeCommand( getAndroidSdk().getPathForTool( "aapt" ), commands, project.getBasedir(), false );
+        }
+        catch ( ExecutionException e )
+        {
+            throw new MojoExecutionException( "", e );
         }
     }
 

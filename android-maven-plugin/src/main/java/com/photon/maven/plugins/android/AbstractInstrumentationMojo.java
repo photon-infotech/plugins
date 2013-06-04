@@ -1,5 +1,6 @@
 /**
  * Android Maven Plugin - android-maven-plugin
+ *
  * Copyright (C) 1999-2013 Photon Infotech Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

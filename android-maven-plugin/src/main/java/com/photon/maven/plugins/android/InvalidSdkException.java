@@ -1,5 +1,6 @@
 /**
  * Android Maven Plugin - android-maven-plugin
+ *
  * Copyright (C) 1999-2013 Photon Infotech Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,8 +21,10 @@ package com.photon.maven.plugins.android;
  * Exception for notifying about an invalidly configured Android SDK.
  *
  */
-public class InvalidSdkException extends RuntimeException {
-    public InvalidSdkException(String message) {
-        super(message);
+public class InvalidSdkException extends RuntimeException
+{
+    public InvalidSdkException( String message )
+    {
+        super( message );
     }
 }

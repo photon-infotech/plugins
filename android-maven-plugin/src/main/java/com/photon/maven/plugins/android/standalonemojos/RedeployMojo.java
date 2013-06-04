@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.photon.maven.plugins.android.standalonemojos;
 
 import com.photon.maven.plugins.android.AbstractAndroidMojo;
@@ -28,11 +27,13 @@ import java.io.File;
 /**
  * Redeploys the built apk file, or another specified apk, to a connected device.
  * This simply tries to undeploy the APK and re-deploy it.
+ *
  * @goal redeploy
  * @requiresProject false
  * @requiresDependencyResolution runtime
  */
-public class RedeployMojo extends AbstractAndroidMojo {
+public class RedeployMojo extends AbstractAndroidMojo
+{
 
     /**
      * Optionally used to specify a different apk file to deploy to a connected emulator or usb device, instead of the
@@ -42,18 +43,23 @@ public class RedeployMojo extends AbstractAndroidMojo {
      */
     private File file;
 
-    public void execute() throws MojoExecutionException, MojoFailureException {
-        if (file == null) {
-            if (! SUPPORTED_PACKAGING_TYPES.contains(project.getPackaging())) {
-                getLog().info("Skipping redeploy on " + project.getPackaging());
+    public void execute() throws MojoExecutionException, MojoFailureException
+    {
+        if ( file == null )
+        {
+            if ( ! SUPPORTED_PACKAGING_TYPES.contains( project.getPackaging() ) )
+            {
+                getLog().info( "Skipping redeploy on " + project.getPackaging() );
                 return;
             }
-            String packageToUndeploy = extractPackageNameFromAndroidManifest(androidManifestFile);
-            undeployApk(packageToUndeploy);
+            String packageToUndeploy = extractPackageNameFromAndroidManifest( androidManifestFile );
+            undeployApk( packageToUndeploy );
             deployBuiltApk();
-        } else {
-            undeployApk(file);
-            deployApk(file);
+        }
+        else
+        {
+            undeployApk( file );
+            deployApk( file );
         }
     }
 

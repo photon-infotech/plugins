@@ -1,5 +1,6 @@
 /**
  * Android Maven Plugin - android-maven-plugin
+ *
  * Copyright (C) 1999-2013 Photon Infotech Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,14 +19,17 @@ package com.photon.maven.plugins.android.common;
 
 /**
  * FileNameHelper can make a valid filename.
+ *
  */
-public class FileNameHelper {
+public class FileNameHelper
+{
     //    { '/', '\n', '\r', '\t', '\0', '\f', '`', '?', '*', '\\', '<', '>', '|', '\"', ':' };
     private static final String ILLEGAL_CHARACTERS_REGEX = "[/\\n\\r\\t\\\0\\f`\\?\\*\\\\<>\\|\":]";
     private static final String SEPERATOR = "_";
 
-    public static String fixFileName(String fileName) {
-        return fileName.replaceAll(ILLEGAL_CHARACTERS_REGEX, SEPERATOR);
+    public static String fixFileName( String fileName )
+    {
+        return fileName.replaceAll( ILLEGAL_CHARACTERS_REGEX, SEPERATOR );
     }
 
 }

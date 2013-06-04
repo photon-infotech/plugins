@@ -22,7 +22,8 @@ package com.photon.maven.plugins.android.configuration;
  * {@link com.photon.maven.plugins.android.AndroidSigner}.
  *
  */
-public class Sign {
+public class Sign
+{
 
     /**
      * Whether to sign with the debug keystore. Valid values are:
@@ -38,7 +39,8 @@ public class Sign {
      */
     private String debug;
 
-    public String getDebug() {
+    public String getDebug()
+    {
         return debug;
     }
 }

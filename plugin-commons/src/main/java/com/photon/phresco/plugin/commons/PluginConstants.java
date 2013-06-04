@@ -1,4 +1,4 @@
-/**
+	/**
  * Phresco Plugin Commons
  *
  * Copyright (C) 1999-2013 Photon Infotech Inc.
@@ -38,6 +38,8 @@ public interface PluginConstants {
      String FORWARD_SLASH               = "/";
      String CONFIG_FILE					= "phresco-env-config.xml";
      String UNIT_INFO_FILE				= "phresco-unit-test-info.xml";
+	 String FUNCTIONAL_INFO_FILE	    = "phresco-functional-test-info.xml";
+	 String PERFORMANCE_INFO_FILE	    = "phresco-performance-test-info.xml";
      String VALIDATE_INFO_INFO_FILE		= "phresco-validate-code-info.xml";
      String SETTINGS_FILE				= "-settings.xml";
      String BASH 						= "bash";
@@ -231,16 +233,22 @@ public interface PluginConstants {
 	 String WINDOWS_STR_BACKSLASH   	= "\\";
 	 String WP_STR_DOUBLEQUOTES 		= "\"";
 	 String WP_SOURCE					= "src";
+	 String WP8							= "wp8";
+	 String WP7							= "wp7";
 	 String WIN_STORE					= "winstore";
 	 String WIN_PHONE					= "winphone";
 	 
 	 String WP_SLN 						= ".sln";
 	 String WP_CSPROJ 					= ".csproj";
+	 String VB_CSPROJ 					= ".vbproj";
+	 String WP_COMMA 					= ",";
+	 String METRO_BUILD_SEPERATOR 		= "~";
 	 
 	// Variables related to Windows Store (Metro) build process
 	 String WP_STR_CONFIGURATION		= "Configuration";
 	 String WP_STR_PLATFORM				= "Platform";
 	 String WP_APP_PACKAGE				= "\\AppPackages";
+	 String WP_APP_PACKAGE_FOLDER		= "AppPackages";
 	 String WP_TEST						= "_Test";
 	 String WP_PROPERTYGROUP 			= "PropertyGroup";
 	 String WP_AUTO_INCREMENT_PKG_VERSION_NO = "AppxAutoIncrementPackageRevision";
@@ -419,6 +427,7 @@ public interface PluginConstants {
 	 String MANUAL 						= "manual";
 	 String FUNCTIONAL 					= "functional";
 	 String UNIT 						= "unit";
+	 String COMPONENT 					= "component";
 	 String LOAD 						= "load";
 	 String PERFORMACE 					= "performance";
      String ELEMENT_FAILURE 			= "failure";
@@ -436,6 +445,7 @@ public interface PluginConstants {
      String LOAD_TEST_RESULTS 			= "loadTestResults";
      String LOAD_TEST_REPORTS 			= "loadTestReports";
      String FUNCTIONAL_TEST_REPORTS 	= "functionalTestReports";
+     String COMPONENT_TEST_REPORTS 	    = "componentTestReports";
      String UNIT_TEST_REPORTS 			= "unitTestReports";
      String FUNCTIONAL_SURE_FIRE_REPORTS = "functionalSureFireReports";
      String MANUAL_SURE_FIRE_REPORTS     = "manualSureFireReports";

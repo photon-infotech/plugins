@@ -17,15 +17,15 @@
  */
 package com.photon.maven.plugins.android.standalonemojos;
 
-import com.photon.maven.plugins.android.AbstractAndroidMojo;
-import com.photon.phresco.commons.model.*;
-import com.photon.phresco.plugin.commons.*;
+import java.io.File;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
-import java.io.File;
+import com.photon.maven.plugins.android.AbstractAndroidMojo;
+import com.photon.phresco.commons.model.BuildInfo;
+import com.photon.phresco.plugin.commons.PluginUtils;
 
 /**
  * Deploys the built apk file, or another specified apk, to a connected device.<br/>
@@ -37,7 +37,8 @@ import java.io.File;
  * @phase pre-integration-test
  * @requiresDependencyResolution runtime
  */
-public class DeployMojo extends AbstractAndroidMojo {
+public class DeployMojo extends AbstractAndroidMojo
+{
 
     /**
      * Optionally used to specify a different apk file to deploy to a connected emulator or usb device, instead of the
@@ -46,8 +47,14 @@ public class DeployMojo extends AbstractAndroidMojo {
      * @parameter expression="${android.file}"
      */
     private File file;
-    
-	/**
+
+    /**
+     * Deploy the app to the attached devices and emulators.
+     *
+     * @throws MojoExecutionException
+     * @throws MojoFailureException
+     */
+    /**
 	 * @parameter expression="${buildNumber}" required="true"
 	 */
 	protected String buildNumber;
@@ -66,5 +73,6 @@ public class DeployMojo extends AbstractAndroidMojo {
             deployApk(file);
         }
     }
+
 
 }
