@@ -61,6 +61,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.FileUtils;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -214,8 +215,13 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			String environmentName = configs.get(ENVIRONMENT_NAME);
 			String configurationsName = configs.get(KEY_CONFIGURATION);
 			String rampUpPeriod = configs.get(KEY_RAMP_UP_PERIOD);
+			String authManager = configs.get(KEY_AUTH_MANAGER);
+			String authorizationUrl = configs.get(KEY_AUTHORIZATION_URL);
+			String authorizationUserName = configs.get(KEY_AUTHORIZATION_USER_NAME);
+			String authorizationPassword = configs.get(KEY_AUTHORIZATION_PASSWORD);
+			String authorizationDomain = configs.get(KEY_AUTHORIZATION_DOMAIN);
+			String authorizationRealm = configs.get(KEY_AUTHORIZATION_REALM);
 			String jmxs = configs.get(AVAILABLE_JMX);
-			
 			String performanceAgainst = "";
 			if (StringUtils.isNotEmpty(testBasis) && CUSTOMISE.equals(testBasis)) {
 				performanceAgainst = customTestAgainst;
@@ -249,7 +255,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 						pomProcessor.save();
 					}
 				} else {
-					List<Element> configList = updateTestPomPluginConfiguration(doc, jmeterConfiguration);
+					List<Element> configList = updateTestPomPluginConfiguration(doc, jmeterConfiguration, testName);
 					pomProcessor.addConfiguration(COM_LAZERYCODE_JMETER, JMETER_MAVEN_PLUGIN, configList);
 					pomProcessor.save();
 					pluginUtils.changeTestName(basedir + File.separator + performanceTestDir + File.separator, testName);
@@ -284,7 +290,8 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 						driver = du.getDbDriver(type);
 						pluginUtils.adaptDBPerformanceJmx(testConfigFilePath, dbContextUrls, configurationsName, noOfUsers, Integer.parseInt(rampUpPeriod), loopCount, dbUrl, driver, userName, passWord);
 					} else {
-						pluginUtils.adaptPerformanceJmx(testConfigFilePath, contextUrls, noOfUsers, Integer.parseInt(rampUpPeriod), loopCount);
+						pluginUtils.adaptPerformanceJmx(testConfigFilePath, contextUrls, noOfUsers, Integer.parseInt(rampUpPeriod), loopCount, Boolean.parseBoolean(authManager),authorizationUrl, 
+								authorizationUserName, authorizationPassword, authorizationDomain, authorizationRealm);
 					}
 				}
 			}		
@@ -305,14 +312,26 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 		
 		List<Element> configList = configuration.getAny();
 		List<Element> newList = new ArrayList<Element>();
+		boolean resultTagAvailable = false;
+		String resultName = FileUtils.removeExtension(jmxFiles.get(0).split(SEP)[1]);
 		for (Element element : configList) {
-			if(TEST_FILES_DIRECTORY.equals(element.getTagName())) {
+			if (RESULT_FILES_NAME.equals(element.getTagName())) {
+				resultTagAvailable = true;
+				element.setTextContent(resultName);
+				newList.add(element);
+			} else if(TEST_FILES_DIRECTORY.equals(element.getTagName())) {
 				element.setTextContent(jmxFiles.get(0).split(SEP)[0]);
 				newList.add(element);
 			} else if(!TEST_FILES_INCLUDED.equals(element.getTagName())) {
 				newList.add(element);
 			} 
 		} 
+		
+		if (!resultTagAvailable) {
+			Element resultFilesNameElement = doc.createElement(RESULT_FILES_NAME);
+			resultFilesNameElement.setTextContent(resultName);
+			newList.add(resultFilesNameElement);
+		}
 		
 		Element testFilesIncludedElement = doc.createElement(TEST_FILES_INCLUDED);
 		for (String jmxFile : jmxFiles) {
@@ -323,18 +342,29 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 		return newList;
 	}
 	
-	private List<Element> updateTestPomPluginConfiguration(Document doc, com.phresco.pom.model.Plugin.Configuration configuration) {
+	private List<Element> updateTestPomPluginConfiguration(Document doc, com.phresco.pom.model.Plugin.Configuration configuration, String resultName) {
 		
 		List<Element> configList = configuration.getAny();
 		List<Element> newList = new ArrayList<Element>();
+		boolean resultTagAvailable = false;
 		for (Element element : configList) {
-			if(TEST_FILES_DIRECTORY.equals(element.getTagName())) {
+			if (RESULT_FILES_NAME.equals(element.getTagName())) {
+				resultTagAvailable = true;
+				element.setTextContent(resultName);
+				newList.add(element);
+			} else if(TEST_FILES_DIRECTORY.equals(element.getTagName())) {
 				element.setTextContent(TESTS_SLASH);
 				newList.add(element);
 			} else if(!TEST_FILES_INCLUDED.equals(element.getTagName())) {
 				newList.add(element);
 			} 
 		} 
+		
+		if (!resultTagAvailable) {
+			Element resultFilesNameElement = doc.createElement(RESULT_FILES_NAME);
+			resultFilesNameElement.setTextContent(resultName);
+			newList.add(resultFilesNameElement);
+		}
 		
 		Element testFilesIncludedElement = doc.createElement(TEST_FILES_INCLUDED);
 		appendChildElement(doc, testFilesIncludedElement, JMETER_TEST_FILE, PHRESCO_FRAME_WORK_TEST_PLAN_JMX);

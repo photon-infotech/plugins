@@ -36,7 +36,6 @@ import java.lang.reflect.Type;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -55,7 +54,6 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -374,7 +372,8 @@ public class PluginUtils {
 		}
 	 
 	 public void adaptPerformanceJmx(String jmxFileLocation, List<ContextUrls> contextUrls, int noOfUsers,
-			 int rampUpPeriod, int loopCount) throws Exception {
+			 int rampUpPeriod, int loopCount, boolean authMngr, String authorizationUrl,
+			 String authorizationUserName, String authorizationPassword, String authorizationDomain, String authorizationRealm) throws Exception {
 		 File jmxFile = null;
 		 File jmxDir = new File(jmxFileLocation);
 		 if(jmxDir.isDirectory()) {
@@ -387,24 +386,30 @@ public class PluginUtils {
 				}
 			}
 		 }
-
 		 Document document = getDocument(jmxFile);
 		 appendThreadProperties(document, noOfUsers, rampUpPeriod, loopCount);
 		 NodeList nodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/HTTPSamplerProxy");
 		 if (nodelist != null && nodelist.getLength() > 0) {
-			 NodeList headerManagerNodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/HeaderManager");
-
 			 Node hashTree = nodelist.item(0).getParentNode();
 			 hashTree = removeAllChilds(hashTree);
 			 hashTree.setTextContent(null);
-
+			 
+			 //Create AuthManager
+			 if (authMngr) {
+				 Node authManagerNode = createAuthManager(document, null, authorizationUrl, authorizationUserName, authorizationPassword, authorizationDomain, authorizationRealm);
+				 hashTree.appendChild(authManagerNode);
+				 hashTree.appendChild(document.createElement("hashTree"));
+			 }
+			 
+			 NodeList headerManagerNodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/HeaderManager");
+			 
 			 if (headerManagerNodelist != null && headerManagerNodelist.getLength() > 0) {
 				 for(int i = 0; i < headerManagerNodelist.getLength(); i++) {
 					 hashTree.appendChild(headerManagerNodelist.item(i));
 				 }
 				 hashTree.appendChild(document.createElement("hashTree"));
 			 }
-
+			 
 			 for (ContextUrls contextUrl : contextUrls) {
 				 Node appendHttpSamplerProxy = appendHttpSamplerProxy(document, hashTree, contextUrl.getName(), "${context}/" + contextUrl.getContext(), contextUrl.getContextType(), 
 						 	contextUrl.getContextPostData(), contextUrl.getEncodingType(), contextUrl);
@@ -465,6 +470,21 @@ public class PluginUtils {
 			return httpSamplerProxy;
 		}
 	 
+
+	 private Node createAuthManager(Document document, Node hashTree, String authorizationUrl, 
+			 String authorizationUserName, String authorizationPassword, String authorizationDomain, String authorizationRealm) {
+			Node authManager = document.createElement("AuthManager");
+			NamedNodeMap attributes = authManager.getAttributes();
+			attributes.setNamedItem(createAttribute(document, "guiclass", "AuthPanel"));
+			attributes.setNamedItem(createAttribute(document, "testclass", "AuthManager"));
+			attributes.setNamedItem(createAttribute(document, "testname", "HTTP Authorization Manager"));
+			attributes.setNamedItem(createAttribute(document, "enabled", "true"));
+
+			appendAuthCollectionProp(document, authManager,  authorizationUrl, authorizationUserName, authorizationPassword, authorizationDomain, authorizationRealm);
+
+			return authManager;
+		}
+	 
 	 private void appendElementProp(Document document, Node parentNode, String contextType, String contextPostData, ContextUrls contextUrl) { // eleme prop
 			Node elementProp = document.createElement("elementProp");
 			NamedNodeMap attributes = elementProp.getAttributes();
@@ -509,6 +529,31 @@ public class PluginUtils {
 		 elementProp.appendChild(collectionProp);
 	 }
 	
+	 private void appendAuthCollectionProp(Document document, Node elementProp, String authorizationUrl, 
+			 String authorizationUserName, String authorizationPassword, String authorizationDomain, String authorizationRealm) { // collection append in prop
+		 byte[] decodedPswd = Base64.decodeBase64(authorizationPassword);
+		 String pswd = new String(decodedPswd);
+		 
+		 Node collectionProp = document.createElement("collectionProp");
+		 NamedNodeMap attributes = collectionProp.getAttributes();
+		 attributes.setNamedItem(createAttribute(document, "name", "AuthManager.auth_list"));
+		 
+		 Node subElementProp = document.createElement("elementProp");
+		 NamedNodeMap subElementAttributes = subElementProp.getAttributes();
+		 subElementAttributes.setNamedItem(createAttribute(document, "name", ""));
+		 subElementAttributes.setNamedItem(createAttribute(document, "elementType", "Authorization"));
+		 collectionProp.appendChild(subElementProp);
+		 
+		 appendTypeProp(document, subElementProp, "stringProp", "Authorization.url", authorizationUrl);
+		 appendTypeProp(document, subElementProp, "stringProp", "Authorization.username", authorizationUserName);
+		 appendTypeProp(document, subElementProp, "stringProp", "Authorization.password", pswd);
+		 appendTypeProp(document, subElementProp, "stringProp", "Authorization.domain", authorizationDomain);
+		 appendTypeProp(document, subElementProp, "stringProp", "Authorization.realm", authorizationRealm);
+		 
+		 elementProp.setTextContent(null);
+		 elementProp.appendChild(collectionProp);
+	 }
+	 
 	 public void adaptDBPerformanceJmx(String jmxFileLocation, List<DbContextUrls> dbContextUrls, String dataSource, int noOfUsers, int rampUpPeriod, int loopCount, String dbUrl, String driver, String userName, String passWord ) throws Exception {
 		 File jmxFile = null;
 		 File jmxDir = new File(jmxFileLocation);
@@ -700,6 +745,21 @@ public class PluginUtils {
 		 attributes.setNamedItem(createAttribute(document, "enabled", "true"));
 		 appendHeaderManagerCollectionProp(document, headerManager, headers);
 		 createElement.appendChild(headerManager);
+		 createElement.appendChild(document.createElement("hashTree"));
+		 return createElement;
+	 }
+	 
+	 
+	 private static Node appendAuthManager(Document document) {
+		 Element createElement = document.createElement("hashTree");
+		 Node authManager = document.createElement("AuthManager");
+		 NamedNodeMap attributes = authManager.getAttributes();
+		 attributes.setNamedItem(createAttribute(document, "guiclass", "AuthPanel"));
+		 attributes.setNamedItem(createAttribute(document, "testclass", "AuthManager"));
+		 attributes.setNamedItem(createAttribute(document, "testname", "HTTP Authorization Manager"));
+		 attributes.setNamedItem(createAttribute(document, "enabled", "true"));
+//		 appendHeaderManagerCollectionProp(document, authManager, headers);
+		 createElement.appendChild(authManager);
 		 createElement.appendChild(document.createElement("hashTree"));
 		 return createElement;
 	 }
