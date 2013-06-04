@@ -38,13 +38,13 @@
 		</band>
 	</pageHeader>
 	<detail>
-		<band height="65" splitType="Stretch">
+		<band height="62" splitType="Stretch">
 			<frame>
-				<reportElement x="0" y="0" width="555" height="65" isRemoveLineWhenBlank="true">
+				<reportElement x="0" y="0" width="555" height="60" isRemoveLineWhenBlank="true">
 					<printWhenExpression><![CDATA[!$F{fileReport}.isEmpty()]]></printWhenExpression>
 				</reportElement>
 				<rectangle radius="10">
-					<reportElement style="PPCRHeadingRow" x="0" y="3" width="553" height="20"/>
+					<reportElement style="PPCRHeadingRow" x="0" y="1" width="553" height="20"/>
 					<graphicElement>
 						<pen lineColor="#999999"/>
 					</graphicElement>
@@ -57,7 +57,7 @@
 					<text><![CDATA[Test Type :]]></text>
 				</staticText>
 				<subreport>
-					<reportElement x="0" y="26" width="553" height="36" isRemoveLineWhenBlank="true">
+					<reportElement x="2" y="21" width="553" height="36" isRemoveLineWhenBlank="true">
 						<printWhenExpression><![CDATA[!$F{fileReport}.isEmpty()]]></printWhenExpression>
 					</reportElement>
 					<subreportParameter name="reportsDataType">
@@ -70,7 +70,7 @@
 					<subreportExpression><![CDATA["PhrescoPerfFiles.jasper"]]></subreportExpression>
 				</subreport>
 				<textField>
-					<reportElement style="PPCRHeadingRowLabelValue" x="84" y="5" width="466" height="15" forecolor="#000000"/>
+					<reportElement style="PPCRHeadingRowLabelValue" x="84" y="5" width="464" height="15" forecolor="#000000"/>
 					<textElement>
 						<font fontName="Times New Roman" size="12" isBold="true"/>
 					</textElement>

@@ -42,13 +42,14 @@
 				<reportElement style="UCRHeading" mode="Opaque" x="0" y="0" width="555" height="24">
 					<printWhenExpression><![CDATA[($P{testType}.equals("unit") && !$F{testSuites}.isEmpty()) || ($P{testType}.equals("unit") && !$F{allTestSuites}.isEmpty())]]></printWhenExpression>
 				</reportElement>
-				<staticText>
-					<reportElement x="5" y="4" width="283" height="18" forecolor="#FFFFFF" backcolor="#FFFFFF"/>
+				<textField>
+					<reportElement x="5" y="4" width="269" height="20" forecolor="#FFFFFF"/>
 					<textElement>
 						<font fontName="Times New Roman" size="12" isBold="true"/>
 					</textElement>
-					<text><![CDATA[Unit Test Report]]></text>
-				</staticText>
+					<textFieldExpression><![CDATA["Unit Test Report"]]></textFieldExpression>
+					<anchorNameExpression><![CDATA["Unit Test Report"]]></anchorNameExpression>
+				</textField>
 			</frame>
 			<line>
 				<reportElement x="0" y="0" width="1" height="1"/>

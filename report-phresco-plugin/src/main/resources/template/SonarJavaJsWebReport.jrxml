@@ -82,6 +82,7 @@
 						<font fontName="Times New Roman" size="12" isBold="true" isItalic="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA["Sonar Report -" + $F{reportType}]]></textFieldExpression>
+					<anchorNameExpression><![CDATA["Code Validation Report"]]></anchorNameExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement x="190" y="4" width="351" height="15" forecolor="#FFFFFF">

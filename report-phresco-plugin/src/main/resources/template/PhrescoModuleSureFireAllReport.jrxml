@@ -84,6 +84,7 @@
 						<font fontName="Times New Roman" size="11" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$P{testType}.toUpperCase() + " TEST REPORT"]]></textFieldExpression>
+					<anchorNameExpression><![CDATA["Unit Test Report"]]></anchorNameExpression>
 				</textField>
 			</frame>
 		</band>

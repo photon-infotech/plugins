@@ -43,13 +43,14 @@
 				<reportElement style="CCRHeading" mode="Opaque" x="0" y="0" width="555" height="24">
 					<printWhenExpression><![CDATA[($P{testType}.equals("component") && !$F{testSuites}.isEmpty()) || ($P{testType}.equals("unit") && !$F{allTestSuites}.isEmpty())]]></printWhenExpression>
 				</reportElement>
-				<staticText>
-					<reportElement x="5" y="4" width="286" height="20" forecolor="#FFFFFF" backcolor="#FFFFFF"/>
+				<textField>
+					<reportElement x="5" y="4" width="269" height="20" forecolor="#FFFFFF"/>
 					<textElement>
-						<font fontName="Times New Roman" size="14" isBold="true"/>
+						<font fontName="Times New Roman" size="12" isBold="true"/>
 					</textElement>
-					<text><![CDATA[Component Test Report]]></text>
-				</staticText>
+					<textFieldExpression><![CDATA["Component Test Report"]]></textFieldExpression>
+					<anchorNameExpression><![CDATA["Component Test Report"]]></anchorNameExpression>
+				</textField>
 			</frame>
 		</band>
 	</pageHeader>
