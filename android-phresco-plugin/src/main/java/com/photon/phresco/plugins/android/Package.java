@@ -195,7 +195,7 @@ public class Package implements PluginConstants {
 				mojoObj.save();
 				
 				mojoObj = new MojoProcessor(new File(functionalXmlFile));
-				Parameter functionalSigningParameter = mojoObj.getParameter("functional-test-webdriver", "signing");
+				Parameter functionalSigningParameter = mojoObj.getParameter("functional-test-robotium", "signing");
 				functionalSigningParameter.setShow(isSigning);
 				mojoObj.save();
 				

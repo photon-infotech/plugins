@@ -25,6 +25,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.commons.model.ApplicationInfo;
 import com.photon.phresco.exception.PhrescoException;
@@ -46,29 +47,51 @@ import com.phresco.pom.util.PomProcessor;
 public class JavaTest implements PluginConstants {
 	private File baseDir;
 	private File testConfigPath;
+	private MavenProject project;
+	private String pomFile;
+	
 	public void runTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException{
 		baseDir = mavenProjectInfo.getBaseDir();
+		project = mavenProjectInfo.getProject();
+		pomFile = project.getFile().getName();
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
 		String testAgainst = configs.get(TEST_AGAINST);
 		String environment = configs.get(ENVIRONMENT_NAME);
 		String goalPackBeforeTest = "";
+		String projectModule= "";
+		if(configuration != null) {
+			projectModule=configs.get(PROJECT_MODULE);
+		}
+		if(StringUtils.isNotEmpty(projectModule)) {
+			projectModule = File.separator + projectModule;
+		} else {
+			projectModule = "";
+		}
 		if (testAgainst.equals(JS)) {
 			PluginUtils pluginUtils = new PluginUtils();
 			ApplicationInfo appInfo = pluginUtils.getAppInfo(mavenProjectInfo.getBaseDir());
 			String techId = appInfo.getTechInfo().getId();
-			copyUnitInfoFile(environment, techId);
+			copyUnitInfoFile(environment, techId , projectModule);
 			goalPackBeforeTest = getGoalPackBeforeTest(baseDir);
 		}
-		buildCommand(configuration, testAgainst, goalPackBeforeTest);
+		buildCommand(configuration, testAgainst, goalPackBeforeTest, projectModule);
 	}
-	
-	private void copyUnitInfoFile(String environment, String techId) throws PhrescoException {
+
+	private void copyUnitInfoFile(String environment, String techId, String projectModule) throws PhrescoException {
 		try {
-			PomProcessor processor = new PomProcessor( new File(baseDir.getPath() + File.separator + POM_XML));
-			String testSourcePath = processor.getProperty("phresco.env.test.config.xml");
+			PomProcessor processor ;
+			String testSourcePath;
+			if(StringUtils.isEmpty(projectModule)) {
+				processor = new PomProcessor( new File(baseDir.getPath() + File.separator + pomFile));
+				testSourcePath = processor.getProperty("phresco.env.test.config.xml");
+				testConfigPath = new File(baseDir + File.separator + testSourcePath);
+			} else {
+				processor = new PomProcessor( new File(baseDir.getPath() + projectModule + File.separator + pomFile));
+				testSourcePath = processor.getProperty("phresco.env.test.config.xml");
+				testConfigPath = new File(baseDir + projectModule + File.separator + testSourcePath);
+			} 
 			if (!techId.equals(TechnologyTypes.JAVA_STANDALONE) && !techId.equals(TechnologyTypes.JAVA_WEBSERVICE) ) {
 				PluginUtils utils = new PluginUtils();
-				testConfigPath = new File(baseDir + File.separator + testSourcePath);
 				String fullPathNoEndSeparator = FilenameUtils.getFullPathNoEndSeparator(testConfigPath.getAbsolutePath());
 				File fullPathNoEndSeparatorFile = new File(fullPathNoEndSeparator);
 				fullPathNoEndSeparatorFile.mkdirs();
@@ -81,7 +104,7 @@ public class JavaTest implements PluginConstants {
 		} 
 	}
 
-	private void buildCommand(Configuration configuration, String testAgainst, String goalPackBeforeTest) throws PhrescoException {
+	private void buildCommand(Configuration configuration, String testAgainst, String goalPackBeforeTest, String projectModule) throws PhrescoException {
 		String mavenCommandValue = null;
 		if (testAgainst != null) {
 			List<Parameter> parameters = configuration.getParameters().getParameter();
@@ -96,10 +119,10 @@ public class JavaTest implements PluginConstants {
 				}
 			}
 		}
-		executeTest(mavenCommandValue, testAgainst, goalPackBeforeTest);
+		executeTest(mavenCommandValue, testAgainst, goalPackBeforeTest, projectModule);
 	}
 
-	private void executeTest(String mavenCommandValue, String testAgainst, String goalPackBeforeTest) throws PhrescoException {
+	private void executeTest(String mavenCommandValue, String testAgainst, String goalPackBeforeTest, String projectModule) throws PhrescoException {
 		System.out.println("-----------------------------------------");
 		System.out.println("T E S T S");
 		System.out.println("-----------------------------------------");
@@ -112,7 +135,18 @@ public class JavaTest implements PluginConstants {
 			}
 			sb.append(STR_SPACE).
 			append(mavenCommandValue);
-			boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(), UNIT);
+			if(!Constants.POM_NAME.equals(pomFile)) {
+				sb.append(STR_SPACE);
+				sb.append(Constants.HYPHEN_F);
+				sb.append(STR_SPACE); 
+				sb.append(pomFile);
+			}
+			boolean status;
+			if(StringUtils.isNotEmpty(projectModule)) {
+				status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath() + projectModule, baseDir.getPath(), UNIT);
+			} else {
+				status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(), UNIT);
+			} 
 			if(!status) {
 				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
 			}
@@ -123,7 +157,7 @@ public class JavaTest implements PluginConstants {
 	
 	private String getGoalPackBeforeTest(File baseDir) throws PhrescoException {
 		try {
-			PomProcessor processor = new PomProcessor(new File(baseDir.getPath() + File.separator + POM_XML));
+			PomProcessor processor = new PomProcessor(new File(baseDir.getPath() + File.separator + pomFile));
 			Plugin plugin = processor.getPlugin("net.awired.jstest", "jstest-maven-plugin");
 			if(plugin.getExecutions() != null && CollectionUtils.isNotEmpty(plugin.getExecutions().getExecution())) {
 				List<PluginExecution> execution = plugin.getExecutions().getExecution();
