@@ -21,6 +21,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FilenameFilter;
@@ -41,6 +42,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -501,7 +503,13 @@ public class GenerateReport implements PluginConstants {
 			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, cumulativeReportparams, dataSource);
 			//applying theme
 			applyTheme(jasperPrint);
-			JRExporter exporter = new net.sf.jasperreports.engine.export.JRPdfExporter(); 
+			
+			// Move table of contents to first page only for detail report
+			if ("detail".equals(reportType)) {
+				jasperPrint = moveTableOfContents(jasperPrint);
+			}
+			
+			JRExporter exporter = new net.sf.jasperreports.engine.export.JRPdfExporter();
 			exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, outFileNamePDF);
 			exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
 			exporter.exportReport();
@@ -559,6 +567,63 @@ public class GenerateReport implements PluginConstants {
 			}
 		}
 		
+	}
+	
+	/**
+	 * This method moves TOC page to first page and sets page number to all the pages
+	 */
+	private static JasperPrint moveTableOfContents(JasperPrint jasperPrint)	{
+		if (jasperPrint != null) {
+			List<JRPrintPage> pages = jasperPrint.getPages();
+			int minPageSizeForTOC = 2;
+			if (pages != null && pages.size() > minPageSizeForTOC) {
+				
+				// move the TOC to first page
+				int lastPage = pages.size() - 1;
+				int firstPage = 0;
+				JRPrintPage removePage = jasperPrint.removePage(lastPage);
+				jasperPrint.addPage(firstPage, removePage);
+				jasperPrint.removePage(firstPage + 1);
+
+				List<JRPrintPage> tocPages = jasperPrint.getPages();
+				
+				for (int i = 0; i < tocPages.size(); i++) {
+					
+					JRPrintPage jrPrintPage = (JRPrintPage) tocPages.get(i);
+					// set Page number as 1 for TOC
+					String pageNoKey = "pageNo";
+					String pageCountKey = "pageCount";
+					List<JRPrintElement> elements = jrPrintPage.getElements();
+					
+					if (CollectionUtils.isNotEmpty(elements)) {
+						
+						for (JRPrintElement jrPrintElement : elements) {
+							
+							// For the first page alone
+							if (jrPrintElement instanceof JRPrintText) {
+								JRPrintText jrPrintText = (JRPrintText)jrPrintElement;
+								String key = jrPrintText.getKey();
+								if (pageNoKey.equals(key) && i == 0) {
+									jrPrintText.setText("Page 1 of");
+								}
+								
+								// For all pages
+								if (pageCountKey.equals(key)) {
+									String text = jrPrintText.getText().trim();
+									int pageCount = Integer.parseInt(text);
+									pageCount = pageCount - 1;
+									jrPrintText.setText(" " + pageCount);
+								}
+							}
+						}
+						
+					}
+					
+				}
+			}
+		}
+		
+		return jasperPrint;
 	}
 	
 	private void checkStaticAnalysisHtmlFile(String uuid) {
@@ -719,7 +784,7 @@ public class GenerateReport implements PluginConstants {
 				}
 			}
 			
-			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + fileName + DOT + PDF;
 			new File(outFileNamePDF).getParentFile().mkdirs();
 			String containerJasperFile = "PhrescoSureFireReport.jasper";
 			reportStream = this.getClass().getClassLoader().getResourceAsStream(REPORTS_JASPER + containerJasperFile);
@@ -825,7 +890,7 @@ public class GenerateReport implements PluginConstants {
 		InputStream reportStream = null;
 		BufferedInputStream bufferedInputStream = null;
 		try {
-			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + fileName + DOT + PDF;
 
 			new File(outFileNamePDF).getParentFile().mkdirs();
 			reportStream = this.getClass().getClassLoader().getResourceAsStream("PhrescoModuleSureFireReport.jasper");
@@ -876,7 +941,7 @@ public class GenerateReport implements PluginConstants {
 	public void generateJmeterPerformanceReport(ArrayList<JmeterTypeReport> jmeterTestResults)  throws PhrescoException {
 		try {
 			ArrayList<JmeterTypeReport> jmeterTstResults = jmeterTestResults;
-			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + fileName + DOT + PDF;
 
 			String jasperFile = "PhrescoPerfContain.jasper";
 			Map<String, Object> parameters = new HashMap<String,Object>();
@@ -922,7 +987,7 @@ public class GenerateReport implements PluginConstants {
 	// load test report
 	public void generateLoadTestReport(List<LoadTestReport> loadTestResults)  throws PhrescoException {
 		try {
-			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + fileName + DOT + PDF;
 
 			String jasperFile = "PhrescoLoadTestContain.jasper";
 			Map<String, Object> parameters = new HashMap<String,Object>();
@@ -1953,7 +2018,8 @@ public class GenerateReport implements PluginConstants {
 				NodeList childNodes = node.getChildNodes();
 				NamedNodeMap nameNodeMap = node.getAttributes();
 				TestCase testCase = new TestCase();
-
+				
+				//For Error Failure
 				if (childNodes != null && childNodes.getLength() > 0) {
 
 					for (int j = 0; j < childNodes.getLength(); j++) {
@@ -2505,6 +2571,15 @@ public class GenerateReport implements PluginConstants {
 	        this.techName = configs.get("technologyName");
 	        this.version = appVersion;
 	        this.sonarUrl = sonarUrl;
+	        if (StringUtils.isEmpty(pdfReportName)) {
+	        	if (testType.equals("All")) {
+	        		this.fileName = baseDir.getName() + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName;
+	        	} else {
+	        		this.fileName = testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName; // time
+	        	}
+	        } else {
+	        	this.fileName = pdfReportName + STR_UNDERSCORE + reportType;
+	        }
 	        
 	        if (StringUtils.isEmpty(reportType)) {
 	        	throw new PhrescoException("Report type is empty ");
@@ -2529,6 +2604,96 @@ public class GenerateReport implements PluginConstants {
 	        log.info("Report generation completed ... ");
 		} catch (Exception e) {
 			throw new PhrescoException(e);
+		}
+	}
+	
+	// This method is used by test cases for testing purpose
+	public void generateTest(String baseDirPath, String dotPhrescoFilePath,
+			String testType, String reportType, String sonarUrl,
+			Properties properties, String logoimage64, String themeJson1, String technologyName, String pomPath)
+			throws PhrescoException {
+		System.out.println("Generate Report generate Test");
+		try {
+	        baseDir = new File(baseDirPath);
+	        System.out.println("generate test called .... ");
+	        
+			org.apache.maven.model.Model project = new org.apache.maven.model.Model();
+			project.setProperties(properties);
+			mavenProject = new MavenProject(project);
+			mavenProject.setFile(new File(pomPath));
+	        
+	        // get projects plugin info file path
+	        File projectInfo = new File(baseDir, DOT_PHRESCO_FOLDER + File.separator + PROJECT_INFO_FILE);
+			if (!projectInfo.exists()) {
+				throw new MojoExecutionException("Project info file is not found in Dir " + baseDir.getCanonicalPath());
+			}
+			ApplicationInfo appInfo = getApplicationInfo(projectInfo);
+			if (appInfo == null) {
+				throw new MojoExecutionException("AppInfo value is Null ");
+			}
+	        
+	        logo = logoimage64;
+	        if (StringUtils.isNotEmpty(themeJson1)) {
+	        	Gson gson = new Gson();
+	        	Type mapType = new TypeToken<Map<String, String>>() {}.getType();
+		        theme = (Map<String, String>)gson.fromJson(themeJson1, mapType);
+		        if (MapUtils.isNotEmpty(theme) && StringUtils.isNotEmpty(theme.get("CopyRight"))) {
+		        	this.copyRights = theme.get("CopyRight");
+		        }
+	        }
+	        
+	        String appVersion = appInfo.getVersion();
+	     // Default copyrights
+	        this.copyRights = DEFAULT_COPYRIGHTS;
+	        
+	        this.testType = testType;
+	        this.reportType = reportType;
+	        this.appDir = appInfo.getAppDirName();
+	        this.projectCode = appInfo.getName();
+	        this.techName = technologyName;
+	        this.version = "1.0-testjdhfjdfjhjdf -kdjfhjkdhfj dfj";
+	        this.sonarUrl = sonarUrl;
+	        String pdfReportName = "test";
+	        if (StringUtils.isEmpty(pdfReportName)) {
+	        	if (testType.equals("All")) {
+	        		this.fileName = baseDir.getName() + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName;
+	        	} else {
+	        		this.fileName = testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName; // time
+	        	}
+	        } else {
+	        	this.fileName = pdfReportName + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName;
+	        }
+	        
+			System.out.println("TestType => " + testType);
+			System.out.println("ReportType => " + reportType);
+			System.out.println("ProjectCode => " + projectCode);
+			System.out.println("TechName => "	+ appInfo.getTechInfo().getId());
+			System.out.println("Version => " + appInfo.getVersion());
+			
+	        if (StringUtils.isEmpty(reportType)) {
+	        	throw new PhrescoException("Report type is empty ");
+	        }
+	        
+	        if (StringUtils.isEmpty(testType)) {
+	        	throw new PhrescoException("Test Type is empty ");
+	        }
+	        
+	    	String clangReportPath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_VALIDATE_REPORT);
+	    	if (StringUtils.isNotEmpty(clangReportPath)) {
+	    		isClangReport = true;
+	    	}
+	    	
+	        if ("All".equalsIgnoreCase(testType)) {
+	        	System.out.println("all report generation started ... "); // all report
+	        	cumalitiveTestReport();
+	        } else {
+	        	System.out.println("indivudal report generation started ... "); // specified type report
+	        	generatePdfReport();
+	        }
+	        
+	        System.out.println("Report generation completed ... ");
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 	

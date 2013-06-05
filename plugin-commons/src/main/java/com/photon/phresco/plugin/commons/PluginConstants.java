@@ -52,6 +52,7 @@ public interface PluginConstants {
      String TRUE 						= "true";
      String PDF 						= "pdf";
      String XLSX 						= "xlsx";
+     String XLS 						= "xls";
      String XML 						= "xml";
      String POM_XML 					= "pom.xml";
      String STATIC_ANALYSIS_REPORT 		= "static-analysis-report";
