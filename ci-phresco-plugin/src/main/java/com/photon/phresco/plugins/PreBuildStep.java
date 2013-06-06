@@ -57,17 +57,19 @@ public class PreBuildStep  implements PluginConstants {
     private File baseDir;
     private Log log;
     private PluginPackageUtil util;
+    private String pom;
     
-	public void performCIPreBuildStep(String jobName, String goal, String phase, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
-		log.info("CI prebuild step execution reached " + jobName);
+	public void performCIPreBuildStep(String name, String goal, String phase, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
+		log.info("CI prebuild step execution reached " + name);
 		log.info("goal is  " + goal);
 		try {
 	        this.log = log;
 	        baseDir = mavenProjectInfo.getBaseDir();
 	        project = mavenProjectInfo.getProject();
+	        pom = project.getFile().getName();
 	        
 	        // getting jenkins workspace job dir
-	        String jenkinsJobDirPath = getJenkinsJobDirPath(jobName);
+	        String jenkinsJobDirPath = getJenkinsJobDirPath(name);
 	        log.info("jenkinsJobDirPath ... " + jenkinsJobDirPath);
 			File jenkinsJobDir = new File(jenkinsJobDirPath);
 			
@@ -92,18 +94,19 @@ public class PreBuildStep  implements PluginConstants {
 			}
 			
 			// get job name and get the ciJob object from CIJob file and update it in phrescoPackage file using mojo
-			CIJob job = getJob(appInfo, jobName);
+			CIJob job = getJob(appInfo, name);
 			if (job == null) {
 				throw new PhrescoException("Job object is empty ");
 			}
 			
-			File phrescoPluginInfoFile = getPhrescoPluginInfoFileInJenkins(jobName, phase);
-			log.info("phresco Plugin Info File in phresco projects workspace ... " + phrescoPluginInfoFile.getCanonicalPath());
+			File phrescoPluginInfoFile = getPhrescoPluginInfoFileInJenkins(name, phase);
+			log.info("phresco Plugin Info File in phresco projects workspace ... " + phrescoPluginInfoFile.getPath());
+			log.info("phresco Plugin Info File exists ... " + phrescoPluginInfoFile.exists());
 			
 			MojoProcessor mojo = new MojoProcessor(phrescoPluginInfoFile);
-			
+			String testDirectory = "";
 			if (Constants.PHASE_FUNCTIONAL_TEST.equals(phase)) {
-				File pomFile = new File(baseDir, POM_XML);
+				File pomFile = new File(baseDir, pom);
 				log.info("Pom path " + pomFile.getPath());
 				PomProcessor pm = new PomProcessor(pomFile);
 				String seleniumTool = pm.getProperty(Constants.POM_PROP_KEY_FUNCTEST_SELENIUM_TOOL);
@@ -113,8 +116,14 @@ public class PreBuildStep  implements PluginConstants {
 			} else if(Constants.PHASE_PERFORMANCE_TEST.equals(phase)) {
 				// Reads the ci.info from server/database/webservice folder,
 				//inside of the performance folder and creates new json file
-				//for each values present in the ci.info file. 
-				performanceTestHandler(mavenProjectInfo, appInfo);	
+				//for each values present in the ci.info file.
+				log.info("Execute Performance Test");
+				testDirectory = Constants.POM_PROP_KEY_PERFORMANCETEST_DIR;
+				loadPerformanceTestHandler(mavenProjectInfo, appInfo, testDirectory, phase);	
+			} else if(Constants.PHASE_LOAD_TEST.equals(phase)) {
+				log.info("Execute Load Test");
+				testDirectory = Constants.POM_PROP_KEY_LOADTEST_DIR;
+				loadPerformanceTestHandler(mavenProjectInfo, appInfo, testDirectory, phase);
 			}
 			
 			log.info("phase " + phase);
@@ -142,61 +151,64 @@ public class PreBuildStep  implements PluginConstants {
 		}
 	}
 
-	private void performanceTestHandler(MavenProjectInfo mavenProjectInfo,
-			ApplicationInfo appInfo) throws Exception {
+	private void loadPerformanceTestHandler(MavenProjectInfo mavenProjectInfo,
+			ApplicationInfo appInfo, String testDirectory, String phase) throws Exception {
 		
 		BufferedReader reader = null ;	
 		
 		try {										
-			List<String> performanceTests = new ArrayList<String>(3);
-			performanceTests.add(PER_TEST_SERVER);
-			performanceTests.add(PER_TEST_DATABASE);
-			performanceTests.add(PER_TEST_WEBSERVICE);
+			List<String> tests = new ArrayList<String>(3);
+			tests.add(PER_TEST_SERVER);
+			tests.add(PER_TEST_WEBSERVICE);
 			
-			for (String performanceTest : performanceTests) {
+			if(Constants.PHASE_PERFORMANCE_TEST.equals(phase)) {
+				tests.add(PER_TEST_DATABASE);
+			}
+			
+			for (String test : tests) {
 				
 				StringBuilder copyDir = new StringBuilder(baseDir.toString())				
-				.append(mavenProjectInfo.getProject().getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR))
+				.append(mavenProjectInfo.getProject().getProperties().getProperty(testDirectory))
 				.append(File.separator)
-				.append(performanceTest)
+				.append(test)
 				.append(File.separator)
 				.append(Constants.FOLDER_JSON);				
 				
 				StringBuilder infoFilePath = new StringBuilder(Utility.getProjectHome())
 				.append(appInfo.getAppDirName())
-				.append(mavenProjectInfo.getProject().getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR))
+				.append(mavenProjectInfo.getProject().getProperties().getProperty(testDirectory))
 				.append(File.separator)
-				.append(performanceTest)
+				.append(test)
 				.append(File.separator)
 				.append(Constants.FOLDER_JSON)
 				.append(File.separator)
-				.append("CITemp")
-				.append(File.separator)
+//				.append("CITemp")
+//				.append(File.separator)
 				.append(CI_INFO);
-								
+				
 				File infoFile = new File(infoFilePath.toString());
-				if(infoFile.exists()) {						
+				if(infoFile.exists()) {	
 					reader = new BufferedReader(new FileReader(infoFilePath.toString()));
 					String lineToRead = null ;
 					while((lineToRead = reader.readLine()) != null) {
 						String [] jsonFiles = lineToRead.split("\\,");
-						for (String jsonFile : jsonFiles) {					
-							
+						for (String jsonFile : jsonFiles) {	
 							// 
 							StringBuilder s = new StringBuilder(copyDir)				    	
 					    	.append(File.separator)
 					    	.append(jsonFile);								
 							
+							
 							StringBuilder sb = new StringBuilder(Utility.getProjectHome())
 					    	.append(appInfo.getAppDirName())				
-							.append(mavenProjectInfo.getProject().getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR))
+							.append(mavenProjectInfo.getProject().getProperties().getProperty(testDirectory))
 							.append(File.separator)
-							.append(performanceTest)
+							.append(test)
 							.append(File.separator)
 							.append(Constants.FOLDER_JSON)
 							.append(File.separator)
-							.append("CITemp")
-							.append(File.separator)
+//							.append("CITemp")
+//							.append(File.separator)
 							.append(jsonFile);		
 							
 							File source = new File(sb.toString());
@@ -209,8 +221,7 @@ public class PreBuildStep  implements PluginConstants {
 					}						
 				}					
 			}
-		} catch (Exception e) {
-			throw new PhrescoException(e);
+		} catch (Exception e) {		
 		} finally {
 			Utility.closeReader(reader);
 		}
@@ -257,7 +268,7 @@ public class PreBuildStep  implements PluginConstants {
 		return null;
 	}
 	
-	public File getPhrescoPluginInfoFileInJenkins(String jobName, String phase) throws MojoExecutionException {
+	public File getPhrescoPluginInfoFileInJenkins(String name, String phase) throws MojoExecutionException {
 		log.info("getPhrescoPluginInfoFileInJenkins method called ... ");
 		try {
 			String jenkinsHomePath = System.getenv(JENKINS_HOME);
@@ -268,7 +279,7 @@ public class PreBuildStep  implements PluginConstants {
 			builder.append(File.separator);
 	        builder.append(WORKSPACE_DIR);
 	        builder.append(File.separator);
-	        builder.append(jobName);
+	        builder.append(name);
 	        builder.append(File.separator);
 	        builder.append(DOT_PHRESCO_FOLDER);
 	        builder.append(File.separator);
@@ -277,16 +288,16 @@ public class PreBuildStep  implements PluginConstants {
 	        builder.append(INFO_XML);
 			File pluginInfoFile = new File(builder.toString());
 			log.info("getPhrescoPluginInfoFile method fiel path  ... " + builder.toString());
-			if (!pluginInfoFile.exists()) {
-				throw new MojoExecutionException("Plugin info file not found in jenkins workspace for jobaname ... " + jobName + " Searched in... " + builder.toString());
-			}
+//			if (!pluginInfoFile.exists()) {
+//				throw new MojoExecutionException("Plugin info file not found in jenkins workspace for jobaname ... " + name + " Searched in... " + builder.toString());
+//			}
 			return pluginInfoFile;
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
 	
-	private String getJenkinsJobDirPath(String jobName) throws MojoExecutionException {
+	private String getJenkinsJobDirPath(String name) throws MojoExecutionException {
 		log.info("getJenkinsJobDirPath method called ... ");
 		try {
 			String jenkinsHomePath = System.getenv(JENKINS_HOME);
@@ -297,7 +308,7 @@ public class PreBuildStep  implements PluginConstants {
 			builder.append(File.separator);
 	        builder.append(WORKSPACE_DIR);
 	        builder.append(File.separator);
-	        builder.append(jobName);
+	        builder.append(name);
 	        builder.append(File.separator);
 	        builder.append(DOT_PHRESCO_FOLDER);
 	        builder.append(File.separator);
@@ -309,10 +320,10 @@ public class PreBuildStep  implements PluginConstants {
 		}
 	}
 	
-	 public CIJob getJob(ApplicationInfo appInfo, String jobName) throws PhrescoException {
+	 public CIJob getJob(ApplicationInfo appInfo, String name) throws PhrescoException {
 		 try {
-			 log.info("Search for jobName => " + jobName);
-			 if (StringUtils.isEmpty(jobName)) {
+			 log.info("Search for name => " + name);
+			 if (StringUtils.isEmpty(name)) {
 				 throw new PhrescoException("job name is empty");
 			 }
 			 List<CIJob> jobs = getJobs(appInfo);
@@ -322,7 +333,7 @@ public class PreBuildStep  implements PluginConstants {
 			 log.info("Job list found!!!!!");
 			 for (CIJob job : jobs) {
 				 log.info("job list job Names => " + job.getName());
-				 if (job.getName().equals(jobName)) {
+				 if (job.getName().equals(name)) {
 					 return job;
 				 }
 			 }

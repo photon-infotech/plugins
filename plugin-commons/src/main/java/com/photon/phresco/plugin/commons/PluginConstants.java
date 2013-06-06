@@ -55,6 +55,16 @@ public interface PluginConstants {
      String XLS 						= "xls";
      String XML 						= "xml";
      String POM_XML 					= "pom.xml";
+     String CSV_PATTERN 				= "\\s*,\\s*";
+     String JMETER_MAVEN_PLUGIN 		= "jmeter-maven-plugin";
+ 	 String COM_LAZERYCODE_JMETER 		= "com.lazerycode.jmeter";
+	 String TESTS_SLASH  				= "tests/";
+	 String PHRESCO_FRAME_WORK_TEST_PLAN_JMX = "PhrescoFrameWork_TestPlan.jmx";
+	 String SEP 						= "#SEP#";
+	 String JMETER_TEST_FILE 			= "jMeterTestFile";
+	 String TEST_FILES_INCLUDED 		= "testFilesIncluded";
+	 String RESULT_FILES_NAME			= "resultFilesName";
+	 String TEST_FILES_DIRECTORY 		= "testFilesDirectory";
      String STATIC_ANALYSIS_REPORT 		= "static-analysis-report";
      String INDEX_HTML 					= "index.html";
      String ARCHIVES 					= "archives";
@@ -271,7 +281,7 @@ public interface PluginConstants {
 	 String WP7_BIN_FOLDER				= "\\bin";
 	 String WP7_RELEASE_FOLDER			= "\\release";
 	 String WP_X86    					= "X86";
-	 String WP_ANY_CPU    				= "AnyCPU";
+	 String WP_ANY_CPU    				= "Any CPU";
 	 String BIN 						= "Bin";
 	 String OBJ							= "obj";
 	 String WIN_CLEAN					= "Clean";
@@ -482,6 +492,10 @@ public interface PluginConstants {
 	 String SIM_VERSION 				= "sdkVersion";
 	 String PSIGN 						= "-Psign";
 	 String TEST_AGAINST				= "testAgainst";
+	 String TEST_BASIS					= "testBasis";
+	 String CUSTOM_TEST_AGAINST			= "customTestAgainst";
+	 String AVAILABLE_JMX 				= "availableJmx";
+	 String CUSTOMISE 					= "customise";
 	 String SERVER						= "server";
 	 String BUILD						= "build";
 	 String JAR							= "jar";
@@ -530,6 +544,12 @@ public interface PluginConstants {
 	String ADD_HEADER				= "addHeader";
 	String EXECUTE_SQL			    = "executeSql";
 	String FETCH_SQL                = "fetchSql";
+	String KEY_AUTH_MANAGER			= "authManager";
+	String KEY_AUTHORIZATION_URL	= "authorizationUrl";
+	String KEY_AUTHORIZATION_USER_NAME = "authorizationUserName";
+	String KEY_AUTHORIZATION_PASSWORD = "authorizationPassword";
+	String KEY_AUTHORIZATION_DOMAIN = "authorizationDomain";
+	String KEY_AUTHORIZATION_REALM = "authorizationRealm";
 	
 	 /**
      * 
@@ -566,6 +586,5 @@ public interface PluginConstants {
     String PHRESCO_PACKAGE_FILE = "phresco-build.xml";
     String ELEMENT_DIRECTORIES  = "directories";
     String ELEMENT_FILES        = "files";
-    String ATTR_TODIR           = "toDirectory"; 
-	
+    String ATTR_TODIR           = "toDirectory";
 }

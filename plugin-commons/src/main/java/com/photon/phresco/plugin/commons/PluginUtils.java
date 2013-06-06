@@ -374,32 +374,44 @@ public class PluginUtils {
 		}
 	 
 	 public void adaptPerformanceJmx(String jmxFileLocation, List<ContextUrls> contextUrls, int noOfUsers,
-			 int rampUpPeriod, int loopCount) throws Exception {
+			 int rampUpPeriod, int loopCount, boolean authMngr, String authorizationUrl,
+			 String authorizationUserName, String authorizationPassword, String authorizationDomain, String authorizationRealm) throws Exception {
 		 File jmxFile = null;
 		 File jmxDir = new File(jmxFileLocation);
 		 if(jmxDir.isDirectory()) {
 			 FilenameFilter filter = new FileListFilter("", "jmx");
 			 File[] jmxFiles = jmxDir.listFiles(filter);
-			 jmxFile = jmxFiles[0];
+			 for (File file : jmxFiles) {
+				if ("PhrescoFrameWork_TestPlan.jmx".equals(file.getName())) {
+					jmxFile = file;
+					break;
+				}
+			}
 		 }
-
 		 Document document = getDocument(jmxFile);
 		 appendThreadProperties(document, noOfUsers, rampUpPeriod, loopCount);
 		 NodeList nodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/HTTPSamplerProxy");
 		 if (nodelist != null && nodelist.getLength() > 0) {
-			 NodeList headerManagerNodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/HeaderManager");
-
 			 Node hashTree = nodelist.item(0).getParentNode();
 			 hashTree = removeAllChilds(hashTree);
 			 hashTree.setTextContent(null);
-
+			 
+			 //Create AuthManager
+			 if (authMngr) {
+				 Node authManagerNode = createAuthManager(document, null, authorizationUrl, authorizationUserName, authorizationPassword, authorizationDomain, authorizationRealm);
+				 hashTree.appendChild(authManagerNode);
+				 hashTree.appendChild(document.createElement("hashTree"));
+			 }
+			 
+			 NodeList headerManagerNodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/HeaderManager");
+			 
 			 if (headerManagerNodelist != null && headerManagerNodelist.getLength() > 0) {
 				 for(int i = 0; i < headerManagerNodelist.getLength(); i++) {
 					 hashTree.appendChild(headerManagerNodelist.item(i));
 				 }
 				 hashTree.appendChild(document.createElement("hashTree"));
 			 }
-
+			 
 			 for (ContextUrls contextUrl : contextUrls) {
 				 Node appendHttpSamplerProxy = appendHttpSamplerProxy(document, hashTree, contextUrl.getName(), "${context}/" + contextUrl.getContext(), contextUrl.getContextType(), 
 						 	contextUrl.getContextPostData(), contextUrl.getEncodingType(), contextUrl);
@@ -425,6 +437,11 @@ public class PluginUtils {
 				contentEncoding = contextUrl.getEncodingType();
 			}
 			
+			String cntxt = "${context}";
+			if (StringUtils.isNotEmpty(contextUrl.getContext())) {
+				cntxt = cntxt + "/" + contextUrl.getContext();
+			}
+			 
 			NamedNodeMap attributes = httpSamplerProxy.getAttributes();
 			attributes.setNamedItem(createAttribute(document, "guiclass", "HttpTestSampleGui"));
 			attributes.setNamedItem(createAttribute(document, "testclass", "HTTPSamplerProxy"));
@@ -439,7 +456,7 @@ public class PluginUtils {
 			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.response_timeout", null);
 			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.protocol", null);
 			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.contentEncoding", contentEncoding);
-			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.path", "${context}/" + contextUrl.getContext()); // server url
+			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.path", cntxt); // server url
 			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.method", contextUrl.getContextType());
 
 			appendTypeProp(document, httpSamplerProxy, "boolProp", "HTTPSampler.follow_redirects", String.valueOf(contextUrl.isFollowRedirects()));
@@ -453,6 +470,21 @@ public class PluginUtils {
 			appendTypeProp(document, httpSamplerProxy, "stringProp", "HTTPSampler.embedded_url_re", null);
 
 			return httpSamplerProxy;
+		}
+	 
+
+	 private Node createAuthManager(Document document, Node hashTree, String authorizationUrl, 
+			 String authorizationUserName, String authorizationPassword, String authorizationDomain, String authorizationRealm) {
+			Node authManager = document.createElement("AuthManager");
+			NamedNodeMap attributes = authManager.getAttributes();
+			attributes.setNamedItem(createAttribute(document, "guiclass", "AuthPanel"));
+			attributes.setNamedItem(createAttribute(document, "testclass", "AuthManager"));
+			attributes.setNamedItem(createAttribute(document, "testname", "HTTP Authorization Manager"));
+			attributes.setNamedItem(createAttribute(document, "enabled", "true"));
+
+			appendAuthCollectionProp(document, authManager,  authorizationUrl, authorizationUserName, authorizationPassword, authorizationDomain, authorizationRealm);
+
+			return authManager;
 		}
 	 
 	 private void appendElementProp(Document document, Node parentNode, String contextType, String contextPostData, ContextUrls contextUrl) { // eleme prop
@@ -499,13 +531,43 @@ public class PluginUtils {
 		 elementProp.appendChild(collectionProp);
 	 }
 	
+	 private void appendAuthCollectionProp(Document document, Node elementProp, String authorizationUrl, 
+			 String authorizationUserName, String authorizationPassword, String authorizationDomain, String authorizationRealm) { // collection append in prop
+		 byte[] decodedPswd = Base64.decodeBase64(authorizationPassword);
+		 String pswd = new String(decodedPswd);
+		 
+		 Node collectionProp = document.createElement("collectionProp");
+		 NamedNodeMap attributes = collectionProp.getAttributes();
+		 attributes.setNamedItem(createAttribute(document, "name", "AuthManager.auth_list"));
+		 
+		 Node subElementProp = document.createElement("elementProp");
+		 NamedNodeMap subElementAttributes = subElementProp.getAttributes();
+		 subElementAttributes.setNamedItem(createAttribute(document, "name", ""));
+		 subElementAttributes.setNamedItem(createAttribute(document, "elementType", "Authorization"));
+		 collectionProp.appendChild(subElementProp);
+		 
+		 appendTypeProp(document, subElementProp, "stringProp", "Authorization.url", authorizationUrl);
+		 appendTypeProp(document, subElementProp, "stringProp", "Authorization.username", authorizationUserName);
+		 appendTypeProp(document, subElementProp, "stringProp", "Authorization.password", pswd);
+		 appendTypeProp(document, subElementProp, "stringProp", "Authorization.domain", authorizationDomain);
+		 appendTypeProp(document, subElementProp, "stringProp", "Authorization.realm", authorizationRealm);
+		 
+		 elementProp.setTextContent(null);
+		 elementProp.appendChild(collectionProp);
+	 }
+	 
 	 public void adaptDBPerformanceJmx(String jmxFileLocation, List<DbContextUrls> dbContextUrls, String dataSource, int noOfUsers, int rampUpPeriod, int loopCount, String dbUrl, String driver, String userName, String passWord ) throws Exception {
 		 File jmxFile = null;
 		 File jmxDir = new File(jmxFileLocation);
 		 if(jmxDir.isDirectory()){
 			 FilenameFilter filter = new FileListFilter("", "jmx");
 			 File[] jmxFiles = jmxDir.listFiles(filter);
-			 jmxFile = jmxFiles[0];
+			 for (File file : jmxFiles) {
+				 if ("PhrescoFrameWork_TestPlan.jmx".equals(file.getName())) {
+					 jmxFile = file;
+					 break;
+				 }
+			 }
 		 }
 
 		 Document document = getDocument(jmxFile);
@@ -567,7 +629,9 @@ public class PluginUtils {
 			return hashTree;
 		}
 	 
-	 public void adaptLoadJmx(String jmxFileLocation, int noOfUsers, int rampUpPeriod, int loopCount, Map<String, String> headersMap) throws Exception {
+	 public void adaptLoadJmx(String jmxFileLocation, int noOfUsers, int rampUpPeriod, int loopCount, boolean authMngr, String authorizationUrl,
+			 String authorizationUserName, String authorizationPassword, String authorizationDomain, String authorizationRealm 
+			 ,Map<String, String> headersMap, List<ContextUrls> contextUrls) throws Exception {
 	        File jmxFile = null;
 	        File jmxDir = new File(jmxFileLocation);
 	        if(jmxDir.isDirectory()){
@@ -577,17 +641,42 @@ public class PluginUtils {
 	        }
 	        Document document = getDocument(jmxFile);
 	        appendThreadProperties(document, noOfUsers, rampUpPeriod, loopCount);
-	        if (MapUtils.isNotEmpty(headersMap)) {
-	        	NodeList hashTree = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree");
-				NodeList headerMngrNodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/HeaderManager/collectionProp");
-				if (headerMngrNodelist != null && headerMngrNodelist.getLength() > 0) {
-					createHeaderElementProp(document, headersMap, headerMngrNodelist.item(0));
-				} else {
-					Node appendHeaderManager = appendHeaderManager(document, headersMap);
-					hashTree.item(0).appendChild(appendHeaderManager);
-					hashTree.item(0).appendChild(document.createElement("hashTree"));
-				}
-			}
+	       NodeList nodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/HTTPSamplerProxy");
+			 if (nodelist != null && nodelist.getLength() > 0) {
+				 Node hashTree = nodelist.item(0).getParentNode();
+				 hashTree = removeAllChilds(hashTree);
+				 hashTree.setTextContent(null);
+				 
+				//Create AuthManager
+				 if (authMngr) {
+					 Node authManagerNode = createAuthManager(document, null, authorizationUrl, authorizationUserName, authorizationPassword, authorizationDomain, authorizationRealm);
+					 hashTree.appendChild(authManagerNode);
+					 hashTree.appendChild(document.createElement("hashTree"));
+				 }
+				 
+				 NodeList headerManagerNodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/HeaderManager");
+				 if (headerManagerNodelist != null && headerManagerNodelist.getLength() > 0) {
+					 for(int i = 0; i < headerManagerNodelist.getLength(); i++) {
+						 hashTree.appendChild(headerManagerNodelist.item(i));
+					 }
+					 hashTree.appendChild(document.createElement("hashTree"));
+				 }
+
+				 for (ContextUrls contextUrl : contextUrls) {
+					 Node appendHttpSamplerProxy = appendHttpSamplerProxy(document, hashTree, contextUrl.getName(), "${context}/" + contextUrl.getContext(), contextUrl.getContextType(), 
+							 	contextUrl.getContextPostData(), contextUrl.getEncodingType(), contextUrl);
+					 hashTree.appendChild(appendHttpSamplerProxy);
+					 List<Headers> headers = contextUrl.getHeaders();
+					 if (CollectionUtils.isNotEmpty(headers)) {
+						 NodeList headerMngrNodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/hashTree/HeaderManager/collectionProp");
+						 Node appendHeaderManager = appendUrlHeaderManager(document, headers);
+						 hashTree.appendChild(appendHeaderManager);
+					 } else {
+						 hashTree.appendChild(document.createElement("hashTree"));
+					 }
+				 }
+			 }
+			 
 	        saveDocument(jmxFile, document);
 	    }
 	 
@@ -609,8 +698,7 @@ public class PluginUtils {
 			}
 		}
 	 
-	 private static void createHeaderElementProp(Document document,
-			 Map<String, String> headersMap, Node collectionProp) {
+	 private static void createHeaderElementProp(Document document, List<Headers> headers, Node collectionProp) {
 		 //To remove already added header key,values
 		 NodeList childNodes = collectionProp.getChildNodes();
 		 for (int i = 0; i < childNodes.getLength(); i++) {
@@ -621,14 +709,14 @@ public class PluginUtils {
 		 }
 		 
 		 //To append header key values newly
-		 for (Map.Entry<String, String> entry : headersMap.entrySet()) {
+		 for (Headers header : headers) {
 			 Node subElementProp = document.createElement("elementProp");
 			 NamedNodeMap subElementAttributes = subElementProp.getAttributes();
 			 subElementAttributes.setNamedItem(createAttribute(document, "name", ""));
 			 subElementAttributes.setNamedItem(createAttribute(document, "elementType", "Header"));
 			 collectionProp.appendChild(subElementProp);
-			 appendTypeProp(document, subElementProp, "stringProp", "Header.name", entry.getKey());
-			 appendTypeProp(document, subElementProp, "stringProp", "Header.value", entry.getValue());
+			 appendTypeProp(document, subElementProp, "stringProp", "Header.name", header.getKey());
+			 appendTypeProp(document, subElementProp, "stringProp", "Header.value", header.getValue());
 		 }
 	 }
 
@@ -646,14 +734,14 @@ public class PluginUtils {
 		 parentProp.appendChild(typeProp);
 	 }
 	 
-	 private static Node appendHeaderManager(Document document, Map<String, String> headersMap) {
+	 private static Node appendHeaderManager(Document document, List<Headers> headers) {
 		 Node headerManager = document.createElement("HeaderManager");
 		 NamedNodeMap attributes = headerManager.getAttributes();
 		 attributes.setNamedItem(createAttribute(document, "guiclass", "HeaderPanel"));
 		 attributes.setNamedItem(createAttribute(document, "testclass", "HeaderManager"));
 		 attributes.setNamedItem(createAttribute(document, "testname", "HTTP Header Manager"));
 		 attributes.setNamedItem(createAttribute(document, "enabled", "true"));
-		 appendHeaderManagerCollectionProp(document, headerManager, headersMap);
+		 appendHeaderManagerCollectionProp(document, headerManager, headers);
 		 return headerManager;
 	 }
 	 
@@ -665,21 +753,32 @@ public class PluginUtils {
 		 attributes.setNamedItem(createAttribute(document, "testclass", "HeaderManager"));
 		 attributes.setNamedItem(createAttribute(document, "testname", "HTTP Header Manager"));
 		 attributes.setNamedItem(createAttribute(document, "enabled", "true"));
-		 Map<String, String> headersMap = new HashMap<String, String>();
-		 for (Headers header : headers) {
-			 headersMap.put(header.getKey(), header.getValue());
-		 }
-		 appendHeaderManagerCollectionProp(document, headerManager, headersMap);
+		 appendHeaderManagerCollectionProp(document, headerManager, headers);
 		 createElement.appendChild(headerManager);
 		 createElement.appendChild(document.createElement("hashTree"));
 		 return createElement;
 	 }
 	 
-	 private static void appendHeaderManagerCollectionProp(Document document, Node elementProp, Map<String, String> headersMap) {
+	 
+	 private static Node appendAuthManager(Document document) {
+		 Element createElement = document.createElement("hashTree");
+		 Node authManager = document.createElement("AuthManager");
+		 NamedNodeMap attributes = authManager.getAttributes();
+		 attributes.setNamedItem(createAttribute(document, "guiclass", "AuthPanel"));
+		 attributes.setNamedItem(createAttribute(document, "testclass", "AuthManager"));
+		 attributes.setNamedItem(createAttribute(document, "testname", "HTTP Authorization Manager"));
+		 attributes.setNamedItem(createAttribute(document, "enabled", "true"));
+//		 appendHeaderManagerCollectionProp(document, authManager, headers);
+		 createElement.appendChild(authManager);
+		 createElement.appendChild(document.createElement("hashTree"));
+		 return createElement;
+	 }
+	 
+	 private static void appendHeaderManagerCollectionProp(Document document, Node elementProp, List<Headers> headers) {
 			Node collectionProp = document.createElement("collectionProp");
 			NamedNodeMap attributes = collectionProp.getAttributes();
 			attributes.setNamedItem(createAttribute(document, "name", "HeaderManager.headers"));
-			createHeaderElementProp(document, headersMap, collectionProp);
+			createHeaderElementProp(document, headers, collectionProp);
 			elementProp.setTextContent(null);
 			elementProp.appendChild(collectionProp);
 		}
