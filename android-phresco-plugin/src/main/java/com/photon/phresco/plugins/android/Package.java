@@ -195,11 +195,19 @@ public class Package implements PluginConstants {
 				mojoObj.save();
 				
 				mojoObj = new MojoProcessor(new File(functionalXmlFile));
-				Parameter functionalSigningParameter = mojoObj.getParameter("functional-test-robotium", "signing");
-				functionalSigningParameter.setShow(isSigning);
-				mojoObj.save();
+				Parameter functionalRobotiumSigningParameter = mojoObj.getParameter("functional-test-robotium", "signing");
+                if (functionalRobotiumSigningParameter != null) {
+				functionalRobotiumSigningParameter.setShow(isSigning);
+                mojoObj.save();
+                }
 				
-				mojoObj = new MojoProcessor(new File(performanceXmlFile));
+                Parameter functionalWebDriverSigningParameter = mojoObj.getParameter("functional-test-webdriver", "signing");
+                if (functionalWebDriverSigningParameter != null) {
+                   functionalWebDriverSigningParameter.setShow(isSigning);
+                   mojoObj.save();
+                }
+				
+			    mojoObj = new MojoProcessor(new File(performanceXmlFile));
 				Parameter performanceSigningParameter = mojoObj.getParameter("performance-test", "signing");
 				performanceSigningParameter.setShow(isSigning);
 				mojoObj.save();
