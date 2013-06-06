@@ -210,9 +210,15 @@ public class Package implements PluginConstants {
 					mojoObj.save();
 				}
 				
-				Parameter functionalWebDriverSigningParameter = mojoObj.getParameter("functional-test-webdriver", "signing");
-				if (functionalWebDriverSigningParameter != null) {
-					functionalWebDriverSigningParameter.setShow(isSigning);
+				Parameter functionalCalabashSigningParameter = mojoObj.getParameter("functional-test-calabash", "signing");
+				if (functionalCalabashSigningParameter != null) {
+					functionalCalabashSigningParameter.setShow(isSigning);
+					mojoObj.save();
+				}
+				
+				Parameter functionalMonkeyTalkSigningParameter = mojoObj.getParameter("functional-test-monkey-talk", "signing");
+				if (functionalMonkeyTalkSigningParameter != null) {
+					functionalMonkeyTalkSigningParameter.setShow(isSigning);
 					mojoObj.save();
 				}
 				
