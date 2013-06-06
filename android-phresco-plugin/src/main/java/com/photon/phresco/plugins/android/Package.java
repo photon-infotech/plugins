@@ -200,8 +200,10 @@ public class Package implements PluginConstants {
 			try {
 				mojoObj = new MojoProcessor(new File(unitXmlFile));
 				Parameter unitSigningParameter = mojoObj.getParameter("unit-test", "signing");
+				if (unitSigningParameter != null) {
 				unitSigningParameter.setShow(isSigning);
 				mojoObj.save();
+				}
 				
 				mojoObj = new MojoProcessor(new File(functionalXmlFile));
 				Parameter functionalRobotiumSigningParameter = mojoObj.getParameter("functional-test-robotium", "signing");
@@ -224,8 +226,10 @@ public class Package implements PluginConstants {
 				
 				mojoObj = new MojoProcessor(new File(performanceXmlFile));
 				Parameter performanceSigningParameter = mojoObj.getParameter("performance-test", "signing");
+				if (performanceSigningParameter != null) {
 				performanceSigningParameter.setShow(isSigning);
 				mojoObj.save();
+				}
 				
 			} catch (PhrescoException e) {
 				
