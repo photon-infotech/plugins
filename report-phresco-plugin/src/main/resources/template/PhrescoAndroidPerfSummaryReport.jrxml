@@ -47,7 +47,6 @@
 						<font fontName="Times New Roman" size="12" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA["Performance Test Report"]]></textFieldExpression>
-                    <anchorNameExpression><![CDATA["Performance Test Report"]]></anchorNameExpression>
 				</textField>
 			</frame>
 		</band>

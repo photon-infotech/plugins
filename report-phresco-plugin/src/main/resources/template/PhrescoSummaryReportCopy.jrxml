@@ -203,7 +203,7 @@
 						<subreportParameterExpression><![CDATA[$V{isShowGraphs}]]></subreportParameterExpression>
 					</subreportParameter>
 					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{performanceTestReports})]]></dataSourceExpression>
-					<subreportExpression><![CDATA["PhrescoAndroidPerfCumulativeReport.jasper"]]></subreportExpression>
+					<subreportExpression><![CDATA["PhrescoAndroidPerfSummaryReport.jasper"]]></subreportExpression>
 				</subreport>
 			</frame>
 		</band>
