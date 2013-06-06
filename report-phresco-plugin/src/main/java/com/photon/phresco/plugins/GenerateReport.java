@@ -309,7 +309,7 @@ public class GenerateReport implements PluginConstants {
 			}  else if (LOAD.equals(testType)) {
 				List<LoadTestReport> loadTestResults = getLoadTestResults();
 				// Load test report generation
-//				generateLoadTestReport(loadTestResults);
+				generateLoadTestReport(loadTestResults);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -833,59 +833,6 @@ public class GenerateReport implements PluginConstants {
 	}
 	
 	// Unit and functional pdf report generation
-		public void generateManualReport(SureFireReport sureFireReports)  throws PhrescoException {
-			InputStream reportStream = null;
-			BufferedInputStream bufferedInputStream = null;
-			try {
-				String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
-
-				new File(outFileNamePDF).getParentFile().mkdirs();
-				String containerJasperFile = "PhrescoManualReport.jasper";
-				reportStream = this.getClass().getClassLoader().getResourceAsStream(REPORTS_JASPER + containerJasperFile);
-				bufferedInputStream = new BufferedInputStream(reportStream);
-				Map<String, Object> parameters = new HashMap<String,Object>();
-				parameters.put(COPY_RIGHTS, copyRights);
-				parameters.put(PDF_PROJECT_CODE, projectCode);
-				parameters.put(PROJECT_NAME, projName);
-				parameters.put(TECH_NAME, techName);
-				parameters.put(TEST_TYPE, testType.toUpperCase());
-				parameters.put(REPORTS_TYPE, reportType);
-				parameters.put(VERSION, version);
-				parameters.put(LOGO, logo);
-				parameters.put("isManualTest", "yes");
-				
-				JRBeanArrayDataSource dataSource = new JRBeanArrayDataSource(new SureFireReport[]{sureFireReports});
-				JasperReport jasperReport = (JasperReport) JRLoader.loadObject(bufferedInputStream);
-				JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
-				// applying theme
-				applyTheme(jasperPrint);
-				JRExporter exporter = new net.sf.jasperreports.engine.export.JRPdfExporter(); 
-				exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, outFileNamePDF);
-				exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
-				exporter.exportReport();
-			} catch(Exception e) {
-				log.error("manualReport  generation error");
-				throw new PhrescoException(e);
-			} finally {
-				if (reportStream != null) {
-					try {
-						reportStream.close();
-					} catch (IOException e) {
-						log.error("Report generation errorr ");
-					}
-				}
-				if (bufferedInputStream != null) {
-					try {
-						bufferedInputStream.close();
-					} catch (IOException e) {
-						e.printStackTrace();
-						log.error("Report generation errorr ");
-					}
-				}
-			}
-		}
-	
-	// Unit and functional pdf report generation
 	public void generateUnitAndFunctionalReport(List<ModuleSureFireReport> moduleWiseReports)  throws PhrescoException {
 		InputStream reportStream = null;
 		BufferedInputStream bufferedInputStream = null;
@@ -906,8 +853,6 @@ public class GenerateReport implements PluginConstants {
 			parameters.put(LOGO, logo);
 			JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(moduleWiseReports);
 			JasperReport jasperReport = (JasperReport) JRLoader.loadObject(bufferedInputStream);
-//			JasperDesign jasperDesign = JRXmlLoader.load(bufferedInputStream);
-//			JasperReport jasperReport = JasperCompileManager.compileReport(jasperDesign);
 			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
 			// applying theme
 			applyTheme(jasperPrint);
@@ -1050,22 +995,28 @@ public class GenerateReport implements PluginConstants {
         
 		List<LoadTestReport> loadTestReports = new ArrayList<LoadTestReport>();
 		String reportFilePath = baseDir + mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_LOADTEST_RPT_DIR);
-		
+		String testResulExtension = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_LOADTEST_RESULT_EXTENSION);
 		List<File> testResultFiles = new ArrayList<File>();
-		
+		List<File> resultFiles = null;
 		// if the load is having dir_type key
 		if (reportFilePath.contains(DIR_TYPE)) {
 			for(String loadType: testResultsTypes) {
 				Pattern p = Pattern.compile(DIR_TYPE);
                 Matcher matcher = p.matcher(reportFilePath);
                 String loadReportFilePath = matcher.replaceAll(loadType);
-                List<File> resultFiles = getTestResultFilesAsList(loadReportFilePath);
+                if (StringUtils.isNotEmpty(testResulExtension)) {
+                	resultFiles = getResultFileExtension(loadReportFilePath, testResulExtension);
+                }
+                
                 if (CollectionUtils.isNotEmpty(resultFiles)) {
                 	testResultFiles.addAll(resultFiles);
                 }
 			}
 		} else {
-			List<File> resultFiles = getTestResultFilesAsList(reportFilePath);
+			if (StringUtils.isNotEmpty(testResulExtension)) {
+            	resultFiles = getResultFileExtension(reportFilePath, testResulExtension);
+            }
+			
             if (CollectionUtils.isNotEmpty(resultFiles)) {
             	testResultFiles.addAll(resultFiles);
             }
@@ -1074,9 +1025,7 @@ public class GenerateReport implements PluginConstants {
 		for (File resultFile : testResultFiles) {
 			Document doc = getDocumentOfFile(resultFile);
 			List<TestResult> loadTestResults = getLoadTestResult(doc);
-			for (TestResult testResult : loadTestResults) {
-//				log.info("testResult name .. " + testResult.getThreadName());
-			}
+			
 			// Adding report data to bean object
 			LoadTestReport loadTestReport = new LoadTestReport();
 			loadTestReport.setFileName(resultFile.getName());
@@ -1096,13 +1045,19 @@ public class GenerateReport implements PluginConstants {
         ArrayList<JmeterTypeReport> jmeterTypeReports = new ArrayList<JmeterTypeReport>();
         for(String perType: testResultsTypes) {
             String performanceReportDir = baseDir + mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_RPT_DIR);
-            
+            String performanceReportExtension = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_RESULT_EXTENSION);
             if (StringUtils.isNotEmpty(performanceReportDir) && StringUtils.isNotEmpty(perType)) {
                 Pattern p = Pattern.compile(DIR_TYPE);
                 Matcher matcher = p.matcher(performanceReportDir);
                 performanceReportDir = matcher.replaceAll(perType);
             }
-            List<String> testResultFiles = getTestResultFiles(performanceReportDir);
+            
+            // to get performance extension tag value from pom
+            List<String> testResultFiles = null;
+            if (StringUtils.isNotEmpty(performanceReportExtension)) {
+            	testResultFiles = getTestResultFiles(performanceReportDir, performanceReportExtension);
+            }
+            
 			String deviceId = null; // for android alone
 			
 			// List of performance test reports
@@ -1132,7 +1087,13 @@ public class GenerateReport implements PluginConstants {
 	public List<AndroidPerfReport> getJmeterTestResultsForAndroid() throws Exception {
         // List of performance test types
         String performanceReportDir = baseDir + mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_RPT_DIR);
-        List<String> testResultFiles = getTestResultFiles(performanceReportDir);
+        String performanceReportExtension = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_RESULT_EXTENSION);
+        List<String> testResultFiles = null;
+        
+        //check for performance result extension tag in pom
+        if (StringUtils.isNotEmpty(performanceReportExtension)) {
+        	testResultFiles = getTestResultFiles(performanceReportDir, performanceReportExtension);
+        }
 		
 		// List of performance test reports
         List<AndroidPerfReport> androidPerfFilesWithDatas = new ArrayList<AndroidPerfReport>();
@@ -2448,12 +2409,44 @@ public class GenerateReport implements PluginConstants {
         }
         return testResultFileNames;
     }
+    
+    // to get performance extension tag value from pom
+    private List<String> getTestResultFiles(String path, String extension) {
+        File testDir = new File(path);
+        List<String> testResultFileNames = new ArrayList<String>();
+        if(testDir.isDirectory()){
+            FilenameFilter filter = new PhrescoFileFilter("", extension);
+            File[] listFiles = testDir.listFiles(filter);
+            for (File file : listFiles) {
+                if (file.isFile()) {
+                    testResultFileNames.add(file.getName());
+                }
+            }
+        }
+        return testResultFileNames;
+    }
 
 	private List<File> getTestResultFilesAsList(String path) {
 		File testDir = new File(path);
 		List<File> testResultFileNames = new ArrayList<File>();
 		if (testDir.isDirectory()) {
 			FilenameFilter filter = new PhrescoFileFilter("", XML);
+			File[] listFiles = testDir.listFiles(filter);
+			for (File file : listFiles) {
+				if (file.isFile()) {
+					testResultFileNames.add(file);
+				}
+			}
+		}
+		return testResultFileNames;
+	}
+	
+	// to get load extension tag value from pom
+	private List<File> getResultFileExtension(String path, String extension) {
+		File testDir = new File(path);
+		List<File> testResultFileNames = new ArrayList<File>();
+		if (testDir.isDirectory()) {
+			FilenameFilter filter = new PhrescoFileFilter("", extension);
 			File[] listFiles = testDir.listFiles(filter);
 			for (File file : listFiles) {
 				if (file.isFile()) {
