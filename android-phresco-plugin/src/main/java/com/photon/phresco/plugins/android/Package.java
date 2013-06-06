@@ -89,9 +89,9 @@ public class Package implements PluginConstants {
 		PluginUtils.checkForConfigurations(new File(baseDir), environmentName);
 		
 		Boolean isZipAlign = Boolean.valueOf(zipAlign);
-		log.info("isZipAlign . " +isZipAlign);
+//		log.info("isZipAlign . " +isZipAlign);
 		Boolean isSigning = Boolean.valueOf(signing);
-		log.info("isSigning . " + isSigning);
+//		log.info("isSigning . " + isSigning);
 		
 		if(isZipAlign) {						
 			isSigning = true;
@@ -183,10 +183,19 @@ public class Package implements PluginConstants {
 			
 			String baseDir = mavenProjectInfo.getBaseDir().toString();
 			
+//			log.info("updateDotPhrescoInfoFiles - baseDir = " + baseDir);
+//			log.info("updateDotPhrescoInfoFiles - isSigning = " + isSigning.toString());
 			
 			String unitXmlFile = baseDir + File.separator + DOT_PHRESCO_FOLDER + File.separator + UNIT_INFO_FILE;
 			String functionalXmlFile = baseDir + File.separator +DOT_PHRESCO_FOLDER + File.separator + FUNCTIONAL_INFO_FILE;
 			String performanceXmlFile = baseDir + File.separator +DOT_PHRESCO_FOLDER + File.separator + PERFORMANCE_INFO_FILE;
+			
+//			log.info("updateDotPhrescoInfoFiles - unitXmlFile = " + unitXmlFile);
+//			log.info("updateDotPhrescoInfoFiles - functionalXmlFile = " + functionalXmlFile);
+//			log.info("updateDotPhrescoInfoFiles - performanceXmlFile = " + performanceXmlFile);
+			
+			
+			
 			MojoProcessor mojoObj;
 			try {
 				mojoObj = new MojoProcessor(new File(unitXmlFile));
@@ -195,9 +204,17 @@ public class Package implements PluginConstants {
 				mojoObj.save();
 				
 				mojoObj = new MojoProcessor(new File(functionalXmlFile));
-				Parameter functionalSigningParameter = mojoObj.getParameter("functional-test-robotium", "signing");
-				functionalSigningParameter.setShow(isSigning);
-				mojoObj.save();
+				Parameter functionalRobotiumSigningParameter = mojoObj.getParameter("functional-test-robotium", "signing");
+				if (functionalRobotiumSigningParameter != null) {
+					functionalRobotiumSigningParameter.setShow(isSigning);
+					mojoObj.save();
+				}
+				
+				Parameter functionalWebDriverSigningParameter = mojoObj.getParameter("functional-test-webdriver", "signing");
+				if (functionalWebDriverSigningParameter != null) {
+					functionalWebDriverSigningParameter.setShow(isSigning);
+					mojoObj.save();
+				}
 				
 				mojoObj = new MojoProcessor(new File(performanceXmlFile));
 				Parameter performanceSigningParameter = mojoObj.getParameter("performance-test", "signing");
