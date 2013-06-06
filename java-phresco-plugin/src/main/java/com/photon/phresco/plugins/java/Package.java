@@ -482,19 +482,30 @@ public class Package implements PluginConstants {
 				ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
 			} else {
 				if(packageInfoFile.exists()) {
-					if(packageType.equals("war")) {
+					if(StringUtils.isNotEmpty(packageType)) {
+						if(packageType.equals("war")) {
+							copyWarToPackage(zipNameWithoutExt, context);
+							PluginUtils.createBuildResources(packageInfoFile, baseDir, tempDir);
+							ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
+						} else {
+							copyZipToPackage(zipNameWithoutExt, context);
+						}
+					} else {
 						copyWarToPackage(zipNameWithoutExt, context);
 						PluginUtils.createBuildResources(packageInfoFile, baseDir, tempDir);
 						ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
-					} else {
-						copyZipToPackage(zipNameWithoutExt, context);
 					}
 				} else {
-					if(packageType.equals("war")) {
+					if(StringUtils.isNotEmpty(packageType)) {
+						if(packageType.equals("war")) {
+							copyWarToPackage(zipNameWithoutExt, context);
+							ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
+						} else {
+							copyZipToPackage(zipNameWithoutExt, context);
+						}
+					} else {
 						copyWarToPackage(zipNameWithoutExt, context);
 						ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
-					} else {
-						copyZipToPackage(zipNameWithoutExt, context);
 					}
 				}
 			}
