@@ -708,9 +708,10 @@ public class ApkMojo extends AbstractAndroidMojo {
 			commands.add(artifact.getFile().getAbsolutePath());
 		}
 
-		getLog().info(getAndroidSdk().getPathForTool("apkbuilder") + " " + commands.toString());
+		getLog().info( getAndroidSdk().getApkBuilderPath() + " " + commands.toString() );
 		try {
-			executor.executeCommand(getAndroidSdk().getPathForTool("apkbuilder"), commands, project.getBasedir(), false);
+			executor.executeCommand( getAndroidSdk().getApkBuilderPath(), commands, project.getBasedir(),
+                    false );
 		} catch (ExecutionException e) {
 			throw new MojoExecutionException("", e);
 		}
@@ -900,7 +901,7 @@ public class ApkMojo extends AbstractAndroidMojo {
 					public boolean accept(File file) {
 						for (String pattern : AbstractScanner.DEFAULTEXCLUDES) {
 							if (AbstractScanner.match(pattern, file.getAbsolutePath())) {
-								getLog().debug("Excluding " + file.getName() + " from asset copy : matching " + pattern);
+								//getLog().debug("Excluding " + file.getName() + " from asset copy : matching " + pattern);
 								return false;
 							}
 						}
@@ -970,7 +971,7 @@ public class ApkMojo extends AbstractAndroidMojo {
 					public boolean accept(File file) {
 						for (String pattern : AbstractScanner.DEFAULTEXCLUDES) {
 							if (AbstractScanner.match(pattern, file.getAbsolutePath())) {
-								getLog().debug("Excluding " + file.getName() + " from asset copy : matching " + pattern);
+								//getLog().debug("Excluding " + file.getName() + " from asset copy : matching " + pattern);
 								return false;
 							}
 						}
@@ -1048,9 +1049,9 @@ public class ApkMojo extends AbstractAndroidMojo {
 			commands.add(aaptExtraArg);
 		}
 
-		getLog().info(getAndroidSdk().getPathForTool("aapt") + " " + commands.toString());
+		getLog().info( getAndroidSdk().getAaptPath() + " " + commands.toString() );
 		try {
-			executor.executeCommand(getAndroidSdk().getPathForTool("aapt"), commands, project.getBasedir(), false);
+			 executor.executeCommand( getAndroidSdk().getAaptPath(), commands, project.getBasedir(), false );
 		} catch (ExecutionException e) {
 			throw new MojoExecutionException("", e);
 		}
