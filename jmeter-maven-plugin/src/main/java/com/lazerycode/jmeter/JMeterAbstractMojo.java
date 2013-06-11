@@ -236,20 +236,21 @@ public abstract class JMeterAbstractMojo extends AbstractMojo {
 	 * 
 	 */
 	protected transient File resultFilesDirectory;
-	
+
 	/**
-	 *  Result are stored on this name
+	 * Sets the list of include patterns to generate and store the Result name  
 	 * 
 	 * @parameter
 	 * 
 	 */
-	protected transient String resultFilesName;
+	protected List<String> resultFilesName;
+
 	/**
 	 * @parameter expression="${project.basedir}" required="true"
 	 * @readonly
 	 */
 	protected File baseDir;
-	
+
 	/**
 	 * Sets the list of include patterns to generate the graph in image files.
 	 * Relative to pluginTypes.
@@ -257,7 +258,8 @@ public abstract class JMeterAbstractMojo extends AbstractMojo {
 	 * @parameter
 	 */
 	protected  List<String>  pluginTypes;
-	//------------------------------------------------------------------------------------------------------------------
+
+
 
 	/**
 	 * Other directories will be created by this plugin and used by JMeter
@@ -267,7 +269,7 @@ public abstract class JMeterAbstractMojo extends AbstractMojo {
 	protected File libExtDir;
 	protected File logsDir;
 	protected File resultsDir;
-	
+
 	/**
 	 * All property files are stored in this artifact, comes with JMeter library
 	 */
@@ -277,7 +279,7 @@ public abstract class JMeterAbstractMojo extends AbstractMojo {
 	protected boolean resultsOutputIsCSVFormat = false;
 	//==================================================================================================================
 
-	
+
 	/**
 	 * Generate the directory tree utilised by JMeter.
 	 */
@@ -387,7 +389,7 @@ public abstract class JMeterAbstractMojo extends AbstractMojo {
 	protected void initialiseJMeterArgumentsArray(boolean disableGUI) throws MojoExecutionException {
 		testArgs = new JMeterArgumentsArray(disableGUI, workDir.getAbsolutePath());
 		testArgs.setResultsDirectory(resultsDir.getAbsolutePath());
-		testArgs.setResultFilesName(resultFilesName);
+		//		testArgs.setResultFilesName(resultFilesName);
 		testArgs.setResultFileOutputFormatIsCSV(resultsOutputIsCSVFormat);
 		if (testResultsTimestamp) {
 			testArgs.setResultsTimestamp(testResultsTimestamp);

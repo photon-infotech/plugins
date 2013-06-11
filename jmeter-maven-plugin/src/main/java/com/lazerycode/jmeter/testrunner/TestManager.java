@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import kg.apc.jmeter.PluginsCMDWorker;
 
@@ -36,9 +38,16 @@ public class TestManager extends JMeterMojo {
 	private final File resultDirectory;
 	private final File baseDirectory;
 	private List<String> pluginTypes;
+	private static Map<String, String> resultnames = new HashMap<String, String>();
+	private String jtlresultName;
+	private List<String> resultFilesName;
 
 
-	public TestManager(JMeterArgumentsArray baseTestArgs, File logsDirectory, File testFilesDirectory, List<String> testFilesIncluded, List<String> testFilesExcluded, RemoteConfiguration remoteServerConfiguration, boolean suppressJMeterOutput,File resultDir,File baseDir,List<String> plugintypes) {
+	public static Map<String, String> getResultnames() {
+		return resultnames;
+	}
+
+	public TestManager(JMeterArgumentsArray baseTestArgs, File logsDirectory, File testFilesDirectory, List<String> testFilesIncluded, List<String> testFilesExcluded, RemoteConfiguration remoteServerConfiguration, boolean suppressJMeterOutput,File resultDir,File baseDir,List<String> plugintypes,List<String> resultFilesName) {
 		this.baseTestArgs = baseTestArgs;
 		this.logsDirectory = logsDirectory;
 		this.testFilesDirectory = testFilesDirectory;
@@ -49,6 +58,25 @@ public class TestManager extends JMeterMojo {
 		this.resultDirectory = resultDir;
 		this.baseDirectory = baseDir;
 		this.pluginTypes = plugintypes;
+		this.resultFilesName = resultFilesName;
+	}
+
+	/**
+	 * It map the given jmx name with result file name
+	 * 
+	 * @throws MojoExecutionException
+	 * 			it throw the exception jmx and resultfilename count are not equal
+	 */
+	public void mapResultNames() throws MojoExecutionException {
+		if (this.testFilesIncluded.size() == this.resultFilesName.size()) {
+			for(int i=0; i< this.testFilesIncluded.size(); i++){ 
+				String testFileIncluded = this.testFilesIncluded.get(i);
+				String resultName = this.resultFilesName.get(i);
+				resultnames.put(testFileIncluded, resultName);
+			}
+		} else {
+			throw new MojoExecutionException("Number of jmx files count is ::" + this.testFilesIncluded.size() + " and the result files name count is ::" + this.resultFilesName.size() + " not equal. Please enter the same numer of jmx files and resultfile names ");
+		}
 	}
 
 	/**
@@ -62,6 +90,11 @@ public class TestManager extends JMeterMojo {
 		List<String> tests = generateTestList();
 		List<String> results = new ArrayList<String>();
 		for (String file : tests) {
+			// get the value for given key
+			jtlresultName = resultnames.get(file);
+			//set the result name
+			thisTestArgs.setResultFilesName(jtlresultName);
+
 			if ((remoteServerConfiguration.isStartServersBeforeTests() && tests.get(0).equals(file)) || remoteServerConfiguration.isStartAndStopServersForEachTest()) {
 				thisTestArgs.setRemoteStart();
 				thisTestArgs.setRemoteStartServerList(remoteServerConfiguration.getServerList());
@@ -70,9 +103,11 @@ public class TestManager extends JMeterMojo {
 				thisTestArgs.setRemoteStop();
 			}
 			results.add(executeSingleTest(new File(testFilesDirectory, file), thisTestArgs));
-			generateTestResultGraphs();
+			generateTestResultGraphs(thisTestArgs);
 
 		}
+
+
 		return results;
 	}
 
@@ -91,7 +126,6 @@ public class TestManager extends JMeterMojo {
 	private String executeSingleTest(File test, JMeterArgumentsArray testArgs) throws MojoExecutionException {
 		getLog().info(" ");
 		testArgs.setTestFile(test);
-		resultName = testArgs.testResultFile(test);
 		//Delete results file if it already exists
 		new File(testArgs.getResultsLogFileName()).delete();
 		getLog().debug("JMeter is called with the following command line arguments: " + UtilityFunctions.humanReadableCommandLineOutput(testArgs.buildArgumentsArray()));
@@ -153,8 +187,13 @@ public class TestManager extends JMeterMojo {
 		jmeterTestFiles.addAll(includedFiles);
 		return jmeterTestFiles;
 	}
-
-	public void generateTestResultGraphs()  {
+	/**
+	 * It generate the graph in image for mat the given plugin types
+	 * 
+	 * @param testArgs
+	 *    It is an object for JMeterArgumentsArray 
+	 */
+	public void generateTestResultGraphs(JMeterArgumentsArray testArgs)  {
 		try {
 			getLog().info("  ");
 			getLog().info("  ");
@@ -163,6 +202,7 @@ public class TestManager extends JMeterMojo {
 			getLog().info("------------------------------------------------------------");
 			getLog().info("  ");
 			getLog().info("  ");
+
 			/*ArrayList<String> imageTypes = new ArrayList<String>();
 			imageTypes.add("ThreadsStateOverTime");
 			imageTypes.add("BytesThroughputOverTime");
@@ -175,13 +215,14 @@ public class TestManager extends JMeterMojo {
 			imageTypes.add("ThroughputOverTime");
 			imageTypes.add("ThroughputVsThreads");
 			imageTypes.add("TransactionsPerSecond");*/
-			if(this.pluginTypes!=null ){
+
+			if(this.pluginTypes != null ){
 				File file = new File(this.baseDirectory + "/target/jmeter/bin/lib");
 				if(!file.exists()){
 					file.mkdirs();
 				}
+				resultName = testArgs.getTestResultsName();
 				for(String plugintypes:this.pluginTypes){
-
 					String resultfilename = resultName.substring(0, resultName.lastIndexOf("."));
 					String imageName = this.resultDirectory + "/graphs/" + resultfilename + "-" + plugintypes + ".png";
 					removeFiles(imageName);
@@ -202,7 +243,7 @@ public class TestManager extends JMeterMojo {
 				getLog().info("-----------------------------------------------------------");
 				getLog().info(" ");
 				getLog().info(" ");
-			}else{
+			} else {
 				throw new Exception("Enter the List of pluginTypes name in pom inside this tag <pluginTypes> to generate the graphs in image file");
 
 			}
