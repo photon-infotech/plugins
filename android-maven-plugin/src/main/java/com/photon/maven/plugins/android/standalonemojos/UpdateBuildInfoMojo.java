@@ -255,14 +255,29 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 			PluginUtils pu = new PluginUtils();
 			BuildInfo buildInfo = new BuildInfo();
 			List<String> envList = pu.csvToList(environmentName);
-			buildInfo.setBuildNo(nextBuildNo);
+			int buildNo = 0;
+			if (buildNumber != null)
+					 buildNo = Integer.parseInt(buildNumber);
+			if (buildNo > 0) {
+				buildInfo.setBuildNo(buildNo);
+			} else {
+				buildInfo.setBuildNo(nextBuildNo);
+			}
 			buildInfo.setTimeStamp(getTimeStampForDisplay(currentDate));
 			if (isBuildSuccess) {
 				buildInfo.setBuildStatus("SUCCESS");
 			} else {
 				buildInfo.setBuildStatus("FAILURE");
 			}
-			buildInfo.setBuildName(apkFileName);
+			
+			if (buildName!=null){
+				
+				buildInfo.setBuildName(buildName);
+				
+			}else{
+				
+			    buildInfo.setBuildName(apkFileName);
+			}
 			buildInfo.setDeliverables(deliverable);
 			buildInfo.setEnvironments(envList);
 			buildInfoList.add(buildInfo);
