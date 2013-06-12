@@ -448,6 +448,14 @@ public abstract class AbstractAndroidMojo extends AbstractMojo
 	 * @parameter expression="${environmentName}" required="true"
 	 */
 	protected String environmentName;
+	/**
+	 * @parameter expression="${buildNumber}" required="false"
+	 */
+	protected String buildNumber;
+	/**
+	 * @parameter expression="${buildName}" required="false"
+	 */
+	protected String buildName;
 
     /**
      * Whether to create a release build (default is false / debug build). This affect BuildConfig generation 

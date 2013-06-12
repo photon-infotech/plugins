@@ -167,7 +167,7 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 				} else {
 					getLog().info("APK created.. Copying to Build directory.....");
 				}
-				String buildName = project.getBuild().getFinalName() + '_'
+				String buildNameLocal = project.getBuild().getFinalName() + '_'
 						+ getTimeStampForBuildName(currentDate);
 
 				if (baseDir.getPath().endsWith("unit")
@@ -177,13 +177,13 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 				}
 
 				if (StringUtils.isNotEmpty(techId)) {
-					destFile = new File(buildDir, buildName + '.' + APKLIB);
+					destFile = new File(buildDir, buildNameLocal + '.' + APKLIB);
 					
 				} else {
 					
-					destFile = new File(buildDir, buildName + '.' + APK);
+					destFile = new File(buildDir, buildNameLocal + '.' + APK);
 					// Creating the file in build folder for copying the aligned APK - Created by Hari - 20-May-2013
-					destAlignedFile = new File(buildDir, buildName+ "-aligned." + APK);
+					destAlignedFile = new File(buildDir, buildNameLocal+ "-aligned." + APK);
 
 				}
 
@@ -205,7 +205,7 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 				getLog().info("Creating deliverables.....");
 				
 				ZipArchiver zipArchiver = new ZipArchiver();
-				File tmpFile = new File(buildDir, buildName);
+				File tmpFile = new File(buildDir, buildNameLocal);
 				
 				if (!tmpFile.exists()) {
 					
@@ -229,7 +229,7 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 				}
 				File inputFile = new File(apkFileName);
 				zipArchiver.addDirectory(tmpFile);
-				File deliverableZip = new File(buildDir, buildName + ".zip");
+				File deliverableZip = new File(buildDir, buildNameLocal + ".zip");
 				zipArchiver.setDestFile(deliverableZip);
 				zipArchiver.createArchive();
 
@@ -240,7 +240,7 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 					FileUtil.delete(tmpFile);
 
 				}
-
+				
 				writeBuildInfo(true);
 			} catch (IOException e) {
 				throw new MojoExecutionException("Error in writing output...");
@@ -255,14 +255,29 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 			PluginUtils pu = new PluginUtils();
 			BuildInfo buildInfo = new BuildInfo();
 			List<String> envList = pu.csvToList(environmentName);
-			buildInfo.setBuildNo(nextBuildNo);
+			int buildNo = 0;
+			if (buildNumber != null)
+					 buildNo = Integer.parseInt(buildNumber);
+			if (buildNo > 0) {
+				buildInfo.setBuildNo(buildNo);
+			} else {
+				buildInfo.setBuildNo(nextBuildNo);
+			}
 			buildInfo.setTimeStamp(getTimeStampForDisplay(currentDate));
 			if (isBuildSuccess) {
 				buildInfo.setBuildStatus("SUCCESS");
 			} else {
 				buildInfo.setBuildStatus("FAILURE");
 			}
-			buildInfo.setBuildName(apkFileName);
+			
+			if (buildName!=null){
+				
+				buildInfo.setBuildName(buildName);
+				
+			}else{
+				
+			    buildInfo.setBuildName(apkFileName);
+			}
 			buildInfo.setDeliverables(deliverable);
 			buildInfo.setEnvironments(envList);
 			buildInfoList.add(buildInfo);
