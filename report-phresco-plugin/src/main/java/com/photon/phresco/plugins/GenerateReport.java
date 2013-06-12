@@ -21,6 +21,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FilenameFilter;
@@ -76,6 +77,9 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.apache.pdfbox.util.PDFMergerUtility;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -133,6 +137,7 @@ import com.phresco.pom.model.Profile;
 import com.phresco.pom.util.PomProcessor;
 
 public class GenerateReport implements PluginConstants {
+	private static final String MANUAL_TEST_REPORTS = "manualTestReports";
 	private static final String MULTI_MODULE_UNIT_TEST_REPORTS = "multiModuleUnitTestReports";
 	private static final String IS_MULTI_MODULE_PROJECT = "isMultiModuleProject";
 	private static final String CODE_VALIDATION_REPORT = "Code Validation Report : ";
@@ -141,7 +146,7 @@ public class GenerateReport implements PluginConstants {
 	private static final String MODULE_NAME = "Module Name";
 	private static final String COPY_RIGHTS = "copyRights";
 	private static final String SONAR_REPORT = "sonarReport";
-	private static final String DEFAULT_COPYRIGHTS = "� 2013 Photon Infotech Pvt.Ltd";
+	private static final String DEFAULT_COPYRIGHTS = "© 2013 Photon Infotech Pvt.Ltd";
 	private static final String PHRESCO_UNIT_TEST = "phresco.unitTest";
 	private static final String REPORTS_TYPE = "reportsDataType";
 	private static final String PROJECT_NAME = "projectName";
@@ -259,7 +264,7 @@ public class GenerateReport implements PluginConstants {
 	public void generatePdfReport() throws PhrescoException {
 		try {
 			// Report generation for unit and functional
-			if (UNIT.equals(testType) || FUNCTIONAL.equals(testType) || COMPONENT.equals(testType)) {
+			if (UNIT.equals(testType) || FUNCTIONAL.equals(testType) || COMPONENT.equals(testType) || MANUAL.equals(testType)) {
 				List<String> modules = PluginUtils.getProjectModules(mavenProject);
 				boolean isMultiModuleProject = false;
 				if (CollectionUtils.isNotEmpty(modules)) {
@@ -305,9 +310,6 @@ public class GenerateReport implements PluginConstants {
 				List<LoadTestReport> loadTestResults = getLoadTestResults();
 				// Load test report generation
 				generateLoadTestReport(loadTestResults);
-			} else if (MANUAL.equals(testType)) {
-				SureFireReport sureFireReports = sureFireReports(null);
-				generateManualReport(sureFireReports);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -362,14 +364,14 @@ public class GenerateReport implements PluginConstants {
 				}
 			}
 			
-			//testType = MANUAL;
-			//SureFireReport manualSureFireReports = null;
-			//manualSureFireReports = sureFireReports(null);
-			//List<AllTestSuite> allTestSuitesManual = manualSureFireReports.getAllTestSuites();
-			//List<TestSuite> testSuitesfuncManual = manualSureFireReports.getTestSuites();
-			//if (CollectionUtils.isNotEmpty(testSuitesfuncManual) || CollectionUtils.isNotEmpty(allTestSuitesManual)) {
-//				cumulativeReportparams.put(MANUAL_SURE_FIRE_REPORTS, Arrays.asList(manualSureFireReports));
-			//}
+			testType = MANUAL;
+			SureFireReport manualSureFireReports = null;
+			manualSureFireReports = sureFireReports(null);
+			List<AllTestSuite> allTestSuitesManual = manualSureFireReports.getAllTestSuites();
+			List<TestSuite> testSuitesManual = manualSureFireReports.getTestSuites();
+			if (CollectionUtils.isNotEmpty(testSuitesManual) || CollectionUtils.isNotEmpty(allTestSuitesManual)) {
+				cumulativeReportparams.put(MANUAL_TEST_REPORTS, Arrays.asList(manualSureFireReports));
+			}
 			
 			testType = FUNCTIONAL;
 			boolean isClassEmpty = true;
@@ -414,9 +416,6 @@ public class GenerateReport implements PluginConstants {
 				jmeterTestResults = getJmeterTestResults();
 			}
 			
-//			//load test details
-			List<LoadTestReport> loadTestResults = getLoadTestResults();
-//			
 			cumulativeReportparams.put(PDF_PROJECT_CODE, projectCode);
 			cumulativeReportparams.put(PROJECT_NAME, projName);
 			cumulativeReportparams.put(TECH_NAME, techName);
@@ -433,7 +432,12 @@ public class GenerateReport implements PluginConstants {
 				cumulativeReportparams.put(PERFORMANCE_SPECIAL_HANDLE, false);
 				cumulativeReportparams.put(PERFORMANCE_TEST_REPORTS, jmeterTestResults);
 			}
-			cumulativeReportparams.put(LOAD_TEST_REPORTS, loadTestResults);
+			
+			//load test details
+			List<LoadTestReport> loadTestResults = getLoadTestResults();
+			if (loadTestResults != null) {
+				cumulativeReportparams.put(LOAD_TEST_REPORTS, loadTestResults);
+			}
 			
 			if (!isClangReport) {
 				//Sonar details
@@ -462,7 +466,9 @@ public class GenerateReport implements PluginConstants {
 							}
 						}
 					}
-					cumulativeReportparams.put(SONAR_REPORT, sonarReports);
+					if (CollectionUtils.isNotEmpty(sonarReports)) {
+						cumulativeReportparams.put(SONAR_REPORT, sonarReports);
+					}
 				}
 			}
 			generateCumulativeTestReport(cumulativeReportparams);
@@ -604,7 +610,7 @@ public class GenerateReport implements PluginConstants {
 								if (pageCountKey.equals(key)) {
 									String text = jrPrintText.getText().trim();
 									int pageCount = Integer.parseInt(text);
-									pageCount = pageCount -1;
+									pageCount = pageCount - 1;
 									jrPrintText.setText(" " + pageCount);
 								}
 							}
@@ -702,55 +708,59 @@ public class GenerateReport implements PluginConstants {
             }
         	log.debug("Sonar pom path => " + builder.toString());
         	File pomPath = new File(builder.toString());
-        	
-        	PomProcessor processor = new PomProcessor(pomPath);
-        	String groupId = processor.getModel().getGroupId();
-        	String artifactId = processor.getModel().getArtifactId();
-        	StringBuilder sbuild = new StringBuilder();
-        	sbuild.append(groupId);
-        	sbuild.append(COLON);
-        	sbuild.append(artifactId);
-        	if (StringUtils.isNotEmpty(report) && !SONAR_SOURCE.equals(report)) {
-        		sbuild.append(COLON);
-        		sbuild.append(report);
-        	}
-        	
-        	String artifact = sbuild.toString();
-			Sonar sonar = new Sonar(new HttpClient4Connector(new Host(sonarUrl)));
-			
-			//metric key parameters for sonar 
-			String metrickey[] = {"ncloc", "lines", "files", "comment_lines_density" , "comment_lines", "duplicated_lines_density", "duplicated_lines", 
-					"duplicated_blocks", "duplicated_files", "function_complexity", "file_complexity", "violations_density", "blocker_violations", 
-					"critical_violations", "major_violations", "minor_violations", "info_violations", "violations",
-					"classes", "functions",
-					"statements","packages", "accessors", "public_documented_api_density", "public_undocumented_api","package_tangle_index","package_cycles", "package_feedback_edges", "package_tangles", "lcom4", "rfc",
-					"directories", "class_complexity", "comment_blank_lines", "coverage", "uncovered_lines"};
+        	if (pomPath.exists()) {
+        		PomProcessor processor = new PomProcessor(pomPath);
+            	String groupId = processor.getModel().getGroupId();
+            	String artifactId = processor.getModel().getArtifactId();
+            	StringBuilder sbuild = new StringBuilder();
+            	sbuild.append(groupId);
+            	sbuild.append(COLON);
+            	sbuild.append(artifactId);
+            	if (StringUtils.isNotEmpty(report) && !SONAR_SOURCE.equals(report)) {
+            		sbuild.append(COLON);
+            		sbuild.append(report);
+            	}
+            	
+            	String artifact = sbuild.toString();
+    			Sonar sonar = new Sonar(new HttpClient4Connector(new Host(sonarUrl)));
+    			
+    			//metric key parameters for sonar 
+    			String metrickey[] = {"ncloc", "lines", "files", "comment_lines_density" , "comment_lines", "duplicated_lines_density", "duplicated_lines", 
+    					"duplicated_blocks", "duplicated_files", "function_complexity", "file_complexity", "violations_density", "blocker_violations", 
+    					"critical_violations", "major_violations", "minor_violations", "info_violations", "violations",
+    					"classes", "functions",
+    					"statements","packages", "accessors", "public_documented_api_density", "public_undocumented_api","package_tangle_index","package_cycles", "package_feedback_edges", "package_tangles", "lcom4", "rfc",
+    					"directories", "class_complexity", "comment_blank_lines", "coverage", "uncovered_lines"};
 
-			String methodkey[] = {"nonCommentLinesOfCode", "lines", "files", "commentLinesDensity" , "commentLines", "duplicatedLinesDensity", "duplicatedLines", 
-					"duplicatedBlocks", "duplicatedFiles", "functionComplexity", "fileComplexity", "violationsDensity", "blockerViolations", 
-					"criticalViolations", "majorViolations", "minorViolations", "infoViolations", "violations",
-					"classes", "functions",
-					"statements","packages", "accessors", "publicDocumentedApiDensity", "publicUndocumentedApi","packageTangleIndex","packageCycles", "packageFeedbackEdges", "packageTangles", "lackOfCohesionMethods", "responseForCode",
-					"directories", "classComplexity", "commentBlankLines", "coverage", "uncoveredLines"};
-			Resource resrc = sonar.find(ResourceQuery.createForMetrics(artifact, metrickey));
-			BeanUtils bu = new BeanUtils();
-			if (resrc != null) {
-				sonarReport = new SonarReport();
-				for (int i = 0; i < metrickey.length; i++) {
-					Measure measure = resrc.getMeasure(metrickey[i]);
-					if (measure != null) {
-						String formattedValue = resrc.getMeasure(metrickey[i]).getFormattedValue();
-						bu.setProperty(sonarReport, methodkey[i], formattedValue);
-					} 
-				}
-				sonarReport.setReportType(report);
-				if (module != null) {
-					sonarReport.setModuleName(module);
-				}
-			}
+    			String methodkey[] = {"nonCommentLinesOfCode", "lines", "files", "commentLinesDensity" , "commentLines", "duplicatedLinesDensity", "duplicatedLines", 
+    					"duplicatedBlocks", "duplicatedFiles", "functionComplexity", "fileComplexity", "violationsDensity", "blockerViolations", 
+    					"criticalViolations", "majorViolations", "minorViolations", "infoViolations", "violations",
+    					"classes", "functions",
+    					"statements","packages", "accessors", "publicDocumentedApiDensity", "publicUndocumentedApi","packageTangleIndex","packageCycles", "packageFeedbackEdges", "packageTangles", "lackOfCohesionMethods", "responseForCode",
+    					"directories", "classComplexity", "commentBlankLines", "coverage", "uncoveredLines"};
+    			Resource resrc = sonar.find(ResourceQuery.createForMetrics(artifact, metrickey));
+    			BeanUtils bu = new BeanUtils();
+    			if (resrc != null) {
+    				sonarReport = new SonarReport();
+    				for (int i = 0; i < metrickey.length; i++) {
+    					Measure measure = resrc.getMeasure(metrickey[i]);
+    					if (measure != null) {
+    						String formattedValue = resrc.getMeasure(metrickey[i]).getFormattedValue();
+    						bu.setProperty(sonarReport, methodkey[i], formattedValue);
+    					} 
+    				}
+    				sonarReport.setReportType(report);
+    				if (module != null) {
+    					sonarReport.setModuleName(module);
+    				}
+    			}
+        	} else {
+        		log.error("file Path doesn't exist -->" + pomPath);
+        	}
 			return sonarReport;
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("file Path doesn't exist");
+//			e.printStackTrace();
 			return null;
 		}
 	}
@@ -822,60 +832,6 @@ public class GenerateReport implements PluginConstants {
 	}
 	
 	// Unit and functional pdf report generation
-	public void generateManualReport(SureFireReport sureFireReports)  throws PhrescoException {
-		InputStream reportStream = null;
-		BufferedInputStream bufferedInputStream = null;
-		try {
-			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + fileName + DOT + PDF;
-
-			new File(outFileNamePDF).getParentFile().mkdirs();
-			String containerJasperFile = "PhrescoManualReport.jasper";
-			reportStream = this.getClass().getClassLoader().getResourceAsStream(REPORTS_JASPER + containerJasperFile);
-			bufferedInputStream = new BufferedInputStream(reportStream);
-			Map<String, Object> parameters = new HashMap<String,Object>();
-			parameters.put(COPY_RIGHTS, copyRights);
-			parameters.put(PDF_PROJECT_CODE, projectCode);
-			parameters.put(PROJECT_NAME, projName);
-			parameters.put(TECH_NAME, techName);
-			parameters.put(TEST_TYPE, testType.toUpperCase());
-			parameters.put(REPORTS_TYPE, reportType);
-			parameters.put(VERSION, version);
-			parameters.put(LOGO, logo);
-			parameters.put("isManualTest", "yes");
-			
-			JRBeanArrayDataSource dataSource = new JRBeanArrayDataSource(new SureFireReport[]{sureFireReports});
-			JasperReport jasperReport = (JasperReport) JRLoader.loadObject(bufferedInputStream);
-			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
-			// applying theme
-			applyTheme(jasperPrint);
-			JRExporter exporter = new net.sf.jasperreports.engine.export.JRPdfExporter(); 
-			exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, outFileNamePDF);
-			exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
-			exporter.exportReport();
-		} catch(Exception e) {
-			log.error("manualReport  generation error");
-			throw new PhrescoException(e);
-		} finally {
-			if (reportStream != null) {
-				try {
-					reportStream.close();
-				} catch (IOException e) {
-					log.error("Report generation errorr ");
-				}
-			}
-			if (bufferedInputStream != null) {
-				try {
-					bufferedInputStream.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-					log.error("Report generation errorr ");
-				}
-			}
-		}
-	}
-	
-	
-	// Unit and functional pdf report generation
 	public void generateUnitAndFunctionalReport(List<ModuleSureFireReport> moduleWiseReports)  throws PhrescoException {
 		InputStream reportStream = null;
 		BufferedInputStream bufferedInputStream = null;
@@ -883,7 +839,6 @@ public class GenerateReport implements PluginConstants {
 			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + fileName + DOT + PDF;
 
 			new File(outFileNamePDF).getParentFile().mkdirs();
-			String containerJasperFile = "PhrescoModuleSureFireReport.japer";
 			reportStream = this.getClass().getClassLoader().getResourceAsStream("PhrescoModuleSureFireReport.jasper");
 			bufferedInputStream = new BufferedInputStream(reportStream);
 			Map<String, Object> parameters = new HashMap<String,Object>();
@@ -897,8 +852,6 @@ public class GenerateReport implements PluginConstants {
 			parameters.put(LOGO, logo);
 			JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(moduleWiseReports);
 			JasperReport jasperReport = (JasperReport) JRLoader.loadObject(bufferedInputStream);
-//			JasperDesign jasperDesign = JRXmlLoader.load(bufferedInputStream);
-//			JasperReport jasperReport = JasperCompileManager.compileReport(jasperDesign);
 			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
 			// applying theme
 			applyTheme(jasperPrint);
@@ -963,7 +916,7 @@ public class GenerateReport implements PluginConstants {
 			parameters.put(PDF_PROJECT_CODE, projectCode);
 			parameters.put(PROJECT_NAME, projName);
 			parameters.put(TECH_NAME, techName);
-			parameters.put(TEST_TYPE, testType.toUpperCase());
+			parameters.put(TEST_TYPE, testType);
 			parameters.put(REPORTS_TYPE, reportType);
 			parameters.put(VERSION, version);
 			parameters.put(LOGO, logo);
@@ -1041,22 +994,28 @@ public class GenerateReport implements PluginConstants {
         
 		List<LoadTestReport> loadTestReports = new ArrayList<LoadTestReport>();
 		String reportFilePath = baseDir + mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_LOADTEST_RPT_DIR);
-		
+		String testResulExtension = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_LOADTEST_RESULT_EXTENSION);
 		List<File> testResultFiles = new ArrayList<File>();
-		
+		List<File> resultFiles = null;
 		// if the load is having dir_type key
 		if (reportFilePath.contains(DIR_TYPE)) {
 			for(String loadType: testResultsTypes) {
 				Pattern p = Pattern.compile(DIR_TYPE);
                 Matcher matcher = p.matcher(reportFilePath);
                 String loadReportFilePath = matcher.replaceAll(loadType);
-                List<File> resultFiles = getTestResultFilesAsList(loadReportFilePath);
+                if (StringUtils.isNotEmpty(testResulExtension)) {
+                	resultFiles = getResultFileExtension(loadReportFilePath, testResulExtension);
+                }
+                
                 if (CollectionUtils.isNotEmpty(resultFiles)) {
                 	testResultFiles.addAll(resultFiles);
                 }
 			}
 		} else {
-			List<File> resultFiles = getTestResultFilesAsList(reportFilePath);
+			if (StringUtils.isNotEmpty(testResulExtension)) {
+            	resultFiles = getResultFileExtension(reportFilePath, testResulExtension);
+            }
+			
             if (CollectionUtils.isNotEmpty(resultFiles)) {
             	testResultFiles.addAll(resultFiles);
             }
@@ -1065,9 +1024,7 @@ public class GenerateReport implements PluginConstants {
 		for (File resultFile : testResultFiles) {
 			Document doc = getDocumentOfFile(resultFile);
 			List<TestResult> loadTestResults = getLoadTestResult(doc);
-			for (TestResult testResult : loadTestResults) {
-//				log.info("testResult name .. " + testResult.getThreadName());
-			}
+			
 			// Adding report data to bean object
 			LoadTestReport loadTestReport = new LoadTestReport();
 			loadTestReport.setFileName(resultFile.getName());
@@ -1087,13 +1044,19 @@ public class GenerateReport implements PluginConstants {
         ArrayList<JmeterTypeReport> jmeterTypeReports = new ArrayList<JmeterTypeReport>();
         for(String perType: testResultsTypes) {
             String performanceReportDir = baseDir + mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_RPT_DIR);
-            
+            String performanceReportExtension = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_RESULT_EXTENSION);
             if (StringUtils.isNotEmpty(performanceReportDir) && StringUtils.isNotEmpty(perType)) {
                 Pattern p = Pattern.compile(DIR_TYPE);
                 Matcher matcher = p.matcher(performanceReportDir);
                 performanceReportDir = matcher.replaceAll(perType);
             }
-            List<String> testResultFiles = getTestResultFiles(performanceReportDir);
+            
+            // to get performance extension tag value from pom
+            List<String> testResultFiles = null;
+            if (StringUtils.isNotEmpty(performanceReportExtension)) {
+            	testResultFiles = getTestResultFiles(performanceReportDir, performanceReportExtension);
+            }
+            
 			String deviceId = null; // for android alone
 			
 			// List of performance test reports
@@ -1123,7 +1086,13 @@ public class GenerateReport implements PluginConstants {
 	public List<AndroidPerfReport> getJmeterTestResultsForAndroid() throws Exception {
         // List of performance test types
         String performanceReportDir = baseDir + mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_RPT_DIR);
-        List<String> testResultFiles = getTestResultFiles(performanceReportDir);
+        String performanceReportExtension = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_RESULT_EXTENSION);
+        List<String> testResultFiles = null;
+        
+        //check for performance result extension tag in pom
+        if (StringUtils.isNotEmpty(performanceReportExtension)) {
+        	testResultFiles = getTestResultFiles(performanceReportDir, performanceReportExtension);
+        }
 		
 		// List of performance test reports
         List<AndroidPerfReport> androidPerfFilesWithDatas = new ArrayList<AndroidPerfReport>();
@@ -1215,14 +1184,14 @@ public class GenerateReport implements PluginConstants {
 			getUnitTestXmlFilesAndXpaths(reportFilePath, reportDirWithTestSuitePath);
 		} else if (MANUAL.equals(testType)) {
 			String reportFilePath = baseDir.getAbsolutePath();
-			String manualTestDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_MANUAL_RPT_DIR);
+			String manualTestReportDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_MANUALTEST_RPT_DIR);
 			String reportPath = "";
-			if (StringUtils.isNotEmpty(manualTestDir)) {
-				reportPath = reportFilePath + manualTestDir;
+			if (StringUtils.isNotEmpty(manualTestReportDir)) {
+				reportPath = reportFilePath + manualTestReportDir;
 				SureFireReport sureFireReport = new SureFireReport();
-				List<AllTestSuite> allTestSuites = readManualTestSuiteFile(getTestManualResultFiles(reportPath));
+				List<AllTestSuite> allTestSuites = readAllTestSuites(reportPath);
 				sureFireReport.setAllTestSuites(allTestSuites);
-				List<TestSuite> testSuites = readTestSuiteFile(getTestManualResultFiles(reportPath));
+				List<TestSuite> testSuites = readTestSuitesWithTestCases(reportPath);
 				sureFireReport.setTestSuites(testSuites);
 				return sureFireReport;
 			}
@@ -1242,7 +1211,7 @@ public class GenerateReport implements PluginConstants {
 			for (File testResultFile : testResultFiles) {
 				reportDirWithTestSuitePath.put(testResultFile.getPath(), unitTestSuitePath + "," + unitTestCasePath);
 			}
-		} else if (COMPONENT.equals(testType)){
+		} else if (COMPONENT.equals(testType)) {
 			String reportFilePath = baseDir.getAbsolutePath();
 			String componentTestDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_COMPONENTTEST_RPT_DIR);
 			String componentTestSuitePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_COMPONENTTEST_TESTSUITE_XPATH);
@@ -1271,8 +1240,6 @@ public class GenerateReport implements PluginConstants {
 		for (Map.Entry entry : reportDirWithTestSuitePath.entrySet()) {
 			String mapKey = (String) entry.getKey();
 			String mapValue = (String) entry.getValue();
-//			log.info("key .. " + entry.getKey());
-//			log.info("Value .. " + entry.getValue());
 			String[] testsuiteAndTestcasePath = mapValue.split(",");
 			File reportFile = new File(mapKey);
 			String testSuitePath = testsuiteAndTestcasePath[0];
@@ -1286,7 +1253,6 @@ public class GenerateReport implements PluginConstants {
 			}
 
 			List<TestSuite> testSuites = getTestSuite(doc, testSuitePath);
-
 			// crisp info
 			float totalTestSuites = 0;
 			float successTestSuites = 0;
@@ -1349,259 +1315,422 @@ public class GenerateReport implements PluginConstants {
 		return sureFireReport;
 	}
 
-	public List<AllTestSuite> readManualTestSuiteFile(String filePath) {
-		//String fileName = "D:/sw/files/Phrescoframework_2.0.0.3700_ Testresults.xlsx";
-		//String fileName = getFilePath();
-		List<AllTestSuite> readCSV = readTestSuites(filePath);
-		return readCSV;
-	}
-
-    public  List<AllTestSuite> readTestSuites(String filePath)  {
-           // Vector cellVectorHolder = new Vector();
-            List<AllTestSuite> excels = new ArrayList<AllTestSuite>();
-
-            try {
-                    FileInputStream myInput = new FileInputStream(filePath);
-
-                    OPCPackage opc=OPCPackage.open(myInput); 
-
-                    XSSFWorkbook myWorkBook = new XSSFWorkbook(opc);
-
-                    XSSFSheet mySheet = myWorkBook.getSheetAt(0);
-                    Iterator<Row> rowIterator = mySheet.rowIterator();
-                    for (int i = 0; i <=2; i++) {
-						rowIterator.next();
-					}
-                    while (rowIterator.hasNext()) {
-                    		Row next = rowIterator.next();
-                    		if (StringUtils.isNotEmpty(getValue(next.getCell(1)))) {
-                    			AllTestSuite createObject = createObject(next);
-                            	excels.add(createObject);
-                    		}
-                    }
-                    
-            } catch (Exception e) {
-                    e.printStackTrace();
-            }
-            return excels;
-    }
-    
-    private AllTestSuite createObject(Row next) throws UnknownHostException, PhrescoException{
-    	AllTestSuite testSuite = new AllTestSuite();
-    	if(next.getCell(2) != null) {
-    		Cell cell = next.getCell(2);
-    		String value = getValue(cell);
-    		if(StringUtils.isNotEmpty(value)) {
-    			testSuite.setTestSuiteName(value);
-    		}
-    	}
-    	if(next.getCell(3)!=null){
-    		Cell cell = next.getCell(3);
-    		String value=getValue(cell);
-    		if(StringUtils.isNotEmpty(value)) {
-	    		float pass=Float.parseFloat(value);
-	    		testSuite.setSuccess(pass);
-    		}
-    	}
-    	if(next.getCell(4)!=null){
-    		Cell cell = next.getCell(4);
-    		String value=getValue(cell);
-    		if(StringUtils.isNotEmpty(value)) {
-	    		float fail=Float.parseFloat(value);
-	    		testSuite.setFailure(fail);
-    		}
-    	}
-    	if(next.getCell(8)!=null){
-    		Cell cell = next.getCell(8);
-    		String value=getValue(cell);
-    		if(StringUtils.isNotEmpty(value)) {
-	    		float total=Float.parseFloat(value);
-	    		testSuite.setTotal(total);
-    		}
-    	}
-    	if(next.getCell(9)!=null){
-    		Cell cell=next.getCell(9);
-    		String value=getValue(cell);
-    		if(StringUtils.isNotEmpty(value)) {
-	    		float testCoverage=Float.parseFloat(value);
-	    		testSuite.setTestCoverage(testCoverage);
-    		}
-    	}
-    	//List<TestCase> readTestCase = readTestCase(filePath, testSuite.getName());
-		//testSuite.setTestSteps(readTestCase);
-    	return testSuite;
-	}
-    
-
-	public List<TestSuite> readTestSuiteFile(String filePath) {
-		//String fileName = "D:/sw/files/Phrescoframework_2.0.0.3700_ Testresults.xlsx";
-		//String fileName = getFilePath();
-		List<TestSuite> readCSV = readManualTestSuites(filePath);
-		return readCSV;
-	}
-
-    public  List<TestSuite> readManualTestSuites(String filePath)  {
-           // Vector cellVectorHolder = new Vector();
-            List<TestSuite> excels = new ArrayList<TestSuite>();
-
-            try {
-                    FileInputStream myInput = new FileInputStream(filePath);
-
-                    OPCPackage opc=OPCPackage.open(myInput); 
-
-                    XSSFWorkbook myWorkBook = new XSSFWorkbook(opc);
-
-                    XSSFSheet mySheet = myWorkBook.getSheetAt(0);
-                    Iterator<Row> rowIterator = mySheet.rowIterator();
-                    for (int i = 0; i <=2; i++) {
-						rowIterator.next();
-					}
-                    while (rowIterator.hasNext()) {
-                    		Row next = rowIterator.next();
-                    		if (StringUtils.isNotEmpty(getValue(next.getCell(1)))) {
-                    			TestSuite createObject = createObjectForTestSuite(next, filePath);
-                            	excels.add(createObject);
-                    		}
-                    }
-                    
-            } catch (Exception e) {
-                    e.printStackTrace();
-            }
-            return excels;
-    }
-    
-    private TestSuite createObjectForTestSuite(Row next, String filePath) throws UnknownHostException, PhrescoException{
-    	TestSuite testSuite = new TestSuite();
-    	if(next.getCell(2) != null) {
-    		Cell cell = next.getCell(2);
-    		String value = getValue(cell);
-    		if(StringUtils.isNotEmpty(value)) {
-    			testSuite.setName(value);
-    		}
-    	}
-    	if(next.getCell(3)!=null){
-    		Cell cell = next.getCell(3);
-    		String value=getValue(cell);
-    		if(StringUtils.isNotEmpty(value)) {
-	    		float pass=Float.parseFloat(value);
-	    		testSuite.setTests(pass);
-    		}
-    	}
-    	if(next.getCell(4)!=null){
-    		Cell cell = next.getCell(4);
-    		String value=getValue(cell);
-    		if(StringUtils.isNotEmpty(value)) {
-	    		float fail=Float.parseFloat(value);
-	    		testSuite.setFailures(fail);
-    		}
-    	}
-    	if(next.getCell(8)!=null){
-    		Cell cell = next.getCell(8);
-    		String value=getValue(cell);
-    		if(StringUtils.isNotEmpty(value)) {
-	    		float total=Float.parseFloat(value);
-	    		testSuite.setTotal(total);
-    		}
-    	}
-    	if(next.getCell(9)!=null){
-    		Cell cell=next.getCell(9);
-    		String value=getValue(cell);
-    		if(StringUtils.isNotEmpty(value)) {
-	    		float testCoverage=Float.parseFloat(value);
-	    		testSuite.setTestCoverage(testCoverage);
-    		}
-    	}
-    	List<TestCase> readTestCase = readTestCase(filePath, testSuite.getName());
-		testSuite.setTestCases(readTestCase);
-    	return testSuite;
-	}
-    
-    private List<TestCase> readTestCase(String filePath,String fileName) throws PhrescoException {
-   	 List<TestCase> testCases = new ArrayList<TestCase>();
-   	 try {
-	    	 FileInputStream myInput = new FileInputStream(filePath);
-	
-	         OPCPackage opc=OPCPackage.open(myInput); 
-	
-	         XSSFWorkbook myWorkBook = new XSSFWorkbook(opc);
-	         int numberOfSheets = myWorkBook.getNumberOfSheets();
-	         for (int j = 0; j < numberOfSheets; j++) {
-	        	 XSSFSheet mySheet = myWorkBook.getSheetAt(j);
-	        	 if(mySheet.getSheetName().equals(fileName)) {
-	        		 Iterator<Row> rowIterator = mySheet.rowIterator();
-	    	         for (int i = 0; i <=23; i++) {
-	    					rowIterator.next();
-	    				}
-	    	         while (rowIterator.hasNext()) {
-	    	         		Row next = rowIterator.next();
-	    	         		if (StringUtils.isNotEmpty(getValue(next.getCell(1)))) {
-	    	         			TestCase createObject = readTest(next);
-	    	         			testCases.add(createObject);
-	    	         		}
-	    	         }
-	        	 }
+	private List<AllTestSuite> readAllTestSuites(String filePath)  {
+		List<AllTestSuite> excels = new ArrayList<AllTestSuite>();
+		try {
+			File testDir = new File(filePath);
+			StringBuilder sb = new StringBuilder(filePath);
+			if(testDir.isDirectory()) {
+				FilenameFilter filter = new PhrescoFileFilter("", XLSX);
+				File[] listFiles = testDir.listFiles(filter);
+				if (listFiles.length != 0) {
+					readXlsxData(excels, sb, listFiles);
+				} else {
+					readxlsFormatData(excels, testDir, sb);
+				}
 			}
-	         
-   	 } catch (Exception e) {
-   		 e.printStackTrace();
-	             //throw new PhrescoException();
-	     }
-        return testCases;
-   }
-   
-   private TestCase readTest(Row next){
-   	TestCase testcase = new TestCase();
-   	if(next.getCell(1) != null) {
-   		Cell cell = next.getCell(1);
-   		String value = getValue(cell);
-   		if(StringUtils.isNotEmpty(value)) {
-   			testcase.setFeatureId(value);
-   		}
-   	}
-   	if(next.getCell(3)!=null){
-   		Cell cell = next.getCell(3);
-   		String value=getValue(cell);
-   		if(StringUtils.isNotEmpty(value)) {
-   			testcase.setTestCaseId(value);
-   		}
-   	}
-   	
-   	if(next.getCell(8)!=null){
-   		Cell cell=next.getCell(8);
-   		String value=getValue(cell);
-   		if(StringUtils.isNotEmpty(value)) {
-   			testcase.setExpectedResult(value);
-   		}
-   	}
-   	if(next.getCell(9)!=null){
-   		Cell cell=next.getCell(9);
-   		String value=getValue(cell);
-   		if(StringUtils.isNotEmpty(value)) {
-   			testcase.setActualResult(value);
-   		}
-   	}
-   	if(next.getCell(10)!=null){
-   		Cell cell=next.getCell(10);
-   		String value=getValue(cell);
-   		if(StringUtils.isNotEmpty(value)) {
-   			testcase.setStatus(value);
-   		}
-   	}
-   	
-   	return testcase;
-	}
-    
-    private static String getValue(Cell cell) {
-    	if (Cell.CELL_TYPE_STRING == cell.getCellType()) {
-			return cell.getStringCellValue();
-		}
 
-		if (Cell.CELL_TYPE_NUMERIC == cell.getCellType()) {
-			return String.valueOf(cell.getNumericCellValue());
+		} catch (Exception e) {
+			 e.printStackTrace();
 		}
-
-		return null;
+		return excels;
 	}
+
+	private void readxlsFormatData(List<AllTestSuite> excels, File testDir,
+			StringBuilder sb) throws FileNotFoundException, IOException,
+			UnknownHostException, PhrescoException {
+		Iterator<Row> rowIterator;
+		FilenameFilter filter = new PhrescoFileFilter("", XLS);
+		File[] listFiles = testDir.listFiles(filter);
+		for(File file : listFiles) {
+			if (file.isFile()) {
+				sb.append(File.separator);
+				sb.append(file.getName());
+			}
+		}
+		FileInputStream myInput = new FileInputStream(sb.toString());
+		HSSFWorkbook myWorkBook = new HSSFWorkbook(myInput);
+		HSSFSheet mySheet = myWorkBook.getSheetAt(0);
+		rowIterator = mySheet.rowIterator();
+		
+		for (int i = 0; i <=2; i++) {
+			rowIterator.next();
+		}
+		while (rowIterator.hasNext()) {
+			Row next = rowIterator.next();
+			if (StringUtils.isNotEmpty(getValue(next.getCell(2))) && !getValue(next.getCell(2)).equalsIgnoreCase("Total")) {
+				AllTestSuite createObject = readTestSuite(next);
+				excels.add(createObject);
+			}
+		}
+	}
+
+	private void readXlsxData(List<AllTestSuite> excels, StringBuilder sb,
+			File[] listFiles) throws FileNotFoundException,
+			InvalidFormatException, IOException, UnknownHostException,
+			PhrescoException {
+		Iterator<Row> rowIterator;
+		for (File file : listFiles) {
+			if (file.isFile()) {
+				sb.append(File.separator);
+				sb.append(file.getName());
+			}
+		}
+		FileInputStream myInput = new FileInputStream(sb.toString());
+		OPCPackage opc=OPCPackage.open(myInput); 
+		XSSFWorkbook myWorkBook = new XSSFWorkbook(opc);
+		XSSFSheet mySheet = myWorkBook.getSheetAt(0);
+		rowIterator = mySheet.rowIterator();
+		
+		for (int i = 0; i <=2; i++) {
+			rowIterator.next();
+		}
+		while (rowIterator.hasNext()) {
+			Row next = rowIterator.next();
+			if (StringUtils.isNotEmpty(getValue(next.getCell(2))) && !getValue(next.getCell(2)).equalsIgnoreCase("Total")) {
+				AllTestSuite createObject = readTestSuite(next);
+				excels.add(createObject);
+			}
+		}
+	}
+
+	  private AllTestSuite readTestSuite(Row next) throws UnknownHostException, PhrescoException{
+		  AllTestSuite testSuite = new AllTestSuite();
+		  if(next.getCell(2) != null) {
+			  Cell cell = next.getCell(2);
+			  String value = getValue(cell);
+			  if(StringUtils.isNotEmpty(value)) {
+				  testSuite.setTestSuiteName(value);
+			  }
+		  }
+		  if(next.getCell(3)!=null){
+			  Cell cell = next.getCell(3);
+			  String value=getValue(cell);
+			  if(StringUtils.isNotEmpty(value)) {
+				  float pass=Float.parseFloat(value);
+				  testSuite.setSuccess(pass);
+			  }
+		  }
+		  if(next.getCell(4)!=null){
+			  Cell cell = next.getCell(4);
+			  String value=getValue(cell);
+			  if(StringUtils.isNotEmpty(value)) {
+				  float fail=Float.parseFloat(value);
+				  testSuite.setFailure(fail);
+			  }
+		  }
+		  if(next.getCell(5)!=null){
+			  Cell cell = next.getCell(5);
+			  String value=getValue(cell);
+			  if(StringUtils.isNotEmpty(value)) {
+				  float notApp=Float.parseFloat(value);
+				  testSuite.setNotApplicable(notApp);
+			  }
+		  }
+		  if(next.getCell(6)!=null){
+			  Cell cell = next.getCell(6);
+			  String value=getValue(cell);
+			  if(StringUtils.isNotEmpty(value)) {
+				  float notExecuted=Float.parseFloat(value);
+				  testSuite.setNotExecuted(notExecuted);
+			  }
+		  }
+		  if(next.getCell(7)!=null){
+			  Cell cell = next.getCell(7);
+			  String value=getValue(cell);
+			  if(StringUtils.isNotEmpty(value)) {
+				  float blocked=Float.parseFloat(value);
+				  testSuite.setBlocked(blocked);
+			  }
+		  }
+		  if(next.getCell(8)!=null){
+			  Cell cell = next.getCell(8);
+			  String value=getValue(cell);
+			  if(StringUtils.isNotEmpty(value)) {
+				  float total=Float.parseFloat(value);
+				  testSuite.setTotal(total);
+			  }
+		  }
+		  if(next.getCell(9)!=null){
+			  Cell cell= next.getCell(9);
+			  String value= getValue(cell);
+			  if(StringUtils.isNotEmpty(value)) {
+				  float testCoverage=Float.parseFloat(value);
+				  testSuite.setTestCoverage(testCoverage);
+			  }
+		  }
+		  return testSuite;
+	  }
+
+	  private static String getValue(Cell cell) {
+		  if (Cell.CELL_TYPE_STRING == cell.getCellType()) {
+			  return cell.getStringCellValue();
+		  }
+
+		  if (Cell.CELL_TYPE_NUMERIC == cell.getCellType()) {
+			  return String.valueOf(cell.getNumericCellValue());
+		  }
+
+		  return null;
+	  }
+
+	  public  List<TestSuite> readTestSuitesWithTestCases(String filePath)  {
+		List<TestSuite> excels = new ArrayList<TestSuite>();
+		Iterator<Row> rowIterator = null;
+		FilenameFilter filter = null;
+		File[] listFiles = null;
+		try {
+			File testDir = new File(filePath);
+			StringBuilder sb = new StringBuilder(filePath);
+			if(testDir.isDirectory()) {
+				filter = new PhrescoFileFilter("", XLSX);
+				listFiles = testDir.listFiles(filter);
+				if (listFiles.length != 0) {
+					for (File file : listFiles) {
+						if (file.isFile()) {
+							sb.append(File.separator);
+							sb.append(file.getName());
+						}
+					}
+					FileInputStream myInput = new FileInputStream(sb.toString());
+					OPCPackage opc=OPCPackage.open(myInput); 
+					XSSFWorkbook myWorkBook = new XSSFWorkbook(opc);
+					XSSFSheet mySheet = myWorkBook.getSheetAt(0);
+					
+					rowIterator = mySheet.rowIterator();
+					for (int i = 0; i <=2; i++) {
+						rowIterator.next();
+					}
+			        while (rowIterator.hasNext()) {
+			    		Row next = rowIterator.next();
+			    		if (StringUtils.isNotEmpty(getValue(next.getCell(2))) && !getValue(next.getCell(2)).equalsIgnoreCase("Total")) {
+			    			TestSuite createObject = createObject(next, filePath);
+			            	excels.add(createObject);
+			    		}
+			        }
+				} else {
+					filter = new PhrescoFileFilter("", XLS);
+				    listFiles = testDir.listFiles(filter);
+				    for(File file : listFiles) {
+				    	if (file.isFile()) {
+				    		sb.append(File.separator);
+				        	sb.append(file.getName());
+				    	}
+				    }
+				    FileInputStream myInput = new FileInputStream(sb.toString());
+				    HSSFWorkbook myWorkBook = new HSSFWorkbook(myInput);
+				    HSSFSheet mySheet = myWorkBook.getSheetAt(0);
+				    rowIterator = mySheet.rowIterator();
+				    for (int i = 0; i <=2; i++) {
+						rowIterator.next();
+					}
+				    while (rowIterator.hasNext()) {
+					Row next = rowIterator.next();
+					if (StringUtils.isNotEmpty(getValue(next.getCell(2))) && !getValue(next.getCell(2)).equalsIgnoreCase("Total")) {
+						TestSuite createObject = createObject(next, filePath);
+				    	excels.add(createObject);
+					}
+				}
+			}
+		}
+	} catch (Exception e) {
+		// e.printStackTrace();
+	}
+	return excels;
+  }
+  
+	  private TestSuite createObject(Row next, String filePath) throws UnknownHostException, PhrescoException {
+		  TestSuite testSuite = new TestSuite();
+		  if(next.getCell(2) != null) {
+			  Cell cell = next.getCell(2);
+			  String value = getValue(cell);
+			  if(StringUtils.isNotEmpty(value)) {
+				  testSuite.setName(value);
+			  }
+		  }
+		  if(next.getCell(3)!=null){
+			  Cell cell = next.getCell(3);
+			  String value=getValue(cell);
+			  if(StringUtils.isNotEmpty(value)) {
+				  float pass=Float.parseFloat(value);
+				  testSuite.setSuccess(pass);
+			  }
+		  }
+		  if(next.getCell(4)!=null){
+			  Cell cell = next.getCell(4);
+			  String value=getValue(cell);
+			  if(StringUtils.isNotEmpty(value)) {
+				  float fail=Float.parseFloat(value);
+				  testSuite.setFailures(fail);
+			  }
+		  }
+		  if(next.getCell(5)!=null){
+			  Cell cell = next.getCell(5);
+			  String value=getValue(cell);
+			  if(StringUtils.isNotEmpty(value)) {
+				  float notApp=Float.parseFloat(value);
+				  testSuite.setNotApplicable(notApp);
+			  }
+		  }
+		  if(next.getCell(6)!=null){
+			  Cell cell = next.getCell(6);
+			  String value=getValue(cell);
+			  if(StringUtils.isNotEmpty(value)) {
+				  float notExecuted=Float.parseFloat(value);
+				  testSuite.setNotExecuted(notExecuted);
+			  }
+		  }
+		  if(next.getCell(7)!=null){
+			  Cell cell = next.getCell(7);
+			  String value=getValue(cell);
+			  if(StringUtils.isNotEmpty(value)) {
+				  float blocked=Float.parseFloat(value);
+				  testSuite.setBlocked(blocked);
+			  }
+		  }
+		  if(next.getCell(8)!=null){
+			  Cell cell = next.getCell(8);
+			  String value=getValue(cell);
+			  if(StringUtils.isNotEmpty(value)) {
+				  float total=Float.parseFloat(value);
+				  testSuite.setTotal(total);
+			  }
+		  }
+		  if(next.getCell(9)!=null){
+			  Cell cell=next.getCell(9);
+			  String value=getValue(cell);
+			  if(StringUtils.isNotEmpty(value)) {
+				  float testCoverage=Float.parseFloat(value);
+				  testSuite.setTestCoverage(testCoverage);
+			  }
+		  }
+		  List<TestCase> readTestCase = readTestCase(filePath, testSuite.getName());
+		  testSuite.setTestCases(readTestCase);
+		  return testSuite;
+	  }
+
+	  private List<TestCase> readTestCase(String filePath,String fileName) throws PhrescoException {
+		  List<TestCase> testCases = new ArrayList<TestCase>();
+		  try {
+			  File testDir = new File(filePath);
+			  StringBuilder sb = new StringBuilder(filePath);
+			  if(testDir.isDirectory()) {
+				  FilenameFilter filter = new PhrescoFileFilter("", XLSX);
+				  File[] listFiles = testDir.listFiles(filter);
+				  if (listFiles.length != 0) {
+					  for (File file : listFiles) {
+						  if (file.isFile()) {
+							  sb.append(File.separator);
+							  sb.append(file.getName());
+						  }
+					  }
+					  FileInputStream myInput = new FileInputStream(sb.toString());
+					  OPCPackage opc=OPCPackage.open(myInput); 
+
+					  XSSFWorkbook myWorkBook = new XSSFWorkbook(opc);
+					  int numberOfSheets = myWorkBook.getNumberOfSheets();
+					  for (int j = 0; j < numberOfSheets; j++) {
+						  XSSFSheet mySheet = myWorkBook.getSheetAt(j);
+						  if(mySheet.getSheetName().equals(fileName)) {
+							  Iterator<Row> rowIterator = mySheet.rowIterator();
+							  for (int i = 0; i <=23; i++) {
+								  rowIterator.next();
+							  }
+							  while (rowIterator.hasNext()) {
+								  Row next = rowIterator.next();
+								  if (StringUtils.isNotEmpty(getValue(next.getCell(1)))) {
+									  TestCase createObject = readTest(next);
+									  testCases.add(createObject);
+								  }
+
+							  }
+						  }
+					  }
+				  } else {
+					  FilenameFilter filter1 = new PhrescoFileFilter("", XLS);
+					  File[] listFiles1 = testDir.listFiles(filter1);
+					  for(File file2 : listFiles1) {
+						  if (file2.isFile()) {
+							  sb.append(File.separator);
+							  sb.append(file2.getName());
+						  }
+					  }
+					  FileInputStream myInput = new FileInputStream(sb.toString());
+					  HSSFWorkbook myWorkBook = new HSSFWorkbook(myInput);
+					  int numberOfSheets = myWorkBook.getNumberOfSheets();
+					  for (int j = 0; j < numberOfSheets; j++) {
+						  HSSFSheet mySheet = myWorkBook.getSheetAt(j);
+						  if(mySheet.getSheetName().equals(fileName)) {
+							  Iterator<Row> rowIterator = mySheet.rowIterator();
+							  for (int i = 0; i <=23; i++) {
+								  rowIterator.next();
+							  }
+							  while (rowIterator.hasNext()) {
+								  Row next = rowIterator.next();
+								  if (StringUtils.isNotEmpty(getValue(next.getCell(1)))) {
+									  TestCase createObject = readTest(next);
+									  testCases.add(createObject);
+								  }
+							  }
+
+						  }
+					  }
+				  }
+			  }
+		  } catch (Exception e) {
+		  }
+		  return testCases;
+	  }
+
+	  private TestCase readTest(Row next){
+		  TestCase testcase = new TestCase();
+		  if(next.getCell(1) != null) {
+			  Cell cell = next.getCell(1);
+			  String value = getValue(cell);
+			  if(StringUtils.isNotEmpty(value)) {
+				  testcase.setFeatureId(value);
+			  }
+		  }
+		  if(next.getCell(3)!=null){
+			  Cell cell = next.getCell(3);
+			  String value=getValue(cell);
+			  if(StringUtils.isNotEmpty(value)) {
+				  testcase.setTestCaseId(value);
+			  }
+		  }
+
+		  if(next.getCell(8)!=null){
+			  Cell cell=next.getCell(8);
+			  String value=getValue(cell);
+			  if(StringUtils.isNotEmpty(value)) {
+				  testcase.setExpectedResult(value);
+			  }
+		  }
+		  if(next.getCell(9)!=null){
+			  Cell cell=next.getCell(9);
+			  String value=getValue(cell);
+			  if(StringUtils.isNotEmpty(value)) {
+				  testcase.setActualResult(value);
+			  }
+		  }
+		  if(next.getCell(10)!=null){
+			  Cell cell=next.getCell(10);
+			  String value=getValue(cell);
+			  if(StringUtils.isNotEmpty(value)) {
+				  testcase.setStatus(value);
+			  }
+		  }
+
+		  if(next.getCell(13)!=null){
+			  Cell cell=next.getCell(13);
+			  String value=getValue(cell);
+			  if(StringUtils.isNotEmpty(value)) {
+				  testcase.setBugComment(value);
+			  }
+		  }
+
+		  return testcase;
+	  }
     
 	private void getUnitTestXmlFilesAndXpaths(String reportFilePath,
 			Map<String, String> reportDirWithTestSuitePath) {
@@ -2279,12 +2408,44 @@ public class GenerateReport implements PluginConstants {
         }
         return testResultFileNames;
     }
+    
+    // to get performance extension tag value from pom
+    private List<String> getTestResultFiles(String path, String extension) {
+        File testDir = new File(path);
+        List<String> testResultFileNames = new ArrayList<String>();
+        if(testDir.isDirectory()){
+            FilenameFilter filter = new PhrescoFileFilter("", extension);
+            File[] listFiles = testDir.listFiles(filter);
+            for (File file : listFiles) {
+                if (file.isFile()) {
+                    testResultFileNames.add(file.getName());
+                }
+            }
+        }
+        return testResultFileNames;
+    }
 
 	private List<File> getTestResultFilesAsList(String path) {
 		File testDir = new File(path);
 		List<File> testResultFileNames = new ArrayList<File>();
 		if (testDir.isDirectory()) {
 			FilenameFilter filter = new PhrescoFileFilter("", XML);
+			File[] listFiles = testDir.listFiles(filter);
+			for (File file : listFiles) {
+				if (file.isFile()) {
+					testResultFileNames.add(file);
+				}
+			}
+		}
+		return testResultFileNames;
+	}
+	
+	// to get load extension tag value from pom
+	private List<File> getResultFileExtension(String path, String extension) {
+		File testDir = new File(path);
+		List<File> testResultFileNames = new ArrayList<File>();
+		if (testDir.isDirectory()) {
+			FilenameFilter filter = new PhrescoFileFilter("", extension);
 			File[] listFiles = testDir.listFiles(filter);
 			for (File file : listFiles) {
 				if (file.isFile()) {

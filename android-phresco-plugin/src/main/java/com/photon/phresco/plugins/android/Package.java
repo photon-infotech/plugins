@@ -89,9 +89,9 @@ public class Package implements PluginConstants {
 		PluginUtils.checkForConfigurations(new File(baseDir), environmentName);
 		
 		Boolean isZipAlign = Boolean.valueOf(zipAlign);
-		log.info("isZipAlign . " +isZipAlign);
+//		log.info("isZipAlign . " +isZipAlign);
 		Boolean isSigning = Boolean.valueOf(signing);
-		log.info("isSigning . " + isSigning);
+//		log.info("isSigning . " + isSigning);
 		
 		if(isZipAlign) {						
 			isSigning = true;
@@ -183,26 +183,53 @@ public class Package implements PluginConstants {
 			
 			String baseDir = mavenProjectInfo.getBaseDir().toString();
 			
+//			log.info("updateDotPhrescoInfoFiles - baseDir = " + baseDir);
+//			log.info("updateDotPhrescoInfoFiles - isSigning = " + isSigning.toString());
 			
 			String unitXmlFile = baseDir + File.separator + DOT_PHRESCO_FOLDER + File.separator + UNIT_INFO_FILE;
 			String functionalXmlFile = baseDir + File.separator +DOT_PHRESCO_FOLDER + File.separator + FUNCTIONAL_INFO_FILE;
 			String performanceXmlFile = baseDir + File.separator +DOT_PHRESCO_FOLDER + File.separator + PERFORMANCE_INFO_FILE;
+			
+//			log.info("updateDotPhrescoInfoFiles - unitXmlFile = " + unitXmlFile);
+//			log.info("updateDotPhrescoInfoFiles - functionalXmlFile = " + functionalXmlFile);
+//			log.info("updateDotPhrescoInfoFiles - performanceXmlFile = " + performanceXmlFile);
+			
+			
+			
 			MojoProcessor mojoObj;
 			try {
 				mojoObj = new MojoProcessor(new File(unitXmlFile));
 				Parameter unitSigningParameter = mojoObj.getParameter("unit-test", "signing");
+				if (unitSigningParameter != null) {
 				unitSigningParameter.setShow(isSigning);
 				mojoObj.save();
+				}
 				
 				mojoObj = new MojoProcessor(new File(functionalXmlFile));
-				Parameter functionalSigningParameter = mojoObj.getParameter("functional-test-webdriver", "signing");
-				functionalSigningParameter.setShow(isSigning);
-				mojoObj.save();
+				Parameter functionalRobotiumSigningParameter = mojoObj.getParameter("functional-test-robotium", "signing");
+				if (functionalRobotiumSigningParameter != null) {
+					functionalRobotiumSigningParameter.setShow(isSigning);
+					mojoObj.save();
+				}
+				
+				Parameter functionalCalabashSigningParameter = mojoObj.getParameter("functional-test-calabash", "signing");
+				if (functionalCalabashSigningParameter != null) {
+					functionalCalabashSigningParameter.setShow(isSigning);
+					mojoObj.save();
+				}
+				
+				Parameter functionalMonkeyTalkSigningParameter = mojoObj.getParameter("functional-test-monkey-talk", "signing");
+				if (functionalMonkeyTalkSigningParameter != null) {
+					functionalMonkeyTalkSigningParameter.setShow(isSigning);
+					mojoObj.save();
+				}
 				
 				mojoObj = new MojoProcessor(new File(performanceXmlFile));
 				Parameter performanceSigningParameter = mojoObj.getParameter("performance-test", "signing");
+				if (performanceSigningParameter != null) {
 				performanceSigningParameter.setShow(isSigning);
 				mojoObj.save();
+				}
 				
 			} catch (PhrescoException e) {
 				

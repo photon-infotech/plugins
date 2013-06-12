@@ -31,6 +31,8 @@ import net.sf.jasperreports.engine.JRScriptletException;
 
 public class Scriptlet extends JRDefaultScriptlet {
 
+	private static final String SONAR_REPORT = "SonarReport";
+
 	public Boolean updateTOC(String title, int pageNo)  throws JRScriptletException {
 		try {
 			System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ");
@@ -52,7 +54,11 @@ public class Scriptlet extends JRDefaultScriptlet {
 				headingsMap = (HashMap)this.getParameterValue("headingsMap");
 				System.out.println("Existing values : " + headingsMap);
 				if (headingsMap != null) {
-					headingsMap.put(title, pageNo + 1);
+					if (headingsMap.size() == 0 && SONAR_REPORT.equals(title)) {
+						headingsMap.put(title, pageNo);
+					} else {
+						headingsMap.put(title, pageNo + 1);
+					}
 				}
 				System.out.println("After values : " + headingsMap);
 				System.out.println("Parametere MAP Completed ........ ");

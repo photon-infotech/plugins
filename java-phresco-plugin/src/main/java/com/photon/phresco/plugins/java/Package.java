@@ -93,6 +93,7 @@ public class Package implements PluginConstants {
 	private String sourceDir;
 	private StringBuilder builder;
 	private String pomName;
+	private String packageType;
 	
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -109,6 +110,7 @@ public class Package implements PluginConstants {
         pu = new PluginUtils();
         builder = new StringBuilder();
         moduleName = configs.get(PROJECT_MODULE);
+        packageType = configs.get("package-type");
         String packMinifiedFilesValue = configs.get(PACK_MINIFIED_FILES);
         File warConfigFile = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + WAR_CONFIG_FILE);
         PluginUtils.checkForConfigurations(baseDir, environmentName);
@@ -474,17 +476,40 @@ public class Package implements PluginConstants {
 				if(packageInfoFile.exists()) {
 					copyJarToPackage(zipNameWithoutExt);
 					PluginUtils.createBuildResources(packageInfoFile, baseDir, tempDir);
+				} else {
+					copyJarToPackage(zipNameWithoutExt);
 				}
-				copyJarToPackage(zipNameWithoutExt);
+				ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
 			} else {
 				if(packageInfoFile.exists()) {
-					copyWarToPackage(zipNameWithoutExt, context);
-					PluginUtils.createBuildResources(packageInfoFile, baseDir, tempDir);
+					if(StringUtils.isNotEmpty(packageType)) {
+						if(packageType.equals("war")) {
+							copyWarToPackage(zipNameWithoutExt, context);
+							PluginUtils.createBuildResources(packageInfoFile, baseDir, tempDir);
+							ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
+						} else {
+							copyZipToPackage(zipNameWithoutExt, context);
+						}
+					} else {
+						copyWarToPackage(zipNameWithoutExt, context);
+						PluginUtils.createBuildResources(packageInfoFile, baseDir, tempDir);
+						ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
+					}
+				} else {
+					if(StringUtils.isNotEmpty(packageType)) {
+						if(packageType.equals("war")) {
+							copyWarToPackage(zipNameWithoutExt, context);
+							ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
+						} else {
+							copyZipToPackage(zipNameWithoutExt, context);
+						}
+					} else {
+						copyWarToPackage(zipNameWithoutExt, context);
+						ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
+					}
 				}
-				copyWarToPackage(zipNameWithoutExt, context);
 			}
 			
-			ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getErrorMessage(), e);
 		}
@@ -523,14 +548,38 @@ public class Package implements PluginConstants {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
-
+	
+	private void copyZipToPackage(String zipNameWithoutExt, String context) throws MojoExecutionException {
+		try {
+			String[] list = targetDir.list(new ZipFileNameFilter());
+			if (list.length > 0) {
+				File zipFile = new File(targetDir.getPath() + File.separator + list[0]);
+				System.out.println("Zip File is  " + zipFile.getPath());
+				if(!buildDir.exists()) {
+					buildDir.mkdirs();
+				}
+				FileUtils.copyFileToDirectory(zipFile, buildDir);
+				File contextZipFile = new File(buildDir.getPath() + File.separator + zipNameWithoutExt + ".zip");
+				File buildZipFile = new File(buildDir, zipFile.getName());
+				buildZipFile.renameTo(contextZipFile);
+			} else {
+				throw new MojoExecutionException(context + ".war not found in " + targetDir.getPath());
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new MojoExecutionException(e.getMessage(), e);
+		}
+	}
+	
 	private void writeBuildInfo(boolean isBuildSuccess) throws MojoExecutionException {
 		util.writeBuildInfo(isBuildSuccess, buildName, buildNumber, nextBuildNo, environmentName, buildNo, currentDate, buildInfoFile);
 	}
 
 	private void cleanUp() throws MojoExecutionException {
 		try {
-			FileUtils.deleteDirectory(tempDir);
+			if(tempDir != null && tempDir.exists()) {
+				FileUtils.deleteDirectory(tempDir);
+			}
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
@@ -541,6 +590,13 @@ class WarFileNameFilter implements FilenameFilter {
 
 	public boolean accept(File dir, String name) {
 		return name.endsWith(".war");
+	}
+}
+
+class ZipFileNameFilter implements FilenameFilter {
+
+	public boolean accept(File dir, String name) {
+		return name.endsWith(".zip");
 	}
 }
 
