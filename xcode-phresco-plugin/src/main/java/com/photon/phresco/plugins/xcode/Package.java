@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +31,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.project.MavenProject;
 
 import com.google.gson.Gson;
 import com.photon.phresco.commons.FrameworkConstants;
@@ -66,6 +68,8 @@ public class Package implements PluginConstants {
 		try {
 		    this.log = log;
 		    File baseDir = mavenProjectInfo.getBaseDir();
+		    MavenProject project = mavenProjectInfo.getProject();
+		    String pomFile = project.getFile().getName();
             Map<String, String> configs = MojoUtil.getAllValues(config);
             environmentName = configs.get(ENVIRONMENT_NAME);
             String buildName = configs.get(BUILD_NAME);
@@ -93,7 +97,7 @@ public class Package implements PluginConstants {
 		    ApplicationInfo applicationInfo = projectInfo.getAppInfos().get(0);
 		    String embedAppId = applicationInfo.getEmbedAppId();
 		    if (StringUtils.isNotEmpty(embedAppId)) {
-		        embedApplication(baseDir, projectInfo, embedAppId);
+		        embedApplication(baseDir, projectInfo, embedAppId, pomFile);
 		    }
 		    
 		    StringBuilder sb = new StringBuilder();
@@ -135,6 +139,12 @@ public class Package implements PluginConstants {
 				sb.append(STR_SPACE);
 				sb.append(HYPHEN_D + BUILD_NUMBER + EQUAL + buildNumber);
 			}
+			if(!Constants.POM_NAME.equals(pomFile)) {
+				sb.append(STR_SPACE);
+				sb.append(Constants.HYPHEN_F);
+				sb.append(STR_SPACE);
+				sb.append(pomFile);
+			}
 			
 			List<Parameter> parameters = config.getParameters().getParameter();
 			for (Parameter parameter : parameters) {
@@ -171,7 +181,7 @@ public class Package implements PluginConstants {
 
 	}
 
-    private void embedApplication(File baseDir, ProjectInfo projectInfo, String embedAppId) throws PhrescoException {
+    private void embedApplication(File baseDir, ProjectInfo projectInfo, String embedAppId, String pom) throws PhrescoException {
         try {
         ProjectManager projectManager = PhrescoFrameworkFactory.getProjectManager();
         ProjectInfo embedProject = projectManager.getProject(projectInfo.getId(), projectInfo.getCustomerIds().get(0), embedAppId);
@@ -186,11 +196,17 @@ public class Package implements PluginConstants {
         processor.save();
         
         ApplicationManager applicationManager = PhrescoFrameworkFactory.getApplicationManager();
+        List<String> buildArgCmds = new ArrayList<String>();
+        String pomFileName = Utility.getPomFileName(embedAppInfo);
+		if(!Constants.POM_NAME.equals(pomFileName)) {
+			buildArgCmds.add(Constants.HYPHEN_F);
+			buildArgCmds.add(pomFileName);
+		}
         BufferedReader reader = applicationManager.performAction(embedProject, ActionType.BUILD, null, embedBaseDir);
         while (reader.readLine() != null) {
             System.out.println(reader.readLine());
         }
-        File pomFile = new File(baseDir.getPath() + File.separator + Constants.POM_NAME);
+        File pomFile = new File(baseDir.getPath() + File.separator + pom);
         PomProcessor pomProcessor = new PomProcessor(pomFile);
         String appTargetProp = pomProcessor.getProperty(Constants.POM_PROP_KEY_EMBED_APP_TARGET_DIR);
         if(StringUtils.isEmpty(appTargetProp)) {

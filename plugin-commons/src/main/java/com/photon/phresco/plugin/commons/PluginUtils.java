@@ -374,44 +374,32 @@ public class PluginUtils {
 		}
 	 
 	 public void adaptPerformanceJmx(String jmxFileLocation, List<ContextUrls> contextUrls, int noOfUsers,
-			 int rampUpPeriod, int loopCount, boolean authMngr, String authorizationUrl,
-			 String authorizationUserName, String authorizationPassword, String authorizationDomain, String authorizationRealm) throws Exception {
+			 int rampUpPeriod, int loopCount) throws Exception {
 		 File jmxFile = null;
 		 File jmxDir = new File(jmxFileLocation);
 		 if(jmxDir.isDirectory()) {
 			 FilenameFilter filter = new FileListFilter("", "jmx");
 			 File[] jmxFiles = jmxDir.listFiles(filter);
-			 for (File file : jmxFiles) {
-				if ("PhrescoFrameWork_TestPlan.jmx".equals(file.getName())) {
-					jmxFile = file;
-					break;
-				}
-			}
+			 jmxFile = jmxFiles[0];
 		 }
+
 		 Document document = getDocument(jmxFile);
 		 appendThreadProperties(document, noOfUsers, rampUpPeriod, loopCount);
 		 NodeList nodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/HTTPSamplerProxy");
 		 if (nodelist != null && nodelist.getLength() > 0) {
+			 NodeList headerManagerNodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/HeaderManager");
+
 			 Node hashTree = nodelist.item(0).getParentNode();
 			 hashTree = removeAllChilds(hashTree);
 			 hashTree.setTextContent(null);
-			 
-			 //Create AuthManager
-			 if (authMngr) {
-				 Node authManagerNode = createAuthManager(document, null, authorizationUrl, authorizationUserName, authorizationPassword, authorizationDomain, authorizationRealm);
-				 hashTree.appendChild(authManagerNode);
-				 hashTree.appendChild(document.createElement("hashTree"));
-			 }
-			 
-			 NodeList headerManagerNodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/HeaderManager");
-			 
+
 			 if (headerManagerNodelist != null && headerManagerNodelist.getLength() > 0) {
 				 for(int i = 0; i < headerManagerNodelist.getLength(); i++) {
 					 hashTree.appendChild(headerManagerNodelist.item(i));
 				 }
 				 hashTree.appendChild(document.createElement("hashTree"));
 			 }
-			 
+
 			 for (ContextUrls contextUrl : contextUrls) {
 				 Node appendHttpSamplerProxy = appendHttpSamplerProxy(document, hashTree, contextUrl.getName(), "${context}/" + contextUrl.getContext(), contextUrl.getContextType(), 
 						 	contextUrl.getContextPostData(), contextUrl.getEncodingType(), contextUrl);
@@ -472,21 +460,6 @@ public class PluginUtils {
 			return httpSamplerProxy;
 		}
 	 
-
-	 private Node createAuthManager(Document document, Node hashTree, String authorizationUrl, 
-			 String authorizationUserName, String authorizationPassword, String authorizationDomain, String authorizationRealm) {
-			Node authManager = document.createElement("AuthManager");
-			NamedNodeMap attributes = authManager.getAttributes();
-			attributes.setNamedItem(createAttribute(document, "guiclass", "AuthPanel"));
-			attributes.setNamedItem(createAttribute(document, "testclass", "AuthManager"));
-			attributes.setNamedItem(createAttribute(document, "testname", "HTTP Authorization Manager"));
-			attributes.setNamedItem(createAttribute(document, "enabled", "true"));
-
-			appendAuthCollectionProp(document, authManager,  authorizationUrl, authorizationUserName, authorizationPassword, authorizationDomain, authorizationRealm);
-
-			return authManager;
-		}
-	 
 	 private void appendElementProp(Document document, Node parentNode, String contextType, String contextPostData, ContextUrls contextUrl) { // eleme prop
 			Node elementProp = document.createElement("elementProp");
 			NamedNodeMap attributes = elementProp.getAttributes();
@@ -531,43 +504,13 @@ public class PluginUtils {
 		 elementProp.appendChild(collectionProp);
 	 }
 	
-	 private void appendAuthCollectionProp(Document document, Node elementProp, String authorizationUrl, 
-			 String authorizationUserName, String authorizationPassword, String authorizationDomain, String authorizationRealm) { // collection append in prop
-		 byte[] decodedPswd = Base64.decodeBase64(authorizationPassword);
-		 String pswd = new String(decodedPswd);
-		 
-		 Node collectionProp = document.createElement("collectionProp");
-		 NamedNodeMap attributes = collectionProp.getAttributes();
-		 attributes.setNamedItem(createAttribute(document, "name", "AuthManager.auth_list"));
-		 
-		 Node subElementProp = document.createElement("elementProp");
-		 NamedNodeMap subElementAttributes = subElementProp.getAttributes();
-		 subElementAttributes.setNamedItem(createAttribute(document, "name", ""));
-		 subElementAttributes.setNamedItem(createAttribute(document, "elementType", "Authorization"));
-		 collectionProp.appendChild(subElementProp);
-		 
-		 appendTypeProp(document, subElementProp, "stringProp", "Authorization.url", authorizationUrl);
-		 appendTypeProp(document, subElementProp, "stringProp", "Authorization.username", authorizationUserName);
-		 appendTypeProp(document, subElementProp, "stringProp", "Authorization.password", pswd);
-		 appendTypeProp(document, subElementProp, "stringProp", "Authorization.domain", authorizationDomain);
-		 appendTypeProp(document, subElementProp, "stringProp", "Authorization.realm", authorizationRealm);
-		 
-		 elementProp.setTextContent(null);
-		 elementProp.appendChild(collectionProp);
-	 }
-	 
 	 public void adaptDBPerformanceJmx(String jmxFileLocation, List<DbContextUrls> dbContextUrls, String dataSource, int noOfUsers, int rampUpPeriod, int loopCount, String dbUrl, String driver, String userName, String passWord ) throws Exception {
 		 File jmxFile = null;
 		 File jmxDir = new File(jmxFileLocation);
 		 if(jmxDir.isDirectory()){
 			 FilenameFilter filter = new FileListFilter("", "jmx");
 			 File[] jmxFiles = jmxDir.listFiles(filter);
-			 for (File file : jmxFiles) {
-				 if ("PhrescoFrameWork_TestPlan.jmx".equals(file.getName())) {
-					 jmxFile = file;
-					 break;
-				 }
-			 }
+			 jmxFile = jmxFiles[0];
 		 }
 
 		 Document document = getDocument(jmxFile);
@@ -629,9 +572,7 @@ public class PluginUtils {
 			return hashTree;
 		}
 	 
-	 public void adaptLoadJmx(String jmxFileLocation, int noOfUsers, int rampUpPeriod, int loopCount, boolean authMngr, String authorizationUrl,
-			 String authorizationUserName, String authorizationPassword, String authorizationDomain, String authorizationRealm 
-			 ,Map<String, String> headersMap, List<ContextUrls> contextUrls) throws Exception {
+	 public void adaptLoadJmx(String jmxFileLocation, int noOfUsers, int rampUpPeriod, int loopCount, Map<String, String> headersMap, List<ContextUrls> contextUrls) throws Exception {
 	        File jmxFile = null;
 	        File jmxDir = new File(jmxFileLocation);
 	        if(jmxDir.isDirectory()){
@@ -643,18 +584,12 @@ public class PluginUtils {
 	        appendThreadProperties(document, noOfUsers, rampUpPeriod, loopCount);
 	       NodeList nodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/HTTPSamplerProxy");
 			 if (nodelist != null && nodelist.getLength() > 0) {
+				 NodeList headerManagerNodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/HeaderManager");
+
 				 Node hashTree = nodelist.item(0).getParentNode();
 				 hashTree = removeAllChilds(hashTree);
 				 hashTree.setTextContent(null);
-				 
-				//Create AuthManager
-				 if (authMngr) {
-					 Node authManagerNode = createAuthManager(document, null, authorizationUrl, authorizationUserName, authorizationPassword, authorizationDomain, authorizationRealm);
-					 hashTree.appendChild(authManagerNode);
-					 hashTree.appendChild(document.createElement("hashTree"));
-				 }
-				 
-				 NodeList headerManagerNodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/HeaderManager");
+
 				 if (headerManagerNodelist != null && headerManagerNodelist.getLength() > 0) {
 					 for(int i = 0; i < headerManagerNodelist.getLength(); i++) {
 						 hashTree.appendChild(headerManagerNodelist.item(i));
@@ -759,21 +694,6 @@ public class PluginUtils {
 		 return createElement;
 	 }
 	 
-	 
-	 private static Node appendAuthManager(Document document) {
-		 Element createElement = document.createElement("hashTree");
-		 Node authManager = document.createElement("AuthManager");
-		 NamedNodeMap attributes = authManager.getAttributes();
-		 attributes.setNamedItem(createAttribute(document, "guiclass", "AuthPanel"));
-		 attributes.setNamedItem(createAttribute(document, "testclass", "AuthManager"));
-		 attributes.setNamedItem(createAttribute(document, "testname", "HTTP Authorization Manager"));
-		 attributes.setNamedItem(createAttribute(document, "enabled", "true"));
-//		 appendHeaderManagerCollectionProp(document, authManager, headers);
-		 createElement.appendChild(authManager);
-		 createElement.appendChild(document.createElement("hashTree"));
-		 return createElement;
-	 }
-	 
 	 private static void appendHeaderManagerCollectionProp(Document document, Node elementProp, List<Headers> headers) {
 			Node collectionProp = document.createElement("collectionProp");
 			NamedNodeMap attributes = collectionProp.getAttributes();
@@ -850,14 +770,14 @@ public class PluginUtils {
 		}
 	}
 
-	public void startNode(File baseDir) throws PhrescoException {
+	public void startNode(File baseDir, String pomFile) throws PhrescoException {
 		FileOutputStream fos = null;
 		try {
 			File LogDir = new File(baseDir + File.separator + Constants.DO_NOT_CHECKIN_DIRY + File.separator + Constants.LOG_DIRECTORY);
 			if (!LogDir.exists()) {
 				LogDir.mkdirs();
 			}
-			File pomPath = new File(baseDir + File.separator + Constants.POM_NAME);
+			File pomPath = new File(baseDir + File.separator + pomFile);
             PomProcessor processor = new PomProcessor(pomPath);
             String functionalTestDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
             StringBuilder builder = new StringBuilder()
@@ -878,7 +798,7 @@ public class PluginUtils {
 			sb.append(functionalTestDir.substring(1, functionalTestDir.length()))
 			.append(PluginConstants.LIB_SELENIUM_SERVER_STANDALONE)
 			.append(PluginConstants.HYPEN)
-			.append(getVersion(baseDir))
+			.append(getVersion(baseDir, pomFile))
 			.append(PluginConstants.DOT_JAR)
 			.append(PluginConstants.ROLE_NODE_NODE_CONFIG)
 			.append(functionalTestDir.substring(1, functionalTestDir.length()))
@@ -892,8 +812,8 @@ public class PluginUtils {
         }
 	}
 	
-	private String getVersion(File baseDir) throws PhrescoPomException {
-		File pomFile = new File(baseDir + File.separator + Constants.POM_NAME);
+	private String getVersion(File baseDir, String pom) throws PhrescoPomException {
+		File pomFile = new File(baseDir + File.separator + pom);
 		PomProcessor processor = new PomProcessor(pomFile);
 		String functionalDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
 		File funcPomFile = new File(baseDir + File.separator + functionalDir + File.separator + Constants.POM_NAME);
@@ -902,10 +822,10 @@ public class PluginUtils {
 		return dependency.getVersion();
 	}
 
-	public void startHub(File baseDir) throws PhrescoException {
+	public void startHub(File baseDir, String pomFile) throws PhrescoException {
 	    FileOutputStream fos = null;
 	    try {
-	        File pomPath = new File(baseDir + File.separator + Constants.POM_NAME);
+	        File pomPath = new File(baseDir + File.separator + pomFile);
             PomProcessor processor = new PomProcessor(pomPath);
             String functionalTestDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
             StringBuilder builder = new StringBuilder()
@@ -923,7 +843,7 @@ public class PluginUtils {
 	        .append(functionalTestDir.substring(1, functionalTestDir.length()))
 	        .append(PluginConstants.LIB_SELENIUM_SERVER_STANDALONE)
 	        .append(PluginConstants.HYPEN)
-			.append(getVersion(baseDir))
+			.append(getVersion(baseDir, pomFile))
 			.append(PluginConstants.DOT_JAR)
 	        .append(PluginConstants.ROLE_HUB_HUB_CONFIG)
 	        .append(functionalTestDir.substring(1, functionalTestDir.length()))
@@ -939,7 +859,11 @@ public class PluginUtils {
 	
 	private void executeValidatePhase(String workingDir) throws PhrescoException {
 	    try {
-	        BufferedReader breader = Utility.executeCommand("mvn validate", workingDir);
+	    	StringBuilder sb = new StringBuilder();
+	    	sb.append(Constants.MVN_COMMAND);
+	    	sb.append(Constants.STR_BLANK_SPACE);
+	    	sb.append(Constants.PHASE);
+	        BufferedReader breader = Utility.executeCommand(sb.toString(), workingDir);
 	        String line = null;
 	        while ((line = breader.readLine()) != null) {
 	            if (line.startsWith("[ERROR]")) {

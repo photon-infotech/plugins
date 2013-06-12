@@ -21,10 +21,14 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
@@ -48,8 +52,8 @@ public class Package implements PluginConstants {
 	private String buildName;
 	private String buildNumber;
 	private String configuaration;
+	private String params;
 	private int buildNo;
-	
 	private File buildDir;
 	private File targetDir;
 	private File srcDir;
@@ -59,9 +63,11 @@ public class Package implements PluginConstants {
 	private Date currentDate;
 	private Log log;
 	private PluginPackageUtil util;
+	private StringBuilder builder;
 	
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
+		builder = new StringBuilder();
 		baseDir = mavenProjectInfo.getBaseDir();
 		project = mavenProjectInfo.getProject();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
@@ -69,6 +75,7 @@ public class Package implements PluginConstants {
         buildName = configs.get(BUILD_NAME);
         buildNumber = configs.get(BUILD_NUMBER);
         configuaration = configs.get(BUILD_CONFIG);
+        params = configs.get("msBuildParams");
         
         util = new PluginPackageUtil();
         PluginUtils.checkForConfigurations(baseDir, environmentName);
@@ -107,6 +114,7 @@ public class Package implements PluginConstants {
 		} catch (Exception e) {
 			isBuildSuccess = false;
 			log.error(e);
+			throw new MojoExecutionException(e.getMessage(), e);
 		}
 		return isBuildSuccess;
 	}
@@ -115,6 +123,20 @@ public class Package implements PluginConstants {
 		BufferedReader in = null;
 		boolean errorParam = false;
 		try {
+			if (StringUtils.isNotEmpty(params)) {
+				StringReader reader = new StringReader(params);
+				Properties props = new Properties();
+				props.load(reader);
+				Set<String> propertyNames = props.stringPropertyNames();
+				for (String key : propertyNames) {
+					if (StringUtils.isNotEmpty(key)) {
+						builder.append(key);
+						builder.append(COLON);
+						builder.append(props.getProperty(key));
+						builder.append(STR_SPACE);
+					}
+				}
+			}
 			String[] list = srcDir.list(new CsFileNameFilter());
 			StringBuilder sb = new StringBuilder();
 			sb.append(MS_BUILD);
@@ -130,7 +152,11 @@ public class Package implements PluginConstants {
 			sb.append(DEPLOY_TARGET);
 			sb.append(WP_STR_SEMICOLON);
 			sb.append(DEPLOY_TEMP_DIR);
-			log.info("executeMSBuildCmd() : " + sb.toString());
+			sb.append(STR_SPACE);
+			sb.append(builder.toString());
+			
+		log.info("executeMSBuildCmd() : " + sb.toString());
+		
 //			sb.append("/p:Configuration=Release;DeployOnBuild=true;DeployTarget=Package;_PackageTempDir=..\\..\\..\\do_not_checkin\\target");
 			String line = null;
 			in = Utility.executeCommand(sb.toString(), srcDir.getPath());

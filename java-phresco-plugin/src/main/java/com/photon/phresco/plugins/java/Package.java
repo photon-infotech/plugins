@@ -52,6 +52,7 @@ import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Assembly.FileSets.FileSet;
 import com.photon.phresco.plugins.model.Assembly.FileSets.FileSet.Excludes;
+import com.photon.phresco.plugins.model.Assembly.FileSets.FileSet.Includes;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands.MavenCommand;
@@ -91,12 +92,13 @@ public class Package implements PluginConstants {
 	private PluginUtils pu;
 	private String sourceDir;
 	private StringBuilder builder;
-	private String packageType;
+	private String pomName;
 	
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
         project = mavenProjectInfo.getProject();
+        pomName = project.getFile().getName();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
         buildName = configs.get(BUILD_NAME);
@@ -107,7 +109,6 @@ public class Package implements PluginConstants {
         pu = new PluginUtils();
         builder = new StringBuilder();
         moduleName = configs.get(PROJECT_MODULE);
-        packageType = configs.get("package-type");
         String packMinifiedFilesValue = configs.get(PACK_MINIFIED_FILES);
         File warConfigFile = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + WAR_CONFIG_FILE);
         PluginUtils.checkForConfigurations(baseDir, environmentName);
@@ -129,6 +130,7 @@ public class Package implements PluginConstants {
 					excludes.add("/css/**/*.min.css");
 					setFileSetExcludes(configProcessor, EXCLUDE_FILE, excludes);
 				}
+				includeLibraryJsFiles(configProcessor);
 				configProcessor.save();
 			}
 			getMavenCommands(configuration);
@@ -154,6 +156,34 @@ public class Package implements PluginConstants {
 			}
 			for (String exclue : exclues) {
 				fileSet.getExcludes().getExclude().add(exclue);
+			}
+		} catch (JAXBException e) {
+			throw new PhrescoException(e);
+		} 
+	}
+	
+	private void includeLibraryJsFiles(WarConfigProcessor configProcessor) throws PhrescoException {
+		try {
+			FileSet fileSet = configProcessor.getFileSet("includeLibJs");
+			if (fileSet == null) {
+				FileSet fs = new FileSet();
+				fs.setId("includeLibJs");
+				fs.setDirectory("src/main/webapp");
+				fs.setOutputDirectory("/");
+				
+				List<String> inlcudeFiles = new ArrayList<String>();
+				inlcudeFiles.add("/js/**/lib/**/*-min.js");
+				inlcudeFiles.add("/js/**/lib/**/*.min.js");
+				inlcudeFiles.add("/js/**/libs/**/*-min.js");
+				inlcudeFiles.add("/js/**/libs/**/*.min.js");
+				
+				Includes includes = new Includes();
+				fs.setIncludes(includes);
+				
+				for (String inlcudeFile : inlcudeFiles) {
+					fs.getIncludes().getInclude().add(inlcudeFile);
+				}
+				configProcessor.createFileSet(fs);
 			}
 		} catch (JAXBException e) {
 			throw new PhrescoException(e);
@@ -249,9 +279,9 @@ public class Package implements PluginConstants {
 		}
 	}
 	
-	private boolean isJarProject(MavenProject project) throws PhrescoPomException {
+	private boolean isJarProject(MavenProject project) throws PhrescoPomException, PhrescoException {
 		boolean jarProject = true;
-		List<String> modules = project.getModules();
+		List<String> modules = PluginUtils.getProjectModules(project);
 		if(CollectionUtils.isEmpty(modules)) {
 			if(project.getModel().getPackaging().equals(PACKAGING_TYPE_WAR)) {
 				jarProject = false;
@@ -260,7 +290,7 @@ public class Package implements PluginConstants {
 		if(CollectionUtils.isNotEmpty(modules)) {
 			for (String mavenProject : modules) {
 				File pomFile = new File(project.getBasedir(), File.separator
-						+ mavenProject + File.separator + POM_XML);
+						+ mavenProject + File.separator + pomName);
 				if (pomFile.exists()) {
 					PomProcessor processor = new PomProcessor(pomFile);
 					if (processor.getPackage().equals(PACKAGING_TYPE_WAR)) {
@@ -365,6 +395,12 @@ public class Package implements PluginConstants {
 		sb.append(MVN_PHASE_CLEAN);
 		sb.append(STR_SPACE);
 		sb.append(MVN_PHASE_PACKAGE);
+		if(!Constants.POM_NAME.equals(pomName)) {
+			sb.append(STR_SPACE);
+			sb.append(Constants.HYPHEN_F);
+			sb.append(STR_SPACE);
+			sb.append(pomName);
+		}
 		sb.append(STR_SPACE);
 		sb.append(builder.toString());
 		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(),"package");
@@ -438,29 +474,17 @@ public class Package implements PluginConstants {
 				if(packageInfoFile.exists()) {
 					copyJarToPackage(zipNameWithoutExt);
 					PluginUtils.createBuildResources(packageInfoFile, baseDir, tempDir);
-				} else {
-					copyJarToPackage(zipNameWithoutExt);
 				}
-				ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
+				copyJarToPackage(zipNameWithoutExt);
 			} else {
 				if(packageInfoFile.exists()) {
-					if(packageType.equals("war")) {
-						copyWarToPackage(zipNameWithoutExt, context);
-						PluginUtils.createBuildResources(packageInfoFile, baseDir, tempDir);
-						ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
-					} else {
-						copyZipToPackage(zipNameWithoutExt, context);
-					}
-				} else {
-					if(packageType.equals("war")) {
-						copyWarToPackage(zipNameWithoutExt, context);
-						ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
-					} else {
-						copyZipToPackage(zipNameWithoutExt, context);
-					}
+					copyWarToPackage(zipNameWithoutExt, context);
+					PluginUtils.createBuildResources(packageInfoFile, baseDir, tempDir);
 				}
+				copyWarToPackage(zipNameWithoutExt, context);
 			}
 			
+			ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getErrorMessage(), e);
 		}
@@ -499,38 +523,14 @@ public class Package implements PluginConstants {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
-	
-	private void copyZipToPackage(String zipNameWithoutExt, String context) throws MojoExecutionException {
-		try {
-			String[] list = targetDir.list(new ZipFileNameFilter());
-			if (list.length > 0) {
-				File zipFile = new File(targetDir.getPath() + File.separator + list[0]);
-				System.out.println("Zip File is  " + zipFile.getPath());
-				if(!buildDir.exists()) {
-					buildDir.mkdirs();
-				}
-				FileUtils.copyFileToDirectory(zipFile, buildDir);
-				File contextZipFile = new File(buildDir.getPath() + File.separator + zipNameWithoutExt + ".zip");
-				File buildZipFile = new File(buildDir, zipFile.getName());
-				buildZipFile.renameTo(contextZipFile);
-			} else {
-				throw new MojoExecutionException(context + ".war not found in " + targetDir.getPath());
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new MojoExecutionException(e.getMessage(), e);
-		}
-	}
-	
+
 	private void writeBuildInfo(boolean isBuildSuccess) throws MojoExecutionException {
 		util.writeBuildInfo(isBuildSuccess, buildName, buildNumber, nextBuildNo, environmentName, buildNo, currentDate, buildInfoFile);
 	}
 
 	private void cleanUp() throws MojoExecutionException {
 		try {
-			if(tempDir != null && tempDir.exists()) {
-				FileUtils.deleteDirectory(tempDir);
-			}
+			FileUtils.deleteDirectory(tempDir);
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
@@ -541,13 +541,6 @@ class WarFileNameFilter implements FilenameFilter {
 
 	public boolean accept(File dir, String name) {
 		return name.endsWith(".war");
-	}
-}
-
-class ZipFileNameFilter implements FilenameFilter {
-
-	public boolean accept(File dir, String name) {
-		return name.endsWith(".zip");
 	}
 }
 

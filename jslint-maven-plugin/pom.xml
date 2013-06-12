@@ -90,7 +90,6 @@
 					<excludeModules>apt</excludeModules>
 				</configuration>
 			</plugin>
-            
             <plugin>
                 <groupId>org.apache.geronimo.genesis.plugins</groupId>
                 <artifactId>tools-maven-plugin</artifactId>
@@ -105,7 +104,6 @@
                     </execution>
                 </executions>
             </plugin>
-
 		</plugins>
 	</build>
 	<properties>

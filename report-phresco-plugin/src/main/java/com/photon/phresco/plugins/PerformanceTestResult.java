@@ -140,11 +140,11 @@ public class PerformanceTestResult {
 	public double getThroughPut() {
 		return throughPut;
 	}
-	
+
 	public void setThroughPut(double throughPut) {
 		this.throughPut = throughPut;
 	}
-	
+
 	public double getKbPerSec() {
 		return kbPerSec;
 	}

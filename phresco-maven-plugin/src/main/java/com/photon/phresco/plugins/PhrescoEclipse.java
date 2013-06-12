@@ -43,9 +43,18 @@ public class PhrescoEclipse extends PhrescoAbstractMojo {
 	protected String projectCode;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		String command = Constants.MVN_COMMAND + Constants.STR_BLANK_SPACE + Constants.MVN_GOAL_ECLIPSE;
+		StringBuilder sb = new StringBuilder();
+		sb.append(Constants.MVN_COMMAND);
+		sb.append(Constants.STR_BLANK_SPACE);
+		sb.append(Constants.MVN_GOAL_ECLIPSE);
+		if(!Constants.POM_NAME.equals(project.getFile().getName())) {
+			sb.append(Constants.STR_BLANK_SPACE);
+			sb.append(Constants.HYPHEN_F);
+			sb.append(Constants.STR_BLANK_SPACE);
+			sb.append(project.getFile().getName());
+		}
 		try {
-			Commandline commandLine = new Commandline(command);
+			Commandline commandLine = new Commandline(sb.toString());
 			commandLine.setWorkingDirectory(baseDir);
 			String processName = ManagementFactory.getRuntimeMXBean().getName();
     		String[] split = processName.split("@");

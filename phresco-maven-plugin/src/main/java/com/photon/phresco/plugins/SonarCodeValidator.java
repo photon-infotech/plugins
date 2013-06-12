@@ -17,32 +17,25 @@
  */
 package com.photon.phresco.plugins;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FilenameFilter;
-import java.lang.reflect.Type;
-import java.util.Map;
+import java.io.*;
+import java.lang.reflect.*;
+import java.util.*;
 
-import org.apache.commons.io.FilenameUtils;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.project.MavenProject;
+import org.apache.commons.io.*;
+import org.apache.maven.plugin.*;
+import org.apache.maven.project.*;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.photon.phresco.commons.model.ApplicationInfo;
-import com.photon.phresco.commons.model.ProjectInfo;
-import com.photon.phresco.exception.PhrescoException;
-import com.photon.phresco.plugin.commons.PluginConstants;
-import com.photon.phresco.plugin.commons.PluginUtils;
-import com.photon.phresco.plugins.api.PhrescoPlugin;
+import com.google.gson.*;
+import com.google.gson.reflect.*;
+import com.photon.phresco.commons.model.*;
+import com.photon.phresco.exception.*;
+import com.photon.phresco.plugin.commons.*;
+import com.photon.phresco.plugins.api.*;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
-import com.photon.phresco.plugins.util.MojoUtil;
-import com.photon.phresco.util.Constants;
-import com.photon.phresco.util.TechnologyTypes;
-import com.phresco.pom.exception.PhrescoPomException;
-import com.phresco.pom.util.PomProcessor;
+import com.photon.phresco.plugins.util.*;
+import com.photon.phresco.util.*;
+import com.phresco.pom.exception.*;
+import com.phresco.pom.util.*;
 
 /**
  * Goal which validate the code
@@ -93,32 +86,36 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
 					throw new MojoExecutionException("Code Validation for functional test scripts requires a build. Generate a build and try again.");
 				}
 			} 
+
 			if (techId.equals(TechnologyTypes.HTML5_JQUERY_MOBILE_WIDGET) || techId.equals(TechnologyTypes.HTML5_MULTICHANNEL_JQUERY_WIDGET) ||
-					techId.equals(TechnologyTypes.HTML5_MOBILE_WIDGET) || techId.equals(TechnologyTypes.HTML5_WIDGET) || techId.equals(TechnologyTypes.HTML5)  ) {
-				try {
-					PomProcessor processor = new PomProcessor(new File(baseDir.getPath() + File.separator + POM_XML));
-					String testSourcePath = processor.getProperty("phresco.env.test.config.xml");
-					if (!techId.equals(TechnologyTypes.JAVA_STANDALONE) && !techId.equals(TechnologyTypes.JAVA_WEBSERVICE) ) {
-						PluginUtils utils = new PluginUtils();
-						testConfigPath = new File(baseDir + File.separator + testSourcePath);
-						String fullPathNoEndSeparator = FilenameUtils.getFullPathNoEndSeparator(testConfigPath.getAbsolutePath());
-						File fullPathNoEndSeparatorFile = new File(fullPathNoEndSeparator);
-						fullPathNoEndSeparatorFile.mkdirs();
-						utils.executeUtil(environmentName, baseDir.getPath(), testConfigPath);
-					}
-				} catch (PhrescoPomException e) {
-					throw new MojoExecutionException(e.getMessage(), e);
-				} catch (PhrescoException e) {
-					throw new MojoExecutionException(e.getMessage(), e);
-				} 
-			}
+						techId.equals(TechnologyTypes.HTML5_MOBILE_WIDGET) || techId.equals(TechnologyTypes.HTML5_WIDGET) || techId.equals(TechnologyTypes.HTML5)  ) {
+					try {
+						PomProcessor processor = new PomProcessor(new File(baseDir.getPath() + File.separator + project.getFile().getName()));
+						String testSourcePath = processor.getProperty("phresco.env.test.config.xml");
+						if (!techId.equals(TechnologyTypes.JAVA_STANDALONE) && !techId.equals(TechnologyTypes.JAVA_WEBSERVICE) ) {
+							PluginUtils utils = new PluginUtils();
+							testConfigPath = new File(baseDir + File.separator + testSourcePath);
+							String fullPathNoEndSeparator = FilenameUtils.getFullPathNoEndSeparator(testConfigPath.getAbsolutePath());
+							File fullPathNoEndSeparatorFile = new File(fullPathNoEndSeparator);
+							fullPathNoEndSeparatorFile.mkdirs();
+							utils.executeUtil(environmentName, baseDir.getPath(), testConfigPath);
+						}
+					} catch (PhrescoPomException e) {
+						throw new MojoExecutionException(e.getMessage(), e);
+					} catch (PhrescoException e) {
+						throw new MojoExecutionException(e.getMessage(), e);
+					} 
+				}
+
 
 			pluginValidate(infoFile);
 		} catch (FileNotFoundException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
-		} 
+		} catch (IOException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		}
 	}
 	
 	private void pluginValidate(String infoFile) throws PhrescoException {

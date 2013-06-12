@@ -35,7 +35,6 @@ public abstract class JsTestConfiguration extends AbstractMojo {
     /**
      * @parameter default-value="${project.build.sourceDirectory}" expression="${sourceDir}"
      */
-	
     private File sourceDir;
 
     /**
@@ -280,9 +279,9 @@ public abstract class JsTestConfiguration extends AbstractMojo {
     }
 
     public ResourceDirectory buildCurrentSrcDir(boolean serverMode) {
-    	if (serverMode) {
-    		return buildSrcResourceDirectory();
-    	} else if (isCoverage()) {
+        if (serverMode) {
+            return buildSrcResourceDirectory();
+        } else if (isCoverage()) {
             return buildInstrumentedSrcResourceDirectory();
         } else {
             return buildTargetSrcResourceDirectory();
@@ -367,5 +366,4 @@ public abstract class JsTestConfiguration extends AbstractMojo {
     public void setPackBeforeTest(boolean packBeforeTest) {
         this.packBeforeTest = packBeforeTest;
     }
-    
 }

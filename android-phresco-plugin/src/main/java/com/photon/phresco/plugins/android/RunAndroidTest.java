@@ -32,7 +32,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.photon.phresco.commons.FrameworkConstants;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
@@ -53,6 +52,7 @@ public class RunAndroidTest implements PluginConstants {
 			Map<String, String> configs = MojoUtil.getAllValues(configuration);
 			MavenProject project = mavenProjectInfo.getProject();
 			String seleniumToolType = project.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_SELENIUM_TOOL);
+			String baseDir = mavenProjectInfo.getBaseDir().getPath();
 			// calabash Execution
 			if(StringUtils.isNotEmpty((seleniumToolType)) && seleniumToolType.equals(CALABASH)) {
 				StringBuilder builder = new StringBuilder();
@@ -104,10 +104,15 @@ public class RunAndroidTest implements PluginConstants {
 			}
 			sb.append(STR_SPACE);
 			sb.append(HYPHEN_D + ANDROID_EMULATOR + EQUAL + DEFAULT);
-			
+			File workingFile = new File(baseDir + workingDir + File.separator + project.getFile().getName());
+			if(workingFile.exists()) {
+				sb.append(STR_SPACE);
+				sb.append(Constants.HYPHEN_F);
+				sb.append(STR_SPACE);
+				sb.append(project.getFile().getName());
+			}
 			System.out.println("Command " + sb.toString());
 			Commandline commandline = new Commandline(sb.toString());
-			String baseDir = mavenProjectInfo.getBaseDir().getPath();
 			if(StringUtils.isNotEmpty(device)) {
 				PomProcessor pomProcessor = new PomProcessor(new File(baseDir + File.separator + PluginConstants.TEST_FOLDER + File.separator + PluginConstants.FUNCTIONAL_TEST_FOLDER + File.separator + Constants.POM_NAME));						
 				com.phresco.pom.model.PluginExecution.Configuration pluginExecutionConfiguration = pomProcessor.getPluginExecutionConfiguration(PluginConstants.MVN_ANT_PLUGIN_GRP_ID,PluginConstants.MVN_ANT_PLUGIN_ARTF_ID);

@@ -190,15 +190,15 @@
 		</dependency>
 		
 		<dependency>
-		    <groupId>com.photon.phresco.pom</groupId>
+			<groupId>com.photon.phresco.pom</groupId>
 			<artifactId>phresco-pom</artifactId>
 			<version>3.0.0.13001-SNAPSHOT</version>
 		</dependency>
-		
+
 		<dependency>
-		    <groupId>com.photon.phresco</groupId>
-		    <artifactId>plugin-commons</artifactId>
-		    <version>3.0.0.13001-SNAPSHOT</version>
+			<groupId>com.photon.phresco</groupId>
+			<artifactId>plugin-commons</artifactId>
+			<version>3.0.0.13001-SNAPSHOT</version>
 		</dependency>
 		
 	</dependencies>

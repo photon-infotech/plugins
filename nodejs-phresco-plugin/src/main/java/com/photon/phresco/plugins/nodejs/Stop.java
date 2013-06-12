@@ -17,7 +17,6 @@
  */
 package com.photon.phresco.plugins.nodejs;
 
-import java.io.File;
 import java.io.IOException;
 
 import org.apache.maven.plugin.MojoExecutionException;

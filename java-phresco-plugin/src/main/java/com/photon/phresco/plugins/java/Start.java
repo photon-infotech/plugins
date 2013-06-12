@@ -61,11 +61,13 @@ public class Start implements PluginConstants {
 	private boolean importSql;
 	private String sqlPath;
 	private PluginUtils pu;
+	private String pomFile;
 
 	public void start(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
 		project = mavenProjectInfo.getProject();
+		pomFile = project.getFile().getName();
 		projectCode = mavenProjectInfo.getProjectCode();
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
 		environmentName = configs.get(ENVIRONMENT_NAME);
@@ -177,6 +179,12 @@ public class Start implements PluginConstants {
 				sb.append(STR_SPACE);
 				sb.append("-Dserver.port=");
 				sb.append(serverPort);
+				if(!Constants.POM_NAME.equals(pomFile)) {
+					sb.append(STR_SPACE);
+					sb.append(Constants.HYPHEN_F);
+					sb.append(STR_SPACE);
+					sb.append(pomFile);
+				}
 				fos = new FileOutputStream(errorLog, false);
 				// ProcessBuilder pb = new ProcessBuilder(BASH, "-c", sb.toString());
 				Utility.executeStreamconsumer(sb.toString(), fos);

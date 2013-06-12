@@ -32,6 +32,7 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.Commandline;
 import org.jdom.Attribute;
@@ -51,6 +52,7 @@ import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.plugins.util.PluginPackageUtil;
 import com.photon.phresco.util.ArchiveUtil;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
+import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
 
 public class Package implements PluginConstants {
@@ -70,15 +72,20 @@ public class Package implements PluginConstants {
 	private String sourceDirectory = "/source";
 	private Log log;
 	private PluginPackageUtil util;
+	private MavenProject project;
+	private String pomFile;
 	
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
+		project = mavenProjectInfo.getProject();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
         buildName = configs.get(BUILD_NAME);
         buildNumber = configs.get(BUILD_NUMBER);
         util = new PluginPackageUtil();
+        pomFile = project.getFile().getName();
+        
         PluginUtils.checkForConfigurations(baseDir, environmentName);
         try {
 			init();
@@ -119,6 +126,12 @@ public class Package implements PluginConstants {
 			sb.append(MVN_PHASE_CLEAN);
 			sb.append(STR_SPACE);
 			sb.append(MVN_PHASE_VALDATE);
+			if(!Constants.POM_NAME.equals(pomFile)) {
+				sb.append(STR_SPACE);
+				sb.append(Constants.HYPHEN_F);
+				sb.append(STR_SPACE);
+				sb.append(pomFile);
+			}
 			Commandline cl = new Commandline(sb.toString());
 			cl.setWorkingDirectory(baseDir);
 			Process process = cl.execute();

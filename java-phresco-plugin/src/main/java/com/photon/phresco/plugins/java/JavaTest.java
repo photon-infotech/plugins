@@ -58,40 +58,23 @@ public class JavaTest implements PluginConstants {
 		String testAgainst = configs.get(TEST_AGAINST);
 		String environment = configs.get(ENVIRONMENT_NAME);
 		String goalPackBeforeTest = "";
-		String projectModule= "";
-		if(configuration != null) {
-			projectModule=configs.get(PROJECT_MODULE);
-		}
-		if(StringUtils.isNotEmpty(projectModule)) {
-			projectModule = File.separator + projectModule;
-		} else {
-			projectModule = "";
-		}
 		if (testAgainst.equals(JS)) {
 			PluginUtils pluginUtils = new PluginUtils();
 			ApplicationInfo appInfo = pluginUtils.getAppInfo(mavenProjectInfo.getBaseDir());
 			String techId = appInfo.getTechInfo().getId();
-			copyUnitInfoFile(environment, techId , projectModule);
+			copyUnitInfoFile(environment, techId);
 			goalPackBeforeTest = getGoalPackBeforeTest(baseDir);
 		}
-		buildCommand(configuration, testAgainst, goalPackBeforeTest, projectModule);
+		buildCommand(configuration, testAgainst, goalPackBeforeTest);
 	}
 
-	private void copyUnitInfoFile(String environment, String techId, String projectModule) throws PhrescoException {
+	private void copyUnitInfoFile(String environment, String techId) throws PhrescoException {
 		try {
-			PomProcessor processor ;
-			String testSourcePath;
-			if(StringUtils.isEmpty(projectModule)) {
-				processor = new PomProcessor( new File(baseDir.getPath() + File.separator + pomFile));
-				testSourcePath = processor.getProperty("phresco.env.test.config.xml");
-				testConfigPath = new File(baseDir + File.separator + testSourcePath);
-			} else {
-				processor = new PomProcessor( new File(baseDir.getPath() + projectModule + File.separator + pomFile));
-				testSourcePath = processor.getProperty("phresco.env.test.config.xml");
-				testConfigPath = new File(baseDir + projectModule + File.separator + testSourcePath);
-			} 
+			PomProcessor processor = new PomProcessor( new File(baseDir.getPath() + File.separator + pomFile));
+			String testSourcePath = processor.getProperty("phresco.env.test.config.xml");
 			if (!techId.equals(TechnologyTypes.JAVA_STANDALONE) && !techId.equals(TechnologyTypes.JAVA_WEBSERVICE) ) {
 				PluginUtils utils = new PluginUtils();
+				testConfigPath = new File(baseDir + File.separator + testSourcePath);
 				String fullPathNoEndSeparator = FilenameUtils.getFullPathNoEndSeparator(testConfigPath.getAbsolutePath());
 				File fullPathNoEndSeparatorFile = new File(fullPathNoEndSeparator);
 				fullPathNoEndSeparatorFile.mkdirs();
@@ -104,7 +87,7 @@ public class JavaTest implements PluginConstants {
 		} 
 	}
 
-	private void buildCommand(Configuration configuration, String testAgainst, String goalPackBeforeTest, String projectModule) throws PhrescoException {
+	private void buildCommand(Configuration configuration, String testAgainst, String goalPackBeforeTest) throws PhrescoException {
 		String mavenCommandValue = null;
 		if (testAgainst != null) {
 			List<Parameter> parameters = configuration.getParameters().getParameter();
@@ -119,10 +102,10 @@ public class JavaTest implements PluginConstants {
 				}
 			}
 		}
-		executeTest(mavenCommandValue, testAgainst, goalPackBeforeTest, projectModule);
+		executeTest(mavenCommandValue, testAgainst, goalPackBeforeTest);
 	}
 
-	private void executeTest(String mavenCommandValue, String testAgainst, String goalPackBeforeTest, String projectModule) throws PhrescoException {
+	private void executeTest(String mavenCommandValue, String testAgainst, String goalPackBeforeTest) throws PhrescoException {
 		System.out.println("-----------------------------------------");
 		System.out.println("T E S T S");
 		System.out.println("-----------------------------------------");
@@ -138,15 +121,10 @@ public class JavaTest implements PluginConstants {
 			if(!Constants.POM_NAME.equals(pomFile)) {
 				sb.append(STR_SPACE);
 				sb.append(Constants.HYPHEN_F);
-				sb.append(STR_SPACE); 
+				sb.append(STR_SPACE);
 				sb.append(pomFile);
 			}
-			boolean status;
-			if(StringUtils.isNotEmpty(projectModule)) {
-				status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath() + projectModule, baseDir.getPath(), UNIT);
-			} else {
-				status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(), UNIT);
-			} 
+			boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(), UNIT);
 			if(!status) {
 				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
 			}

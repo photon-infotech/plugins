@@ -50,7 +50,7 @@ public class AbstractAndroidMojoTest {
         SdkTestSupport testSupport = new SdkTestSupport();
         androidMojo = new EmptyAndroidMojo();
         Reflection.field("sdkPath").ofType(File.class).in(androidMojo).set(null);
-        Reflection.field("sdkPlatform").ofType(String.class).in(androidMojo).set("4.1.2");
+        Reflection.field("sdkPlatform").ofType(String.class).in(androidMojo).set("1.6");
         AndroidSdk sdk = androidMojo.getAndroidSdk();
         File path = Reflection.field("sdkPath").ofType(File.class).in(sdk).get();
         Assert.assertEquals(new File(testSupport.getEnv_ANDROID_HOME()).getAbsolutePath(), path.getAbsolutePath());
@@ -110,7 +110,7 @@ public class AbstractAndroidMojoTest {
 
         @Override
         protected AndroidSdk getAndroidSdk() {
-        	return new SdkTestSupport().getSdk_with_platform_default();
+            return new SdkTestSupport().getSdk_with_platform_1_5();
         }
 
         public void execute() throws MojoExecutionException, MojoFailureException {

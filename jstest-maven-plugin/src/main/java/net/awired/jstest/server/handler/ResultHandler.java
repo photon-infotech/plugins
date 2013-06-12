@@ -126,7 +126,7 @@ public class ResultHandler {
 	    		report.reportRun(runResult);
 	            handled = true;
         	}
-        } else if (target.equals("/log")) {
+        }  else if (target.equals("/log")) {
         	BufferedReader reader = null;
         	try {
         		String line;

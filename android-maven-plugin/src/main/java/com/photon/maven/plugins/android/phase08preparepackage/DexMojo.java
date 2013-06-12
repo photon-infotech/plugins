@@ -334,7 +334,7 @@ public class DexMojo extends AbstractAndroidMojo
             }
         }
         commands.add( "-jar" );
-        commands.add( getAndroidSdk().getDxJarPath() );
+        commands.add( getAndroidSdk().getPathForTool( "dx.jar" ) );
         commands.add( "--dex" );
 
         return commands;

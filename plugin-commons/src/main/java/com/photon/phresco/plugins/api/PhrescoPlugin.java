@@ -96,6 +96,17 @@ public interface PhrescoPlugin {
     ExecutionStatus runUnitTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
     /**
+     * Goal for running the component tests
+     * 
+     * @param configuration project configuration
+     * @param mavenProjectInfo customized Maven Project object
+     * @return ExecutionStatus
+     * 
+     * @throws PhrescoException
+     */
+    ExecutionStatus runComponentTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
+    
+    /**
      * Goal for running the functional tests
      * 
      * @param configuration project configuration

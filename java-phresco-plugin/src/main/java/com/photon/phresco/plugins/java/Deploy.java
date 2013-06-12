@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.ListUtils;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
@@ -68,11 +66,13 @@ public class Deploy implements PluginConstants {
 	private String sqlPath;
 	private PluginUtils pUtil;
 	private String servertype;
+	private String pomFile;
 	
 	public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
 		project = mavenProjectInfo.getProject();
+		pomFile = project.getFile().getName();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
         buildNumber = configs.get(BUILD_NUMBER);
@@ -144,6 +144,9 @@ public class Deploy implements PluginConstants {
 			File pom = project.getFile();
 			PomProcessor pomprocessor = new PomProcessor(pom);
 			List<com.photon.phresco.configuration.Configuration> configurations = pUtil.getConfiguration(baseDir, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
+			if (CollectionUtils.isEmpty(configurations)) {
+				throw new MojoExecutionException("Configuration is not available ");
+			}
 			for (com.photon.phresco.configuration.Configuration configuration : configurations) {
 				context = configuration.getProperties().getProperty(Constants.SERVER_CONTEXT);
 				break;
@@ -329,6 +332,12 @@ public class Deploy implements PluginConstants {
 			sb.append(context);
 			sb.append(STR_SPACE);
 			sb.append(SKIP_TESTS);
+			if(!Constants.POM_NAME.equals(pomFile)) {
+				sb.append(STR_SPACE);
+				sb.append(Constants.HYPHEN_F);
+				sb.append(STR_SPACE);
+				sb.append(pomFile);
+			}
 			
 			if (serverprotocol.equals(HTTPS) && certificatePath != null) {
 				File certificateFile = null;
@@ -359,7 +368,7 @@ public class Deploy implements PluginConstants {
 					System.out.println(line); //do not use getLog() here as this line already contains the log type.
 					errorParam = true;
 				}
-			}
+			} 
 		} else {
 			while ((line = bufferedReader.readLine()) != null) {
 				if (line.startsWith("[ERROR]") && line.contains("Unexpected error when trying to start the webapp")) {
@@ -456,10 +465,6 @@ public class Deploy implements PluginConstants {
 			if (list.length > 0) {
 				File warFile = new File(tempDir.getPath() + File.separator + list[0]);
 				FileUtils.copyFileToDirectory(warFile, deployDir);
-			}
-			if(ArrayUtils.isEmpty(list)) {
-				File file = tempDir.listFiles()[0];
-				org.apache.commons.io.FileUtils.copyDirectoryToDirectory(file, deployDir);
 			}
 //			FileUtils.copyDirectoryStructure(tempDir.getAbsoluteFile(), deployDir);
 			log.info("Project is deployed successfully");

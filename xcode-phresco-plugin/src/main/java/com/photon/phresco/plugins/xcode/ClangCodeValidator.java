@@ -17,19 +17,21 @@
  */
 package com.photon.phresco.plugins.xcode;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.Map;
 
-import org.apache.commons.lang.*;
-import org.apache.maven.plugin.*;
-import org.apache.maven.plugin.logging.*;
+import org.apache.commons.lang.StringUtils;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.project.MavenProject;
 
-import com.photon.phresco.commons.FrameworkConstants;
-import com.photon.phresco.exception.*;
-import com.photon.phresco.plugin.commons.*;
+import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.plugin.commons.MavenProjectInfo;
+import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
-import com.photon.phresco.plugins.util.*;
-import com.photon.phresco.util.*;
+import com.photon.phresco.plugins.util.MojoUtil;
+import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.Utility;
 
 public class ClangCodeValidator implements PluginConstants {
 	
@@ -42,6 +44,8 @@ public class ClangCodeValidator implements PluginConstants {
 		this.log = log;
 		log.debug("Iphone code validation started ");
 		Map<String, String> configs = MojoUtil.getAllValues(config);
+		MavenProject project = mavenProjectInfo.getProject();
+		String pomFile = project.getFile().getName();
 		
 		String target = configs.get(TARGET);
 		if (StringUtils.isNotEmpty(target)) {
@@ -71,7 +75,12 @@ public class ClangCodeValidator implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(HYPHEN_D + SDK + EQUAL + sdk);
 		}
-		
+		if(!Constants.POM_NAME.equals(pomFile)) {
+			sb.append(STR_SPACE);
+			sb.append(Constants.HYPHEN_F);
+			sb.append(STR_SPACE);
+			sb.append(pomFile);
+		}
 		log.debug("Command " + sb.toString());
 		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(), CODE_VALIDATE);
 		if(!status) {

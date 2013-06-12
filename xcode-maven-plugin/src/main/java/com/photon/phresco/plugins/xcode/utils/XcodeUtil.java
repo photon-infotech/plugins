@@ -46,7 +46,7 @@ public class XcodeUtil {
 				copyFolder(srcFile,destFile);
 			}
 
-		} else if (src.isFile()) {
+		} else {
 			//if file, then copy it
 			//Use bytes stream to support all file types
 			InputStream in = new FileInputStream(src);

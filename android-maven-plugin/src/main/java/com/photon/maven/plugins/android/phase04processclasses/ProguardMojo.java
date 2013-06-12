@@ -580,8 +580,7 @@ public class ProguardMojo extends AbstractAndroidMojo
         String proguardJarPath = getProguardJarPathFromDependencies();
         if ( StringUtils.isEmpty( proguardJarPath ) )
         {
-        	File proguardJarPathFile = new File( getAndroidSdk().getToolsPath(), "proguard/lib/proguard.jar" );
-            return proguardJarPathFile.getAbsolutePath();
+            proguardJarPath = getAndroidSdk().getPathForTool( "proguard/lib/proguard.jar" );
         }
         return proguardJarPath;
     }

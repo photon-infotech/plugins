@@ -16,11 +16,10 @@
  * limitations under the License.
  */
 package net.awired.jstest.mojo;
-
+import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.io.File;
 
 import net.awired.jstest.executor.RunnerExecutor;
 import net.awired.jstest.mojo.inherite.AbstractJsTestMojo;
@@ -88,7 +87,6 @@ public class TestMojo extends AbstractJsTestMojo {
 
             // let browsers detect that server is back
             Thread.sleep(7000);
-
             if (!resultHandler.waitAllResult(10000, 1000)) {
                 throw new MojoFailureException("Do not receive all test results from clients");
             }

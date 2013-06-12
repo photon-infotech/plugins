@@ -38,6 +38,7 @@ public class FunctionalTest implements PluginConstants {
 		String seleniumToolType = project.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_SELENIUM_TOOL);
 		String workingDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
 		String baseDir = mavenProjectInfo.getBaseDir().getPath();
+		String pomFile = project.getFile().getName();
 		// calabash Execution
 		if(StringUtils.isNotEmpty((seleniumToolType)) && seleniumToolType.equals(CALABASH)) {
 			StringBuilder builder = new StringBuilder();
@@ -65,7 +66,12 @@ public class FunctionalTest implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(HYPHEN_D + DEVICE_ID + EQUAL + deviceId);
 		}
-		
+		if(!Constants.POM_NAME.equals(pomFile)) {
+			sb.append(STR_SPACE);
+			sb.append(Constants.HYPHEN_F);
+			sb.append(STR_SPACE);
+			sb.append(pomFile);
+		}
 		System.out.println("Functional test Command " + sb.toString());
 		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir, baseDir, FUNCTIONAL);
 		if(!status) {

@@ -406,10 +406,10 @@ public class ApklibMojo extends AbstractAndroidMojo
             commands.add( "-c" );
             commands.add( configurations );
         }
-        getLog().info( getAndroidSdk().getAaptPath() + " " + commands.toString() );
+        getLog().info( getAndroidSdk().getPathForTool( "aapt" ) + " " + commands.toString() );
         try
         {
-        	 executor.executeCommand( getAndroidSdk().getAaptPath(), commands, project.getBasedir(), false );
+            executor.executeCommand( getAndroidSdk().getPathForTool( "aapt" ), commands, project.getBasedir(), false );
         }
         catch ( ExecutionException e )
         {

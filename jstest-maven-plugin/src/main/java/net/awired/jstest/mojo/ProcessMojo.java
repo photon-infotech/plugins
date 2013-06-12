@@ -1,5 +1,6 @@
 package net.awired.jstest.mojo;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -20,6 +21,8 @@ import org.codehaus.plexus.util.cli.Commandline;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.webapp.WebAppContext;
+
+import com.photon.phresco.util.Constants;
 
 /**
  * @goal process-source
@@ -58,7 +61,8 @@ public class ProcessMojo extends AbstractJsTestMojo {
             
             if (isPackBeforeTest()) {
                 getLog().info("Package Started");
-                Commandline cmdLine = new Commandline("mvn package -Pjava -DskipTests");
+                String pomFile = getMavenProject().getFile().getName();
+                Commandline cmdLine = new Commandline("mvn package -Pjava -DskipTests"+ File.separatorChar + Constants.HYPHEN_F + File.separatorChar + pomFile);
                 //cmdLine.setWorkingDirectory(".");
                 try {
                     Process process = cmdLine.execute();
@@ -92,7 +96,7 @@ public class ProcessMojo extends AbstractJsTestMojo {
             jsTestServer.startServer(handlerCollect);
 
             getLog().info(String.format(INSTRUCTION_FORMAT, getDevPort(), getSourceDir(), getTestDir()));
-          //jsTestServer.join();
+//          jsTestServer.join();
         } catch (Exception e) {
             throw new RuntimeException("Cannot start Jstest server", e);
         } finally {
