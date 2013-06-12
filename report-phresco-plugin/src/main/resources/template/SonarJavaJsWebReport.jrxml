@@ -1,0 +1,674 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="PhrescoXmlReport" pageWidth="555" pageHeight="842" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" scriptletClass="com.photon.phresco.plugins.Scriptlet">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="SJJWRTitle"/>
+	<style name="SJJWRTitleRect"/>
+	<style name="SJJWRTitleRectLogo"/>
+	<style name="SJJWRTitleRectDetail"/>
+	<style name="SJJWRTitleLabel"/>
+	<style name="SJJWRTitleLabelValue"/>
+	<style name="SJJWRHeading"/>
+	<style name="SJJWRHeadingLabel"/>
+	<style name="SJJWRHeadingLabelValue"/>
+	<style name="SJJWRTHeadingRow"/>
+	<style name="SJJWRTHeadingRowLabel"/>
+	<style name="SJJWRTHeadingRowLabelValue"/>
+	<parameter name="reportsDataType" class="java.lang.String"/>
+	<parameter name="masterPageNo" class="java.lang.Integer"/>
+	<parameter name="headingsMap" class="java.util.HashMap">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<field name="nonCommentLinesOfCode" class="java.lang.String"/>
+	<field name="classes" class="java.lang.String"/>
+	<field name="lines" class="java.lang.String"/>
+	<field name="files" class="java.lang.String"/>
+	<field name="functions" class="java.lang.String"/>
+	<field name="commentLinesDensity" class="java.lang.String"/>
+	<field name="commentLines" class="java.lang.String"/>
+	<field name="commentedOutCodeLines" class="java.lang.String"/>
+	<field name="duplicatedLinesDensity" class="java.lang.String"/>
+	<field name="duplicatedLines" class="java.lang.String"/>
+	<field name="duplicatedBlocks" class="java.lang.String"/>
+	<field name="duplicatedFiles" class="java.lang.String"/>
+	<field name="functionComplexity" class="java.lang.String"/>
+	<field name="classComplexity" class="java.lang.String"/>
+	<field name="fileComplexity" class="java.lang.String"/>
+	<field name="violationsDensity" class="java.lang.String"/>
+	<field name="blockerViolations" class="java.lang.String"/>
+	<field name="criticalViolations" class="java.lang.String"/>
+	<field name="majorViolations" class="java.lang.String"/>
+	<field name="minorViolations" class="java.lang.String"/>
+	<field name="infoViolations" class="java.lang.String"/>
+	<field name="violations" class="java.lang.String"/>
+	<field name="statements" class="java.lang.String"/>
+	<field name="accessors" class="java.lang.String"/>
+	<field name="publicDocumentedApiDensity" class="java.lang.String"/>
+	<field name="publicUndocumentedApi" class="java.lang.String"/>
+	<field name="packages" class="java.lang.String"/>
+	<field name="packageTangleIndex" class="java.lang.String"/>
+	<field name="packageCycles" class="java.lang.String"/>
+	<field name="packageFeedbackEdges" class="java.lang.String"/>
+	<field name="packageTangles" class="java.lang.String"/>
+	<field name="lackOfCohesionMethods" class="java.lang.String"/>
+	<field name="responseForCode" class="java.lang.String"/>
+	<field name="reportType" class="java.lang.String"/>
+	<field name="directories" class="java.lang.String"/>
+	<field name="technology" class="java.lang.String"/>
+	<field name="commentBlankLines" class="java.lang.String"/>
+	<field name="coverage" class="java.lang.String"/>
+	<field name="uncoveredLines" class="java.lang.String"/>
+	<field name="moduleName" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="2">
+			<line>
+				<reportElement x="1" y="1" width="1" height="1">
+					<printWhenExpression><![CDATA[$P{REPORT_SCRIPTLET}.updateTOC("SonarReport", $P{masterPageNo})]]></printWhenExpression>
+				</reportElement>
+			</line>
+		</band>
+	</title>
+	<detail>
+		<band height="625" splitType="Stretch">
+			<frame>
+				<reportElement style="SJJWRHeading" mode="Opaque" x="0" y="0" width="555" height="24"/>
+				<textField>
+					<reportElement x="15" y="4" width="165" height="15" forecolor="#FFFFFF"/>
+					<textElement>
+						<font fontName="Times New Roman" size="12" isBold="true" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Sonar Report -" + $F{reportType}]]></textFieldExpression>
+					<anchorNameExpression><![CDATA["Code Validation Report"]]></anchorNameExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="190" y="4" width="351" height="15" forecolor="#FFFFFF">
+						<printWhenExpression><![CDATA[!$F{moduleName}.isEmpty()]]></printWhenExpression>
+					</reportElement>
+					<textElement>
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Module Name :" + $F{moduleName}]]></textFieldExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement x="0" y="24" width="555" height="310" isRemoveLineWhenBlank="true"/>
+				<rectangle>
+					<reportElement x="0" y="5" width="555" height="120"/>
+					<graphicElement>
+						<pen lineColor="#CCCCCC"/>
+					</graphicElement>
+				</rectangle>
+				<staticText>
+					<reportElement x="15" y="10" width="100" height="18" forecolor="#000000"/>
+					<textElement>
+						<font fontName="Times New Roman" size="14" isBold="true" isUnderline="true"/>
+					</textElement>
+					<text><![CDATA[Lines of Code(Loc)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="15" y="28" width="140" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[Non Comment Lines]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="170" y="28" width="100" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{nonCommentLinesOfCode}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="15" y="47" width="140" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[Lines]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="170" y="47" width="100" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{lines}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="15" y="66" width="140" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[Files]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="170" y="66" width="100" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{files}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="15" y="85" width="140" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[Comment Lines Density]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="170" y="85" width="100" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{commentLinesDensity}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="15" y="104" width="140" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[Comment Lines]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="170" y="104" width="100" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{commentLines}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="283" y="28" width="150" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[Duplicated Lines Density]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="435" y="28" width="100" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{duplicatedLinesDensity}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="283" y="47" width="150" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[Duplicated Lines]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="435" y="47" width="100" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{duplicatedLines}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="283" y="66" width="150" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[Duplicated Blocks]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="435" y="66" width="100" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{duplicatedBlocks}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="283" y="10" width="100" height="18" forecolor="#000000"/>
+					<textElement>
+						<font fontName="Times New Roman" size="14" isBold="true" isUnderline="true"/>
+					</textElement>
+					<text><![CDATA[Duplications]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="283" y="85" width="150" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[Duplicated Files]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="435" y="85" width="100" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{duplicatedFiles}]]></textFieldExpression>
+				</textField>
+				<rectangle>
+					<reportElement x="0" y="130" width="555" height="66"/>
+					<graphicElement>
+						<pen lineColor="#CCCCCC"/>
+					</graphicElement>
+				</rectangle>
+				<staticText>
+					<reportElement x="15" y="136" width="100" height="18" forecolor="#000000"/>
+					<textElement>
+						<font fontName="Times New Roman" size="14" isBold="true" isUnderline="true"/>
+					</textElement>
+					<text><![CDATA[Complexity]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="15" y="154" width="140" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[Function Complexity]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="170" y="154" width="100" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{functionComplexity}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="15" y="173" width="140" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[File Complexity]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="170" y="173" width="100" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{fileComplexity}]]></textFieldExpression>
+				</textField>
+				<rectangle>
+					<reportElement x="0" y="202" width="555" height="108"/>
+					<graphicElement>
+						<pen lineColor="#CCCCCC"/>
+					</graphicElement>
+				</rectangle>
+				<staticText>
+					<reportElement x="15" y="206" width="100" height="19" forecolor="#000000"/>
+					<textElement>
+						<font fontName="Times New Roman" size="14" isBold="true" isUnderline="true"/>
+					</textElement>
+					<text><![CDATA[Violations]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="15" y="275" width="100" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{violationsDensity}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="15" y="255" width="140" height="20" forecolor="#000000"/>
+					<textElement>
+						<font fontName="Times New Roman" size="14" isBold="true" isUnderline="true"/>
+					</textElement>
+					<text><![CDATA[Rules Compliance]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="289" y="210" width="150" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[Blocker Violations]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="441" y="210" width="100" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{blockerViolations}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="289" y="228" width="150" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[Critical Violations]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="441" y="228" width="100" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{criticalViolations}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="289" y="247" width="150" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[Major Violations]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="441" y="247" width="100" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{majorViolations}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="289" y="266" width="150" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[Minor Violations]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="441" y="266" width="100" height="20"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{minorViolations}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="289" y="285" width="150" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[Info Violations]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="441" y="286" width="100" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{infoViolations}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="15" y="225" width="100" height="19"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{violations}]]></textFieldExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement x="0" y="338" width="555" height="108" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[!$F{packages}.isEmpty()]]></printWhenExpression>
+				</reportElement>
+				<rectangle>
+					<reportElement x="0" y="2" width="555" height="104" isRemoveLineWhenBlank="true"/>
+					<graphicElement>
+						<pen lineColor="#CCCCCC"/>
+					</graphicElement>
+				</rectangle>
+				<staticText>
+					<reportElement x="289" y="28" width="150" height="19" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[Response for Code]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="441" y="28" width="100" height="19" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{responseForCode}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="441" y="9" width="100" height="19" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{lackOfCohesionMethods}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="289" y="9" width="150" height="19" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[Lack of Cohesion Methods]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="15" y="9" width="140" height="19" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[Packages]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="170" y="9" width="100" height="19" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{packages}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="15" y="28" width="140" height="19" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[Package Tangle Index]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="170" y="28" width="100" height="19" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{packageTangleIndex}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="15" y="47" width="140" height="19" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[Package Cycles]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="170" y="47" width="100" height="19" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{packageCycles}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="15" y="65" width="140" height="19" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[Package Feedback Edges]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="15" y="85" width="140" height="19" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[Package Tangles]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="170" y="85" width="100" height="19" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{packageTangles}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="170" y="65" width="100" height="19" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{packageFeedbackEdges}]]></textFieldExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement x="0" y="446" width="555" height="33" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[!$F{directories}.isEmpty()]]></printWhenExpression>
+				</reportElement>
+				<rectangle>
+					<reportElement x="0" y="3" width="555" height="26" isRemoveLineWhenBlank="true"/>
+					<graphicElement>
+						<pen lineColor="#CCCCCC"/>
+					</graphicElement>
+				</rectangle>
+				<staticText>
+					<reportElement x="15" y="7" width="100" height="19" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[Directories]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="170" y="7" width="100" height="19" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{directories}]]></textFieldExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement x="0" y="479" width="555" height="57" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[!$F{classes}.isEmpty()]]></printWhenExpression>
+				</reportElement>
+				<rectangle>
+					<reportElement x="0" y="3" width="555" height="50" isRemoveLineWhenBlank="true"/>
+					<graphicElement>
+						<pen lineColor="#CCCCCC"/>
+					</graphicElement>
+				</rectangle>
+				<staticText>
+					<reportElement x="15" y="8" width="100" height="19" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<text><![CDATA[Classes]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="170" y="8" width="100" height="20" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{classes}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="15" y="28" width="100" height="19" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<text><![CDATA[Functions]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="170" y="28" width="100" height="20" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{functions}]]></textFieldExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement x="0" y="536" width="555" height="88" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[!$F{statements}.isEmpty()]]></printWhenExpression>
+				</reportElement>
+				<rectangle>
+					<reportElement x="0" y="1" width="555" height="86" isRemoveLineWhenBlank="true"/>
+					<graphicElement>
+						<pen lineColor="#CCCCCC"/>
+					</graphicElement>
+				</rectangle>
+				<textField>
+					<reportElement x="170" y="7" width="100" height="20" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{statements}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="15" y="27" width="150" height="19" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[Accessors]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="170" y="27" width="100" height="19" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{accessors}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="15" y="46" width="150" height="19" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[Public Documented Api]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="170" y="46" width="100" height="19" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{publicDocumentedApiDensity}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="15" y="65" width="150" height="20" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman" size="10"/>
+					</textElement>
+					<text><![CDATA[Public Undocumented Api]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="170" y="65" width="100" height="20" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{publicUndocumentedApi}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="15" y="7" width="150" height="20"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<text><![CDATA[Statements]]></text>
+				</staticText>
+			</frame>
+		</band>
+		<band height="50">
+			<frame>
+				<reportElement x="0" y="1" width="555" height="49">
+					<printWhenExpression><![CDATA[!$F{coverage}.isEmpty()]]></printWhenExpression>
+				</reportElement>
+				<rectangle>
+					<reportElement x="0" y="0" width="555" height="47"/>
+					<graphicElement>
+						<pen lineColor="#CCCCCC"/>
+					</graphicElement>
+				</rectangle>
+				<staticText>
+					<reportElement x="15" y="5" width="100" height="19" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<text><![CDATA[Coverage]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="170" y="5" width="100" height="19" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{coverage}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="15" y="24" width="100" height="20" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<text><![CDATA[UncoveredLines]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="170" y="24" width="100" height="19" isRemoveLineWhenBlank="true"/>
+					<textElement>
+						<font fontName="Times New Roman"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{uncoveredLines}]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</detail>
+</jasperReport>

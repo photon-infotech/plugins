@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="PhrescoLastIndexReport" pageWidth="555" pageHeight="802" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" scriptletClass="com.photon.phresco.plugins.Scriptlet">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="org.apache.commons.codec.binary.Base64"/>
+	<style name="PIRTitle"/>
+	<style name="PIRTitleRect"/>
+	<style name="PIRTitleRectLogo"/>
+	<style name="PIRTitleRectDetail"/>
+	<style name="PIRTitleLabel"/>
+	<style name="PIRTitleLabelValue"/>
+	<style name="PIRHeading"/>
+	<style name="PIRHeadingLabel"/>
+	<style name="PIRHeadingLabelValue"/>
+	<style name="PIRCopyRight"/>
+	<style name="PIRCopyRightPageNo"/>
+	<parameter name="projectCode" class="java.lang.String"/>
+	<parameter name="reportsDataType" class="java.lang.String"/>
+	<parameter name="performanceSpecialHandle" class="java.lang.Boolean"/>
+	<parameter name="unitTestReports" class="java.util.Collection">
+		<defaultValueExpression><![CDATA[!$P{unitTestReports}.isEmpty()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="functionalTestReports" class="java.util.Collection">
+		<defaultValueExpression><![CDATA[!$P{functionalTestReports}.isEmpty()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="performanceTestReports" class="java.util.Collection"/>
+	<parameter name="loadTestReports" class="java.util.Collection"/>
+	<parameter name="projectName" class="java.lang.String"/>
+	<parameter name="techName" class="java.lang.String"/>
+	<parameter name="sonarReport" class="java.util.Collection"/>
+	<parameter name="isMultiModuleProject" class="java.lang.Boolean"/>
+	<parameter name="multiModuleUnitTestReports" class="java.util.List"/>
+	<parameter name="copyRights" class="java.lang.String"/>
+	<parameter name="isClassEmpty" class="java.lang.Boolean"/>
+	<parameter name="componentTestReports" class="java.util.Collection"/>
+	<parameter name="version" class="java.lang.String"/>
+	<parameter name="logo" class="java.lang.String"/>
+	<parameter name="logoBase64Img" class="java.io.InputStream">
+		<defaultValueExpression><![CDATA[new ByteArrayInputStream(new Base64().decodeBase64($P{logo}.getBytes("UTF-8")))]]></defaultValueExpression>
+	</parameter>
+	<parameter name="headingsMap" class="java.util.HashMap">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<variable name="KeyTOC" class="java.lang.String">
+		<initialValueExpression><![CDATA[String.valueOf("HIDDEN TEXT TO MARK THE BEGINNING OF THE TABLE OF CONTENTS")]]></initialValueExpression>
+	</variable>
+	<title>
+		<band height="124">
+			<staticText>
+				<reportElement x="0" y="2" width="200" height="8" forecolor="#FFFFFF"/>
+				<textElement textAlignment="Justified">
+					<font size="5"/>
+				</textElement>
+				<text><![CDATA[HIDDEN TEXT TO MARK THE BEGINNING OF THE TABLE OF CONTENTS]]></text>
+			</staticText>
+			<frame>
+				<reportElement x="0" y="0" width="555" height="120" isRemoveLineWhenBlank="true"/>
+				<rectangle radius="3">
+					<reportElement style="PIRTitleRectLogo" x="0" y="2" width="555" height="115"/>
+				</rectangle>
+				<rectangle radius="10">
+					<reportElement style="PIRTitleRectDetail" x="176" y="5" width="376" height="108"/>
+				</rectangle>
+				<staticText>
+					<reportElement style="PIRTitleLabel" x="20" y="27" width="55" height="18">
+						<printWhenExpression><![CDATA[$P{logo}.equals("")]]></printWhenExpression>
+					</reportElement>
+					<textElement verticalAlignment="Bottom">
+						<font fontName="Times New Roman" size="13" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Photon]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="PIRTitleLabel" x="18" y="38" width="158" height="41">
+						<printWhenExpression><![CDATA[$P{logo}.equals("")]]></printWhenExpression>
+					</reportElement>
+					<textElement verticalAlignment="Top" rotation="None">
+						<font fontName="Times New Roman" size="28" isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[PHRESCO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="PIRTitleLabel" x="176" y="9" width="112" height="20"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Project Name :]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="PIRTitleLabel" x="176" y="29" width="112" height="20"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Application Name :]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="PIRTitleLabel" x="176" y="49" width="112" height="20"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Technology :]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="PIRTitleLabel" x="176" y="69" width="112" height="20"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Version :]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="PIRTitleLabel" x="176" y="89" width="112" height="20"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Date :]]></text>
+				</staticText>
+				<textField>
+					<reportElement style="PIRTitleLabelValue" x="290" y="9" width="257" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{projectName}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement style="PIRTitleLabelValue" x="290" y="29" width="257" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{projectCode}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement style="PIRTitleLabelValue" x="290" y="49" width="257" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{techName}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement key="" style="PIRTitleLabelValue" x="290" y="89" width="257" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement style="PIRTitleLabelValue" x="290" y="69" width="257" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{version}]]></textFieldExpression>
+				</textField>
+				<image hAlign="Center" vAlign="Middle" onErrorType="Blank">
+					<reportElement x="3" y="5" width="170" height="108"/>
+					<imageExpression><![CDATA[$P{logoBase64Img}]]></imageExpression>
+				</image>
+			</frame>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="32">
+			<staticText>
+				<reportElement key="" x="0" y="10" width="158" height="18"/>
+				<textElement>
+					<font fontName="Times New Roman" size="14" isBold="true" isItalic="false" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[Table of Contents]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="297">
+			<frame>
+				<reportElement x="100" y="79" width="323" height="32" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[($P{unitTestReports} == null ? Boolean.FALSE : Boolean.TRUE) || ($P{multiModuleUnitTestReports} == null ? Boolean.FALSE : Boolean.TRUE)]]></printWhenExpression>
+				</reportElement>
+				<ellipse>
+					<reportElement style="PIRTitleLabel" x="17" y="15" width="5" height="5" isRemoveLineWhenBlank="true"/>
+				</ellipse>
+				<textField hyperlinkType="LocalAnchor">
+					<reportElement style="PIRTitleLabel" x="32" y="2" width="187" height="30" isRemoveLineWhenBlank="true"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Unit Test Report"]]></textFieldExpression>
+					<hyperlinkAnchorExpression><![CDATA["Unit Test Report"]]></hyperlinkAnchorExpression>
+				</textField>
+				<textField>
+					<reportElement key="" style="PIRTitleLabel" x="240" y="5" width="51" height="20" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" isStrikeThrough="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{headingsMap}.get("UnitTestReport")]]></textFieldExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement x="100" y="143" width="323" height="32" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[!$P{functionalTestReports}.isEmpty()]]></printWhenExpression>
+				</reportElement>
+				<ellipse>
+					<reportElement style="PIRTitleLabel" x="17" y="16" width="5" height="5" isRemoveLineWhenBlank="true"/>
+				</ellipse>
+				<textField>
+					<reportElement style="PIRTitleLabel" x="240" y="5" width="51" height="20" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" isStrikeThrough="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{headingsMap}.get("FunctionalTestReport")]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="LocalAnchor">
+					<reportElement style="PIRTitleLabel" x="32" y="2" width="187" height="30" isRemoveLineWhenBlank="true"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Functional Test Report"]]></textFieldExpression>
+					<hyperlinkAnchorExpression><![CDATA["Functional Test Report"]]></hyperlinkAnchorExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement x="100" y="175" width="323" height="32" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[!$P{performanceTestReports}.isEmpty()]]></printWhenExpression>
+				</reportElement>
+				<ellipse>
+					<reportElement style="PIRTitleLabel" x="17" y="15" width="5" height="5" isRemoveLineWhenBlank="true"/>
+				</ellipse>
+				<textField>
+					<reportElement style="PIRTitleLabel" x="240" y="5" width="51" height="20" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" isStrikeThrough="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{headingsMap}.get("PerformanceTestReport")]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="LocalAnchor">
+					<reportElement style="PIRTitleLabel" x="32" y="2" width="187" height="30" isRemoveLineWhenBlank="true"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Performance Test Report"]]></textFieldExpression>
+					<hyperlinkAnchorExpression><![CDATA["Performance Test Report"]]></hyperlinkAnchorExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement x="100" y="207" width="323" height="32" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[!$P{loadTestReports}.isEmpty()]]></printWhenExpression>
+				</reportElement>
+				<ellipse>
+					<reportElement style="PIRTitleLabel" x="17" y="15" width="5" height="5" isRemoveLineWhenBlank="true"/>
+				</ellipse>
+				<textField>
+					<reportElement style="PIRTitleLabel" x="240" y="5" width="51" height="20" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" isStrikeThrough="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{headingsMap}.get("LoadTestReport")]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="LocalAnchor">
+					<reportElement style="PIRTitleLabel" x="32" y="2" width="187" height="30" isRemoveLineWhenBlank="true"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Load Test Report"]]></textFieldExpression>
+					<hyperlinkAnchorExpression><![CDATA["Load Test Report"]]></hyperlinkAnchorExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement x="100" y="239" width="323" height="32" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[!$P{sonarReport}.isEmpty()]]></printWhenExpression>
+				</reportElement>
+				<ellipse>
+					<reportElement style="PIRTitleLabel" x="17" y="14" width="5" height="5" isRemoveLineWhenBlank="true"/>
+				</ellipse>
+				<textField>
+					<reportElement style="PIRTitleLabel" x="240" y="5" width="51" height="20" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" isStrikeThrough="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{headingsMap}.get("SonarReport")]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="LocalAnchor">
+					<reportElement style="PIRTitleLabel" x="32" y="2" width="187" height="30" isRemoveLineWhenBlank="true"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Code Validation Report"]]></textFieldExpression>
+					<hyperlinkAnchorExpression><![CDATA["Code Validation Report"]]></hyperlinkAnchorExpression>
+				</textField>
+			</frame>
+			<break>
+				<reportElement x="0" y="296" width="555" height="1"/>
+			</break>
+			<rectangle radius="10">
+				<reportElement style="PIRHeading" x="65" y="48" width="389" height="26" forecolor="#FFFFFF"/>
+			</rectangle>
+			<staticText>
+				<reportElement x="120" y="52" width="197" height="20" forecolor="#FFFFFF"/>
+				<textElement>
+					<font fontName="Times New Roman" size="13" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Reports Available]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="345" y="52" width="100" height="20" forecolor="#FFFFFF"/>
+				<textElement>
+					<font fontName="Times New Roman" size="13" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Page No]]></text>
+			</staticText>
+			<frame>
+				<reportElement x="100" y="111" width="323" height="32" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[!$P{componentTestReports}.isEmpty()]]></printWhenExpression>
+				</reportElement>
+				<ellipse>
+					<reportElement style="PIRTitleLabel" x="17" y="15" width="5" height="5" isRemoveLineWhenBlank="true"/>
+				</ellipse>
+				<textField>
+					<reportElement style="PIRTitleLabel" x="240" y="5" width="51" height="20" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" isStrikeThrough="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{headingsMap}.get("ComponenentTestReport")]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="LocalAnchor">
+					<reportElement style="PIRTitleLabel" x="32" y="2" width="187" height="30" isRemoveLineWhenBlank="true"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Component Test Report"]]></textFieldExpression>
+					<hyperlinkAnchorExpression><![CDATA["Component Test Report"]]></hyperlinkAnchorExpression>
+				</textField>
+			</frame>
+		</band>
+	</detail>
+</jasperReport>
