@@ -229,8 +229,14 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			}
 			int noOfUsers = 1;
 			int loopCount = 1;
-			ConfigManager configManager = new ConfigManagerImpl(new File(basedir + File.separator + DOT_PHRESCO_FOLDER + File.separator + CONFIG_FILE));
-			com.photon.phresco.configuration.Configuration config = configManager.getConfiguration(environmentName, performanceAgainst, configurationsName);
+			com.photon.phresco.configuration.Configuration config = null;
+			List<com.photon.phresco.configuration.Configuration> configurations = pluginUtils.getConfiguration(new File(basedir), environmentName, testAgainstType);
+			for (com.photon.phresco.configuration.Configuration conf : configurations) {
+				if (conf.getName().equals(configurationsName)) {
+					config = conf;
+					break;
+				}
+			}
 			String performanceTestDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR) + File.separator + performanceAgainst;
 			if(StringUtils.isNotEmpty(performanceTestDir)) {
 				StringBuilder testPomPath = new StringBuilder(basedir)
@@ -427,9 +433,14 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 					headersMap.put(key, props.getProperty(key));
 				}
 			}
-			
-			ConfigManager configManager = new ConfigManagerImpl(new File(basedir + File.separator + DOT_PHRESCO_FOLDER + File.separator + CONFIG_FILE));
-			com.photon.phresco.configuration.Configuration config = configManager.getConfiguration(environmentName, loadTestAgainst, type);
+			com.photon.phresco.configuration.Configuration config = null;
+			List<com.photon.phresco.configuration.Configuration> configurations = pluginUtils.getConfiguration(new File(basedir), environmentName, testAgainstType);
+			for (com.photon.phresco.configuration.Configuration conf : configurations) {
+				if (conf.getName().equals(type)) {
+					config = conf;
+					break;
+				}
+			}
 			String loadTestDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_LOADTEST_DIR);
 			if(StringUtils.isNotEmpty(loadTestDir)) {
 				loadTestDir = loadTestDir +  File.separator + loadTestAgainst;

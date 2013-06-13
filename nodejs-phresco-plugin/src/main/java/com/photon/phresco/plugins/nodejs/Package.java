@@ -103,11 +103,15 @@ public class Package implements PluginConstants {
 		try {
 			configure();
 			File packageInfoFile = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + PHRESCO_PACKAGE_FILE);
+			File fileBuild = new File(targetDir.getPath()+ FORWARD_SLASH + PROJECT_FOLDER);
+			if(!fileBuild.exists()){
+				fileBuild.mkdir();
+			}
 			if(packageInfoFile.exists()) {
-				FileUtils.copyDirectory(srcDir, targetDir);
+				FileUtils.copyDirectory(srcDir, fileBuild);
 				PluginUtils.createBuildResources(packageInfoFile, baseDir, targetDir);
 			} else {
-				FileUtils.copyDirectory(srcDir, targetDir);
+				FileUtils.copyDirectory(srcDir, fileBuild);
 			}
 			createPackage();
 		} catch (IOException e) {
