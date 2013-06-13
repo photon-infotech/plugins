@@ -198,10 +198,14 @@ public class Package implements PluginConstants {
 			
 			MojoProcessor mojoObj;
 			try {
+				
 				mojoObj = new MojoProcessor(new File(unitXmlFile));
 				Parameter unitSigningParameter = mojoObj.getParameter("unit-test", "signing");
 				if (unitSigningParameter != null) {
 				unitSigningParameter.setShow(isSigning);
+				unitSigningParameter.setValue(isSigning.toString());
+				Boolean isEditable = !isSigning;
+				unitSigningParameter.setEditable(isEditable.toString());
 				mojoObj.save();
 				}
 				
@@ -209,18 +213,27 @@ public class Package implements PluginConstants {
 				Parameter functionalRobotiumSigningParameter = mojoObj.getParameter("functional-test-robotium", "signing");
 				if (functionalRobotiumSigningParameter != null) {
 					functionalRobotiumSigningParameter.setShow(isSigning);
+					functionalRobotiumSigningParameter.setValue(isSigning.toString());
+					Boolean isEditable = !isSigning;
+					functionalRobotiumSigningParameter.setEditable(isEditable.toString());
 					mojoObj.save();
 				}
 				
 				Parameter functionalCalabashSigningParameter = mojoObj.getParameter("functional-test-calabash", "signing");
 				if (functionalCalabashSigningParameter != null) {
 					functionalCalabashSigningParameter.setShow(isSigning);
+					functionalCalabashSigningParameter.setValue(isSigning.toString());
+					Boolean isEditable = !isSigning;
+					functionalCalabashSigningParameter.setEditable(isEditable.toString());
 					mojoObj.save();
 				}
 				
 				Parameter functionalMonkeyTalkSigningParameter = mojoObj.getParameter("functional-test-monkey-talk", "signing");
 				if (functionalMonkeyTalkSigningParameter != null) {
 					functionalMonkeyTalkSigningParameter.setShow(isSigning);
+					functionalMonkeyTalkSigningParameter.setValue(isSigning.toString());
+					Boolean isEditable = !isSigning;
+					functionalMonkeyTalkSigningParameter.setEditable(isEditable.toString());
 					mojoObj.save();
 				}
 				
@@ -228,6 +241,9 @@ public class Package implements PluginConstants {
 				Parameter performanceSigningParameter = mojoObj.getParameter("performance-test", "signing");
 				if (performanceSigningParameter != null) {
 				performanceSigningParameter.setShow(isSigning);
+				performanceSigningParameter.setValue(isSigning.toString());
+				Boolean isEditable = !isSigning;
+				performanceSigningParameter.setEditable(isEditable.toString());
 				mojoObj.save();
 				}
 				

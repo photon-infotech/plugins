@@ -167,7 +167,7 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 				} else {
 					getLog().info("APK created.. Copying to Build directory.....");
 				}
-				String buildName = project.getBuild().getFinalName() + '_'
+				String buildNameLocal = project.getBuild().getFinalName() + '_'
 						+ getTimeStampForBuildName(currentDate);
 
 				if (baseDir.getPath().endsWith("unit")
@@ -175,7 +175,7 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 						|| baseDir.getPath().endsWith("performance")) {
 					buildDir = new File(baseDir.getPath() + buildDirectory);
 				}
-
+                if(buildName != null){
 				if (StringUtils.isNotEmpty(techId)) {
 					destFile = new File(buildDir, buildName + '.' + APKLIB);
 					
@@ -238,10 +238,77 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 						"Deliverables available at " + deliverableZip.getName());
 				if (tmpFile.exists()) {
 					FileUtil.delete(tmpFile);
-
+					
 				}
-
 				writeBuildInfo(true);
+               }else{
+                	if (StringUtils.isNotEmpty(techId)) {
+    					destFile = new File(buildDir, buildNameLocal + '.' + APKLIB);
+    					
+    				} else {
+    					
+    					destFile = new File(buildDir, buildNameLocal + '.' + APK);
+    					// Creating the file in build folder for copying the aligned APK - Created by Hari - 20-May-2013
+    					destAlignedFile = new File(buildDir, buildNameLocal+ "-aligned." + APK);
+
+    				}
+
+    				FileUtils.copyFile(outputFile, destFile);
+    				getLog().info("copied to..." + destFile.getName());
+    				
+    				/* If outputAlignedFile exists in target folder,
+    				 * Then we are copying it to destinationFile in build folder
+    				 * Added By - Hari - May, 20 , 2013
+    				 */
+    		
+    				if (outputAlignedFile != null && outputAlignedFile.exists()) {
+    					
+    					FileUtils.copyFile(outputAlignedFile, destAlignedFile);
+    					
+    				}
+    				apkFileName = destFile.getName();
+    				
+    				getLog().info("Creating deliverables.....");
+    				
+    				ZipArchiver zipArchiver = new ZipArchiver();
+    				File tmpFile = new File(buildDir, buildNameLocal);
+    				
+    				if (!tmpFile.exists()) {
+    					
+    					tmpFile.mkdirs();
+    					
+    				}
+    				FileUtils.copyFileToDirectory(destFile, tmpFile);
+    				
+    				/*To Copy the aligned apk into zip file in build folder,
+    				*It is for downloading the aligned apk from build Tab
+    				* Added by - Hari -May, 20 ,2013
+    				*/
+    				if (destAlignedFile!=null && destAlignedFile.exists()) {
+
+    					FileUtils.copyFileToDirectory(destAlignedFile, tmpFile);
+
+    				}
+    				if (!packageInfoFile.exists()) {
+    					PluginUtils.createBuildResources(packageInfoFile, baseDir,
+    							tmpFile);
+    				}
+    				File inputFile = new File(apkFileName);
+    				zipArchiver.addDirectory(tmpFile);
+    				File deliverableZip = new File(buildDir, buildNameLocal + ".zip");
+    				zipArchiver.setDestFile(deliverableZip);
+    				zipArchiver.createArchive();
+
+    				deliverable = deliverableZip.getPath();
+    				getLog().info(
+    						"Deliverables available at " + deliverableZip.getName());
+    				if (tmpFile.exists()) {
+    					FileUtil.delete(tmpFile);
+    					
+    				}
+    				writeBuildInfo(true);
+                }
+				
 			} catch (IOException e) {
 				throw new MojoExecutionException("Error in writing output...");
 			}
@@ -275,8 +342,9 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 				buildInfo.setBuildName(buildName);
 				
 			}else{
-				
-			    buildInfo.setBuildName(apkFileName);
+				String customBuildName = project.getBuild().getFinalName() + '_'
+						+ getTimeStampForBuildName(currentDate);
+			    buildInfo.setBuildName(customBuildName);
 			}
 			buildInfo.setDeliverables(deliverable);
 			buildInfo.setEnvironments(envList);
