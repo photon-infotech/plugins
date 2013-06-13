@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="PhrescoXmlReport" pageWidth="595" pageHeight="842" whenNoDataType="BlankPage" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" scriptletClass="com.photon.phresco.plugins.Scriptlet">
 	<property name="ireport.zoom" value="1.100000000000001"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="192"/>
+	<property name="ireport.y" value="420"/>
 	<import value="org.apache.commons.codec.binary.Base64"/>
 	<style name="PCRTitle"/>
 	<style name="PCRTitleRect"/>
@@ -419,6 +419,34 @@ $P{componentTestReports} != null || $P{functionalTestReports} != null || !$P{per
 			</frame>
 		</band>
 		<band height="50">
+			<printWhenExpression><![CDATA[!$P{manualTestReports}.isEmpty()]]></printWhenExpression>
+			<frame>
+				<reportElement x="0" y="0" width="555" height="50" isRemoveLineWhenBlank="true"/>
+				<subreport>
+					<reportElement x="0" y="0" width="555" height="50" isRemoveLineWhenBlank="true">
+						<printWhenExpression><![CDATA[$P{reportsDataType}.equals("detail")]]></printWhenExpression>
+					</reportElement>
+					<subreportParameter name="testType">
+						<subreportParameterExpression><![CDATA["manual"]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="masterPageNo">
+						<subreportParameterExpression><![CDATA[$V{PAGE_NUMBER}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="headingsMap">
+						<subreportParameterExpression><![CDATA[$V{headingsMap}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="reportsDataType">
+						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="isClassEmpty">
+						<subreportParameterExpression><![CDATA[$P{isClassEmpty}]]></subreportParameterExpression>
+					</subreportParameter>
+					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{manualTestReports})]]></dataSourceExpression>
+					<subreportExpression><![CDATA["ManualCumulativeReport.jasper"]]></subreportExpression>
+				</subreport>
+			</frame>
+		</band>
+		<band height="50">
 			<printWhenExpression><![CDATA[!$P{performanceSpecialHandle}.booleanValue()]]></printWhenExpression>
 			<frame>
 				<reportElement x="0" y="0" width="555" height="50" isRemoveLineWhenBlank="true"/>
@@ -487,7 +515,7 @@ $P{componentTestReports} != null || $P{functionalTestReports} != null || !$P{per
 				</subreport>
 			</frame>
 		</band>
-		<band height="50">
+		<band height="59">
 			<printWhenExpression><![CDATA[!$P{sonarReport}.isEmpty()]]></printWhenExpression>
 			<frame>
 				<reportElement x="0" y="0" width="555" height="50"/>
@@ -507,10 +535,8 @@ $P{componentTestReports} != null || $P{functionalTestReports} != null || !$P{per
 				</subreport>
 			</frame>
 		</band>
-		<band height="59">
-			<printWhenExpression><![CDATA[!((($P{unitTestReports} == null ? Boolean.FALSE : Boolean.TRUE) || (($P{multiModuleUnitTestReports} == null ? Boolean.FALSE : Boolean.TRUE) && !$P{multiModuleUnitTestReports}.isEmpty()) ) ||
-$P{componentTestReports} != null || $P{functionalTestReports} != null || !$P{performanceTestReports}.isEmpty() || !$P{loadTestReports}.isEmpty() ||
-!$P{sonarReport}.isEmpty())]]></printWhenExpression>
+		<band height="60">
+			<printWhenExpression><![CDATA[!((($P{unitTestReports} == null ? Boolean.FALSE : Boolean.TRUE) || (($P{multiModuleUnitTestReports} == null ? Boolean.FALSE : Boolean.TRUE) && !$P{multiModuleUnitTestReports}.isEmpty()) ) || $P{componentTestReports} != null || $P{functionalTestReports} != null || !$P{performanceTestReports}.isEmpty() || !$P{loadTestReports}.isEmpty() || !$P{sonarReport}.isEmpty() || !$P{loadTestReports}.isEmpty())]]></printWhenExpression>
 			<staticText>
 				<reportElement key="NoDataKey" style="PCRTitleLabel" x="55" y="14" width="410" height="24"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
@@ -522,7 +548,7 @@ $P{componentTestReports} != null || $P{functionalTestReports} != null || !$P{per
 		<band height="60">
 			<printWhenExpression><![CDATA[((($P{unitTestReports} == null ? Boolean.FALSE : Boolean.TRUE) || (($P{multiModuleUnitTestReports} == null ? Boolean.FALSE : Boolean.TRUE) && !$P{multiModuleUnitTestReports}.isEmpty()) ) || $P{componentTestReports} != null || $P{functionalTestReports} != null || !$P{performanceTestReports}.isEmpty() || !$P{loadTestReports}.isEmpty() || !$P{sonarReport}.isEmpty() || !$P{manualTestReports}.isEmpty())]]></printWhenExpression>
 			<frame>
-				<reportElement x="0" y="1" width="555" height="59" isRemoveLineWhenBlank="true">
+				<reportElement x="0" y="0" width="555" height="59" isRemoveLineWhenBlank="true">
 					<printWhenExpression><![CDATA[$P{reportsDataType}.equals("detail")]]></printWhenExpression>
 				</reportElement>
 				<break>
