@@ -67,9 +67,10 @@ public class DeployMojo extends AbstractAndroidMojo
         	
     		PluginUtils pu = new PluginUtils();
     		BuildInfo buildInfo = pu.getBuildInfo(Integer.parseInt(buildNumber));
-			getLog().info("Build Name " + buildInfo);
+			getLog().info("Build Name " + buildInfo.getBuildName());
 			
-        	file = new File(baseDir,"/do_not_checkin/build/"+ buildInfo.getBuildName());
+        	file = new File(baseDir,"/do_not_checkin/build/"+ buildInfo.getBuildName()+ ".apk");
+            //file = new File(baseDir,"/do_not_checkin/build/"+ buildInfo.getBuildName());
             deployApk(file);
         }
     }
