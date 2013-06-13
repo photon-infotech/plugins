@@ -1061,10 +1061,12 @@ public class GenerateReport implements PluginConstants {
 			
 			// List of performance test reports
 			List<JmeterReport> jmeterReports = new ArrayList<JmeterReport>();
-            for (String testResultFile : testResultFiles) {
-            	Document document = getDocumentOfFile(performanceReportDir, testResultFile);
-            	JmeterReport jmeterReport = getPerformanceReport(document, testResultFile, deviceId); // need to pass tech id and tag name
-            	jmeterReports.add(jmeterReport);
+			if (CollectionUtils.isNotEmpty(testResultFiles)) {
+				for (String testResultFile : testResultFiles) {
+					Document document = getDocumentOfFile(performanceReportDir, testResultFile);
+					JmeterReport jmeterReport = getPerformanceReport(document, testResultFile, deviceId); // need to pass tech id and tag name
+					jmeterReports.add(jmeterReport);
+				}
 			}
             // When data is not available dont show in i report
             if (!jmeterReports.isEmpty()) {
@@ -1096,28 +1098,29 @@ public class GenerateReport implements PluginConstants {
 		
 		// List of performance test reports
         List<AndroidPerfReport> androidPerfFilesWithDatas = new ArrayList<AndroidPerfReport>();
-        for (String testResultFile : testResultFiles) {
-        	Document document = getDocumentOfFile(performanceReportDir, testResultFile);
+		if (CollectionUtils.isNotEmpty(testResultFiles)) {
+			for (String testResultFile : testResultFiles) {
+				Document document = getDocumentOfFile(performanceReportDir, testResultFile);
 
-        	Map<String, String> deviceNamesWithId = getDeviceNames(document);
-        	
-            Set st = deviceNamesWithId.entrySet();
-            Iterator it = st.iterator();
-            List<JmeterReport> androidDeviceWithDatas = new ArrayList<JmeterReport>();
-            while (it.hasNext()) {
-                Map.Entry m = (Map.Entry) it.next();
-                String androidDeviceId = (String) m.getKey();
-                String androidDeviceName = (String) m.getValue();
-            	JmeterReport jmeterReport = getPerformanceReport(document, testResultFile, androidDeviceId); // need to pass tech id and tag name
-            	jmeterReport.setFileName(androidDeviceName);
-                androidDeviceWithDatas.add(jmeterReport);
-            }
-            AndroidPerfReport androidPerReport = new AndroidPerfReport();
-            androidPerReport.setFileName(testResultFile);
-            androidPerReport.setDeviceReport(androidDeviceWithDatas);
-            androidPerfFilesWithDatas.add(androidPerReport);
-		}
-        
+				Map<String, String> deviceNamesWithId = getDeviceNames(document);
+				
+				Set st = deviceNamesWithId.entrySet();
+				Iterator it = st.iterator();
+				List<JmeterReport> androidDeviceWithDatas = new ArrayList<JmeterReport>();
+				while (it.hasNext()) {
+					Map.Entry m = (Map.Entry) it.next();
+					String androidDeviceId = (String) m.getKey();
+					String androidDeviceName = (String) m.getValue();
+					JmeterReport jmeterReport = getPerformanceReport(document, testResultFile, androidDeviceId); // need to pass tech id and tag name
+					jmeterReport.setFileName(androidDeviceName);
+					androidDeviceWithDatas.add(jmeterReport);
+				}
+				AndroidPerfReport androidPerReport = new AndroidPerfReport();
+				androidPerReport.setFileName(testResultFile);
+				androidPerReport.setDeviceReport(androidDeviceWithDatas);
+				androidPerfFilesWithDatas.add(androidPerReport);
+			}
+        }
         for (AndroidPerfReport androidPerfFilesWithData : androidPerfFilesWithDatas) {
         	List<JmeterReport> deviceReports = androidPerfFilesWithData.getDeviceReport();
         	for (JmeterReport jmeterReport : deviceReports) {
@@ -1133,12 +1136,14 @@ public class GenerateReport implements PluginConstants {
         List<String> testResultFiles = getTestResultFiles(performanceReportDir);
 		
 		// List of performance test reports
-        for (String testResultFile : testResultFiles) {
-        	Document document = getDocumentOfFile(performanceReportDir, testResultFile);
-        	Map<String, String> deviceNamesWithId = getDeviceNames(document);
-        	if (MapUtils.isNotEmpty(deviceNamesWithId)) {
-        		return true;
-        	}
+		if (CollectionUtils.isNotEmpty(testResultFiles)) {
+			for (String testResultFile : testResultFiles) {
+				Document document = getDocumentOfFile(performanceReportDir, testResultFile);
+				Map<String, String> deviceNamesWithId = getDeviceNames(document);
+				if (MapUtils.isNotEmpty(deviceNamesWithId)) {
+					return true;
+				}
+			}
 		}
         return false;
 	}
