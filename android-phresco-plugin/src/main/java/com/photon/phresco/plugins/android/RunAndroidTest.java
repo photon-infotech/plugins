@@ -47,7 +47,7 @@ import com.phresco.pom.util.PomProcessor;
 
 public class RunAndroidTest implements PluginConstants {
 	
-	public static void runAndroidTest(Configuration configuration, MavenProjectInfo mavenProjectInfo, String workingDir) throws PhrescoException {
+	public static void runAndroidTest(Configuration configuration, MavenProjectInfo mavenProjectInfo, String workingDir ,String fromTest) throws PhrescoException {
 		try {			
 			Map<String, String> configs = MojoUtil.getAllValues(configuration);
 			MavenProject project = mavenProjectInfo.getProject();

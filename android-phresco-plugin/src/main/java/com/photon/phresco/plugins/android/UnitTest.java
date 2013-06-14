@@ -31,6 +31,6 @@ public class UnitTest {
 		MavenProject project = mavenProjectInfo.getProject();
 		String unitTest = PluginConstants.UNIT;
 		String workingDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_DIR);
-		RunAndroidTest.runAndroidTest(configuration, mavenProjectInfo, workingDir);
+		RunAndroidTest.runAndroidTest(configuration, mavenProjectInfo, workingDir,unitTest);
 	}
 }

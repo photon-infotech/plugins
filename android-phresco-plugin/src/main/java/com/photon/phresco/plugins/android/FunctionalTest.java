@@ -31,6 +31,6 @@ public class FunctionalTest {
 		MavenProject project = mavenProjectInfo.getProject();
 		String functionalTest= PluginConstants.FUNCTIONAL;
 		String workingDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
-		RunAndroidTest.runAndroidTest(configuration, mavenProjectInfo, workingDir);
+		RunAndroidTest.runAndroidTest(configuration, mavenProjectInfo, workingDir,functionalTest);
 	}
 }
