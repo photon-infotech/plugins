@@ -47,14 +47,14 @@ import com.phresco.pom.util.PomProcessor;
 
 public class RunAndroidTest implements PluginConstants {
 	
-	public static void runAndroidTest(Configuration configuration, MavenProjectInfo mavenProjectInfo, String workingDir) throws PhrescoException {
+	public static void runAndroidTest(Configuration configuration, MavenProjectInfo mavenProjectInfo, String workingDir, String fromTest) throws PhrescoException {
 		try {			
 			Map<String, String> configs = MojoUtil.getAllValues(configuration);
 			MavenProject project = mavenProjectInfo.getProject();
 			String seleniumToolType = project.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_SELENIUM_TOOL);
 			String baseDir = mavenProjectInfo.getBaseDir().getPath();
 			// calabash Execution
-			if(StringUtils.isNotEmpty((seleniumToolType)) && seleniumToolType.equals(CALABASH)) {
+			if(fromTest.equals("functional")&& StringUtils.isNotEmpty((seleniumToolType)) && seleniumToolType.equals(CALABASH)) {
 				StringBuilder builder = new StringBuilder();
 				builder.append(CALABASH_ANDROID_COMMAND);
 				builder.append(STR_SPACE);
