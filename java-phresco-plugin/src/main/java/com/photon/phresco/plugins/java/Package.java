@@ -110,7 +110,7 @@ public class Package implements PluginConstants {
         pu = new PluginUtils();
         builder = new StringBuilder();
         moduleName = configs.get(PROJECT_MODULE);
-        packageType = configs.get("package-type");
+        packageType = configs.get("packageType");
         String packMinifiedFilesValue = configs.get(PACK_MINIFIED_FILES);
         File warConfigFile = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + WAR_CONFIG_FILE);
         PluginUtils.checkForConfigurations(baseDir, environmentName);
