@@ -37,6 +37,24 @@
 -->
 <component-set>
   <components>
+	<!--
+              Adds handling for 'apk1' packaging.  This implies the POM has defined 'apk1' as the packaging
+              Customized role-hint for WG
+       -->
+	<component>
+		 <role>org.apache.maven.lifecycle.mapping.LifecycleMapping</role>
+		 <role-hint>apk1</role-hint>
+		 <implementation>
+		   org.apache.maven.lifecycle.mapping.DefaultLifecycleMapping
+		 </implementation>
+		 <configuration>
+		   <phases>
+			<install>
+			   com.photon.maven.plugins.android.generation2:android-maven-plugin:updatebuildinfo
+			</install>
+		   </phases>
+		 </configuration>
+	</component>
     <component>
       <role>org.apache.maven.lifecycle.mapping.LifecycleMapping</role>
       <role-hint>apk</role-hint>
