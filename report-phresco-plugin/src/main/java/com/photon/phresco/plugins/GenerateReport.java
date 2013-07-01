@@ -152,7 +152,7 @@ public class GenerateReport implements PluginConstants {
 	private static final String PROJECT_NAME = "projectName";
 	private static final String LOGO = "logo";
 	private static final String PDF_PROJECT_CODE = "projectCode";
-	private static final String MMM_DD_YYYY_HH_MM = "MMM dd yyyy HH.mm";
+	private static final String MMM_DD_YYYY_HH_MMA = "ddMMMyyyy_hh.mma";
 	private MavenProject mavenProject;
 	private File baseDir;
 	private Log log;
@@ -207,9 +207,9 @@ public class GenerateReport implements PluginConstants {
     private static String copyRightPageNumberBackColor = "#DE522F";
 	
     public GenerateReport() {
-    	final Date today = Calendar.getInstance().getTime();
-        final DateFormat yymmdd = new SimpleDateFormat(MMM_DD_YYYY_HH_MM);
-        this.fileName = yymmdd.format(today);
+    	final Date currentTime = Calendar.getInstance().getTime();
+        final SimpleDateFormat yymmdd =new SimpleDateFormat(MMM_DD_YYYY_HH_MMA);
+        this.fileName = yymmdd.format(currentTime);
     }
     
 	public void HtmlToPdfConverter(File targetHtmlIndexFile, String tempOutFileNameHTML, String tempOutFileNameIphoneSonarPDF)
