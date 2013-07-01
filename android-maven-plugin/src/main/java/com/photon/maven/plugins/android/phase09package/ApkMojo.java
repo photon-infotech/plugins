@@ -708,9 +708,9 @@ public class ApkMojo extends AbstractAndroidMojo {
 			commands.add(artifact.getFile().getAbsolutePath());
 		}
 
-		getLog().info(getAndroidSdk().getPathForTool("apkbuilder") + " " + commands.toString());
+		getLog().info( getAndroidSdk().getApkBuilderPath() + " " + commands.toString() );
 		try {
-			executor.executeCommand(getAndroidSdk().getPathForTool("apkbuilder"), commands, project.getBasedir(), false);
+			executor.executeCommand( getAndroidSdk().getApkBuilderPath(), commands, project.getBasedir(),false );
 		} catch (ExecutionException e) {
 			throw new MojoExecutionException("", e);
 		}
@@ -1048,9 +1048,9 @@ public class ApkMojo extends AbstractAndroidMojo {
 			commands.add(aaptExtraArg);
 		}
 
-		getLog().info(getAndroidSdk().getPathForTool("aapt") + " " + commands.toString());
+		getLog().info( getAndroidSdk().getAaptPath() + " " + commands.toString() );
 		try {
-			executor.executeCommand(getAndroidSdk().getPathForTool("aapt"), commands, project.getBasedir(), false);
+			executor.executeCommand( getAndroidSdk().getAaptPath(), commands, project.getBasedir(), false );
 		} catch (ExecutionException e) {
 			throw new MojoExecutionException("", e);
 		}
