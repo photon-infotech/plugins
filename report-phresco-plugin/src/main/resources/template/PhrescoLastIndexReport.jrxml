@@ -174,7 +174,7 @@
 		<band height="325">
 			<frame>
 				<reportElement x="100" y="79" width="323" height="32" isRemoveLineWhenBlank="true">
-					<printWhenExpression><![CDATA[($P{unitTestReports} == null ? Boolean.FALSE : Boolean.TRUE) || ($P{multiModuleUnitTestReports} == null ? Boolean.FALSE : Boolean.TRUE)]]></printWhenExpression>
+					<printWhenExpression><![CDATA[(($P{unitTestReports} == null ? Boolean.FALSE : Boolean.TRUE) && !$P{unitTestReports}.isEmpty()) || (!$P{multiModuleUnitTestReports}.isEmpty())]]></printWhenExpression>
 				</reportElement>
 				<ellipse>
 					<reportElement style="PIRTitleLabel" x="17" y="15" width="5" height="5" isRemoveLineWhenBlank="true"/>

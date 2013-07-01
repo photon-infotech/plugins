@@ -272,7 +272,7 @@ public class GenerateReport implements PluginConstants {
 				}
 				
 				//crisp and detail view report generation
-				if (isMultiModuleProject) {
+				if (isMultiModuleProject && UNIT.equals(testType)) {
 					// multi module project....
 					List<ModuleSureFireReport> moduleWiseReports = new ArrayList<ModuleSureFireReport>();
 					for (String module : modules) {
