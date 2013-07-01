@@ -1,11 +1,13 @@
-/*
- * Copyright (C) 2009, 2010 Jayway AB
+/**
+ * Android Maven Plugin - android-maven-plugin
+ *
+ * Copyright (C) 1999-2013 Photon Infotech Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -50,7 +52,7 @@ public class AbstractAndroidMojoTest {
         SdkTestSupport testSupport = new SdkTestSupport();
         androidMojo = new EmptyAndroidMojo();
         Reflection.field("sdkPath").ofType(File.class).in(androidMojo).set(null);
-        Reflection.field("sdkPlatform").ofType(String.class).in(androidMojo).set("1.6");
+        Reflection.field("sdkPlatform").ofType(String.class).in(androidMojo).set("4.1.2");
         AndroidSdk sdk = androidMojo.getAndroidSdk();
         File path = Reflection.field("sdkPath").ofType(File.class).in(sdk).get();
         Assert.assertEquals(new File(testSupport.getEnv_ANDROID_HOME()).getAbsolutePath(), path.getAbsolutePath());
@@ -110,7 +112,7 @@ public class AbstractAndroidMojoTest {
 
         @Override
         protected AndroidSdk getAndroidSdk() {
-            return new SdkTestSupport().getSdk_with_platform_1_5();
+        	return new SdkTestSupport().getSdk_with_platform_default();
         }
 
         public void execute() throws MojoExecutionException, MojoFailureException {
