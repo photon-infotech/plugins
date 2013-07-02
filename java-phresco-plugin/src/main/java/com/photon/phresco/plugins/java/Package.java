@@ -94,6 +94,7 @@ public class Package implements PluginConstants {
 	private StringBuilder builder;
 	private String pomName;
 	private String packageType;
+	private String packagingType;
 	
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -114,6 +115,7 @@ public class Package implements PluginConstants {
         String packMinifiedFilesValue = configs.get(PACK_MINIFIED_FILES);
         File warConfigFile = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + WAR_CONFIG_FILE);
         PluginUtils.checkForConfigurations(baseDir, environmentName);
+        packagingType = getPackagingType();
         try { 
 			init();
 			if (environmentName != null) {
@@ -147,6 +149,23 @@ public class Package implements PluginConstants {
 		} catch (IOException e) {
 			throw new PhrescoException(e);
 		}	
+	}
+	
+	private String getPackagingType() throws PhrescoException {
+		StringBuilder builder = new StringBuilder();
+		builder.append(baseDir.getPath())
+		.append(File.separatorChar);
+		if(StringUtils.isNotEmpty(moduleName)) {
+			builder.append(moduleName);
+			builder.append(File.separatorChar);
+		}
+		builder.append(pomName);
+		try {
+			PomProcessor pomProcessor = new PomProcessor(new File(builder.toString()));
+			return pomProcessor.getModel().getPackaging();
+		} catch (PhrescoPomException e) {
+			throw new PhrescoException(e);
+		}
 	}
 	
 	private void setFileSetExcludes(WarConfigProcessor configProcessor, String FileSetId, List<String> exclues) throws PhrescoException {
@@ -396,7 +415,7 @@ public class Package implements PluginConstants {
 		sb.append(STR_SPACE);
 		sb.append(MVN_PHASE_CLEAN);
 		sb.append(STR_SPACE);
-		sb.append(MVN_PHASE_PACKAGE);
+		sb.append(MVN_PHASE_INSTALL);
 		if(!Constants.POM_NAME.equals(pomName)) {
 			sb.append(STR_SPACE);
 			sb.append(Constants.HYPHEN_F);
@@ -461,55 +480,26 @@ public class Package implements PluginConstants {
 	}
 
 	private void createPackage() throws MojoExecutionException {
+		if(StringUtils.isNotEmpty(moduleName) && JAR.equals(packagingType) || StringUtils.isEmpty(packagingType)) {
+			return;
+		}
 		try {
 			zipName = util.createPackage(buildName, buildNumber, nextBuildNo, currentDate);
 			String zipFilePath = buildDir.getPath() + File.separator + zipName;
 			String zipNameWithoutExt = zipName.substring(0, zipName.lastIndexOf('.'));
-			ProjectUtils projectutils = new ProjectUtils();
-			ProjectInfo projectInfo = projectutils.getProjectInfo(baseDir);
-			TechnologyInfo applicationInfo = projectInfo.getAppInfos().get(0).getTechInfo();
-			String appTechId = applicationInfo.getId();
-			
-			
 			File packageInfoFile = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + PHRESCO_PACKAGE_FILE);
-			if (appTechId.equals(TechnologyTypes.JAVA_STANDALONE)) {
-				if(packageInfoFile.exists()) {
-					copyJarToPackage(zipNameWithoutExt);
-					PluginUtils.createBuildResources(packageInfoFile, baseDir, tempDir);
-				} else {
-					copyJarToPackage(zipNameWithoutExt);
-				}
-				ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
-			} else {
-				if(packageInfoFile.exists()) {
-					if(StringUtils.isNotEmpty(packageType)) {
-						if(packageType.equals("war")) {
-							copyWarToPackage(zipNameWithoutExt, context);
-							PluginUtils.createBuildResources(packageInfoFile, baseDir, tempDir);
-							ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
-						} else {
-							copyZipToPackage(zipNameWithoutExt, context);
-						}
-					} else {
-						copyWarToPackage(zipNameWithoutExt, context);
-						PluginUtils.createBuildResources(packageInfoFile, baseDir, tempDir);
-						ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
-					}
-				} else {
-					if(StringUtils.isNotEmpty(packageType)) {
-						if(packageType.equals("war")) {
-							copyWarToPackage(zipNameWithoutExt, context);
-							ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
-						} else {
-							copyZipToPackage(zipNameWithoutExt, context);
-						}
-					} else {
-						copyWarToPackage(zipNameWithoutExt, context);
-						ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
-					}
-				}
-			}
 			
+			if ("war".equals(packagingType)) {
+				if("zip".equals(packageType)) {
+					copyZipToPackage(zipNameWithoutExt, context);
+				} else {
+					copyWarToPackage(zipNameWithoutExt, context);
+				}
+			} else  {
+				copyJarToPackage(zipNameWithoutExt);
+			}
+			PluginUtils.createBuildResources(packageInfoFile, baseDir, tempDir);
+			ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getErrorMessage(), e);
 		}
@@ -572,6 +562,9 @@ public class Package implements PluginConstants {
 	}
 	
 	private void writeBuildInfo(boolean isBuildSuccess) throws MojoExecutionException {
+		if(StringUtils.isNotEmpty(moduleName) && JAR.equals(packagingType) || StringUtils.isEmpty(packagingType)) {
+			return;
+		}
 		util.writeBuildInfo(isBuildSuccess, buildName, buildNumber, nextBuildNo, environmentName, buildNo, currentDate, buildInfoFile);
 	}
 
