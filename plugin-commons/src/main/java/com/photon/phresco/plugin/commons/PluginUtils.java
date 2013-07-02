@@ -1217,6 +1217,9 @@ public class PluginUtils {
 	}
 	
 	public static void createBuildResources(File packageInfoFile, File baseDir, File tempDir) throws MojoExecutionException {
+		if(!packageInfoFile.exists()) {
+			return;
+		}
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder;
 		Document doc;
