@@ -41,6 +41,7 @@ var TestManager = (function() {
 			} else {
 				tests["__0__"].push(res);
 			}
+			
 		});
 
 		QUnit.moduleStart(function(a) {
@@ -58,6 +59,7 @@ var TestManager = (function() {
 			}
 			suiteResult.tests = tests[module.name];
 			suiteResult.duration = new Date().getTime() - suiteStartTime;
+			document.getElementById("fixture").innerHTML = ""
 			xmlhttpPost(generateUrl('result/suite', browserId, emulator), suiteResult);
 		});
 
@@ -97,7 +99,10 @@ var TestManager = (function() {
 			var div = document.createElement('div');
 			div.setAttribute("id", "qunit");
 			body.appendChild(div);
-
+			var divFixture = document.createElement('div');
+			divFixture.setAttribute("id", "fixture");
+			divFixture.setAttribute("style", "display:none;");
+			body.appendChild(divFixture);
 		};
 
 	};

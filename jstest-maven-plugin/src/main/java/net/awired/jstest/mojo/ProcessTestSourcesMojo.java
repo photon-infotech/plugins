@@ -115,6 +115,7 @@ public class ProcessTestSourcesMojo extends AbstractJsTestMojo {
 
                 try {
                     String fileContent = "";
+
                     if (checkFile) {
                     	getLog().info("Added  file === " + file);
                         fileContent = fileUtilsWrapper.readFileToString(new File(sourceScriptDirectory.getDirectory(), file));
@@ -143,7 +144,7 @@ public class ProcessTestSourcesMojo extends AbstractJsTestMojo {
     private static Boolean checkFile(String file) {
     	Boolean status = false;
     	for (String fileType : allowedFiles) {
-    		if (file.toLowerCase().endsWith(fileType)) {
+    		if (file.toLowerCase().endsWith(fileType) || file.toLowerCase().contains("lib")) {
     			status = true;
     		}
     	}
