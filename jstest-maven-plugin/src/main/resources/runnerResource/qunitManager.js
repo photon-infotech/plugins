@@ -59,7 +59,6 @@ var TestManager = (function() {
 			}
 			suiteResult.tests = tests[module.name];
 			suiteResult.duration = new Date().getTime() - suiteStartTime;
-			document.getElementById("fixture").innerHTML = ""
 			xmlhttpPost(generateUrl('result/suite', browserId, emulator), suiteResult);
 		});
 
@@ -92,6 +91,7 @@ var TestManager = (function() {
 					}
 				});
 			}, 500);
+			document.getElementById("fixture").innerHTML = ""
 		});
 		
 		this.run = function() {
@@ -103,6 +103,10 @@ var TestManager = (function() {
 			divFixture.setAttribute("id", "fixture");
 			divFixture.setAttribute("style", "display:none;");
 			body.appendChild(divFixture);
+			var divCustomFixture = document.createElement('div');
+			divCustomFixture.setAttribute("id", "custom");
+			divCustomFixture.setAttribute("style", "display:none;");
+			body.appendChild(divCustomFixture);
 		};
 
 	};
