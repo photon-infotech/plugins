@@ -17,6 +17,7 @@
  */
 package com.photon.phresco.plugins.xcode;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -202,10 +203,21 @@ public class Package implements PluginConstants {
 			buildArgCmds.add(Constants.HYPHEN_F);
 			buildArgCmds.add(pomFileName);
 		}
-        BufferedReader reader = applicationManager.performAction(embedProject, ActionType.BUILD, null, embedBaseDir);
-        while (reader.readLine() != null) {
-            System.out.println(reader.readLine());
-        }
+		
+		BufferedInputStream reader = applicationManager.performAction(embedProject, ActionType.BUILD, null, embedBaseDir);
+		int available = reader.available();
+		while (available != 0) {
+			byte[] buf = new byte[available];
+            int read = reader.read(buf);
+            if (read == -1 ||  buf[available-1] == -1) {
+            	break;
+            } else {
+            	String line = new String(buf);
+            	System.out.println(line);
+            }
+            available = reader.available();
+		}
+		
         File pomFile = new File(baseDir.getPath() + File.separator + pom);
         PomProcessor pomProcessor = new PomProcessor(pomFile);
         String appTargetProp = pomProcessor.getProperty(Constants.POM_PROP_KEY_EMBED_APP_TARGET_DIR);
