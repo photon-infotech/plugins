@@ -177,8 +177,11 @@ public class Start implements PluginConstants {
 				sb.append(STR_SPACE);
 				sb.append(JAVA_TOMCAT_RUN);
 				sb.append(STR_SPACE);
-				sb.append("-Dserver.port=");
+				sb.append(SERVER_PORT);
 				sb.append(serverPort);
+				sb.append(STR_SPACE);
+				sb.append(SERVER_ENV);
+				sb.append(environmentName);
 				if(!Constants.POM_NAME.equals(pomFile)) {
 					sb.append(STR_SPACE);
 					sb.append(Constants.HYPHEN_F);
@@ -186,7 +189,6 @@ public class Start implements PluginConstants {
 					sb.append(pomFile);
 				}
 				fos = new FileOutputStream(errorLog, false);
-				// ProcessBuilder pb = new ProcessBuilder(BASH, "-c", sb.toString());
 				Utility.executeStreamconsumer(sb.toString(), fos);
 			} catch (FileNotFoundException e) {
 				throw new MojoExecutionException(e.getMessage(), e);
