@@ -140,11 +140,11 @@ public class Start implements PluginConstants {
 				log.info("Server running at " + serverProtocol + "://" + serverhost + ":" + serverport + "/"
 						+ serverContext);
 			} else {
-				log.info("Server startup failed");
+				throw new PhrescoException("Server startup failed");
 			}
 			logWriter.writeLog(bufferedReader, fileWriter);
 		} catch (Exception e) {
-			log.info("Server startup failed");
+			log.error("Server startup failed");
 			throw new MojoExecutionException(e.getMessage());
 		} finally {
 			Utility.closeStream(bufferedReader);

@@ -147,6 +147,7 @@ public interface PluginConstants {
 	 String JBOSS_GOAL					= "cargo:redeploy";
 	 //String T7_START_GOAL				= "t7:run-forked";
 	 //String T7_STOP_GOAL				= "t7:stop-forked";
+	 String SERVER_ENV					= "-Dserver.env=";
 	 String SERVER_PORT					= "-Dserver.port=";
 	 String SERVER_HOST					= "-Dserver.host=";
 	 String SERVER_USERNAME				= "-Dserver.username=";
