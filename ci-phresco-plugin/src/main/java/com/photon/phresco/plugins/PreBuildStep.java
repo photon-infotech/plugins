@@ -332,8 +332,8 @@ public class PreBuildStep  implements PluginConstants {
 			 }
 			 log.info("Job list found!!!!!");
 			 for (CIJob job : jobs) {
-				 log.info("job list job Names => " + job.getName());
-				 if (job.getName().equals(name)) {
+				 log.info("job list job Names => " + job.getJobName());
+				 if (job.getJobName().equals(name)) {
 					 return job;
 				 }
 			 }
