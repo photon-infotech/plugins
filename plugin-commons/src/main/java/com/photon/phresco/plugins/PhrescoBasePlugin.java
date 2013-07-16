@@ -294,7 +294,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 						}
 						DatabaseUtil.initDriverMap();
 						DatabaseUtil du = new DatabaseUtil();
-						driver = du.getDbDriver(type);
+						driver = du.getDbDriver(type.toLowerCase());
 						pluginUtils.adaptDBPerformanceJmx(testConfigFilePath, dbContextUrls, configurationsName, noOfUsers, Integer.parseInt(rampUpPeriod), loopCount, dbUrl, driver, userName, passWord);
 					} else {
 						pluginUtils.adaptPerformanceJmx(testConfigFilePath, contextUrls, noOfUsers, Integer.parseInt(rampUpPeriod), loopCount, Boolean.parseBoolean(authManager),authorizationUrl, 
