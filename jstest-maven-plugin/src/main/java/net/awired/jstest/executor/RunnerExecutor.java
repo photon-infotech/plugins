@@ -17,26 +17,24 @@
  */
 package net.awired.jstest.executor;
 
-import java.io.IOException;
+import java.io.File;
 import java.lang.reflect.Constructor;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.GeneralSecurityException;
 
+import org.apache.maven.plugin.logging.Log;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+
 import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.IncorrectnessListener;
 import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;
-import com.gargoylesoftware.htmlunit.WaitingRefreshHandler;
 import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
-public class RunnerExecutor {
+public class RunnerExecutor implements Executor {
 
     private final WebDriver driver;
+    private Log log = null;
 
     public RunnerExecutor() {
         this.driver = createDriver();
@@ -87,9 +85,10 @@ public class RunnerExecutor {
         return driver;
     }
 
-    public void execute(URL runnerUrl) {
+    public void execute(String runnerUrl) {
         try {
-            driver.get(runnerUrl.toString());
+        	System.out.println("########## runnerUrl " + runnerUrl+"?emulator=true");
+            driver.get(runnerUrl+"?emulator=true");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -98,5 +97,14 @@ public class RunnerExecutor {
     public void close() {
         driver.quit();
     }
+
+    public void setTargetSrcDir(File targetSourceDirectory) {
+        // TODO Auto-generated method stub
+        
+    }
+    
+    public void setLog(Log log) {
+		this.log = log;
+	}
  
 }

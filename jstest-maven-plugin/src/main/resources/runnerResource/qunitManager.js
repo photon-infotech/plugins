@@ -8,6 +8,7 @@ var TestManager = (function() {
 		var runStartTime;
 		var suiteStartTime;
 		var tests = {"__0__" : []};
+		var total = 0;
 		
 		QUnit.log(function(a) {
 		});
@@ -45,6 +46,7 @@ var TestManager = (function() {
 		});
 
 		QUnit.moduleStart(function(a) {
+			document.getElementById('testresult').innerText='Test Execution Started';
 			suiteStartTime = new Date().getTime();
 			tests[a.name] = [];
 		});
@@ -59,10 +61,12 @@ var TestManager = (function() {
 			}
 			suiteResult.tests = tests[module.name];
 			suiteResult.duration = new Date().getTime() - suiteStartTime;
+			total += suiteResult.tests.length; 
 			xmlhttpPost(generateUrl('result/suite', browserId, emulator), suiteResult);
 		});
 
 		QUnit.begin(function(a) {
+			document.getElementById('testresult').innerText='Test Execution Started';
 			runStartTime = new Date().getTime();
 		});
 
@@ -78,20 +82,23 @@ var TestManager = (function() {
 				xmlhttpPost(generateUrl('result/suite', browserId, emulator), suiteResult);
 			}
 			
-			var runResult = {};
-			JSCOV.storeCurrentRunResult('jasmineRun');
-			runResult.coverageResult = JSCOV.getStoredRunResult()[0];
-			runResult.duration = new Date().getTime() - runStartTime;
-			xmlhttpPost(generateUrl('result/run', browserId, emulator), runResult);
-			
-			setInterval(function() {
-				xmlhttpPost('runId', null, function(serverRunId) {
-					if (serverRunId !== '' && runId !== serverRunId) {
-						window.location.reload(true);
-					}
-				});
-			}, 500);
-			document.getElementById("fixture").innerHTML = ""
+			if (total > 0) {
+				document.getElementById('testresult').innerText='Test Execution Completed';
+				
+				var runResult = {};
+				JSCOV.storeCurrentRunResult('jasmineRun');
+				runResult.coverageResult = JSCOV.getStoredRunResult()[0];
+				runResult.duration = new Date().getTime() - runStartTime;
+				xmlhttpPost(generateUrl('result/run', browserId, emulator), runResult);
+				
+				setInterval(function() {
+					xmlhttpPost('runId', null, function(serverRunId) {
+						if (serverRunId !== '' && runId !== serverRunId) {
+							window.location.reload(true);
+						}
+					});
+				}, 500);
+			}
 		});
 		
 		this.run = function() {
@@ -110,6 +117,5 @@ var TestManager = (function() {
 		};
 
 	};
-	
 	
 })();

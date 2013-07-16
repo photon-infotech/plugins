@@ -55,7 +55,7 @@ public class PackBeforeTestMojo extends AbstractJsTestMojo {
 
             if (isEmulator()) {
                 executor = new RunnerExecutor();
-                executor.execute(new URL("http://localhost:" + getDevPort() + "/?emulator=true"));
+                executor.execute("http://localhost:" + getDevPort() + "/?emulator=true");
             }
 
             // let browsers detect that server is back

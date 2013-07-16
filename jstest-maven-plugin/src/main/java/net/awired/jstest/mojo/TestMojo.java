@@ -21,11 +21,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.awired.jstest.executor.Executor;
 import net.awired.jstest.executor.RunnerExecutor;
 import net.awired.jstest.mojo.inherite.AbstractJsTestMojo;
 import net.awired.jstest.resource.ResourceDirectory;
 import net.awired.jstest.resource.ResourceResolver;
 import net.awired.jstest.result.RunResult;
+import net.awired.jstest.runner.TestType;
 import net.awired.jstest.server.JsTestServer;
 import net.awired.jstest.server.handler.JsTestHandler;
 import net.awired.jstest.server.handler.ResultHandler;
@@ -53,7 +55,7 @@ public class TestMojo extends AbstractJsTestMojo {
         }
         
         JsTestServer jsTestServer = new JsTestServer(getLog(), getTestPort(), isTestPortFindFree());
-        RunnerExecutor executor = null;
+        Executor executor = null;
         try {
 			String testSourceDir = buildTestResourceDirectory().getDirectory().getPath();
         	File testSourcedir = new File(testSourceDir);
@@ -67,10 +69,11 @@ public class TestMojo extends AbstractJsTestMojo {
             ResourceResolver resourceResolver = new ResourceResolver(getLog(), buildCurrentSrcDir(false),
                     buildTestResourceDirectory(), buildOverlaysResourceDirectories(),
                     new ArrayList<ResourceDirectory>());
-            ResultHandler resultHandler = new ResultHandler(getLog(), getPreparedReportDir(), buildTestType(resourceResolver));
+            TestType testType = buildTestType(resourceResolver);
+            ResultHandler resultHandler = new ResultHandler(getLog(), getPreparedReportDir(), testType);
             
             JsTestHandler jsTestHandler = new JsTestHandler(resultHandler, getLog(), resourceResolver,
-                    buildAmdRunnerType(), buildTestType(resourceResolver), false, getLog().isDebugEnabled(),
+                    buildAmdRunnerType(), testType, false, getLog().isDebugEnabled(),
                     getAmdPreloads(), getTargetSourceDirectory());
             
             List<Handler> handlers = new ArrayList<Handler>(2);
@@ -81,8 +84,10 @@ public class TestMojo extends AbstractJsTestMojo {
             jsTestServer.startServer(handlerCollect);
 
             if (isEmulator()) {
-                executor = new RunnerExecutor();
-                executor.execute(new URL("http://localhost:" + getDevPort() + "/?emulator=true"));
+                executor = testType.getExecutor();
+                executor.setLog(getLog());
+                executor.setTargetSrcDir(getTargetSourceDirectory());
+                executor.execute("http://localhost:" + getDevPort() + "/");
             }
 
             // let browsers detect that server is back
