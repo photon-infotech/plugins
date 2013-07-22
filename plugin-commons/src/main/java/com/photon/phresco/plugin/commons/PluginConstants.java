@@ -64,6 +64,7 @@ public interface PluginConstants {
 	 String JMETER_TEST_FILE 			= "jMeterTestFile";
 	 String TEST_FILES_INCLUDED 		= "testFilesIncluded";
 	 String RESULT_FILES_NAME			= "resultFilesName";
+	 String RESULT_NAME 				= "resultName";
 	 String TEST_FILES_DIRECTORY 		= "testFilesDirectory";
      String STATIC_ANALYSIS_REPORT 		= "static-analysis-report";
      String INDEX_HTML 					= "index.html";

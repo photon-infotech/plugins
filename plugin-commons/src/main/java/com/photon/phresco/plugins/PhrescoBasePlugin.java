@@ -65,6 +65,7 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import com.google.gson.Gson;
 import com.photon.phresco.api.ConfigManager;
@@ -248,8 +249,9 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 				//If test basis is customise
 				if (StringUtils.isNotEmpty(testBasis) && CUSTOMISE.equals(testBasis)) {
 					List<String> jmxFiles = Arrays.asList(jmxs.split(CSV_PATTERN));
+					checkForSameJmxDirectory(jmxFiles);
 					if (testPomFile.exists()) {
-						List<Element> configList = createTestFilesIncludedTagInPom(doc, jmeterConfiguration, jmxFiles);
+						List<Element> configList = jmxUploadPluginConfiguration(doc, jmeterConfiguration, jmxFiles);
 						pomProcessor.addConfiguration(COM_LAZERYCODE_JMETER, JMETER_MAVEN_PLUGIN, configList);
 						pomProcessor.save();
 					}
@@ -262,7 +264,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 							break;
 						}
 					}
-					List<Element> configList = updateTestPomPluginConfiguration(doc, jmeterConfiguration, testName);
+					List<Element> configList = testAgainstParameterPluginConfiguration(doc, jmeterConfiguration, testName);
 					pomProcessor.addConfiguration(COM_LAZERYCODE_JMETER, JMETER_MAVEN_PLUGIN, configList);
 					pomProcessor.save();
 //					pluginUtils.changeTestName(basedir + File.separator + performanceTestDir + File.separator, testName);
@@ -313,71 +315,77 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 		}
 		return new DefaultExecutionStatus();
 	}
+
+	private void checkForSameJmxDirectory(List<String> jmxFiles) throws PhrescoException {
+		if (CollectionUtils.isNotEmpty(jmxFiles)) {
+			String dir = jmxFiles.get(0).split(SEP)[0];
+			for (String jmxFile : jmxFiles) {
+				if (dir.equals(jmxFile.split(SEP)[0])) {
+				} else {
+					throw new PhrescoException("Selected jmx files exists in different location. Please select files from same location");
+				}
+			}
+		}
+	}
 	
-	
-	private List<Element> createTestFilesIncludedTagInPom(Document doc, com.phresco.pom.model.Plugin.Configuration configuration, List<String> jmxFiles) {
+	private List<Element> jmxUploadPluginConfiguration(Document doc, com.phresco.pom.model.Plugin.Configuration configuration, List<String> jmxFiles) {
 		
 		List<Element> configList = configuration.getAny();
 		List<Element> newList = new ArrayList<Element>();
-		boolean resultTagAvailable = false;
-		String resultName = FileUtils.removeExtension(jmxFiles.get(0).split(SEP)[1]);
 		for (Element element : configList) {
-			if (RESULT_FILES_NAME.equals(element.getTagName())) {
-				resultTagAvailable = true;
-				element.setTextContent(resultName);
-				newList.add(element);
-			} else if(TEST_FILES_DIRECTORY.equals(element.getTagName())) {
+			if(TEST_FILES_DIRECTORY.equals(element.getTagName())) {
 				element.setTextContent(jmxFiles.get(0).split(SEP)[0]);
 				newList.add(element);
-			} else if(!TEST_FILES_INCLUDED.equals(element.getTagName())) {
+			} else if(!TEST_FILES_INCLUDED.equals(element.getTagName()) && !RESULT_FILES_NAME.equalsIgnoreCase(element.getTagName())) {
 				newList.add(element);
 			} 
 		} 
-		
-		if (!resultTagAvailable) {
-			Element resultFilesNameElement = doc.createElement(RESULT_FILES_NAME);
-			resultFilesNameElement.setTextContent(resultName);
-			newList.add(resultFilesNameElement);
-		}
-		
-		Element testFilesIncludedElement = doc.createElement(TEST_FILES_INCLUDED);
-		for (String jmxFile : jmxFiles) {
-			appendChildElement(doc, testFilesIncludedElement, JMETER_TEST_FILE, jmxFile.split(SEP)[1]);
-		}
-		newList.add(testFilesIncludedElement);
+		createResultFilesName(doc, jmxFiles, newList);
+		createTestFilesIncludes(doc, jmxFiles, newList);
 		
 		return newList;
 	}
-	
-	private List<Element> updateTestPomPluginConfiguration(Document doc, com.phresco.pom.model.Plugin.Configuration configuration, String resultName) {
+
+	private List<Element> testAgainstParameterPluginConfiguration(Document doc, com.phresco.pom.model.Plugin.Configuration configuration, String resultName) {
 		
 		List<Element> configList = configuration.getAny();
 		List<Element> newList = new ArrayList<Element>();
-		boolean resultTagAvailable = false;
 		for (Element element : configList) {
-			if (RESULT_FILES_NAME.equals(element.getTagName())) {
-				resultTagAvailable = true;
-				element.setTextContent(resultName);
-				newList.add(element);
-			} else if(TEST_FILES_DIRECTORY.equals(element.getTagName())) {
+			if(TEST_FILES_DIRECTORY.equals(element.getTagName())) {
 				element.setTextContent(TESTS_SLASH);
 				newList.add(element);
-			} else if(!TEST_FILES_INCLUDED.equals(element.getTagName())) {
+			} else if(!TEST_FILES_INCLUDED.equals(element.getTagName()) && !RESULT_FILES_NAME.equalsIgnoreCase(element.getTagName())) {
 				newList.add(element);
 			} 
 		} 
 		
-		if (!resultTagAvailable) {
-			Element resultFilesNameElement = doc.createElement(RESULT_FILES_NAME);
-			resultFilesNameElement.setTextContent(resultName);
-			newList.add(resultFilesNameElement);
-		}
+		Element resultFilesNameElement = doc.createElement(RESULT_FILES_NAME);
+		appendChildElement(doc, resultFilesNameElement, RESULT_NAME, resultName);
+		newList.add(resultFilesNameElement);
 		
 		Element testFilesIncludedElement = doc.createElement(TEST_FILES_INCLUDED);
 		appendChildElement(doc, testFilesIncludedElement, JMETER_TEST_FILE, PHRESCO_FRAME_WORK_TEST_PLAN_JMX);
 		newList.add(testFilesIncludedElement);
 		
 		return newList;
+	}
+	
+	private void createTestFilesIncludes(Document doc, List<String> jmxFiles, List<Element> newList) {
+		Element testFilesIncludedElement = doc.createElement(TEST_FILES_INCLUDED);
+		for (String jmxFile : jmxFiles) {
+			appendChildElement(doc, testFilesIncludedElement, JMETER_TEST_FILE, jmxFile.split(SEP)[1]);
+		}
+		newList.add(testFilesIncludedElement);
+	}
+
+	private void createResultFilesName(Document doc, List<String> jmxFiles, List<Element> newList) {
+		Element resultFilesNameElement = doc.createElement(RESULT_FILES_NAME);
+		for (String jmxFile : jmxFiles) {
+			int lastDot = jmxFile.split(SEP)[1].lastIndexOf(DOT);
+			String resultName = jmxFile.split(SEP)[1].substring(0, lastDot);
+			appendChildElement(doc, resultFilesNameElement, RESULT_NAME, resultName);
+		}
+		newList.add(resultFilesNameElement);
 	}
 	
 	private Element appendChildElement(Document doc, Element parent, String elementName, String textContent) {
@@ -391,6 +399,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 		if (StringUtils.isNotEmpty(textContent)) {
 			element.setTextContent(textContent);
 		}
+		
 		return element;
 	}
 	
@@ -455,7 +464,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 				if (StringUtils.isNotEmpty(testBasis) && CUSTOMISE.equals(testBasis)) {
 					List<String> jmxFiles = Arrays.asList(jmxs.split(CSV_PATTERN));
 					if (testPomFile.exists()) {
-						List<Element> configList = createTestFilesIncludedTagInPom(doc, jmeterConfiguration, jmxFiles);
+						List<Element> configList = jmxUploadPluginConfiguration(doc, jmeterConfiguration, jmxFiles);
 						pomProcessor.addConfiguration(COM_LAZERYCODE_JMETER, JMETER_MAVEN_PLUGIN, configList);
 						pomProcessor.save();
 					}
@@ -468,7 +477,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 							break;
 						}
 					}
-					List<Element> configList = updateTestPomPluginConfiguration(doc, jmeterConfiguration, testName);
+					List<Element> configList = testAgainstParameterPluginConfiguration(doc, jmeterConfiguration, testName);
 					pomProcessor.addConfiguration(COM_LAZERYCODE_JMETER, JMETER_MAVEN_PLUGIN, configList);
 					pomProcessor.save();
 					//pluginUtils.changeTestName(basedir + loadTestDir + File.separator, testName);
