@@ -122,10 +122,6 @@ public class PluginUtils {
 				ConfigWriter globalWriter = new ConfigWriter(globalReader, true);
 				globalWriter.saveXml(srcReaderToAppend, environmentType);
 			}
-		} catch (TransformerException e) {
-			throw new PhrescoException(e);
-		} catch (IOException e) {
-			throw new PhrescoException(e);
 		} catch (ConfigurationException e) {
 			throw new PhrescoException(e);
 		}
