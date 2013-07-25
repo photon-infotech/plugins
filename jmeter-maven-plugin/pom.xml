@@ -6,11 +6,18 @@
         <artifactId>oss-parent</artifactId>
         <groupId>org.sonatype.oss</groupId>
         <version>7</version>
+    </parent> 
+	<!-- 
+	<parent>
+        <groupId>com.photon.phresco.plugins</groupId>
+        <artifactId>phresco-plugins-root</artifactId>
+        <version>3.0.0.18001-SNAPSHOT</version>
+        <relativePath>../</relativePath>
     </parent>
-
+ -->
     <groupId>com.lazerycode.jmeter</groupId>
     <artifactId>jmeter-maven-plugin</artifactId>
-    <version>3.0.0.13001-SNAPSHOT</version>
+    <version>3.0.0.18001-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
     <name>JMeter Maven Plugin</name>
     <description>A plugin to allow you to run JMeter tests with Maven.</description>
@@ -78,7 +85,7 @@
             <name>Dmytro Pishchukhin</name>
         </contributor>
     </contributors>
-
+<!-- 
     <issueManagement>
         <system>GitHub</system>
         <url>https://github.com/Ronnie76er/jmeter-maven-plugin/issues</url>
@@ -108,8 +115,8 @@
         <url>https://github.com/Ronnie76er/jmeter-maven-plugin</url>
         <tag>HEAD</tag>
     </scm>
-
-    <distributionManagement>
+ -->
+    <!-- <distributionManagement>
         <repository>
             <id>sonatype-nexus-staging</id>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
@@ -118,8 +125,18 @@
             <id>sonatype-nexus-snapshots</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
         </snapshotRepository>
+    </distributionManagement> -->
+ <distributionManagement>
+            <repository>
+                <id>${releases.repo.id}</id>
+                <url>${releases.repo.url}</url>
+            </repository>
+            <snapshotRepository>
+                <id>${snapshots.repo.id}</id>
+                <url>${snapshots.repo.url}</url>
+            </snapshotRepository>
+       
     </distributionManagement>
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jmeter.version>2.9</jmeter.version>
