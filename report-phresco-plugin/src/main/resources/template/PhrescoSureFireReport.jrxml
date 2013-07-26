@@ -166,14 +166,13 @@
 			</frame>
 		</band>
 		<band height="212">
+			<printWhenExpression><![CDATA[$P{reportsDataType}.equals("detail")]]></printWhenExpression>
 			<frame>
 				<reportElement x="0" y="0" width="555" height="209">
 					<printWhenExpression><![CDATA[!$F{testSuites}.isEmpty()]]></printWhenExpression>
 				</reportElement>
 				<subreport>
-					<reportElement x="0" y="0" width="555" height="209">
-						<printWhenExpression><![CDATA[$P{reportsDataType}.equals("detail")]]></printWhenExpression>
-					</reportElement>
+					<reportElement x="0" y="0" width="555" height="209"/>
 					<subreportParameter name="testType">
 						<subreportParameterExpression><![CDATA[$P{testType}]]></subreportParameterExpression>
 					</subreportParameter>
