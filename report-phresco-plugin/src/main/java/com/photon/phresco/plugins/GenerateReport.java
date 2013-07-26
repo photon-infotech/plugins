@@ -425,10 +425,10 @@ public class GenerateReport implements PluginConstants {
 			cumulativeReportparams.put(REPORTS_TYPE, reportType);
 			cumulativeReportparams.put(IS_CLASS_EMPTY, isClassEmpty);
 			
-			if(deviceReportAvail) {
+			if(deviceReportAvail && CollectionUtils.isNotEmpty(jmeterTestResultsForAndroid)) {
 				cumulativeReportparams.put(PERFORMANCE_SPECIAL_HANDLE, true);
 				cumulativeReportparams.put(PERFORMANCE_TEST_REPORTS, jmeterTestResultsForAndroid);
-			} else {
+			} else if (CollectionUtils.isNotEmpty(jmeterTestResults)) {
 				cumulativeReportparams.put(PERFORMANCE_SPECIAL_HANDLE, false);
 				cumulativeReportparams.put(PERFORMANCE_TEST_REPORTS, jmeterTestResults);
 			}
@@ -1667,17 +1667,7 @@ public class GenerateReport implements PluginConstants {
 						  HSSFSheet mySheet = myWorkBook.getSheetAt(j);
 						  if(mySheet.getSheetName().equals(fileName)) {
 							  Iterator<Row> rowIterator = mySheet.rowIterator();
-							  for (int i = 0; i <=23; i++) {
-								  rowIterator.next();
-							  }
-							  while (rowIterator.hasNext()) {
-								  Row next = rowIterator.next();
-								  if (StringUtils.isNotEmpty(getValue(next.getCell(1)))) {
-									  TestCase createObject = readTest(next);
-									  testCases.add(createObject);
-								  }
-							  }
-
+							  readTestFromSheet(testCases, mySheet);
 						  }
 					  }
 				  }
@@ -1687,55 +1677,81 @@ public class GenerateReport implements PluginConstants {
 		  return testCases;
 	  }
 
-	  private TestCase readTest(Row next){
-		  TestCase testcase = new TestCase();
-		  if(next.getCell(1) != null) {
-			  Cell cell = next.getCell(1);
-			  String value = getValue(cell);
-			  if(StringUtils.isNotEmpty(value)) {
-				  testcase.setFeatureId(value);
-			  }
-		  }
-		  if(next.getCell(3)!=null){
-			  Cell cell = next.getCell(3);
-			  String value=getValue(cell);
-			  if(StringUtils.isNotEmpty(value)) {
-				  testcase.setTestCaseId(value);
-			  }
-		  }
-
-		  if(next.getCell(8)!=null){
-			  Cell cell=next.getCell(8);
-			  String value=getValue(cell);
-			  if(StringUtils.isNotEmpty(value)) {
-				  testcase.setExpectedResult(value);
-			  }
-		  }
-		  if(next.getCell(9)!=null){
-			  Cell cell=next.getCell(9);
-			  String value=getValue(cell);
-			  if(StringUtils.isNotEmpty(value)) {
-				  testcase.setActualResult(value);
-			  }
-		  }
-		  if(next.getCell(10)!=null){
-			  Cell cell=next.getCell(10);
-			  String value=getValue(cell);
-			  if(StringUtils.isNotEmpty(value)) {
-				  testcase.setStatus(value);
-			  }
-		  }
-
-		  if(next.getCell(13)!=null){
-			  Cell cell=next.getCell(13);
-			  String value=getValue(cell);
-			  if(StringUtils.isNotEmpty(value)) {
-				  testcase.setBugComment(value);
-			  }
-		  }
-
-		  return testcase;
-	  }
+	private void readTestFromSheet(List<TestCase> testCases, HSSFSheet mySheet) {
+		Iterator<Row> rowIterator = mySheet.rowIterator();
+		for (int i = 0; i <= 23; i++) {
+			rowIterator.next();
+		}
+		while (rowIterator.hasNext()) {
+			Row next = rowIterator.next();
+			if (StringUtils.isNotEmpty(getValue(next.getCell(1)))) {
+				TestCase createObject = readTest(next);
+				testCases.add(createObject);
+			}
+		}
+	}
+	
+	private TestCase readTest(Row next){
+    	TestCase testcase = new TestCase();
+    	if(next.getCell(1) != null) {
+    		Cell cell = next.getCell(1);
+    		String value = getValue(cell);
+    		if(StringUtils.isNotEmpty(value)) {
+    			testcase.setFeatureId(value);
+    		}
+    	}
+    	if(next.getCell(3)!=null){
+    		Cell cell = next.getCell(3);
+    		String value=getValue(cell);
+    		if(StringUtils.isNotEmpty(value)) {
+    			testcase.setTestCaseId(value);
+    		}
+    	}
+    	if(next.getCell(4)!=null){
+    		Cell cell = next.getCell(4);
+    		String value=getValue(cell);
+    		if(StringUtils.isNotEmpty(value)) {
+    			testcase.setDescription(value);
+    		}
+    	}
+    	
+    	if(next.getCell(6)!=null){
+    		Cell cell=next.getCell(6);
+    		String value=getValue(cell);
+    		if(StringUtils.isNotEmpty(value)) {
+    			testcase.setSteps(value);
+    		}
+    	}
+    	if(next.getCell(9)!=null){
+    		Cell cell=next.getCell(9);
+    		String value=getValue(cell);
+    		if(StringUtils.isNotEmpty(value)) {
+    			testcase.setExpectedResult(value);
+    		}
+    	}
+    	if(next.getCell(10)!=null){
+    		Cell cell=next.getCell(10);
+    		String value=getValue(cell);
+    		if(StringUtils.isNotEmpty(value)) {
+    			testcase.setActualResult(value);
+    		}
+    	}
+    	if(next.getCell(11)!=null){
+    		Cell cell=next.getCell(11);
+    		String value=getValue(cell);
+    		if(StringUtils.isNotEmpty(value)) {
+    			testcase.setStatus(value);
+    		}
+    	}
+    	if(next.getCell(12)!=null){
+    		Cell cell=next.getCell(12);
+    		String value=getValue(cell);
+    		if(StringUtils.isNotEmpty(value)) {
+    			testcase.setBugComment(value);
+    		}
+    	}
+    	return testcase;
+	}
     
 	private void getUnitTestXmlFilesAndXpaths(String reportFilePath,
 			Map<String, String> reportDirWithTestSuitePath) {
