@@ -1213,6 +1213,9 @@ public class PluginUtils {
 	}
 	
 	public static void createBuildResources(File packageInfoFile, File baseDir, File tempDir) throws MojoExecutionException {
+		if(!packageInfoFile.exists()) {
+			return;
+		}
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder;
 		Document doc;
@@ -1321,4 +1324,21 @@ public class PluginUtils {
     	}
     	return null;
     }
+	
+	public void delete(File file) {
+		// Check if file is directory/folder
+		if (file.isDirectory()) {
+			// Get all files in the folder
+			File[] files = file.listFiles();
+			for (int i = 0; i < files.length; i++) {
+				// Delete each file in the folder
+				delete(files[i]);
+			}
+			// Delete the folder
+			file.delete();
+		} else {
+			// Delete the file if it is not a folder
+			file.delete();
+		}
+	}
 }

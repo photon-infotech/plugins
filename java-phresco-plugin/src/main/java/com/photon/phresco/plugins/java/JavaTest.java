@@ -59,6 +59,7 @@ public class JavaTest implements PluginConstants {
 		String environment = configs.get(ENVIRONMENT_NAME);
 		String goalPackBeforeTest = "";
 		String projectModule= "";
+		PluginUtils pluginUtils = new PluginUtils();
 		if(configuration != null) {
 			projectModule=configs.get(PROJECT_MODULE);
 		}
@@ -67,8 +68,23 @@ public class JavaTest implements PluginConstants {
 		} else {
 			projectModule = "";
 		}
+
+		if (testAgainst.equals(JAVA)) {
+			String reportDir = project.getProperties().getProperty("phresco.unitTest.java.report.dir");
+			reportDir = File.separator + projectModule + File.separator + reportDir;
+			File reportLoc = new File(baseDir.getPath() + reportDir);
+			if (reportLoc.exists()) {
+				pluginUtils.delete(reportLoc);
+			}
+		} else if (testAgainst.equals(JS)) {
+			String reportJsDir = project.getProperties().getProperty("phresco.unitTest.js.report.dir");
+			reportJsDir = File.separator + projectModule + File.separator + reportJsDir;
+			File reportJsLoc = new File(baseDir.getPath() + reportJsDir);
+			if (reportJsLoc.exists()) {
+				pluginUtils.delete(reportJsLoc);
+			}
+		}
 		if (testAgainst.equals(JS)) {
-			PluginUtils pluginUtils = new PluginUtils();
 			ApplicationInfo appInfo = pluginUtils.getAppInfo(mavenProjectInfo.getBaseDir());
 			String techId = appInfo.getTechInfo().getId();
 			copyUnitInfoFile(environment, techId , projectModule);

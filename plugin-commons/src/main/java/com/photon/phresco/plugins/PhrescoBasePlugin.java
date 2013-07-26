@@ -112,17 +112,26 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 	    File baseDir = mavenProjectInfo.getBaseDir();
 	    MavenProject project = mavenProjectInfo.getProject();
 	    String projectModule = "";
+	    String reportDir = "";
+	    PluginUtils pluginUtils = new PluginUtils();
 	    if(configuration != null) {
 	    	Map<String, String> configs = MojoUtil.getAllValues(configuration);
 	    	projectModule = configs.get(PROJECT_MODULE);
 	    }
 	    String workingDirectory = project.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_DIR);
+	    reportDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_RPT_DIR);
 	    if (StringUtils.isEmpty(workingDirectory)) {
 	        workingDirectory = "";
 	    }
 	    if (StringUtils.isNotEmpty(projectModule)) {
 	        workingDirectory = File.separator + projectModule + File.separator + workingDirectory;
+	        reportDir = File.separator + projectModule + File.separator + reportDir;
 	    }
+	    File reportLoc = new File (baseDir.getPath() + reportDir);
+	    if(reportLoc.exists()) {
+	    	pluginUtils.delete(reportLoc);
+	    }
+	    
 	    generateMavenCommand(mavenProjectInfo, baseDir.getPath() + workingDirectory, UNIT);
 	    
 	    return new DefaultExecutionStatus();
@@ -568,11 +577,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 		}
 		boolean status = Utility.executeStreamconsumer(sb.toString(), workingDirectory, mavenProjectInfo.getBaseDir().getPath(), actionType);
 		if(!status) {
-			try {
-				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
-			} catch (MojoExecutionException e) {
-				throw new PhrescoException(e);
-			}
+		throw new PhrescoException(Constants.MOJO_ERROR_MESSAGE);
 		}
 	}
 	
