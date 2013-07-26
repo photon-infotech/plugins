@@ -17,9 +17,11 @@
  */
 package com.photon.phresco.plugins.java;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -408,8 +410,9 @@ public class Package implements PluginConstants {
 		}
 	}
 	
-	private void executeMvnPackage() throws MojoExecutionException {
+	private void executeMvnPackage() throws MojoExecutionException, IOException {
 		log.info("Packaging the project...");
+		BufferedReader bufferedReader = null;
 		StringBuilder sb = new StringBuilder();
 		sb.append(MVN_CMD);
 		sb.append(STR_SPACE);
@@ -424,10 +427,15 @@ public class Package implements PluginConstants {
 		}
 		sb.append(STR_SPACE);
 		sb.append(builder.toString());
-		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(),"package");
-		if(!status) {
-			throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
-		}
+		String line ="";
+		String processName = ManagementFactory.getRuntimeMXBean().getName();
+		String[] split = processName.split("@");
+		String processId = split[0].toString();
+		Utility.writeProcessid(baseDir.getPath(), "package", processId);
+		bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
+		while ((line = bufferedReader.readLine()) != null) {
+				System.out.println(line); //do not use getLog() here as this line already contains the log type.
+			}
 	}
 
 	private boolean build() throws MojoExecutionException {
@@ -492,6 +500,7 @@ public class Package implements PluginConstants {
 			if ("war".equals(packagingType)) {
 				if("zip".equals(packageType)) {
 					copyZipToPackage(zipNameWithoutExt, context);
+					return;
 				} else {
 					copyWarToPackage(zipNameWithoutExt, context);
 				}
@@ -544,7 +553,6 @@ public class Package implements PluginConstants {
 			String[] list = targetDir.list(new ZipFileNameFilter());
 			if (list.length > 0) {
 				File zipFile = new File(targetDir.getPath() + File.separator + list[0]);
-				System.out.println("Zip File is  " + zipFile.getPath());
 				if(!buildDir.exists()) {
 					buildDir.mkdirs();
 				}
@@ -556,7 +564,6 @@ public class Package implements PluginConstants {
 				throw new MojoExecutionException(context + ".war not found in " + targetDir.getPath());
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
