@@ -38,12 +38,12 @@
 		<initialValueExpression><![CDATA[0]]></initialValueExpression>
 	</variable>
 	<lastPageFooter>
-		<band height="198">
+		<band height="218">
 			<frame>
-				<reportElement x="0" y="0" width="555" height="194"/>
+				<reportElement x="0" y="0" width="555" height="218"/>
 				<bar3DChart>
 					<chart>
-						<reportElement x="10" y="10" width="535" height="184"/>
+						<reportElement x="0" y="0" width="555" height="218"/>
 						<chartTitle/>
 						<chartSubtitle/>
 						<chartLegend/>
