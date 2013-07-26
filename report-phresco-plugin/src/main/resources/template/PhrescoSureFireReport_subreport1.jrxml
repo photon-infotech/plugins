@@ -248,13 +248,13 @@
 		</band>
 	</detail>
 	<summary>
-		<band height="161">
+		<band height="56">
 			<frame>
-				<reportElement x="0" y="0" width="555" height="159">
+				<reportElement x="0" y="0" width="555" height="55">
 					<printWhenExpression><![CDATA[!$P{allTestSuites}.isEmpty()]]></printWhenExpression>
 				</reportElement>
 				<subreport>
-					<reportElement x="0" y="0" width="555" height="159">
+					<reportElement x="0" y="0" width="555" height="53">
 						<printWhenExpression><![CDATA[!$P{allTestSuites}.isEmpty()]]></printWhenExpression>
 					</reportElement>
 					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{allTestSuites})]]></dataSourceExpression>
