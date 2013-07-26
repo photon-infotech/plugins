@@ -16,7 +16,8 @@ public class TestCase {
 	private TestCaseFailure testCaseFailure;
 	private TestCaseError testCaseError;
 	private String bugComment = "";
-
+	private String description = "";
+	private String steps = "";
 	public TestCase() {
 
 	}
@@ -141,6 +142,22 @@ public class TestCase {
 
 	public void setBugComment(String bugComment) {
 		this.bugComment = bugComment;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public String getSteps() {
+		return steps;
+	}
+
+	public void setSteps(String steps) {
+		this.steps = steps;
 	}
 
 }
