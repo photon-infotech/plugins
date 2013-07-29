@@ -126,7 +126,8 @@ public abstract class AbstractPhrescoPlugin implements PhrescoPlugin, CIPlugin {
 	 * @see com.photon.phresco.plugins.api.PhrescoPlugin#performCIPreBuildStep(java.lang.String, java.lang.String, java.lang.String, com.photon.phresco.plugin.commons.MavenProjectInfo)
 	 */
 	public ExecutionStatus performCIPreBuildStep(String jobName, String goal,
-			String phase, MavenProjectInfo mavenProjectInfo)
+			String phase, String creationType, String id,
+			String continuousDeliveryName, MavenProjectInfo mavenProjectInfo)
 			throws PhrescoException {
 		return new DefaultExecutionStatus();
 	}

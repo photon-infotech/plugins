@@ -38,15 +38,11 @@ import java.io.File;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
-import org.sonatype.aether.util.*;
+import org.sonatype.aether.util.StringUtils;
 
 import com.photon.phresco.exception.PhrescoException;
-import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugins.api.CIPlugin;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
-import com.photon.phresco.plugins.api.PhrescoPlugin2;
-import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
-import com.photon.phresco.plugins.util.MojoProcessor;
 import com.photon.phresco.util.Constants;
 
 /**
@@ -92,14 +88,41 @@ public class PhrescoCIPreBuildStep extends PhrescoAbstractMojo {
 	 * this phase is passed from jenkins
 	 */
 	private String phase;
+	
+	/**
+	 * @parameter expression ="${creationType}"
+	 * 
+	 * this creationType is passed from jenkins
+	 */
+	private String creationType;
+	
+	/**
+	 * @parameter expression ="${id}"
+	 * 
+	 * this id is passed from jenkins
+	 */
+	private String id;
+	
+	/**
+	 * @parameter expression ="${continuousDeliveryName}"
+	 * 
+	 * this continuousDeliveryName is passed from jenkins
+	 */
+	private String continuousDeliveryName;
+	
+	
     
     public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().info("Form Phresco PhrescoCIPreBuildStep Plugin");
         getLog().info(baseDir.getPath());
         getLog().info("Phase " + phase);
         getLog().info("goal " + goal);
+        getLog().info("creationType " + creationType);
+        getLog().info("id " + id);
+        getLog().info("continuousDeliveryName " + continuousDeliveryName);
         try {
-        	String infoFile = baseDir + File.separator + Constants.CI_INFO_FILE;
+//        	String infoFile = baseDir + File.separator + Constants.CI_INFO_FILE;
+        	String infoFile = baseDir + File.separator + ".phresco" + File.separator +"phresco-ci-" + phase + "-info.xml";
         	if (StringUtils.isEmpty(jobName)) {
         		throw new MojoExecutionException("job name is empty. Pass job name.");
         	}
@@ -107,7 +130,7 @@ public class PhrescoCIPreBuildStep extends PhrescoAbstractMojo {
             PhrescoPlugin plugin = getPlugin(getDependency(infoFile, PRE_BUILD_STEP));
             if(plugin instanceof CIPlugin) {
             	CIPlugin ciPlugin = (CIPlugin) plugin;
-            	ciPlugin.performCIPreBuildStep(jobName, goal, phase, getMavenProjectInfo(project));
+            	ciPlugin.performCIPreBuildStep(jobName, goal, phase, creationType, id, continuousDeliveryName, getMavenProjectInfo(project));
 			}
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);

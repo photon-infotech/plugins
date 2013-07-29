@@ -33,6 +33,6 @@ public interface CIPlugin extends PhrescoPlugin {
      * 
      * @throws PhrescoException
      */
-    ExecutionStatus performCIPreBuildStep(String jobName, String goal, String phase, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
+    ExecutionStatus performCIPreBuildStep(String jobName, String goal, String phase, String creationType, String id, String continuousDeliveryName, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
 }

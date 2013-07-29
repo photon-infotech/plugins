@@ -75,7 +75,7 @@ public interface PluginConstants {
      String WEB 						= "web";
      String JS 							= "js";
      String SONAR_LANGUAGE 				= "sonar.language";
-     String CI_INFO_FILE				= "cijob.info";
+     String CI_INFO_FILE				= "ciJob.info";
      String WAR_CONFIG_FILE				= "war-config.xml";
      String POM_PROP_CONFIG_FILE        = "phresco.env.config.xml";
      

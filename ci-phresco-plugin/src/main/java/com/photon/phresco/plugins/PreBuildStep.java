@@ -19,9 +19,7 @@ package com.photon.phresco.plugins;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,13 +37,14 @@ import com.google.gson.reflect.TypeToken;
 import com.photon.phresco.commons.model.ApplicationInfo;
 import com.photon.phresco.commons.model.ProjectInfo;
 import com.photon.phresco.exception.PhrescoException;
-import com.photon.phresco.framework.model.CIJob;
+import com.photon.phresco.commons.model.CIJob;
+import com.photon.phresco.commons.model.ContinuousDelivery;
+import com.photon.phresco.commons.model.ProjectDelivery;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
 import com.photon.phresco.plugins.util.MojoProcessor;
-import com.photon.phresco.plugins.util.PluginPackageUtil;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
 import com.phresco.pom.util.PomProcessor;
@@ -56,10 +55,9 @@ public class PreBuildStep  implements PluginConstants {
     private MavenProject project;
     private File baseDir;
     private Log log;
-    private PluginPackageUtil util;
     private String pom;
     
-	public void performCIPreBuildStep(String name, String goal, String phase, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
+	public void performCIPreBuildStep(String name, String goal, String phase,String creationType, String id, String continuousDeliveryName, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		log.info("CI prebuild step execution reached " + name);
 		log.info("goal is  " + goal);
 		try {
@@ -71,7 +69,6 @@ public class PreBuildStep  implements PluginConstants {
 	        // getting jenkins workspace job dir
 	        String jenkinsJobDirPath = getJenkinsJobDirPath(name);
 	        log.info("jenkinsJobDirPath ... " + jenkinsJobDirPath);
-			File jenkinsJobDir = new File(jenkinsJobDirPath);
 			
 			// get projects plugin info file path
 			File projectInfo = new File(baseDir, DOT_PHRESCO_FOLDER + File.separator + PROJECT_INFO_FILE);
@@ -94,7 +91,7 @@ public class PreBuildStep  implements PluginConstants {
 			}
 			
 			// get job name and get the ciJob object from CIJob file and update it in phrescoPackage file using mojo
-			CIJob job = getJob(appInfo, name);
+			CIJob job = getJob(appInfo, name, creationType, id, continuousDeliveryName);
 			if (job == null) {
 				throw new PhrescoException("Job object is empty ");
 			}
@@ -320,13 +317,18 @@ public class PreBuildStep  implements PluginConstants {
 		}
 	}
 	
-	 public CIJob getJob(ApplicationInfo appInfo, String name) throws PhrescoException {
+	 public CIJob getJob(ApplicationInfo appInfo, String name, String creationType, String id, String continuousDeliveryName) throws PhrescoException {
+		 List<CIJob> jobs = new ArrayList<CIJob>();
 		 try {
 			 log.info("Search for name => " + name);
 			 if (StringUtils.isEmpty(name)) {
 				 throw new PhrescoException("job name is empty");
 			 }
-			 List<CIJob> jobs = getJobs(appInfo);
+			 if (creationType.equals("local")) {
+				 jobs = getJobs(appInfo, id, continuousDeliveryName);
+			 } else if (creationType.equals("global")) {
+				 jobs = getJobs(id, continuousDeliveryName);
+			 }
 			 if(CollectionUtils.isEmpty(jobs)) {
 				 throw new PhrescoException("job list is empty!!!!!!!!");
 			 }
@@ -343,24 +345,57 @@ public class PreBuildStep  implements PluginConstants {
 		 return null;
 	 }
 	 
-	 public List<CIJob> getJobs(ApplicationInfo appInfo) throws PhrescoException {
-		 log.info("GetJobs Called!");
+	 public List<CIJob> getJobs(String id, String name) throws PhrescoException {
+		 log.info("Global GetJobs Called!");
+		 List<CIJob> jobs = new ArrayList<CIJob>();
 		 try {
-			 Gson gson = new Gson();
+			 StringBuilder builder = new StringBuilder(Utility.getProjectHome());
+			 builder.append(File.separator);
+			 builder.append(CI_INFO_FILE);
+			 File ciJobFile = new File(builder.toString());
+			 if (!ciJobFile.isFile()) {
+				 throw new PhrescoException("Ci job info file is not available to get the jobs in ProjectLevel.");
+			 }
+			 return extractJobs(ciJobFile, id , name);
+		 } catch (Exception e) {
+			 log.info("CI job info global file reading failed ");
+			 throw new PhrescoException(e);
+		 }
+	 }
+	 
+	 public List<CIJob> getJobs(ApplicationInfo appInfo, String id, String name) throws PhrescoException {
+		 log.info("Local GetJobs Called!");
+		 try {
 			 String ciJobPath = getCIJobPath(appInfo);
 			 File ciJobFile = new File(ciJobPath);
 			 if (!ciJobFile.isFile()) {
-				 throw new PhrescoException("Ci job info file is not available to get the jobs .");
+				 throw new PhrescoException("Ci job info file is not available to get the jobs in AppLevel .");
 			 }
-			 BufferedReader br = new BufferedReader(new FileReader(getCIJobPath(appInfo)));
-			 Type type = new TypeToken<List<CIJob>>(){}.getType();
-			 List<CIJob> jobs = gson.fromJson(br, type);
-			 br.close();
-			 return jobs;
+			 return extractJobs(ciJobFile, id, name);
 		 } catch (Exception e) {
 			 log.info("CI job info file reading failed ");
 			 throw new PhrescoException(e);
 		 }
+	 }
+	 
+	 private List<CIJob> extractJobs(File file, String id, String name) throws PhrescoException {
+		 try {
+			 List<CIJob> jobs = new ArrayList<CIJob>();
+			 List<ProjectDelivery> projectDeliveries;
+			 projectDeliveries = Utility.getProjectDeliveries(file);
+			 if (projectDeliveries != null) {
+				 ContinuousDelivery continuousDelivery = Utility.getContinuousDelivery(id, name, projectDeliveries);
+				 if (continuousDelivery != null) {
+					 jobs = continuousDelivery.getJobs();
+					 if (jobs != null) {
+						 return jobs;
+					 }
+				 }
+			 }
+		 } catch (PhrescoException e) {
+			 throw new PhrescoException();
+		 }
+		 return null;
 	 }
 	 
 	 private String getCIJobPath(ApplicationInfo appInfo) {
