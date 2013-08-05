@@ -144,7 +144,6 @@ public class ProcessTestSourcesMojo extends AbstractJsTestMojo {
     private static Boolean checkFile(String file) {
     	Boolean status = false;
     	for (String fileType : allowedFiles) {
-    		System.out.println("allow file => " + file);
     		if (file.toLowerCase().endsWith(fileType) || file.toLowerCase().contains("lib") || file.toLowerCase().contains("\\test\\")) { // exclude test directory
     			status = true;
     		}
