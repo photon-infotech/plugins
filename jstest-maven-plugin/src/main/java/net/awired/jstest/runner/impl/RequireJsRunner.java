@@ -18,7 +18,9 @@
 package net.awired.jstest.runner.impl;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.awired.jscoverage.instrumentation.JsInstrumentor;
@@ -40,16 +42,24 @@ public class RequireJsRunner extends Runner {
     public void replaceTemplateVars(StringTemplate template) throws Exception {
         template.setAttribute("testResources", buildTestResources(resolver));
         template.setAttribute("testsJsArray", buildTestsJsArray());
-        template.setAttribute("amdPreload", mapper.writeValueAsString(amdPreloads));
+        String amdPreloadsValue = mapper.writeValueAsString(amdPreloads);
+        if (amdPreloads != null) {
+        	List<String> newAmdPreloadsValues = new ArrayList<String>();
+        	for (String amdPreload : amdPreloads) {
+        		newAmdPreloadsValues.add("src/" + amdPreload); // src/ will be added here
+        	}
+        	amdPreloadsValue = mapper.writeValueAsString(newAmdPreloadsValues);
+        }
+        template.setAttribute("amdPreload", amdPreloadsValue);
     }
 
     private String buildTestResources(ResourceResolver resolver) {
         StringBuilder res = new StringBuilder();
         if (runnerType.getAmdFile() != null) {
-            htmlResourceTranformer.appendTag(res, ResourceResolver.SRC_RESOURCE_PREFIX + runnerType.getAmdFile());
+            htmlResourceTranformer.appendTag(res, ResourceResolver.LIB_RESOURCE_PREFIX + runnerType.getAmdFile());
         }
         for (String testerResource : testType.getTesterResources()) {
-            htmlResourceTranformer.appendTag(res, ResourceResolver.SRC_RESOURCE_PREFIX + testerResource);
+            htmlResourceTranformer.appendTag(res, ResourceResolver.LIB_RESOURCE_PREFIX + testerResource);
         }
         //        htmlResourceTranformer.appendTag(res, ResourceResolver.SRC_RESOURCE_PREFIX + "build/firebug-lite.js");
         htmlResourceTranformer.appendTag(res,

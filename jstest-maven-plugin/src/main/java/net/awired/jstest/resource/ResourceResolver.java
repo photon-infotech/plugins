@@ -32,6 +32,7 @@ public class ResourceResolver {
 
 	public static final String SRC_YUI_RESOURCE_PREFIX = "yui";
     public static final String SRC_RESOURCE_PREFIX = "/src/";
+    public static final String LIB_RESOURCE_PREFIX = "/src/lib/";
     public static final String TEST_RESOURCE_PREFIX = "/test/";
 
     private ResourceDirectoryScanner directoryScanner = new ResourceDirectoryScanner();
@@ -55,12 +56,21 @@ public class ResourceResolver {
         this.preloadOverlayDirs = preloadOverlayDirs;
 
         for (ResourceDirectory overlay : overlays) {
-            registerResourcesToMap(SRC_RESOURCE_PREFIX, directoryScanner.scan(overlay), overlay.getDirectory(), true);
+            String path = overlay.getDirectory().getPath();
+            log.debug("Resource dir path " + path);
+            registerResourcesToMap(LIB_RESOURCE_PREFIX, directoryScanner.scan(overlay), overlay.getDirectory(), true);
+            //registerResourcesToMap(SRC_RESOURCE_PREFIX, directoryScanner.scan(overlay), overlay.getDirectory(), true);
         }
+        
         for (ResourceDirectory overlayPreload : preloadOverlayDirs) {
+            String path = overlayPreload.getDirectory().getPath();
+            log.debug("OverlayPreload dir path " + path);
             registerResourcesToMap(SRC_RESOURCE_PREFIX, directoryScanner.scan(overlayPreload),
                     overlayPreload.getDirectory(), false);
         }
+        
+        log.debug("test.getDirectory  " + test.getDirectory().getPath());
+        log.debug("source.getDirectory  " + source.getDirectory().getPath());
         registerResourcesToMap(TEST_RESOURCE_PREFIX, directoryScanner.scan(test), test.getDirectory(), true);
         registerSrcResourcesToMap(SRC_RESOURCE_PREFIX, directoryScanner.scan(source), source.getDirectory(), true);
 
@@ -96,7 +106,12 @@ public class ResourceResolver {
                         + fullPath);
             } else {
                 String foundWithSlashes = found.replaceAll("\\\\", "/");
-                resources.put(prefix + foundWithSlashes, fullPath);
+                String resourcePrefix = prefix + foundWithSlashes;
+                log.debug("ResourcePrefix " + resourcePrefix);
+                resources.put(resourcePrefix, fullPath);
+                String sourcePrefix = prefix + foundWithSlashes;
+                log.debug("SourcePrefix " + sourcePrefix);
+                srcMap.put(sourcePrefix, fullPath);
             }
         }
     }

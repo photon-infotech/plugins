@@ -253,7 +253,9 @@ public abstract class JsTestConfiguration extends AbstractMojo {
             for (TestType testType : TestType.values()) {
                 File resource = resourceResolver.getResource(ResourceResolver.SRC_RESOURCE_PREFIX
                         + testType.getTesterResources()[0]);
-                if (resource != null) {
+                File libResource = resourceResolver.getResource(ResourceResolver.LIB_RESOURCE_PREFIX
+                        + testType.getTesterResources()[0]);
+                if (resource != null || libResource != null) {
                     this.testType = testType;
                 }
             }
