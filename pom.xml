@@ -18,7 +18,8 @@
         <module>java-phresco-plugin</module>
         <module>xcode-phresco-plugin</module>
         <module>nodejs-phresco-plugin</module>    
-        <module>wordpress-phresco-plugin</module>   
+        <module>wordpress-phresco-plugin</module>
+		<module>js-coverage-maven-plugin</module>
         <module>jstest-maven-plugin</module>    
         <module>js-testrunner-plugin</module>         
         <module>javascript-maven-plugin</module>
