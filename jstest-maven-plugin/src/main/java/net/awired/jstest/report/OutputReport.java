@@ -96,12 +96,14 @@ public class OutputReport implements Report {
                 builder.append(result.getDuration());
                 builder.append("ms");
                 if (result.getCoverageResult() != null) {
-                    builder.append(", Coverage: ");
+                    builder.append(", Coverage for executed source scripts: ");
                     builder.append(coverageFormat.format(result.getCoverageResult().findCoveragePercent()));
                     builder.append('%');
                 }
                 builder.append(", Agent: ");
                 builder.append(result.userAgentToString());
+                builder.append("\n");
+				builder.append("[INFO] For total coverage check with sonar");
                 builder.append("\n");
             }
         }
