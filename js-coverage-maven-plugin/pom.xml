@@ -13,11 +13,27 @@
 		<version>1.14</version>
 	</parent>
 	
-	<scm>
+   	<scm>
 		<connection>scm:git:git://github.com/awired/jscoverage.git</connection>
 		<developerConnection>scm:git:git@github.com:awired/jscoverage.git</developerConnection>
 		<url>http://github.com/awired/jscoverage</url>
-	</scm>
+	</scm> 
+
+        <distributionManagement>
+        <repository>
+            <id>${releases.repo.id}</id>
+            <url>${releases.repo.url}</url>
+        </repository>
+        <snapshotRepository>
+            <id>${snapshots.repo.id}</id>
+            <url>${snapshots.repo.url}</url>
+        </snapshotRepository>
+        <site>
+            <id>phresco.plugins.javascript</id>
+            <name>Phresco Plugins - Javascript</name>
+            <url>${siteBaseUrl}/plugins/javascript-maven-plugin/</url>
+        </site>
+    </distributionManagement>
 	
 	<properties>
 		<antlr.version>3.4</antlr.version>
