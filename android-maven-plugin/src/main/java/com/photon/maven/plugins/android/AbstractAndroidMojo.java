@@ -479,7 +479,7 @@ public abstract class AbstractAndroidMojo extends AbstractMojo
     /**
      * Which dependency scopes should not be included when unpacking dependencies into the apk.
      */
-    protected static final List<String> EXCLUDED_DEPENDENCY_SCOPES = Arrays.asList( "provided", "system", "import" );
+    protected static final List<String> EXCLUDED_DEPENDENCY_SCOPES = Arrays.asList( "provided", "import" );
 
     /**
      * @return a {@code Set} of dependencies which may be extracted and otherwise included in other artifacts. Never
