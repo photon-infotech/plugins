@@ -21,9 +21,12 @@ package com.photon.phresco.plugins.windows;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Type;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -41,6 +44,10 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.input.SAXBuilder;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.photon.phresco.commons.model.ApplicationInfo;
+import com.photon.phresco.commons.model.ProjectInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
@@ -50,6 +57,7 @@ import com.photon.phresco.plugins.parser.TRXParser;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.plugins.util.PluginPackageUtil;
 import com.photon.phresco.util.ArchiveUtil;
+import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 import com.photon.phresco.util.Utility;
 
@@ -90,10 +98,25 @@ public class UnitTest implements PluginConstants {
         util = new PluginPackageUtil();
         
 		try {
+			File projectInfoPath = new File (baseDir + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.PROJECT_INFO_FILE);
+			Gson gson = new Gson();
+			Type listType = new TypeToken<ProjectInfo>() {}.getType();
+			BufferedReader reader = new BufferedReader(new FileReader(projectInfoPath));
+			ProjectInfo info  = (ProjectInfo) gson.fromJson(reader, listType);
+			ApplicationInfo applicationInfo = info.getAppInfos().get(0);
+			String version = applicationInfo.getTechInfo().getVersion();
+			if (version.startsWith("8.x")) {
+				String property = System.getProperty("os.arch");
+				if (!property.contains("64")) {
+					throw new PhrescoException("Windows8 project require 64 bit version to Run Unit Test");
+				}
+			}
 			executePackage();
 			executeUnitTest();
 			
 		} catch (MojoExecutionException e) {
+			throw new PhrescoException(e);
+		} catch (FileNotFoundException e) {
 			throw new PhrescoException(e);
 		}
 		
@@ -339,6 +362,8 @@ public class UnitTest implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(WP_STR_TARGET);
 			sb.append(WP_STR_COLON);
+			
+			
 			sb.append(WIN_CLEAN);
 			sb.append(WP_STR_SEMICOLON);
 			sb.append(REBUILD);
