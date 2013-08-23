@@ -294,7 +294,7 @@ public class Package implements PluginConstants {
 		System.out.println("Build Command : " + sb.toString());
 		while ((line = bufferedReader.readLine()) != null) {
 				System.out.println(line); //do not use getLog() here as this line already contains the log type.
-			}
+		}
 	}
 
 	private boolean build() throws MojoExecutionException {

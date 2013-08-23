@@ -54,6 +54,7 @@ import com.phresco.pom.util.PomProcessor;
 
 public class Deploy implements PluginConstants {
 	
+	private static final String PROTOCOL_POSTFIX = "://";
 	private static final String SLING_ARTIFACT_ID = "maven-sling-plugin";
 	private static final String SLING_GROUP_ID = "org.apache.sling";
 	private static final String PASSWORD = "password";
@@ -66,7 +67,6 @@ public class Deploy implements PluginConstants {
 	private String environmentName;
 	private File buildFile;
 	private File tempDir;
-	private String context;
 	private Log log;
 	private PluginUtils pUtil;
 	private String pomFile;
@@ -83,6 +83,7 @@ public class Deploy implements PluginConstants {
         
 		try {
 			init();
+//			extractBuild();
 			deployToServer();
 			cleanUp();
 		} catch (MojoExecutionException e) {
@@ -97,7 +98,6 @@ public class Deploy implements PluginConstants {
 				callUsage();
 			}
 			BuildInfo buildInfo = pUtil.getBuildInfo(Integer.parseInt(buildNumber));
-			log.info("Build Name " + buildInfo);
 			buildDir = new File(baseDir.getPath() + PluginConstants.BUILD_DIRECTORY);
 			buildFile = new File(buildDir.getPath() + File.separator + buildInfo.getBuildName());
 			tempDir = new File(buildDir.getPath() + TEMP_DIR);
@@ -115,6 +115,14 @@ public class Deploy implements PluginConstants {
 		throw new MojoExecutionException("Invalid Usage. Please see the Usage of Deploy Goal");
 	}
 	
+	private void extractBuild() throws MojoExecutionException {
+		try {
+			ArchiveUtil.extractArchive(buildFile.getPath(), tempDir.getPath(), ArchiveType.ZIP);
+		} catch (PhrescoException e) {
+			throw new MojoExecutionException(e.getErrorMessage(), e);
+		}
+	}
+	
 	private void deployToServer() throws MojoExecutionException, PhrescoException {
 		try {
 			List<com.photon.phresco.configuration.Configuration> configurations = pUtil.getConfiguration(baseDir, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
@@ -130,12 +138,28 @@ public class Deploy implements PluginConstants {
 		if (configuration == null) {
 			return;
 		}
-		String slingUrl = configuration.getProperties().getProperty(Constants.SLING_URL);
-		String user = configuration.getProperties().getProperty(Constants.USER);
-		String password = configuration.getProperties().getProperty(Constants.PASSWORD);
+		String serverhost = configuration.getProperties().getProperty(Constants.SERVER_HOST);
+		String serverport = configuration.getProperties().getProperty(Constants.SERVER_PORT);
+		String serverprotocol = configuration.getProperties().getProperty(Constants.SERVER_PROTOCOL);
+		String serverusername = configuration.getProperties().getProperty(Constants.SERVER_ADMIN_USERNAME);
+		String serverpassword = configuration.getProperties().getProperty(Constants.SERVER_ADMIN_PASSWORD);
+		String context = configuration.getProperties().getProperty(Constants.SERVER_CONTEXT);
 		
-		configurationSlingUrl(slingUrl, user, password);
-		deployToServer(slingUrl);
+		StringBuilder slingUrl = new StringBuilder();
+		slingUrl.append(serverprotocol);
+		slingUrl.append(PROTOCOL_POSTFIX);
+		slingUrl.append(serverhost);
+		slingUrl.append(COLON);
+		slingUrl.append(serverport);
+		slingUrl.append(FORWARD_SLASH);
+		slingUrl.append(context);
+		
+		configurationSlingUrl(slingUrl.toString(), serverusername, serverpassword);
+		File slingFile = getSlingFile();
+//		if (slingFile == null) {
+//			throw new PhrescoException("Sling file is not found to deploy ");
+//		}
+		deployToServer(slingFile, slingUrl.toString(), serverusername, serverpassword);
 	}
 
 	private void configurationSlingUrl(String slingUrl, String user, String password) throws PhrescoException {
@@ -146,7 +170,6 @@ public class Deploy implements PluginConstants {
 			List<Element> elements = slingConfiguration.getAny();
 			for (Element element : elements) {
 				String tagName = element.getTagName();
-				System.out.println("Tag name => " + tagName);
 				if (SLING_URL.equals(tagName)) {
 					element.setTextContent(slingUrl);
 				}
@@ -163,7 +186,21 @@ public class Deploy implements PluginConstants {
 		}
 	}
 
-	private void deployToServer(String slingUrl) throws MojoExecutionException {
+	private File getSlingFile() throws PhrescoException {
+		try {
+			String[] list = tempDir.list(new QDJarFileNameFilter());
+			if (list.length > 0) {
+				String slingJar = list[0];
+				File slingJarFile = new File(tempDir.getPath() + "/" + slingJar);
+				return slingJarFile;
+			}
+		} catch (Exception e) {
+			throw new PhrescoException(e);
+		}
+		return null;
+	}
+	
+	private void deployToServer(File slingFile, String slingUrl, String user, String password) throws MojoExecutionException {
 		BufferedReader bufferedReader = null;
 		boolean errorParam = false;
 		try {
@@ -172,8 +209,29 @@ public class Deploy implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(MVN_PHASE_CLEAN);
 			sb.append(STR_SPACE);
+			
 			sb.append(MVN_PHASE_INSTALL);
+			sb.append(STR_SPACE);
 			sb.append(SKIP_TESTS);
+
+//			sb.append("org.apache.sling:maven-sling-plugin:install-file");
+//			
+//			sb.append(STR_SPACE);
+//			sb.append("-Dsling.file=");
+//			sb.append(slingFile.getPath());
+//			
+//			sb.append(STR_SPACE);
+//			sb.append("-DslingUrl=");
+//			sb.append(slingUrl);
+//			
+//			sb.append(STR_SPACE);
+//			sb.append("-Duser=");
+//			sb.append(user);
+//			
+//			sb.append(STR_SPACE);
+//			sb.append("-Dpassword=");
+//			sb.append(password);
+			
 			if(!Constants.POM_NAME.equals(pomFile)) {
 				sb.append(STR_SPACE);
 				sb.append(Constants.HYPHEN_F);
@@ -195,7 +253,7 @@ public class Deploy implements PluginConstants {
 			if (errorParam) {
 				throw new MojoExecutionException("Deployment Failed ");
 			} else {
-				log.info(" Project is Deploying into " + slingUrl);
+				log.info(" Project is Deployed into " + slingUrl);
 			}
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
@@ -218,4 +276,12 @@ public class Deploy implements PluginConstants {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
+}
+
+class QDJarFileNameFilter implements FilenameFilter {
+
+	public boolean accept(File dir, String name) {
+		return name.endsWith(".jar");
+	}
+
 }
