@@ -26,5 +26,6 @@
         testManager.run();
         
     </script>
+	<div id='testresult' style="display:none;"></div>
 </body>
 </html>
