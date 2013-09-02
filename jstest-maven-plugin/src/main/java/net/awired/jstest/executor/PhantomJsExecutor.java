@@ -30,7 +30,7 @@ public class PhantomJsExecutor implements Executor {
     public void execute(String runnerUrl) throws Exception {
         copyTestRunner(runnerUrl);
         
-        CMD.append(targetSrcDir.getCanonicalPath()+RUN_QUNIT_JS+" ");
+        CMD.append("\""+targetSrcDir.getCanonicalPath() + RUN_QUNIT_JS+"\" ");
         CMD.append(runnerUrl+"?emulator=true");
         log.info("command " + CMD);
         
