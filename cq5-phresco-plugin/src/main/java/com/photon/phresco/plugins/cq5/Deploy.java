@@ -21,13 +21,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.ListUtils;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
@@ -37,7 +33,6 @@ import org.w3c.dom.Element;
 
 import com.photon.phresco.commons.model.BuildInfo;
 import com.photon.phresco.exception.PhrescoException;
-import com.photon.phresco.plugin.commons.DatabaseUtil;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
@@ -47,19 +42,18 @@ import com.photon.phresco.util.ArchiveUtil;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
-import com.phresco.pom.exception.PhrescoPomException;
-import com.phresco.pom.model.Dependency;
-import com.phresco.pom.model.Plugin;
+import com.phresco.pom.model.Profile;
+import com.phresco.pom.model.Profile.Properties;
 import com.phresco.pom.util.PomProcessor;
 
 public class Deploy implements PluginConstants {
 	
 	private static final String PROTOCOL_POSTFIX = "://";
-	private static final String SLING_ARTIFACT_ID = "maven-sling-plugin";
-	private static final String SLING_GROUP_ID = "org.apache.sling";
-	private static final String PASSWORD = "password";
-	private static final String USER = "user";
-	private static final String SLING_URL = "slingUrl";
+	private static final String CQ5_PROFILE_ID = "-PautoInstallPackage";
+	private static final String PASSWORD = "-Dvault.password";
+	private static final String USER_NAME = "-Dvault.userId";
+	private static final String TARGET_URL = "-Dvault.targetURL";
+	private static final String PACKAGE_FILE ="-Dvault.file";
 	private MavenProject project;
 	private File baseDir;
 	private String buildNumber;
@@ -145,36 +139,40 @@ public class Deploy implements PluginConstants {
 		String serverpassword = configuration.getProperties().getProperty(Constants.SERVER_ADMIN_PASSWORD);
 		String context = configuration.getProperties().getProperty(Constants.SERVER_CONTEXT);
 		
-		StringBuilder slingUrl = new StringBuilder();
-		slingUrl.append(serverprotocol);
-		slingUrl.append(PROTOCOL_POSTFIX);
-		slingUrl.append(serverhost);
-		slingUrl.append(COLON);
-		slingUrl.append(serverport);
-		slingUrl.append(FORWARD_SLASH);
-		slingUrl.append(context);
+		StringBuilder cq5Url = new StringBuilder();
+		cq5Url.append(serverprotocol);
+		cq5Url.append(PROTOCOL_POSTFIX);
+		cq5Url.append(serverhost);
+		cq5Url.append(COLON);
+		cq5Url.append(serverport);
+		cq5Url.append(FORWARD_SLASH);
+		cq5Url.append(context);
 		
-		configurationSlingUrl(slingUrl.toString(), serverusername, serverpassword);
-		File slingFile = getSlingFile();
-//		if (slingFile == null) {
-//			throw new PhrescoException("Sling file is not found to deploy ");
+		//configurationCq5Url(cq5Url.toString(), serverusername, serverpassword);
+		File cq5File = getCq5File();
+//		if (cq5File == null) {
+//			throw new PhrescoException("Cq5 file is not found to deploy ");
 //		}
-		deployToServer(slingFile, slingUrl.toString(), serverusername, serverpassword);
+		deployToServer(cq5File, cq5Url.toString(), serverusername, serverpassword);
 	}
 
-	private void configurationSlingUrl(String slingUrl, String user, String password) throws PhrescoException {
+	private void configurationCq5Url(String cq5Url, String username, String password) throws PhrescoException {
 		try {
 			PomProcessor processor = new PomProcessor(project.getFile());
-			Plugin plugin = processor.getPlugin(SLING_GROUP_ID, SLING_ARTIFACT_ID);
-			com.phresco.pom.model.Plugin.Configuration slingConfiguration = plugin.getConfiguration();
-			List<Element> elements = slingConfiguration.getAny();
+			Profile profile = processor.getProfile(CQ5_PROFILE_ID);
+			System.out.println("profile == "+profile);
+			Properties cq5Configuration = profile.getProperties();
+			System.out.println(" cq5Configuration "+cq5Configuration);
+			List<Element> elements = cq5Configuration.getAny();
+			System.out.println("elements == "+ elements.size());
 			for (Element element : elements) {
 				String tagName = element.getTagName();
-				if (SLING_URL.equals(tagName)) {
-					element.setTextContent(slingUrl);
+				System.out.println(" tagName "+ tagName);
+				if (TARGET_URL.equals(tagName)) {
+					element.setTextContent(cq5Url);
 				}
-				if (USER.equals(tagName)) {
-					element.setTextContent(user);			
+				if (USER_NAME.equals(tagName)) {
+					element.setTextContent(username);			
 				}
 				if (PASSWORD.equals(tagName)) {
 					element.setTextContent(password);
@@ -186,13 +184,13 @@ public class Deploy implements PluginConstants {
 		}
 	}
 
-	private File getSlingFile() throws PhrescoException {
+	private File getCq5File() throws PhrescoException {
 		try {
-			String[] list = tempDir.list(new QDJarFileNameFilter());
+			String[] list = buildDir.list(new CQ5ZipFileNameFilter());
 			if (list.length > 0) {
-				String slingJar = list[0];
-				File slingJarFile = new File(tempDir.getPath() + "/" + slingJar);
-				return slingJarFile;
+				String cq5Zip = list[0];
+				File cq5ZipFile = new File(buildDir.getPath() + "/" + cq5Zip);
+				return cq5ZipFile;
 			}
 		} catch (Exception e) {
 			throw new PhrescoException(e);
@@ -200,7 +198,7 @@ public class Deploy implements PluginConstants {
 		return null;
 	}
 	
-	private void deployToServer(File slingFile, String slingUrl, String user, String password) throws MojoExecutionException {
+	private void deployToServer(File cq5File, String cq5Url, String username, String password) throws MojoExecutionException {
 		BufferedReader bufferedReader = null;
 		boolean errorParam = false;
 		try {
@@ -209,20 +207,30 @@ public class Deploy implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(MVN_PHASE_CLEAN);
 			sb.append(STR_SPACE);
-			
 			sb.append(MVN_PHASE_INSTALL);
 			sb.append(STR_SPACE);
+			sb.append(CQ5_PROFILE_ID);
+			sb.append(STR_SPACE);
+			sb.append(TARGET_URL+"="+cq5Url);
+			sb.append(STR_SPACE);
+			sb.append(USER_NAME+"="+username);
+			sb.append(STR_SPACE);
+			sb.append(PASSWORD+"="+password);
+			sb.append(STR_SPACE);
+			sb.append(PACKAGE_FILE+"="+cq5File);
+			sb.append(STR_SPACE);
 			sb.append(SKIP_TESTS);
+			
 
-//			sb.append("org.apache.sling:maven-sling-plugin:install-file");
+//			sb.append("org.apache.cq5:maven-cq5-plugin:install-file");
 //			
 //			sb.append(STR_SPACE);
-//			sb.append("-Dsling.file=");
-//			sb.append(slingFile.getPath());
+//			sb.append("-Dcq5.file=");
+//			sb.append(cq5File.getPath());
 //			
 //			sb.append(STR_SPACE);
-//			sb.append("-DslingUrl=");
-//			sb.append(slingUrl);
+//			sb.append("-Dcq5Url=");
+//			sb.append(cq5Url);
 //			
 //			sb.append(STR_SPACE);
 //			sb.append("-Duser=");
@@ -239,7 +247,7 @@ public class Deploy implements PluginConstants {
 				sb.append(pomFile);
 			}
 
-			System.out.println("Deploy command : " + sb.toString());
+			
 			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 			String line = null;
 			
@@ -253,7 +261,7 @@ public class Deploy implements PluginConstants {
 			if (errorParam) {
 				throw new MojoExecutionException("Deployment Failed ");
 			} else {
-				log.info(" Project is Deployed into " + slingUrl);
+				log.info(" Project is Deployed into " + cq5Url);
 			}
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
@@ -281,7 +289,13 @@ public class Deploy implements PluginConstants {
 class QDJarFileNameFilter implements FilenameFilter {
 
 	public boolean accept(File dir, String name) {
-		return name.endsWith(".jar");
+		return name.endsWith(".Jar");
 	}
+}
 
+class CQ5ZipFileNameFilter implements FilenameFilter {
+
+	public boolean accept(File dir, String name) {
+		return name.endsWith(".zip");
+	}
 }

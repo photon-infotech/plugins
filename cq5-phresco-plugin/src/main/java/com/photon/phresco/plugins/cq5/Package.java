@@ -22,16 +22,10 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.bind.JAXBException;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
@@ -39,12 +33,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 import com.photon.phresco.api.ConfigManager;
-import com.photon.phresco.commons.model.ProjectInfo;
-import com.photon.phresco.commons.model.TechnologyInfo;
 import com.photon.phresco.configuration.Environment;
 import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
@@ -52,20 +42,12 @@ import com.photon.phresco.impl.ConfigManagerImpl;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
-import com.photon.phresco.plugins.model.Assembly.FileSets.FileSet;
-import com.photon.phresco.plugins.model.Assembly.FileSets.FileSet.Excludes;
-import com.photon.phresco.plugins.model.Assembly.FileSets.FileSet.Includes;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands.MavenCommand;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.plugins.util.PluginPackageUtil;
-import com.photon.phresco.plugins.util.WarConfigProcessor;
-import com.photon.phresco.util.ArchiveUtil;
-import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 import com.photon.phresco.util.Constants;
-import com.photon.phresco.util.ProjectUtils;
-import com.photon.phresco.util.TechnologyTypes;
 import com.photon.phresco.util.Utility;
 import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.util.PomProcessor;
@@ -291,7 +273,6 @@ public class Package implements PluginConstants {
 		String processId = split[0].toString();
 		Utility.writeProcessid(baseDir.getPath(), "package", processId);
 		bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
-		System.out.println("Build Command : " + sb.toString());
 		while ((line = bufferedReader.readLine()) != null) {
 				System.out.println(line); //do not use getLog() here as this line already contains the log type.
 		}
@@ -314,25 +295,24 @@ public class Package implements PluginConstants {
 		if(StringUtils.isNotEmpty(moduleName) && JAR.equals(packagingType) || StringUtils.isEmpty(packagingType)) {
 			return;
 		}
-		try {
-			zipName = util.createPackage(buildName, buildNumber, nextBuildNo, currentDate);
-			String zipFilePath = buildDir.getPath() + File.separator + zipName;
-			String zipNameWithoutExt = zipName.substring(0, zipName.lastIndexOf('.'));
-			copyJarToPackage(zipNameWithoutExt); // jar package
-			ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
-		} catch (PhrescoException e) {
-			throw new MojoExecutionException(e.getErrorMessage(), e);
-		}
+		zipName = util.createPackage(buildName, buildNumber, nextBuildNo, currentDate);
+		String zipFilePath = buildDir.getPath() + File.separator + zipName;
+		String zipNameWithoutExt = zipName.substring(0, zipName.lastIndexOf('.'));
+		copyZipToPackage(zipNameWithoutExt); // jar package
 	}
 
-	private void copyJarToPackage(String zipNameWithoutExt) throws MojoExecutionException {
+	private void copyZipToPackage(String zipNameWithoutExt) throws MojoExecutionException {
 		try {
-			String[] list = targetDir.list(new JarFileNameFilter());
+			String[] list = targetDir.list(new ZipFileNameFilter());
 			if (list.length > 0) {
-				File jarFile = new File(targetDir.getPath() + File.separator + list[0]);
-				tempDir = new File(buildDir.getPath() + File.separator + zipNameWithoutExt);
-				tempDir.mkdir();
-				FileUtils.copyFileToDirectory(jarFile, tempDir);
+				File zipFile = new File(targetDir.getPath() + File.separator + list[0]);
+				if(!buildDir.exists()) {
+					buildDir.mkdirs();
+				}
+				FileUtils.copyFileToDirectory(zipFile, buildDir);
+				File contextZipFile = new File(buildDir.getPath() + File.separator + zipNameWithoutExt + ".zip");
+				File buildZipFile = new File(buildDir, zipFile.getName());
+				buildZipFile.renameTo(contextZipFile);
 			}
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
@@ -363,4 +343,11 @@ class JarFileNameFilter implements FilenameFilter {
 		return name.endsWith(".jar");
 	}
 
+}
+
+class ZipFileNameFilter implements FilenameFilter {
+
+	public boolean accept(File dir, String name) {
+		return name.endsWith(".zip");
+	}
 }
