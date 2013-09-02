@@ -124,8 +124,12 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 	}
     
     protected Configuration getConfiguration(String infoFile, String goal) throws PhrescoException {
-        MojoProcessor processor = new MojoProcessor(new File(infoFile));
-        return processor.getConfiguration(goal);
+    	if (new File(infoFile).exists()) {
+    		MojoProcessor processor = new MojoProcessor(new File(infoFile));
+            return processor.getConfiguration(goal);
+    	} else {
+    		return null;
+    	}
     }
     
     protected MavenProjectInfo getMavenProjectInfo(MavenProject project) {
