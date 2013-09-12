@@ -146,7 +146,7 @@ public class GenerateReport implements PluginConstants {
 	private static final String MODULE_NAME = "Module Name";
 	private static final String COPY_RIGHTS = "copyRights";
 	private static final String SONAR_REPORT = "sonarReport";
-	private static final String DEFAULT_COPYRIGHTS = "© 2013 Photon Infotech Pvt.Ltd";
+	private static final String DEFAULT_COPYRIGHTS = "© 2013 Photon Interative Pvt.Ltd";
 	private static final String PHRESCO_UNIT_TEST = "phresco.unitTest";
 	private static final String REPORTS_TYPE = "reportsDataType";
 	private static final String PROJECT_NAME = "projectName";
@@ -754,8 +754,6 @@ public class GenerateReport implements PluginConstants {
     					sonarReport.setModuleName(module);
     				}
     			}
-        	} else {
-        		log.error("file Path doesn't exist -->" + pomPath);
         	}
 			return sonarReport;
 		} catch (Exception e) {
@@ -2609,7 +2607,7 @@ public class GenerateReport implements PluginConstants {
 			String testType, String reportType, String sonarUrl,
 			Properties properties, String logoimage64, String themeJson1, String technologyName, String pomPath)
 			throws PhrescoException {
-		System.out.println("Generate Report generate Test");
+			System.out.println("Generate Report generate Test");
 		try {
 	        baseDir = new File(baseDirPath);
 	        System.out.println("generate test called .... ");
@@ -2728,23 +2726,23 @@ public class GenerateReport implements PluginConstants {
 	
 	private void applyTheme(JasperPrint jasperPrint) throws Exception {
 		if (MapUtils.isNotEmpty(theme)) {
-			titleColor = theme.get("PageHeaderColor");
-			titleLabelColor = theme.get("PageHeaderColor");
+			titleColor = theme.get("customerBaseColor");
+//			titleLabelColor = theme.get("PageHeaderColor");
 			
-			headingForeColor = theme.get("brandingColor"); // heading yellow color
-			headingBackColor = theme.get("PageHeaderColor");
+//			headingForeColor = theme.get("customerBaseColor"); // heading yellow color
+			headingBackColor = theme.get("customerBaseColor");
 
-			headingRowBackColor = theme.get("PageHeaderColor"); //HeadingRow - light color
-			headingRowLabelBackColor = theme.get("PageHeaderColor");
-			headingRowTextBackColor = theme.get("PageHeaderColor");
-			headingRowLabelForeColor = theme.get("brandingColor");
-			headingRowTextForeColor = theme.get("brandingColor");
+//			headingRowBackColor = theme.get("PageHeaderColor"); //HeadingRow - light color
+//			headingRowLabelBackColor = theme.get("PageHeaderColor");
+//			headingRowTextBackColor = theme.get("PageHeaderColor");
+			headingRowLabelForeColor = theme.get("customerBaseColor");
+			headingRowTextForeColor = theme.get("customerBaseColor");
 			
-			copyRightBackColor = theme.get("PageHeaderColor");
-			copyRightForeColor = theme.get("brandingColor");
+//			copyRightBackColor = theme.get("PageHeaderColor");
+			copyRightForeColor = theme.get("customerBaseColor");
 			
-			copyRightPageNumberForeColor = theme.get("brandingColor");
-			copyRightPageNumberBackColor = theme.get("PageHeaderColor");
+			copyRightPageNumberForeColor = theme.get("customerBaseColor");
+//			copyRightPageNumberBackColor = theme.get("PageHeaderColor");
 		}
 		
 		java.awt.Color userTitleColor = java.awt.Color.decode(titleColor);
