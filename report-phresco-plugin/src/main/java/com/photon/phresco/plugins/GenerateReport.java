@@ -757,10 +757,9 @@ public class GenerateReport implements PluginConstants {
         	}
 			return sonarReport;
 		} catch (Exception e) {
-			log.error("file Path doesn't exist");
-//			e.printStackTrace();
-			return null;
+			e.printStackTrace();
 		}
+		return sonarReport;
 	}
 	
 	// Unit and functional pdf report generation
@@ -2726,23 +2725,23 @@ public class GenerateReport implements PluginConstants {
 	
 	private void applyTheme(JasperPrint jasperPrint) throws Exception {
 		if (MapUtils.isNotEmpty(theme)) {
-			titleColor = theme.get("customerBaseColor");
+			titleColor = "#d3d3d3";
 //			titleLabelColor = theme.get("PageHeaderColor");
 			
-//			headingForeColor = theme.get("customerBaseColor"); // heading yellow color
-			headingBackColor = theme.get("customerBaseColor");
+			headingForeColor = "#333333"; // heading yellow color
+			headingBackColor = "#d3d3d3";
 
-//			headingRowBackColor = theme.get("PageHeaderColor"); //HeadingRow - light color
-//			headingRowLabelBackColor = theme.get("PageHeaderColor");
-//			headingRowTextBackColor = theme.get("PageHeaderColor");
-			headingRowLabelForeColor = theme.get("customerBaseColor");
-			headingRowTextForeColor = theme.get("customerBaseColor");
-			
-//			copyRightBackColor = theme.get("PageHeaderColor");
-//			copyRightForeColor = theme.get("customerBaseColor");
-			
-//			copyRightPageNumberForeColor = theme.get("customerBaseColor");
-//			copyRightPageNumberBackColor = theme.get("PageHeaderColor");
+			headingRowBackColor = "#d3d3d3"; //HeadingRow - light color
+			headingRowLabelBackColor = "#d3d3d3";
+			headingRowTextBackColor = "#d3d3d3";
+			headingRowLabelForeColor = "#333333"; 
+			headingRowTextForeColor = "#333333"; 
+//			
+			copyRightBackColor = "#d3d3d3";
+			copyRightForeColor = "#333333";
+//			
+			copyRightPageNumberForeColor = "#333333";
+			copyRightPageNumberBackColor = "#d3d3d3";
 		}
 		
 		java.awt.Color userTitleColor = java.awt.Color.decode(titleColor);
@@ -2812,7 +2811,6 @@ public class GenerateReport implements PluginConstants {
 		    	styleList[j].setBackcolor(userHeadingRowLabelBackColor);
 	        	jasperPrint.addStyle(styleList[j], true);
 		    }
-			//
 //		    else if (styleList[j].getName().endsWith("table_TD_Label")) {
 //		    	styleList[j].setForecolor(userHeadingRowLabelForeColor);
 //		    	styleList[j].setBackcolor(userHeadingRowLabelBackColor);
