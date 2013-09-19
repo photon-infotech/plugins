@@ -75,6 +75,7 @@ public class Deploy implements PluginConstants {
 	private PluginUtils pUtil;
 	private String servertype;
 	private String pomFile;
+	private String packaging;
 	
 	public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -87,7 +88,7 @@ public class Deploy implements PluginConstants {
         importSql = Boolean.parseBoolean(configs.get(EXECUTE_SQL));
         sqlPath = configs.get(FETCH_SQL);
         pUtil = new PluginUtils();
-        
+        packaging = project.getPackaging();
 		try {
 			init();
 			initMap();
@@ -217,8 +218,12 @@ public class Deploy implements PluginConstants {
 		
 		// local deployment
 		if (remotedeploy.equals("false")) {
+			if(packaging.equals("war")) {
+				deployLocal();
+			} else {
 				deployJarToLocal();
-				return;
+			}
+			return;
 		}
 
 		// remote deployment
