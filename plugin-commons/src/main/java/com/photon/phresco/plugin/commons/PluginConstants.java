@@ -512,7 +512,7 @@ public interface PluginConstants {
 	 String TIME_STAMP_FOR_DISPLAY 		= "dd/MMM/yyyy HH:mm:ss";
 	 
 	 //Constants for CodeValidator
-	 String SONAR_COMMAND				= "mvn sonar:sonar";
+	 String SONAR_COMMAND				= "mvn test-compile sonar:sonar";
 	 String SONAR						= "sonar";
 	 String PLUGIN_PARAMETER 			= "plugin";
 	 String SONARCOMMAND				= "sonar:sonar";

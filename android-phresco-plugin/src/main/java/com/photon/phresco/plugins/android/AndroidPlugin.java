@@ -74,4 +74,11 @@ public class AndroidPlugin extends PhrescoBasePlugin {
 		performanceTest.performanceTest(configuration, mavenProjectInfo);
 		return new DefaultExecutionStatus();
 	}
+	@Override
+	public ExecutionStatus validate(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		ValidateCode validateCode = new ValidateCode();
+		validateCode.validate(configuration, mavenProjectInfo);
+		return new DefaultExecutionStatus();
+	}
+	
 }

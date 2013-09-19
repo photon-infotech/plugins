@@ -169,22 +169,25 @@ public class PhrescoCreate extends AbstractMojo {
 			TechnologyInfo techInfo = new TechnologyInfo();
 			System.out.println("Select Technology : " );
 			Technology tech = getSelectedTechnology(customerByName.getId());
+			techInfo.setName(tech.getName());
 			techInfo.setId(tech.getId());
-			System.out.println("Select Technolog Version : " );
-			br = new BufferedReader(new InputStreamReader(System.in));
 			List<String> techVersions = tech.getTechVersions();
-			StringBuilder builder = new StringBuilder();
-			for (int i = 0; i < techVersions.size(); i++) {
-				builder.append( i  + " " + techVersions.get(i));
-				if(i != techVersions.size()-1) {
-					builder.append("\n");
+			if (CollectionUtils.isNotEmpty(techVersions)) {
+				System.out.println("Select Technolog Version : " );
+				br = new BufferedReader(new InputStreamReader(System.in));
+				StringBuilder builder = new StringBuilder();
+					for (int i = 0; i < techVersions.size(); i++) {
+						builder.append( i  + " " + techVersions.get(i));
+						if(i != techVersions.size()-1) {
+							builder.append("\n");
+						}
 				}
+				System.out.println(builder);
+				int read = Integer.parseInt(br.readLine());
+				techInfo.setVersion(techVersions.get(read));
 			}
-			System.out.println(builder);
-			int read = Integer.parseInt(br.readLine());
-			techInfo.setVersion(techVersions.get(read));
-			appInfo.setTechInfo(techInfo);
-			projectInfo.setAppInfos(Collections.singletonList(appInfo));
+				appInfo.setTechInfo(techInfo);
+				projectInfo.setAppInfos(Collections.singletonList(appInfo));
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage());
 		} catch (PhrescoException e) {
