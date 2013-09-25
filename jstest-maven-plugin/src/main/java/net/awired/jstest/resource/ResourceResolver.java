@@ -59,7 +59,7 @@ public class ResourceResolver {
             String path = overlay.getDirectory().getPath();
             log.debug("Resource dir path " + path);
             registerResourcesToMap(LIB_RESOURCE_PREFIX, directoryScanner.scan(overlay), overlay.getDirectory(), true);
-            registerResourcesToMap(SRC_RESOURCE_PREFIX, directoryScanner.scan(overlay), overlay.getDirectory(), true);
+            //registerResourcesToMap(SRC_RESOURCE_PREFIX, directoryScanner.scan(overlay), overlay.getDirectory(), true);
         }
         
         for (ResourceDirectory overlayPreload : preloadOverlayDirs) {
@@ -106,16 +106,12 @@ public class ResourceResolver {
                         + fullPath);
             } else {
                 String foundWithSlashes = found.replaceAll("\\\\", "/");
-                if (prefix.contains("lib")) {
-                	prefix = prefix.replaceAll("/lib", "");
-                    String sourcePrefix = prefix + foundWithSlashes;
-                    log.debug("SourcePrefix " + sourcePrefix);
-                    srcMap.put(sourcePrefix, fullPath);
-                } else {
-                	String resourcePrefix = prefix + foundWithSlashes;
-                	log.debug("ResourcePrefix " + resourcePrefix);
-                	resources.put(resourcePrefix, fullPath);
-                }
+                String resourcePrefix = prefix + foundWithSlashes;
+                log.debug("ResourcePrefix " + resourcePrefix);
+                resources.put(resourcePrefix, fullPath);
+                String sourcePrefix = prefix + foundWithSlashes;
+                log.debug("SourcePrefix " + sourcePrefix);
+                srcMap.put(sourcePrefix, fullPath);
             }
         }
     }
