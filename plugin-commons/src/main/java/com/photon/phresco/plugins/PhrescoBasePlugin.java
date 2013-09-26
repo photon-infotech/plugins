@@ -276,7 +276,6 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 					List<Element> configList = testAgainstParameterPluginConfiguration(doc, jmeterConfiguration, testName);
 					pomProcessor.addConfiguration(COM_LAZERYCODE_JMETER, JMETER_MAVEN_PLUGIN, configList);
 					pomProcessor.save();
-//					pluginUtils.changeTestName(basedir + File.separator + performanceTestDir + File.separator, testName);
 					String testConfigFilePath = basedir + File.separator + performanceTestDir + File.separator + TESTS_FOLDER;
 					pluginUtils.adaptTestConfig(testConfigFilePath + File.separator , config);
 					String jsonFile = basedir + File.separator + performanceTestDir + File.separator + Constants.FOLDER_JSON + File.separator+ testName + Constants.DOT_JSON;
