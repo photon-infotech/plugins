@@ -5,10 +5,14 @@
 	<title>JsTest Runner</title>
     <script type="text/javascript" src="/runnerResource/jstest-common.js"></script>
 	
+	<!-- test Resources -->
 	$testResources$
+
+	<!-- sources -->
 
 	$sources$
 
+	<!-- tests -->
 	$tests$
 </head>
 <body>

@@ -18,7 +18,10 @@
 package net.awired.jstest.runner;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
+
+import net.awired.jstest.resource.ResourceResolver;
 
 public class HtmlResourceTranformer {
 
@@ -32,6 +35,25 @@ public class HtmlResourceTranformer {
         		appendTag(res, key);
         	}
         }
+        
+        return res.toString();
+    }
+    
+    public String buildTagsFromResources(Map<String, File> resources, List<String> testerResources) {
+    	
+        StringBuilder res = new StringBuilder();
+        for (String key : resources.keySet()) {
+        	String file = key.replace(ResourceResolver.LIB_RESOURCE_PREFIX, "");
+        	if (!testerResources.contains(file)) {
+	        	if (!key.startsWith("/src/yui") && !key.endsWith("/UseYUI.js")) {
+	        		appendTag(res, key);
+	        	}
+	        	if (key.endsWith("/yui-min.js")){
+	        		appendTag(res, key);
+	        	}
+        	}
+        }
+        
         return res.toString();
     }
 
