@@ -407,24 +407,32 @@ public class PluginUtils {
 			 }
 			 
 			 for (ContextUrls contextUrl : contextUrls) {
-				 Node appendHttpSamplerProxy = appendHttpSamplerProxy(document, hashTree, contextUrl.getName(), "${context}/" + contextUrl.getContext(), contextUrl.getContextType(), 
-						 	contextUrl.getContextPostData(), contextUrl.getEncodingType(), contextUrl);
+				 Node appendHttpSamplerProxy = appendHttpSamplerProxy(document, hashTree, contextUrl);
 				 hashTree.appendChild(appendHttpSamplerProxy);
+				 
 				 List<Headers> headers = contextUrl.getHeaders();
-				 if (CollectionUtils.isNotEmpty(headers)) {
-					 NodeList headerMngrNodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/hashTree/HeaderManager/collectionProp");
-					 Node appendHeaderManager = appendUrlHeaderManager(document, headers);
-					 hashTree.appendChild(appendHeaderManager);
+				 if (CollectionUtils.isNotEmpty(headers) || contextUrl.isRegexExtractor()) {
+					 Element hashTreeElement = document.createElement("hashTree");
+					 if (CollectionUtils.isNotEmpty(headers)) {
+						 NodeList headerMngrNodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/hashTree/HeaderManager/collectionProp");
+						 Node appendHeaderManager = appendUrlHeaderManager(document, headers, hashTreeElement, contextUrl.isRegexExtractor());
+						 hashTree.appendChild(appendHeaderManager);
+					 } 
+					 if (contextUrl.isRegexExtractor()) {
+						 Node regexExtractorNode = appendRegexExtractor(document, hashTree, hashTreeElement, contextUrl);
+						 hashTreeElement.appendChild(regexExtractorNode);
+						 hashTreeElement.appendChild(document.createElement("hashTree"));
+						 hashTree.appendChild(hashTreeElement);
+					 }
 				 } else {
-					 hashTree.appendChild(document.createElement("hashTree"));
+					 hashTree.appendChild(document.createElement("hashTree")); 
 				 }
 			 }
 		 }
 		 saveDocument(jmxFile, document);
 	 }
 	 
-	 private Node appendHttpSamplerProxy(Document document, Node hashTree, String name, String context, String contextType, String contextPostData, 
-			 String encodingType, ContextUrls contextUrl) {
+	 private Node appendHttpSamplerProxy(Document document, Node hashTree, ContextUrls contextUrl) {
 			Node httpSamplerProxy = document.createElement("HTTPSamplerProxy");
 			String contentEncoding = null;
 			if(FrameworkConstants.POST.equals(contextUrl.getContextType())) {
@@ -465,7 +473,29 @@ public class PluginUtils {
 
 			return httpSamplerProxy;
 		}
-	 
+
+	 private Node appendRegexExtractor(Document document, Node hashTree, Element newHashTree, ContextUrls contextUrl) {
+		 Node regexExtractor = document.createElement("RegexExtractor");
+		 
+		 NamedNodeMap attributes = regexExtractor.getAttributes();
+		 attributes.setNamedItem(createAttribute(document, "guiclass", "RegexExtractorGui"));
+		 attributes.setNamedItem(createAttribute(document, "testclass", "RegexExtractor"));
+		 attributes.setNamedItem(createAttribute(document, "testname", "Regular Expression Extractor"));
+		 attributes.setNamedItem(createAttribute(document, "enabled", "true"));
+
+		 appendTypeProp(document, regexExtractor, "stringProp", "RegexExtractor.useHeaders", contextUrl.getResponseField());
+		 appendTypeProp(document, regexExtractor, "stringProp", "RegexExtractor.refname", contextUrl.getReferenceName());
+		 appendTypeProp(document, regexExtractor, "stringProp", "RegexExtractor.regex", contextUrl.getRegex());
+		 appendTypeProp(document, regexExtractor, "stringProp", "RegexExtractor.template", contextUrl.getTemplate());
+		 appendTypeProp(document, regexExtractor, "stringProp", "RegexExtractor.default", contextUrl.getDefaultValue());
+		 appendTypeProp(document, regexExtractor, "stringProp", "RegexExtractor.match_number", contextUrl.getMatchNo());
+		 
+		 if (!"main".equals(contextUrl.getApplyTo())) {
+			 appendTypeProp(document, regexExtractor, "stringProp", "Sample.scope", contextUrl.getApplyTo());
+		 }
+
+		 return regexExtractor;
+	 }
 
 	 private Node createAuthManager(Document document, Node hashTree, String authorizationUrl, 
 			 String authorizationUserName, String authorizationPassword, String authorizationDomain, String authorizationRealm) {
@@ -657,16 +687,22 @@ public class PluginUtils {
 				 }
 
 				 for (ContextUrls contextUrl : contextUrls) {
-					 Node appendHttpSamplerProxy = appendHttpSamplerProxy(document, hashTree, contextUrl.getName(), "${context}/" + contextUrl.getContext(), contextUrl.getContextType(), 
-							 	contextUrl.getContextPostData(), contextUrl.getEncodingType(), contextUrl);
+					 Node appendHttpSamplerProxy = appendHttpSamplerProxy(document, hashTree, contextUrl);
 					 hashTree.appendChild(appendHttpSamplerProxy);
 					 List<Headers> headers = contextUrl.getHeaders();
-					 if (CollectionUtils.isNotEmpty(headers)) {
-						 NodeList headerMngrNodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/hashTree/HeaderManager/collectionProp");
-						 Node appendHeaderManager = appendUrlHeaderManager(document, headers);
-						 hashTree.appendChild(appendHeaderManager);
-					 } else {
-						 hashTree.appendChild(document.createElement("hashTree"));
+					 if (CollectionUtils.isNotEmpty(headers) || contextUrl.isRegexExtractor()) {
+						 Element hashTreeElement = document.createElement("hashTree");
+						 if (CollectionUtils.isNotEmpty(headers)) {
+							 NodeList headerMngrNodelist = org.apache.xpath.XPathAPI.selectNodeList(document, "jmeterTestPlan/hashTree/hashTree/hashTree/hashTree/HeaderManager/collectionProp");
+							 Node appendHeaderManager = appendUrlHeaderManager(document, headers, hashTreeElement, contextUrl.isRegexExtractor());
+							 hashTree.appendChild(appendHeaderManager);
+						 } 
+						 if (contextUrl.isRegexExtractor()) {
+							 Node regexExtractorNode = appendRegexExtractor(document, hashTree, hashTreeElement, contextUrl);
+							 hashTreeElement.appendChild(regexExtractorNode);
+							 hashTreeElement.appendChild(document.createElement("hashTree"));
+							 hashTree.appendChild(hashTreeElement);
+						 }
 					 }
 				 }
 			 }
@@ -728,19 +764,7 @@ public class PluginUtils {
 		 parentProp.appendChild(typeProp);
 	 }
 	 
-	 private static Node appendHeaderManager(Document document, List<Headers> headers) {
-		 Node headerManager = document.createElement("HeaderManager");
-		 NamedNodeMap attributes = headerManager.getAttributes();
-		 attributes.setNamedItem(createAttribute(document, "guiclass", "HeaderPanel"));
-		 attributes.setNamedItem(createAttribute(document, "testclass", "HeaderManager"));
-		 attributes.setNamedItem(createAttribute(document, "testname", "HTTP Header Manager"));
-		 attributes.setNamedItem(createAttribute(document, "enabled", "true"));
-		 appendHeaderManagerCollectionProp(document, headerManager, headers);
-		 return headerManager;
-	 }
-	 
-	 private static Node appendUrlHeaderManager(Document document, List<Headers> headers) {
-		 Element createElement = document.createElement("hashTree");
+	 private static Node appendUrlHeaderManager(Document document, List<Headers> headers, Element createElement, boolean isRegexExtractor) {
 		 Node headerManager = document.createElement("HeaderManager");
 		 NamedNodeMap attributes = headerManager.getAttributes();
 		 attributes.setNamedItem(createAttribute(document, "guiclass", "HeaderPanel"));
@@ -749,21 +773,6 @@ public class PluginUtils {
 		 attributes.setNamedItem(createAttribute(document, "enabled", "true"));
 		 appendHeaderManagerCollectionProp(document, headerManager, headers);
 		 createElement.appendChild(headerManager);
-		 createElement.appendChild(document.createElement("hashTree"));
-		 return createElement;
-	 }
-	 
-	 
-	 private static Node appendAuthManager(Document document) {
-		 Element createElement = document.createElement("hashTree");
-		 Node authManager = document.createElement("AuthManager");
-		 NamedNodeMap attributes = authManager.getAttributes();
-		 attributes.setNamedItem(createAttribute(document, "guiclass", "AuthPanel"));
-		 attributes.setNamedItem(createAttribute(document, "testclass", "AuthManager"));
-		 attributes.setNamedItem(createAttribute(document, "testname", "HTTP Authorization Manager"));
-		 attributes.setNamedItem(createAttribute(document, "enabled", "true"));
-//		 appendHeaderManagerCollectionProp(document, authManager, headers);
-		 createElement.appendChild(authManager);
 		 createElement.appendChild(document.createElement("hashTree"));
 		 return createElement;
 	 }

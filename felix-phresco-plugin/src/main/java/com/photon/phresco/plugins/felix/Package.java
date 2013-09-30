@@ -114,39 +114,21 @@ public class Package implements PluginConstants {
         builder = new StringBuilder();
         moduleName = configs.get(PROJECT_MODULE);
         packageType = configs.get("packageType");
-        String packMinifiedFilesValue = configs.get(PACK_MINIFIED_FILES);
-        File warConfigFile = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + WAR_CONFIG_FILE);
         PluginUtils.checkForConfigurations(baseDir, environmentName);
         packagingType = getPackagingType();
         try { 
 			init();
 			if (environmentName != null) {
-				updateFinalName();
+				//updateFinalName();
 				configure();
 			}
-			if(StringUtils.isNotEmpty(packMinifiedFilesValue)) {
-				boolean packMinifiedFiles = Boolean.parseBoolean(packMinifiedFilesValue);
-				WarConfigProcessor configProcessor = new WarConfigProcessor(warConfigFile);
-				emptyFileSetExclude(configProcessor, EXCLUDE_FILE);
-				if(!packMinifiedFiles) {
-					List<String> excludes = new ArrayList<String>();
-					excludes.add("/js/**/*-min.js");
-					excludes.add("/js/**/*.min.js");
-					excludes.add("/css/**/*-min.css");
-					excludes.add("/css/**/*.min.css");
-					setFileSetExcludes(configProcessor, EXCLUDE_FILE, excludes);
-				}
-				includeLibraryJsFiles(configProcessor);
-				configProcessor.save();
-			}
+			
 			getMavenCommands(configuration);
 			executeMvnPackage();
 			boolean buildStatus = build();
 			writeBuildInfo(buildStatus);
 			cleanUp();
 		} catch (MojoExecutionException e) {
-			throw new PhrescoException(e);
-		} catch (JAXBException e) {
 			throw new PhrescoException(e);
 		} catch (IOException e) {
 			throw new PhrescoException(e);
@@ -418,7 +400,7 @@ public class Package implements PluginConstants {
 		sb.append(STR_SPACE);
 		sb.append(MVN_PHASE_CLEAN);
 		sb.append(STR_SPACE);
-		sb.append(MVN_PHASE_INSTALL);
+		sb.append(MVN_PHASE_PACKAGE);
 		if(!Constants.POM_NAME.equals(pomName)) {
 			sb.append(STR_SPACE);
 			sb.append(Constants.HYPHEN_F);
@@ -499,10 +481,10 @@ public class Package implements PluginConstants {
 			
 			if ("war".equals(packagingType)) {
 				if("zip".equals(packageType)) {
-					copyZipToPackage(zipNameWithoutExt, context);
+					copyZipToPackage(zipNameWithoutExt);
 					return;
 				} else {
-					copyWarToPackage(zipNameWithoutExt, context);
+					copyWarToPackage(zipNameWithoutExt);
 				}
 			} else  {
 				copyJarToPackage(zipNameWithoutExt);
@@ -530,25 +512,25 @@ public class Package implements PluginConstants {
 		}
 	}
 
-	private void copyWarToPackage(String zipNameWithoutExt, String context) throws MojoExecutionException {
+	private void copyWarToPackage(String zipNameWithoutExt) throws MojoExecutionException {
 		try {
 			String[] list = targetDir.list(new WarFileNameFilter());
 			if (list.length > 0) {
 				File warFile = new File(targetDir.getPath() + File.separator + list[0]);
 				tempDir = new File(buildDir.getPath() + File.separator + zipNameWithoutExt);
 				tempDir.mkdir();
-				File contextWarFile = new File(targetDir.getPath() + File.separator + context + ".war");
-				warFile.renameTo(contextWarFile);
-				FileUtils.copyFileToDirectory(contextWarFile, tempDir);
+//				File contextWarFile = new File(targetDir.getPath() + File.separator + context + ".war");
+//				warFile.renameTo(contextWarFile);
+				FileUtils.copyFileToDirectory(warFile, tempDir);
 			} else {
-				throw new MojoExecutionException(context + ".war not found in " + targetDir.getPath());
+				throw new MojoExecutionException(".war not found in " + targetDir.getPath());
 			}
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
 	
-	private void copyZipToPackage(String zipNameWithoutExt, String context) throws MojoExecutionException {
+	private void copyZipToPackage(String zipNameWithoutExt) throws MojoExecutionException {
 		try {
 			String[] list = targetDir.list(new ZipFileNameFilter());
 			if (list.length > 0) {
@@ -561,7 +543,7 @@ public class Package implements PluginConstants {
 				File buildZipFile = new File(buildDir, zipFile.getName());
 				buildZipFile.renameTo(contextZipFile);
 			} else {
-				throw new MojoExecutionException(context + ".war not found in " + targetDir.getPath());
+				throw new MojoExecutionException(".war not found in " + targetDir.getPath());
 			}
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
