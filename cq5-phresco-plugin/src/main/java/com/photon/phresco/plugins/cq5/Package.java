@@ -19,9 +19,12 @@ package com.photon.phresco.plugins.cq5;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -34,7 +37,9 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
+import com.google.gson.Gson;
 import com.photon.phresco.api.ConfigManager;
+import com.photon.phresco.configuration.ConfigReader;
 import com.photon.phresco.configuration.Environment;
 import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
@@ -95,6 +100,7 @@ public class Package implements PluginConstants {
         try { 
 			init();
 			getMavenCommands(configuration); // -DskipTests cmd
+			adaptSourceConfig();
 			executeMvnPackage();
 			boolean buildStatus = build();
 			writeBuildInfo(buildStatus);
@@ -106,6 +112,35 @@ public class Package implements PluginConstants {
 		}	
 	}
 	
+	private void adaptSourceConfig() throws MojoExecutionException {
+		String modulePath = "";
+		if(StringUtils.isEmpty(environmentName)) {
+			return;
+		}
+		if (moduleName != null) {
+			modulePath = File.separatorChar + moduleName;
+		}
+		PomProcessor processor  = null;
+		File sourceConfigFile = null;
+		try {
+			processor = new PomProcessor(project.getFile());
+			String configXml = processor.getProperty(POM_PROP_CONFIG_FILE);
+			if(StringUtils.isNotEmpty(configXml)) {
+				sourceConfigFile = new File(baseDir + modulePath + configXml);
+			} else {
+				sourceConfigFile = new File(baseDir + modulePath + sourceDir + FORWARD_SLASH +  "config.json");
+			}
+			File parentFile = sourceConfigFile.getParentFile();
+			if (parentFile.exists()) {
+				writeConfiguration(environmentName, baseDir.getPath(), sourceConfigFile);
+			}
+		} catch (PhrescoPomException e) {
+			throw new MojoExecutionException(e.getMessage());
+		} catch (PhrescoException e) {
+			throw new MojoExecutionException(e.getMessage());
+		}
+	}
+
 	private String getPackagingType() throws PhrescoException {
 		StringBuilder builder = new StringBuilder();
 		builder.append(baseDir.getPath())
@@ -290,7 +325,42 @@ public class Package implements PluginConstants {
 		}
 		return isBuildSuccess;
 	}
-
+	
+	private void writeConfiguration(String envName, String basePath, File sourceConfigXML) throws PhrescoException {
+		FileWriter writer = null;
+		List<Environment> environments = new ArrayList<Environment>();
+		List<Environment> configEnvs = null;
+		List<Environment> settingsEnvs = null;
+		try {
+			String customerId = pu.readCustomerId(new File(basePath));
+			File currentDirectory = new File(".");
+			File configXML = new File(currentDirectory + File.separator + 
+					PluginConstants.DOT_PHRESCO_FOLDER + File.separator + PluginConstants.CONFIG_FILE);
+			File settingsXML = new File(Utility.getProjectHome() + customerId + Constants.SETTINGS_XML);
+			ConfigReader reader = new ConfigReader(configXML);
+			String[] envNames = envName.split(",");
+			List<String> envList = Arrays.asList(envNames);
+			configEnvs = reader.getEnvironments(envList);
+			environments.addAll(configEnvs);
+			if (settingsXML.exists()) {
+				ConfigReader srcReaderToAppend = new ConfigReader(sourceConfigXML);
+				settingsEnvs = srcReaderToAppend.getEnvironments(envList);
+				environments.addAll(settingsEnvs);
+			}
+			if(CollectionUtils.isNotEmpty(environments)) {
+				writer = new FileWriter(sourceConfigXML);
+				writer.write(new Gson().toJson(environments));
+				writer.flush();
+			}
+		} catch (ConfigurationException e) {
+			throw new PhrescoException(e);
+		} catch (IOException e) {
+			throw new PhrescoException(e);
+		} finally {
+			Utility.closeStream(writer);
+		}
+	}
+	
 	private void createPackage() throws MojoExecutionException {
 		if(StringUtils.isNotEmpty(moduleName) && JAR.equals(packagingType) || StringUtils.isEmpty(packagingType)) {
 			return;
