@@ -400,7 +400,7 @@ public class Package implements PluginConstants {
 		sb.append(STR_SPACE);
 		sb.append(MVN_PHASE_CLEAN);
 		sb.append(STR_SPACE);
-		sb.append(MVN_PHASE_PACKAGE);
+		sb.append(MVN_PHASE_INSTALL);
 		if(!Constants.POM_NAME.equals(pomName)) {
 			sb.append(STR_SPACE);
 			sb.append(Constants.HYPHEN_F);
