@@ -109,7 +109,7 @@ public class ProguardMojo extends AbstractAndroidMojo
      */
     private String proguardConfig;
 
-    @PullParameter( defaultValue = "source/proguard.cfg" )
+    @PullParameter( defaultValue = "proguard.cfg" )
     private String parsedConfig;
 
     /**
@@ -224,6 +224,12 @@ public class ProguardMojo extends AbstractAndroidMojo
      */
     private Boolean includeJdkLibs;
     
+    /**
+  	 * @parameter expression="${project.basedir}" required="true"
+  	 * @readonly
+  	 */
+  	protected File baseDir;
+    
     @PullParameter( defaultValue = "true" )
     private Boolean parsedIncludeJdkLibs;
 
@@ -294,7 +300,7 @@ public class ProguardMojo extends AbstractAndroidMojo
         ConfigHandler configHandler = new ConfigHandler( this );
         configHandler.parseConfiguration();
 
-        if ( ! parsedSkip )
+        if ( ! parsedSkip && ! baseDir.getPath().endsWith("unit"))
         {
             executeProguard();
         }

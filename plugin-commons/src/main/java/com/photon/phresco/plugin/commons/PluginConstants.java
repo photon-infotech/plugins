@@ -368,6 +368,7 @@ public interface PluginConstants {
 	 String ANDROID_DEPLOY_COMMAND		= "mvn android:deploy";
 	 String ANDROID_TEST_COMMAND 		= "mvn clean install";
 	 String SKIP_TEST					= "skipTest";
+	 String COVERAGE					= "coverage";
 	 String ANDROID_VERSION				= "android.version";
 	 String ANDROID_DEVICE				= "android.device";
 	 String ANDROID_EMULATOR			= "android.emulator.avd";
@@ -493,6 +494,8 @@ public interface PluginConstants {
 	 String DEVICE_TYPE 				= "deviceType";
 	 String SIM_VERSION 				= "sdkVersion";
 	 String PSIGN 						= "-Psign";
+	 String PRUNUNIT					= "-Prununit";
+	 String PCOVERAGE				    = "-Pcoverage";
 	 String TEST_AGAINST				= "testAgainst";
 	 String TEST_BASIS					= "testBasis";
 	 String CUSTOM_TEST_AGAINST			= "customTestAgainst";

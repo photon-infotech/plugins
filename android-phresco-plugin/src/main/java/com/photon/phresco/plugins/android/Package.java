@@ -54,6 +54,7 @@ public class Package implements PluginConstants {
 	private String baseDir;
 	private MavenProject project;
 	private String pomFile;
+	private String TRUE = "true";
 	
 	public void pack(com.photon.phresco.plugins.model.Mojos.Mojo.Configuration config, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -68,6 +69,8 @@ public class Package implements PluginConstants {
 		String sdkVersion = configs.get(SDK_VERSION);
 		String proguard = configs.get(PROGUARD);
 		String skipTest = configs.get(SKIP_TEST);
+		String unitCodeCoverage = configs.get(COVERAGE);
+		log.info("unitCodeCoverage . " +unitCodeCoverage);
 		
 		String signing = configs.get(SIGNING);
 		String keystore = configs.get(KEYSTORE);
@@ -89,9 +92,13 @@ public class Package implements PluginConstants {
 		PluginUtils.checkForConfigurations(new File(baseDir), environmentName);
 		
 		Boolean isZipAlign = Boolean.valueOf(zipAlign);
-//		log.info("isZipAlign . " +isZipAlign);
+		log.info("isZipAlign . " +isZipAlign);
 		Boolean isSigning = Boolean.valueOf(signing);
-//		log.info("isSigning . " + isSigning);
+  	    log.info("isSigning . " + isSigning);
+		Boolean isSkipTest = Boolean.valueOf(skipTest);
+		log.info("isSkipTest . " +isSkipTest);
+		Boolean isUnitCodeCoverage = Boolean.valueOf(unitCodeCoverage);
+		log.info("isUntCodeCoverage . " +isUnitCodeCoverage);
 		
 		if(isZipAlign) {						
 			isSigning = true;
@@ -128,12 +135,28 @@ public class Package implements PluginConstants {
 			sb.append(STR_SPACE);
 			boolean proguradVal = Boolean.valueOf(proguard);
 			sb.append(HYPHEN_D + PROGUARD_SKIP + EQUAL + !proguradVal);
+		}else{
+			sb.append(STR_SPACE);
+			sb.append(HYPHEN_D + PROGUARD_SKIP + EQUAL + TRUE);
 		}
 		//zip Align 
 		if(StringUtils.isNotEmpty(zipAlign)) {			
 			sb.append(STR_SPACE);
 			boolean zipAlignVal = Boolean.valueOf(zipAlign);
 			sb.append(HYPHEN_D + ZIP_ALIGN_SKIP + EQUAL + !zipAlignVal);
+		}else{
+			sb.append(STR_SPACE);
+			sb.append(HYPHEN_D + ZIP_ALIGN_SKIP + EQUAL + TRUE);
+		}
+		//run unit test 
+		if ((isSkipTest==false && isUnitCodeCoverage==false)||(isSkipTest==false && unitCodeCoverage.isEmpty())){
+					sb.append(STR_SPACE);
+					sb.append(PRUNUNIT);
+		 }
+		//run code coverage
+		 if (isUnitCodeCoverage){
+				sb.append(STR_SPACE);
+				sb.append(PCOVERAGE);
 		}
 		//signing
 		if (isSigning) {
@@ -141,7 +164,7 @@ public class Package implements PluginConstants {
 			sb.append(PSIGN);
 		}
 				
-		List<Parameter> parameters = config.getParameters().getParameter();
+		/*List<Parameter> parameters = config.getParameters().getParameter();
 		for (Parameter parameter : parameters) {
 			if(parameter.getPluginParameter() != null && parameter.getMavenCommands() != null) {
 				List<MavenCommand> mavenCommands = parameter.getMavenCommands().getMavenCommand();
@@ -152,7 +175,8 @@ public class Package implements PluginConstants {
 					}
 				}
 			}			
-		}		
+		}	*/	
+		
 		if(!Constants.POM_NAME.equals(pomFile)) {
 			sb.append(STR_SPACE);
 			sb.append(Constants.HYPHEN_F);
@@ -256,7 +280,7 @@ public class Package implements PluginConstants {
 	private void updateAllPOMWithProfile(String keystore, String storepass, String keypass, String alias) throws PhrescoException {
 		log.info("baseDir " + baseDir);
 		List<String> pomsTobeUpdated = new ArrayList<String>();
-		pomsTobeUpdated.add("");
+		pomsTobeUpdated.add(Constants.POM_PROP_KEY_SOURCE_DIR);
 		pomsTobeUpdated.add(Constants.POM_PROP_KEY_UNITTEST_DIR);
 		pomsTobeUpdated.add(Constants.POM_PROP_KEY_FUNCTEST_DIR);
 		pomsTobeUpdated.add(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR);

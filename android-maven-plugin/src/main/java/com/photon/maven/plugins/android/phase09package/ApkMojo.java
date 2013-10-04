@@ -353,7 +353,8 @@ public class ApkMojo extends AbstractAndroidMojo {
 
 	private void configure() throws MojoExecutionException {
 			try {
-			if (StringUtils.isEmpty(environmentName)) {
+				if (StringUtils.isEmpty(environmentName)||baseDir.getPath().endsWith("unit")
+						|| baseDir.getPath().endsWith("functional")) {
 				
 				return;
 				
@@ -369,7 +370,7 @@ public class ApkMojo extends AbstractAndroidMojo {
 				srcConfigFile = new File(sourceDirectory.getParent(), "/assets/phresco-env-config.xml");
 			}
 			PluginUtils pu = new PluginUtils();
-			pu.executeUtil(environmentName, baseDir.getPath(), srcConfigFile);
+			pu.executeUtil(environmentName, baseDir.getParentFile().getPath(), srcConfigFile);
 			pu.setDefaultEnvironment(environmentName, srcConfigFile);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage());

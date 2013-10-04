@@ -99,12 +99,24 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		File outputFile = null, outputAlignedFile = null, destFile = null, destAlignedFile = null, packageInfoFile = null;
 		String techId;
+		if(baseDir.getPath().endsWith("source")||baseDir.getPath().endsWith("unit")
+				|| baseDir.getPath().endsWith("functional")
+				|| baseDir.getPath().endsWith("performance") ){
+			
 		try {
 
 			buildInfoList = new ArrayList<BuildInfo>(); // initialization
 			// srcDir = new File(baseDir.getPath() + File.separator +
 			// sourceDirectory);
-			buildDir = new File(baseDir.getPath() + buildDirectory);
+			if (baseDir.getPath().endsWith("source")){
+				
+				buildDir = new File(baseDir.getParentFile().getPath() + buildDirectory);
+			}else{
+				
+				buildDir = new File(baseDir.getPath() + buildDirectory);
+				
+			}
+			
 			if (!buildDir.exists()) {
 				buildDir.mkdir();
 			}
@@ -117,7 +129,7 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 						+ "phresco-package-info.xml");
 		
 			} else {
-				packageInfoFile = new File(baseDir.getPath() + File.separator
+				packageInfoFile = new File(baseDir.getParentFile().getPath() + File.separator
 						+ ".phresco" + File.separator
 						+ "phresco-package-info.xml");
 			}
@@ -313,6 +325,9 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 				throw new MojoExecutionException("Error in writing output...");
 			}
 
+		  }
+		}else{
+			getLog().info("It is a component ");
 		}
 	}
 

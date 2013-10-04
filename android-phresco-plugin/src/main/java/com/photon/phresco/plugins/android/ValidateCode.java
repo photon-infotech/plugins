@@ -64,6 +64,7 @@ public class ValidateCode implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(pomFile);
 		}
+		System.out.println("Sonar command :"+sb.toString());
 		boolean status = Utility.executeStreamconsumer(sb.toString(), workingDir, project.getBasedir().getPath(), CODE_VALIDATE);
 		if(!status) {
 			try {
