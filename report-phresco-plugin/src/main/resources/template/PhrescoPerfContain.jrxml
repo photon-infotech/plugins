@@ -146,7 +146,7 @@
 				<reportElement style="PPCTitleRectLogo" x="0" y="127" width="554" height="23"/>
 			</rectangle>
 			<textField>
-				<reportElement x="4" y="130" width="344" height="20" forecolor="#FFFFFF"/>
+				<reportElement x="4" y="130" width="344" height="20" forecolor="#333333"/>
 				<textElement>
 					<font fontName="Times New Roman" size="15" isBold="true"/>
 				</textElement>
@@ -177,14 +177,14 @@
 					<reportElement style="PPCHeadingRow" x="0" y="5" width="554" height="20"/>
 				</rectangle>
 				<textField>
-					<reportElement style="PPCHeadingRowLabelValue" x="83" y="5" width="377" height="20"/>
+					<reportElement style="PPCHeadingRowLabelValue" x="83" y="5" width="377" height="20" forecolor="#333333"/>
 					<textElement verticalAlignment="Middle">
 						<font fontName="Times New Roman" size="11" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{type}]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement style="PPCHeadingRowLabelValue" x="15" y="5" width="68" height="19" forecolor="#FFFFFF"/>
+					<reportElement style="PPCHeadingRowLabelValue" x="15" y="5" width="68" height="19" forecolor="#333333"/>
 					<textElement verticalAlignment="Middle">
 						<font fontName="Times New Roman" size="11" isBold="true"/>
 					</textElement>

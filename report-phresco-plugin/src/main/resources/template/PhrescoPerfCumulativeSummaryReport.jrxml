@@ -26,14 +26,14 @@
 	<pageHeader>
 		<band height="27">
 			<frame>
-				<reportElement style="PPCRHeading" mode="Opaque" x="0" y="0" width="555" height="24"/>
-				<staticText>
-					<reportElement x="5" y="4" width="354" height="18" forecolor="#FFFFFF"/>
+				<reportElement style="PPCRHeading" mode="Opaque" x="1" y="-1" width="555" height="24"/>
+				<textField>
+					<reportElement x="1" y="4" width="344" height="20" forecolor="#333333"/>
 					<textElement>
-						<font fontName="Times New Roman" size="12" isBold="true"/>
+						<font fontName="Times New Roman" size="15" isBold="true"/>
 					</textElement>
-					<text><![CDATA[Performance Test Report]]></text>
-				</staticText>
+					<textFieldExpression><![CDATA["PERFORMANCE TEST REPORT"]]></textFieldExpression>
+				</textField>
 			</frame>
 		</band>
 	</pageHeader>

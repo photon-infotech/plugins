@@ -213,11 +213,11 @@
 				<reportElement x="0" y="0" width="555" height="50" isRemoveLineWhenBlank="true"/>
 				<subreport>
 					<reportElement x="0" y="0" width="555" height="50" isRemoveLineWhenBlank="true"/>
-					<subreportParameter name="showGraphss">
-						<subreportParameterExpression><![CDATA[$V{isShowGraphs}]]></subreportParameterExpression>
-					</subreportParameter>
 					<subreportParameter name="reportsDataType">
 						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="showGraphs">
+						<subreportParameterExpression><![CDATA[$V{isShowGraphs}]]></subreportParameterExpression>
 					</subreportParameter>
 					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{loadTestReports})]]></dataSourceExpression>
 					<subreportExpression><![CDATA["PhrescoLoadCumulativeSummaryTest.jasper"]]></subreportExpression>

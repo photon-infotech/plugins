@@ -140,7 +140,7 @@
 				<reportElement style="PAPCTitleRectLogo" x="0" y="128" width="554" height="23"/>
 			</rectangle>
 			<textField>
-				<reportElement x="4" y="128" width="360" height="23" forecolor="#FFFFFF"/>
+				<reportElement x="4" y="128" width="388" height="23" forecolor="#333333"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="Times New Roman" size="15" isBold="true"/>
 				</textElement>

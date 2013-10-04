@@ -179,9 +179,9 @@ public class GenerateReport implements PluginConstants {
 	private String copyRights = "";
 	
     //test suite details
-	private float noOfTstSuiteTests = 0;
-    private float noOfTstSuiteFailures = 0;
-    private float noOfTstSuiteErrors = 0;
+	private int noOfTstSuiteTests = 0;
+    private int noOfTstSuiteFailures = 0;
+    private int noOfTstSuiteErrors = 0;
     
     private String fileName = null;
     
@@ -262,6 +262,7 @@ public class GenerateReport implements PluginConstants {
 	}
     
 	public void generatePdfReport() throws PhrescoException {
+		ArrayList<JmeterTypeReport> jmeterTestResults = null;
 		try {
 			// Report generation for unit and functional
 			if (UNIT.equals(testType) || FUNCTIONAL.equals(testType) || COMPONENT.equals(testType) || MANUAL.equals(testType)) {
@@ -302,14 +303,13 @@ public class GenerateReport implements PluginConstants {
 					List<AndroidPerfReport> jmeterTestResultsForAndroid = getJmeterTestResultsForAndroid();
 					generateAndroidPerformanceReport(jmeterTestResultsForAndroid);
 				} else {
-					ArrayList<JmeterTypeReport> jmeterTestResults = getJmeterTestResults();
+					jmeterTestResults = getJmeterTestResults();
 					// Performance test report generation
-					generateJmeterPerformanceReport(jmeterTestResults);
+					generateJmeterPerformanceLoadReport(jmeterTestResults);
 				}
-			}  else if (LOAD.equals(testType)) {
-				List<LoadTestReport> loadTestResults = getLoadTestResults();
-				// Load test report generation
-				generateLoadTestReport(loadTestResults);
+			} else if(LOAD.equals(testType)) {
+				jmeterTestResults = getJmeterTestResults();
+				generateJmeterPerformanceLoadReport(jmeterTestResults);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -403,7 +403,7 @@ public class GenerateReport implements PluginConstants {
 			}
 			
 			
-			testType = "";
+			testType = PERFORMACE;
 			//performance details
 			List<AndroidPerfReport> jmeterTestResultsForAndroid = null;
 			ArrayList<JmeterTypeReport> jmeterTestResults = null;
@@ -434,7 +434,10 @@ public class GenerateReport implements PluginConstants {
 			}
 			
 			//load test details
-			List<LoadTestReport> loadTestResults = getLoadTestResults();
+			testType = LOAD;
+			ArrayList<JmeterTypeReport> loadTestResults = null;
+			loadTestResults = getJmeterTestResults();
+			
 			if (loadTestResults != null) {
 				cumulativeReportparams.put(LOAD_TEST_REPORTS, loadTestResults);
 			}
@@ -490,7 +493,7 @@ public class GenerateReport implements PluginConstants {
 			if (isClangReport) { // iphone
 				outFileNamePDF = Utility.getPhrescoTemp() + uuid + semiPath;
 			} else {
-				outFileNamePDF = baseDir + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + CUMULATIVE + File.separator + fileName + DOT + PDF;
+				outFileNamePDF = baseDir + File.separator + "do_not_checkin" + File.separator + ARCHIVES + File.separator + CUMULATIVE + File.separator + fileName + DOT + PDF;
 			}
 			
 			new File(outFileNamePDF).getParentFile().mkdirs();
@@ -879,7 +882,7 @@ public class GenerateReport implements PluginConstants {
 	}
 	
 	// performance test report
-	public void generateJmeterPerformanceReport(ArrayList<JmeterTypeReport> jmeterTestResults)  throws PhrescoException {
+	public void generateJmeterPerformanceLoadReport(ArrayList<JmeterTypeReport> jmeterTestResults)  throws PhrescoException {
 		try {
 			ArrayList<JmeterTypeReport> jmeterTstResults = jmeterTestResults;
 			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + fileName + DOT + PDF;
@@ -926,27 +929,27 @@ public class GenerateReport implements PluginConstants {
 	}
 	
 	// load test report
-	public void generateLoadTestReport(List<LoadTestReport> loadTestResults)  throws PhrescoException {
-		try {
-			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + fileName + DOT + PDF;
-
-			String jasperFile = "PhrescoLoadTestContain.jasper";
-			Map<String, Object> parameters = new HashMap<String,Object>();
-			parameters.put(COPY_RIGHTS, copyRights);
-			parameters.put(PDF_PROJECT_CODE, projectCode);
-			parameters.put(PROJECT_NAME, projName);
-			parameters.put(TECH_NAME, techName);
-			parameters.put(TEST_TYPE, testType.toUpperCase());
-			parameters.put(REPORTS_TYPE, reportType);
-			parameters.put(VERSION, version);
-			parameters.put(LOGO, logo);
-			JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(loadTestResults);
-			reportGenerate(outFileNamePDF, jasperFile, parameters, dataSource);
-		} catch (Exception e) {
-			log.error("Load report generation error");
-			throw new PhrescoException(e);
-		}
-	}
+//	public void generateLoadTestReport(List<LoadTestReport> loadTestResults)  throws PhrescoException {
+//		try {
+//			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + fileName + DOT + PDF;
+//
+//			String jasperFile = "PhrescoLoadTestContain.jasper";
+//			Map<String, Object> parameters = new HashMap<String,Object>();
+//			parameters.put(COPY_RIGHTS, copyRights);
+//			parameters.put(PDF_PROJECT_CODE, projectCode);
+//			parameters.put(PROJECT_NAME, projName);
+//			parameters.put(TECH_NAME, techName);
+//			parameters.put(TEST_TYPE, testType.toUpperCase());
+//			parameters.put(REPORTS_TYPE, reportType);
+//			parameters.put(VERSION, version);
+//			parameters.put(LOGO, logo);
+//			JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(loadTestResults);
+//			reportGenerate(outFileNamePDF, jasperFile, parameters, dataSource);
+//		} catch (Exception e) {
+//			log.error("Load report generation error");
+//			throw new PhrescoException(e);
+//		}
+//	}
 	
 	public void reportGenerate(String outFileNamePDF, String jasperFile, Map<String, Object> parameters, JRBeanCollectionDataSource dataSource) throws PhrescoException {
 		InputStream reportStream = null;
@@ -984,52 +987,52 @@ public class GenerateReport implements PluginConstants {
 		}
 	}
 	
-	public List<LoadTestReport> getLoadTestResults()  throws Exception {
-		List<String> testResultsTypes = new ArrayList<String>();
-        testResultsTypes.add("server");
-        testResultsTypes.add("webservice");
-        
-		List<LoadTestReport> loadTestReports = new ArrayList<LoadTestReport>();
-		String reportFilePath = baseDir + mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_LOADTEST_RPT_DIR);
-		String testResulExtension = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_LOADTEST_RESULT_EXTENSION);
-		List<File> testResultFiles = new ArrayList<File>();
-		List<File> resultFiles = null;
-		// if the load is having dir_type key
-		if (reportFilePath.contains(DIR_TYPE)) {
-			for(String loadType: testResultsTypes) {
-				Pattern p = Pattern.compile(DIR_TYPE);
-                Matcher matcher = p.matcher(reportFilePath);
-                String loadReportFilePath = matcher.replaceAll(loadType);
-                if (StringUtils.isNotEmpty(testResulExtension)) {
-                	resultFiles = getResultFileExtension(loadReportFilePath, testResulExtension);
-                }
-                
-                if (CollectionUtils.isNotEmpty(resultFiles)) {
-                	testResultFiles.addAll(resultFiles);
-                }
-			}
-		} else {
-			if (StringUtils.isNotEmpty(testResulExtension)) {
-            	resultFiles = getResultFileExtension(reportFilePath, testResulExtension);
-            }
-			
-            if (CollectionUtils.isNotEmpty(resultFiles)) {
-            	testResultFiles.addAll(resultFiles);
-            }
-		}
-		
-		for (File resultFile : testResultFiles) {
-			Document doc = getDocumentOfFile(resultFile);
-			List<TestResult> loadTestResults = getLoadTestResult(doc);
-			
-			// Adding report data to bean object
-			LoadTestReport loadTestReport = new LoadTestReport();
-			loadTestReport.setFileName(resultFile.getName());
-			loadTestReport.setTestResults(loadTestResults);
-			loadTestReports.add(loadTestReport);
-		}
-		return loadTestReports;
-	}
+//	public List<LoadTestReport> getLoadTestResults()  throws Exception {
+//		List<String> testResultsTypes = new ArrayList<String>();
+//        testResultsTypes.add("server");
+//        testResultsTypes.add("webservice");
+//        
+//		List<LoadTestReport> loadTestReports = new ArrayList<LoadTestReport>();
+//		String reportFilePath = baseDir + mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_LOADTEST_RPT_DIR);
+//		String testResulExtension = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_LOADTEST_RESULT_EXTENSION);
+//		List<File> testResultFiles = new ArrayList<File>();
+//		List<File> resultFiles = null;
+//		// if the load is having dir_type key
+//		if (reportFilePath.contains(DIR_TYPE)) {
+//			for(String loadType: testResultsTypes) {
+//				Pattern p = Pattern.compile(DIR_TYPE);
+//                Matcher matcher = p.matcher(reportFilePath);
+//                String loadReportFilePath = matcher.replaceAll(loadType);
+//                if (StringUtils.isNotEmpty(testResulExtension)) {
+//                	resultFiles = getResultFileExtension(loadReportFilePath, testResulExtension);
+//                }
+//                
+//                if (CollectionUtils.isNotEmpty(resultFiles)) {
+//                	testResultFiles.addAll(resultFiles);
+//                }
+//			}
+//		} else {
+//			if (StringUtils.isNotEmpty(testResulExtension)) {
+//            	resultFiles = getResultFileExtension(reportFilePath, testResulExtension);
+//            }
+//			
+//            if (CollectionUtils.isNotEmpty(resultFiles)) {
+//            	testResultFiles.addAll(resultFiles);
+//            }
+//		}
+//		
+//		for (File resultFile : testResultFiles) {
+//			Document doc = getDocumentOfFile(resultFile);
+//			List<TestResult> loadTestResults = getLoadTestResult(doc);
+//			
+//			// Adding report data to bean object
+//			LoadTestReport loadTestReport = new LoadTestReport();
+//			loadTestReport.setFileName(resultFile.getName());
+//			loadTestReport.setTestResults(loadTestResults);
+//			loadTestReports.add(loadTestReport);
+//		}
+//		return loadTestReports;
+//	}
 	
 	public ArrayList<JmeterTypeReport> getJmeterTestResults() throws Exception {
         List<String> testResultsTypes = new ArrayList<String>();
@@ -1039,19 +1042,27 @@ public class GenerateReport implements PluginConstants {
         
         // List of performance test types
         ArrayList<JmeterTypeReport> jmeterTypeReports = new ArrayList<JmeterTypeReport>();
-        for(String perType: testResultsTypes) {
-            String performanceReportDir = baseDir + mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_RPT_DIR);
-            String performanceReportExtension = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_RESULT_EXTENSION);
-            if (StringUtils.isNotEmpty(performanceReportDir) && StringUtils.isNotEmpty(perType)) {
+        for(String testResultsType : testResultsTypes) {
+        	String reportDir = "";
+        	String reportExtension = "";
+        	if (PERFORMACE.equals(testType)) {
+        		reportDir = baseDir + mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_RPT_DIR);
+                reportExtension = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_RESULT_EXTENSION);
+        	} else if (LOAD.equals(testType)) {
+        		reportDir = baseDir + mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_LOADTEST_RPT_DIR);
+        		reportExtension = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_LOADTEST_RESULT_EXTENSION);
+        	}
+        	
+            if (StringUtils.isNotEmpty(reportDir) && StringUtils.isNotEmpty(testResultsType)) {
                 Pattern p = Pattern.compile(DIR_TYPE);
-                Matcher matcher = p.matcher(performanceReportDir);
-                performanceReportDir = matcher.replaceAll(perType);
+                Matcher matcher = p.matcher(reportDir);
+                reportDir = matcher.replaceAll(testResultsType);
             }
             
             // to get performance extension tag value from pom
             List<String> testResultFiles = null;
-            if (StringUtils.isNotEmpty(performanceReportExtension)) {
-            	testResultFiles = getTestResultFiles(performanceReportDir, performanceReportExtension);
+            if (StringUtils.isNotEmpty(reportExtension)) {
+            	testResultFiles = getTestResultFiles(reportDir, reportExtension);
             }
             
 			String deviceId = null; // for android alone
@@ -1060,7 +1071,7 @@ public class GenerateReport implements PluginConstants {
 			List<JmeterReport> jmeterReports = new ArrayList<JmeterReport>();
 			if (CollectionUtils.isNotEmpty(testResultFiles)) {
 				for (String testResultFile : testResultFiles) {
-					Document document = getDocumentOfFile(performanceReportDir, testResultFile);
+					Document document = getDocumentOfFile(reportDir, testResultFile);
 					JmeterReport jmeterReport = getPerformanceReport(document, testResultFile, deviceId); // need to pass tech id and tag name
 					jmeterReports.add(jmeterReport);
 				}
@@ -1068,7 +1079,7 @@ public class GenerateReport implements PluginConstants {
             // When data is not available dont show in i report
             if (!jmeterReports.isEmpty()) {
 	            JmeterTypeReport jmeterTypeReport = new JmeterTypeReport();
-	            jmeterTypeReport.setType(perType);
+	            jmeterTypeReport.setType(testResultsType);
 	            jmeterTypeReport.setFileReport(jmeterReports);
 	            // adding final data to jmeter type reports
 	            jmeterTypeReports.add(jmeterTypeReport);
@@ -1256,21 +1267,21 @@ public class GenerateReport implements PluginConstants {
 
 			List<TestSuite> testSuites = getTestSuite(doc, testSuitePath);
 			// crisp info
-			float totalTestSuites = 0;
-			float successTestSuites = 0;
-			float failureTestSuites = 0;
-			float errorTestSuites = 0;
+			int totalTestSuites = 0;
+			int successTestSuites = 0;
+			int failureTestSuites = 0;
+			int errorTestSuites = 0;
 			
 			if(CollectionUtils.isNotEmpty(testSuites)) {
 				for (TestSuite testSuite : testSuites) { // test suite ll have graph details
 					List<TestCase> testCases = getTestCases(doc, testSuite.getName(), testSuitePath, testCasePath);
-					float tests = 0;
-					float failures = 0;
-					float errors = 0;
+					int tests = 0;
+					int failures = 0;
+					int errors = 0;
 					failures = getNoOfTstSuiteFailures();
 					errors = getNoOfTstSuiteErrors();
 					tests = getNoOfTstSuiteTests();
-					float success = 0;
+					int success = 0;
 	
 					if (failures != 0 && errors == 0) {
 						if (failures > tests) {
@@ -1285,7 +1296,7 @@ public class GenerateReport implements PluginConstants {
 							success = tests - errors;
 						}
 					} else if (failures != 0 && errors != 0) {
-						float failTotal = (failures + errors);
+						int failTotal = failures + errors;
 						if (failTotal > tests) {
 							success = failTotal - tests;
 						} else {
@@ -1298,7 +1309,7 @@ public class GenerateReport implements PluginConstants {
 					totalTestSuites = totalTestSuites + tests;
 					failureTestSuites = failureTestSuites + failures;
 					errorTestSuites = errorTestSuites + errors;
-					successTestSuites = successTestSuites + success;
+					successTestSuites = (int) (successTestSuites + success);
 					String rstValues = tests + "," + success + "," + failures + "," + errors;
 	//				log.info("rstValues ... " + rstValues);
 					AllTestSuite allTestSuiteDetail = new AllTestSuite(testSuite.getName(), tests, success, failures, errors);
@@ -1408,48 +1419,56 @@ public class GenerateReport implements PluginConstants {
 		  if(next.getCell(3)!=null){
 			  Cell cell = next.getCell(3);
 			  String value=getValue(cell);
+			  Float f= Float.parseFloat(value);
+			 
+			  int total = Math.round(f);
+			  System.out.println("afetre... " + total);
 			  if(StringUtils.isNotEmpty(value)) {
-				  float pass=Float.parseFloat(value);
-				  testSuite.setSuccess(pass);
+				  testSuite.setTotal(total);
 			  }
 		  }
 		  if(next.getCell(4)!=null){
 			  Cell cell = next.getCell(4);
 			  String value=getValue(cell);
+			  Float f= Float.parseFloat(value);
+			  int fail = Math.round(f);
 			  if(StringUtils.isNotEmpty(value)) {
-				  float fail=Float.parseFloat(value);
 				  testSuite.setFailure(fail);
 			  }
 		  }
 		  if(next.getCell(5)!=null){
 			  Cell cell = next.getCell(5);
 			  String value=getValue(cell);
+			  Float f= Float.parseFloat(value);
+			  int notApp=Math.round(f);
 			  if(StringUtils.isNotEmpty(value)) {
-				  float notApp=Float.parseFloat(value);
 				  testSuite.setNotApplicable(notApp);
 			  }
 		  }
 		  if(next.getCell(6)!=null){
 			  Cell cell = next.getCell(6);
 			  String value=getValue(cell);
+			  Float f= Float.parseFloat(value);
+			  int notExecuted=Math.round(f);
 			  if(StringUtils.isNotEmpty(value)) {
-				  float notExecuted=Float.parseFloat(value);
 				  testSuite.setNotExecuted(notExecuted);
 			  }
 		  }
 		  if(next.getCell(7)!=null){
 			  Cell cell = next.getCell(7);
 			  String value=getValue(cell);
+			  Float f= Float.parseFloat(value);
+			  int blocked=Math.round(f);
 			  if(StringUtils.isNotEmpty(value)) {
-				  float blocked=Float.parseFloat(value);
 				  testSuite.setBlocked(blocked);
 			  }
 		  }
 		  if(next.getCell(8)!=null){
 			  Cell cell = next.getCell(8);
 			  String value=getValue(cell);
+			  Float f= Float.parseFloat(value);
+			  int total=Math.round(f);
 			  if(StringUtils.isNotEmpty(value)) {
-				  float total=Float.parseFloat(value);
 				  testSuite.setTotal(total);
 			  }
 		  }
@@ -1476,7 +1495,7 @@ public class GenerateReport implements PluginConstants {
 		  return null;
 	  }
 
-	  public  List<TestSuite> readTestSuitesWithTestCases(String filePath)  {
+	  public List<TestSuite> readTestSuitesWithTestCases(String filePath)  {
 		List<TestSuite> excels = new ArrayList<TestSuite>();
 		Iterator<Row> rowIterator = null;
 		FilenameFilter filter = null;
@@ -1553,48 +1572,54 @@ public class GenerateReport implements PluginConstants {
 		  if(next.getCell(3)!=null){
 			  Cell cell = next.getCell(3);
 			  String value=getValue(cell);
+			  Float f= Float.parseFloat(value);
+			  int pass = Math.round(f);
 			  if(StringUtils.isNotEmpty(value)) {
-				  float pass=Float.parseFloat(value);
 				  testSuite.setSuccess(pass);
 			  }
 		  }
 		  if(next.getCell(4)!=null){
 			  Cell cell = next.getCell(4);
 			  String value=getValue(cell);
+			  Float f= Float.parseFloat(value);
+			  int fail = Math.round(f);
 			  if(StringUtils.isNotEmpty(value)) {
-				  float fail=Float.parseFloat(value);
 				  testSuite.setFailures(fail);
 			  }
 		  }
 		  if(next.getCell(5)!=null){
 			  Cell cell = next.getCell(5);
 			  String value=getValue(cell);
+			  Float f= Float.parseFloat(value);
+			  int notApp = Math.round(f);
 			  if(StringUtils.isNotEmpty(value)) {
-				  float notApp=Float.parseFloat(value);
 				  testSuite.setNotApplicable(notApp);
 			  }
 		  }
 		  if(next.getCell(6)!=null){
 			  Cell cell = next.getCell(6);
 			  String value=getValue(cell);
+			  Float f= Float.parseFloat(value);
+			  int notExecuted = Math.round(f);
 			  if(StringUtils.isNotEmpty(value)) {
-				  float notExecuted=Float.parseFloat(value);
 				  testSuite.setNotExecuted(notExecuted);
 			  }
 		  }
 		  if(next.getCell(7)!=null){
 			  Cell cell = next.getCell(7);
 			  String value=getValue(cell);
+			  Float f= Float.parseFloat(value);
+			  int blocked = Math.round(f);
 			  if(StringUtils.isNotEmpty(value)) {
-				  float blocked=Float.parseFloat(value);
 				  testSuite.setBlocked(blocked);
 			  }
 		  }
 		  if(next.getCell(8)!=null){
 			  Cell cell = next.getCell(8);
 			  String value=getValue(cell);
+			  Float f= Float.parseFloat(value);
+			  int total = Math.round(f);
 			  if(StringUtils.isNotEmpty(value)) {
-				  float total=Float.parseFloat(value);
 				  testSuite.setTotal(total);
 			  }
 		  }
@@ -1801,9 +1826,9 @@ public class GenerateReport implements PluginConstants {
                     if (ATTR_ASSERTIONS.equals(attributeName)) {
                         testSuite.setAssertions(attributeValue);
                     } else if (ATTR_ERRORS.equals(attributeName)) {
-                        testSuite.setErrors(Float.parseFloat(attributeValue));
+                        testSuite.setErrors(Integer.parseInt(attributeValue));
                     } else if (ATTR_FAILURES.equals(attributeName)) {
-                        testSuite.setFailures(Float.parseFloat(attributeValue));
+                        testSuite.setFailures(Integer.parseInt(attributeValue));
                     } else if (ATTR_FILE.equals(attributeName)) {
                         testSuite.setFile(attributeValue);
                     } else if (ATTR_NAME.equals(attributeName)) {
@@ -1846,9 +1871,9 @@ public class GenerateReport implements PluginConstants {
 					if (ATTR_ASSERTIONS.equals(attributeName)) {
 						testSuite.setAssertions(attributeValue);
 					} else if (ATTR_ERRORS.equals(attributeName)) {
-						testSuite.setErrors(Float.parseFloat(attributeValue));
+						testSuite.setErrors(Integer.parseInt(attributeValue));
 					} else if (ATTR_FAILURES.equals(attributeName)) {
-						testSuite.setFailures(Float.parseFloat(attributeValue));
+						testSuite.setFailures(Integer.parseInt(attributeValue));
 					} else if (ATTR_FILE.equals(attributeName)) {
 						testSuite.setFile(attributeValue);
 					} else if (ATTR_NAME.equals(attributeName)) {
@@ -2480,27 +2505,27 @@ public class GenerateReport implements PluginConstants {
 		return roundThroughPut.setScale(decimal, BigDecimal.ROUND_HALF_EVEN).floatValue();
 	}
     
-	public float getNoOfTstSuiteTests() {
+	public int getNoOfTstSuiteTests() {
 		return noOfTstSuiteTests;
 	}
 
-	public void setNoOfTstSuiteTests(float noOfTstSuiteTests) {
+	public void setNoOfTstSuiteTests(int noOfTstSuiteTests) {
 		this.noOfTstSuiteTests = noOfTstSuiteTests;
 	}
 
-	public float getNoOfTstSuiteFailures() {
+	public int getNoOfTstSuiteFailures() {
 		return noOfTstSuiteFailures;
 	}
 
-	public void setNoOfTstSuiteFailures(float noOfTstSuiteFailures) {
+	public void setNoOfTstSuiteFailures(int noOfTstSuiteFailures) {
 		this.noOfTstSuiteFailures = noOfTstSuiteFailures;
 	}
 
-	public float getNoOfTstSuiteErrors() {
+	public int getNoOfTstSuiteErrors() {
 		return noOfTstSuiteErrors;
 	}
 
-	public void setNoOfTstSuiteErrors(float noOfTstSuiteErrors) {
+	public void setNoOfTstSuiteErrors(int noOfTstSuiteErrors) {
 		this.noOfTstSuiteErrors = noOfTstSuiteErrors;
 	}
 	

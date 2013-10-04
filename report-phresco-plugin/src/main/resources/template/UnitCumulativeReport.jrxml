@@ -43,7 +43,7 @@
 					<printWhenExpression><![CDATA[($P{testType}.equals("unit") && !$F{testSuites}.isEmpty()) || ($P{testType}.equals("unit") && !$F{allTestSuites}.isEmpty())]]></printWhenExpression>
 				</reportElement>
 				<textField>
-					<reportElement x="5" y="4" width="269" height="20" forecolor="#FFFFFF"/>
+					<reportElement x="5" y="4" width="269" height="20" forecolor="#333333"/>
 					<textElement>
 						<font fontName="Times New Roman" size="12" isBold="true"/>
 					</textElement>
