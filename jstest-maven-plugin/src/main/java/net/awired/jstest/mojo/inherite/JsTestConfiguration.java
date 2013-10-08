@@ -198,6 +198,11 @@ public abstract class JsTestConfiguration extends AbstractMojo {
      */
     private File instrumentedDirectory;
 
+    /**
+     * @parameter expression="${addOverlaysToSourceMap}" default-value="true"
+     */
+    private boolean addOverlaysToSourceMap;
+    
     public List<String> getIncludes() {
 		return includes;
 	}
@@ -368,4 +373,12 @@ public abstract class JsTestConfiguration extends AbstractMojo {
     public void setPackBeforeTest(boolean packBeforeTest) {
         this.packBeforeTest = packBeforeTest;
     }
+
+	public boolean isAddOverlaysToSourceMap() {
+		return addOverlaysToSourceMap;
+	}
+
+	public void setAddOverlaysToSourceMap(boolean addOverlaysToSourceMap) {
+		this.addOverlaysToSourceMap = addOverlaysToSourceMap;
+	}
 }

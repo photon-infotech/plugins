@@ -24,7 +24,7 @@ import net.awired.jstest.executor.RunnerExecutor;
 public enum TestType {
     JASMINE(new RunnerExecutor(), "jasmineManager.js", "jasmine.js", "jasmine-html.js", "jasmine.css"), //
     QUNIT(new PhantomJsExecutor(), "qunitManager.js", "qunit.js", "qunit.css"), //
-    YUITEST(new RunnerExecutor(), "yuiTestManager.js", "yui/build/yui/yui-min.js", ""),
+    YUITEST(new RunnerExecutor(), "yuiTestManager.js", "lib/yui/build/yui/yui-min.js", ""),
     ;
 
     private String[] testerResources;

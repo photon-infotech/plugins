@@ -39,7 +39,7 @@ public class PackBeforeTestMojo extends AbstractJsTestMojo {
         try {
             ResourceResolver resourceResolver = new ResourceResolver(getLog(), buildCurrentSrcDir(false),
                     buildTestResourceDirectory(), buildOverlaysResourceDirectories(),
-                    new ArrayList<ResourceDirectory>());
+                    new ArrayList<ResourceDirectory>(), isAddOverlaysToSourceMap());
             ResultHandler resultHandler = new ResultHandler(getLog(), getPreparedReportDir(), buildTestType(resourceResolver));
             
             JsTestHandler jsTestHandler = new JsTestHandler(resultHandler, getLog(), resourceResolver,

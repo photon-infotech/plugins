@@ -63,9 +63,11 @@ public class DevMojo extends AbstractJsTestMojo {
     public void run() throws MojoExecutionException, MojoFailureException {
         JsTestServer jsTestServer = new JsTestServer(getLog(), getDevPort(), false);
         try {
+            
             ResourceResolver resourceResolver = new ResourceResolver(getLog(), buildCurrentSrcDir(true),
                     buildTestResourceDirectory(), buildOverlaysResourceDirectories(),
-                    new ArrayList<ResourceDirectory>());
+                    new ArrayList<ResourceDirectory>(), isAddOverlaysToSourceMap());
+            
             //TODO remove resultHandler creation we dont need it here
             ResultHandler resultHandler = new ResultHandler(getLog(), null, buildTestType(resourceResolver));
             

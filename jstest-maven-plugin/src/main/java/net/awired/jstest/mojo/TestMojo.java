@@ -68,7 +68,7 @@ public class TestMojo extends AbstractJsTestMojo {
         	}
             ResourceResolver resourceResolver = new ResourceResolver(getLog(), buildCurrentSrcDir(false),
                     buildTestResourceDirectory(), buildOverlaysResourceDirectories(),
-                    new ArrayList<ResourceDirectory>());
+                    new ArrayList<ResourceDirectory>(), isAddOverlaysToSourceMap());
             TestType testType = buildTestType(resourceResolver);
             ResultHandler resultHandler = new ResultHandler(getLog(), getPreparedReportDir(), testType);
             

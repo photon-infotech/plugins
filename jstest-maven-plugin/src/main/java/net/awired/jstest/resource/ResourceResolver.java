@@ -42,18 +42,21 @@ public class ResourceResolver {
     private final ResourceDirectory test;
     private final List<ResourceDirectory> sourceOverlays;
     private final List<ResourceDirectory> preloadOverlayDirs;
+    
+    private boolean addOverlaysToSourceMap = true;
 
     private final Map<String, File> resources = new LinkedHashMap<String, File>();
     
     private final Map<String, File> srcMap = new LinkedHashMap<String, File>();
 
     public ResourceResolver(Log log, ResourceDirectory source, ResourceDirectory test,
-            List<ResourceDirectory> overlays, List<ResourceDirectory> preloadOverlayDirs) {
+            List<ResourceDirectory> overlays, List<ResourceDirectory> preloadOverlayDirs, boolean addOverlaysToSourceMap) {
         this.log = log;
         this.source = source;
         this.test = test;
         this.sourceOverlays = overlays;
         this.preloadOverlayDirs = preloadOverlayDirs;
+        this.addOverlaysToSourceMap = addOverlaysToSourceMap;
 
         for (ResourceDirectory overlay : overlays) {
             String path = overlay.getDirectory().getPath();
@@ -109,9 +112,12 @@ public class ResourceResolver {
                 String resourcePrefix = prefix + foundWithSlashes;
                 log.debug("ResourcePrefix " + resourcePrefix);
                 resources.put(resourcePrefix, fullPath);
-                String sourcePrefix = prefix + foundWithSlashes;
-                log.debug("SourcePrefix " + sourcePrefix);
-                srcMap.put(sourcePrefix, fullPath);
+                
+                if (isAddOverlaysToSourceMap()) {
+                    String sourcePrefix = prefix + foundWithSlashes;
+		    log.debug("SourcePrefix " + sourcePrefix);
+                    srcMap.put(sourcePrefix, fullPath);
+                }
             }
         }
     }
@@ -183,5 +189,13 @@ public class ResourceResolver {
             }
         }
     }
+
+	public boolean isAddOverlaysToSourceMap() {
+		return addOverlaysToSourceMap;
+	}
+
+	public void setAddOverlaysToSourceMap(boolean addOverlaysToSourceMap) {
+		this.addOverlaysToSourceMap = addOverlaysToSourceMap;
+	}
 
 }
