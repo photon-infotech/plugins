@@ -35,6 +35,7 @@ package com.photon.phresco.plugins;
 
 import java.io.File;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -42,6 +43,7 @@ import org.apache.maven.project.MavenProject;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.util.Constants;
+
 
 /**
  * Phresco Maven Plugin for executing package command of the plugins
@@ -66,13 +68,25 @@ public class PhrescoPackage extends PhrescoAbstractMojo {
      */
     protected File baseDir;
     
+    /**
+     * @parameter expression="${moduleName}"
+     * @readonly
+     */
+    protected String moduleName;
+    
     public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().info(baseDir.getPath());
         try {
         	String infoFile = baseDir + File.separator + Constants.PACKAGE_INFO_FILE; 
+        	if (StringUtils.isNotEmpty(moduleName)) {
+        		infoFile = baseDir + File.separator + moduleName + File.separator + Constants.PACKAGE_INFO_FILE;
+        	} 
         	PhrescoPlugin plugin = getPlugin(getDependency(infoFile, PACKAGE));
-            plugin.pack(getConfiguration(infoFile, PACKAGE), getMavenProjectInfo(project));
+        	plugin.pack(getConfiguration(infoFile, PACKAGE), getMavenProjectInfo(project, moduleName));
+            
         } catch (PhrescoException e) {
+        	System.out.println("*******************");
+        	e.printStackTrace();
             throw new MojoExecutionException(e.getMessage(), e);
         }
     }

@@ -94,6 +94,7 @@ public interface PluginConstants {
 	 String MVN_PHASE_XCODE_FUN_TEST	= "instruments";
 	 String MVN_PHASE_DEPLOY			= "deploy";
 	 String PACK_BEFORE_TEST			= "pack-before-test";
+	 String HYPHEN_AM_HYPHEN_PL 		= "-am -pl ";
     
 	// Constants for Php maven plugin
 	 

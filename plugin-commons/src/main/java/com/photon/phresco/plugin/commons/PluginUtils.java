@@ -108,7 +108,7 @@ public class PluginUtils {
 	public void executeUtil(String environmentType, String basedir, File sourceConfigXML) throws PhrescoException {
 		try {
 			String customerId = readCustomerId(new File(basedir));
-			File currentDirectory = new File(".");
+			File currentDirectory = new File(basedir);
 			File configXML = new File(currentDirectory + File.separator + 
 			PluginConstants.DOT_PHRESCO_FOLDER + File.separator + PluginConstants.CONFIG_FILE);
 			File settingsXML = new File(Utility.getProjectHome() + customerId + Constants.SETTINGS_XML);
@@ -221,6 +221,30 @@ public class PluginUtils {
 		}
 	}
 
+	public BuildInfo getBuildInfo(int buildNumber, String directory) throws MojoExecutionException {
+		File buildInfoFile = new File(directory + PluginConstants.BUILD_DIRECTORY + PluginConstants.BUILD_INFO_FILE);
+		if (!buildInfoFile.exists()) {
+			throw new MojoExecutionException("Build info is not available!");
+		}
+		try {
+			List<BuildInfo> buildInfos = getBuildInfo(buildInfoFile);
+			
+			 if (CollectionUtils.isEmpty(buildInfos)) {
+				 throw new MojoExecutionException("Build info is empty!");
+			 }
+
+			 for (BuildInfo buildInfo : buildInfos) {
+				 if (buildInfo.getBuildNo() == buildNumber) {
+					 return buildInfo;
+				 }
+			 }
+
+			 throw new MojoExecutionException("Build info is empty!");
+		} catch (Exception e) {
+			throw new MojoExecutionException(e.getLocalizedMessage());
+		}
+	}
+	
 	public BuildInfo getBuildInfo(int buildNumber) throws MojoExecutionException {
 		File currentDirectory = new File(".");
 		File buildInfoFile = new File(currentDirectory.getPath() + PluginConstants.BUILD_DIRECTORY + PluginConstants.BUILD_INFO_FILE);

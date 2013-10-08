@@ -69,6 +69,7 @@ import org.w3c.dom.NodeList;
 
 import com.google.gson.Gson;
 import com.photon.phresco.api.ConfigManager;
+import com.photon.phresco.commons.model.ApplicationInfo;
 import com.photon.phresco.commons.model.ProjectInfo;
 import com.photon.phresco.commons.model.TechnologyInfo;
 import com.photon.phresco.exception.ConfigurationException;
@@ -512,16 +513,19 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 	}
 
 	public ExecutionStatus validate(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		String pomFile = mavenProjectInfo.getProject().getFile().getName();
 		StringBuilder sb = new StringBuilder();
 		sb.append(SONAR_COMMAND);
 		Map<String, String> config = MojoUtil.getAllValues(configuration);
-		String projectModule = config.get(PROJECT_MODULE);
+		String subModule = mavenProjectInfo.getModuleName();
 		MavenProject project = mavenProjectInfo.getProject();
+		File workingDirectory;
 		String workingDir = project.getBasedir().getPath();
-		if (StringUtils.isNotEmpty(projectModule)) {
-            workingDir = workingDir + File.separator + projectModule;
-        }
+		if (StringUtils.isNotEmpty(subModule)) {
+			workingDirectory = new File(workingDir + File.separator + subModule);
+		} else {
+			workingDirectory = new File(workingDir);
+		}
+		String pomFile = getPomFile(workingDirectory).getName();
 		String value = config.get(SONAR);
 		List<Parameter> parameters = configuration.getParameters().getParameter();
 		for (Parameter parameter : parameters) {
@@ -537,21 +541,24 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 		}
 		if(value.equals(FUNCTIONAL)) {
 			sb.delete(0, sb.length());
-			workingDir = workingDir + project.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
+			workingDir = workingDir + getFunctionalDir(workingDirectory);
 			sb.append(SONAR_COMMAND).
 			append(STR_SPACE).
 			append(SKIP_TESTS).
 			append(STR_SPACE).
 			append("-Dsonar.branch=functional");
 		}
-		File workingFile = new File(workingDir + File.separator + pomFile);
+		File workingFile = new File(workingDir + File.separator + POM_XML);
 		if(workingFile.exists()) {
 			sb.append(STR_SPACE);
 			sb.append(Constants.HYPHEN_F);
 			sb.append(STR_SPACE);
 			sb.append(pomFile);
 		}
-		boolean status = Utility.executeStreamconsumer(sb.toString(), workingDir, project.getBasedir().getPath(), CODE_VALIDATE);
+		if (StringUtils.isNotEmpty(subModule)) {
+			sb.append(HYPHEN_AM_HYPHEN_PL + subModule);
+		}
+		boolean status = Utility.executeStreamconsumer(sb.toString(), workingDirectory.getPath(), project.getBasedir().getPath(), CODE_VALIDATE);
 		if(!status) {
 			try {
 				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
@@ -562,6 +569,26 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 		return new DefaultExecutionStatus();
 	}
 
+
+	private File getPomFile(File workingDirectory) throws PhrescoException {
+		PluginUtils pUtil = new PluginUtils();
+		ApplicationInfo appInfo = pUtil.getAppInfo(workingDirectory);
+		String pomFileName = Utility.getPomFileName(appInfo);
+		File pom = new File(workingDirectory.getPath() + File.separator + pomFileName);
+		
+		return pom;
+	}
+	
+	private String getFunctionalDir (File workingDirectory) {
+		String value = "";
+		try {
+			PomProcessor processor = new PomProcessor(
+					getPomFile(workingDirectory));
+			value = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
+		} catch (Exception e) {
+		}
+		return value;
+	}
 	
 	private void generateMavenCommand(MavenProjectInfo mavenProjectInfo, String workingDirectory, String actionType) throws PhrescoException {
 		String pomFile = mavenProjectInfo.getProject().getFile().getName();
@@ -688,8 +715,11 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 	public void writePhrescoBuildXml(com.photon.phresco.plugins.model.Mojos.Mojo.Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		try {
 			StringBuilder sb = new StringBuilder(mavenProjectInfo.getBaseDir().toString())
-			.append(File.separator)
-			.append(".phresco")
+			.append(File.separator);
+			if (StringUtils.isNotEmpty(mavenProjectInfo.getModuleName())) {
+				sb.append(mavenProjectInfo.getModuleName()).append(File.separator);
+			}
+			sb.append(".phresco")
 			.append(File.separator)
 			.append("phresco-build.xml");
 			File configFile = new File(sb.toString());

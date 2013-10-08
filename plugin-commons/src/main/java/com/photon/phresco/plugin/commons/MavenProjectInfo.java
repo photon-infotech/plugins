@@ -26,8 +26,9 @@ public class MavenProjectInfo {
     private File baseDir;
     private MavenProject project;
     private String projectCode;
+    private String moduleName;
     
-    public String getProjectCode() {
+	public String getProjectCode() {
 		return projectCode;
 	}
 
@@ -50,5 +51,13 @@ public class MavenProjectInfo {
     public void setProject(MavenProject project) {
         this.project = project;
     }
+    
+    public String getModuleName() {
+		return moduleName;
+	}
+
+	public void setModuleName(String moduleName) {
+		this.moduleName = moduleName;
+	}
     
 }
