@@ -20,6 +20,7 @@ package com.photon.phresco.plugins.felix;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.util.FileUtils;
 
@@ -40,6 +41,9 @@ public class JavaPlugin extends PhrescoBasePlugin {
 	public ExecutionStatus pack(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		try {
 			File targetDir = new File(mavenProjectInfo.getBaseDir() + DO_NOT_CHECKIN_FOLDER + File.separator + TARGET);
+			if (StringUtils.isNotEmpty(mavenProjectInfo.getModuleName())) {
+				targetDir = new File(mavenProjectInfo.getBaseDir() + File.separator + mavenProjectInfo.getModuleName() + DO_NOT_CHECKIN_FOLDER + File.separator + TARGET);
+			}
 			if (targetDir.exists()) {
 				FileUtils.deleteDirectory(targetDir);
 				log.info("Target Folder Deleted Successfully");

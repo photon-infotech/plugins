@@ -24,11 +24,10 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.exception.PhrescoException;
-import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
-import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
-import com.photon.phresco.plugins.util.MojoProcessor;
 import com.photon.phresco.util.Constants;
+
+import fr.opensagres.xdocreport.utils.StringUtils;
 
 /**
  * Goal which deploys the PHP project
@@ -60,13 +59,22 @@ public class PhrescoDeploy extends PhrescoAbstractMojo {
 	 * @parameter expression="${phresco.project.code}" required="true"
 	 */
 	protected String projectCode;
+	
+	/**
+     * @parameter expression="${moduleName}"
+     * @readonly
+     */
+    protected String moduleName;
     
 	public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().info(baseDir.getPath());
         try {
         	String infoFile = baseDir + File.separator + Constants.DEPLOY_INFO_FILE; 
+        	if (StringUtils.isNotEmpty(moduleName)) {
+        		infoFile = baseDir + File.separator + moduleName + File.separator + Constants.DEPLOY_INFO_FILE;
+        	} 
             PhrescoPlugin plugin = getPlugin(getDependency(infoFile, DEPLOY));
-            plugin.deploy(getConfiguration(infoFile, DEPLOY), getMavenProjectInfo(project));
+            plugin.deploy(getConfiguration(infoFile, DEPLOY), getMavenProjectInfo(project, moduleName));
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }

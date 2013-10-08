@@ -32,6 +32,7 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
 
+import com.photon.phresco.commons.model.ApplicationInfo;
 import com.photon.phresco.commons.model.BuildInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.DatabaseUtil;
@@ -71,20 +72,28 @@ public class Deploy implements PluginConstants {
 	private String servertype;
 	private String pomFile;
 	private String packaging;
+	private String subModule = "";
+	private File workingDirectory;
 
 	public void deploy(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
 		project = mavenProjectInfo.getProject();
-		pomFile = project.getFile().getName();
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
 		environmentName = configs.get(ENVIRONMENT_NAME);
 		buildNumber = configs.get(BUILD_NUMBER);
 		importSql = Boolean.parseBoolean(configs.get(EXECUTE_SQL));
 		sqlPath = configs.get(FETCH_SQL);
 		pUtil = new PluginUtils();
-		packaging = project.getPackaging();
+		subModule = mavenProjectInfo.getModuleName();
+		if (StringUtils.isNotEmpty(subModule)) {
+			workingDirectory = new File(baseDir.getPath() + File.separator + subModule);
+		} else {
+			workingDirectory = new File(baseDir.getPath());
+		}
+		pomFile = getPomFile().getName();
+		packaging = getPackagingType();
 		try {
 			init();
 			//updateFinalName();
@@ -104,13 +113,9 @@ public class Deploy implements PluginConstants {
 					|| StringUtils.isEmpty(environmentName)) {
 				callUsage();
 			}
-			BuildInfo buildInfo = pUtil.getBuildInfo(Integer
-					.parseInt(buildNumber));
-			log.info("Build Name " + buildInfo);
-			buildDir = new File(baseDir.getPath()
-					+ PluginConstants.BUILD_DIRECTORY);// build dir
-			buildFile = new File(buildDir.getPath() + File.separator
-					+ buildInfo.getBuildName());// filename
+			BuildInfo buildInfo = pUtil.getBuildInfo(Integer.parseInt(buildNumber), workingDirectory.getPath());
+			buildDir = new File(workingDirectory.getPath() + PluginConstants.BUILD_DIRECTORY);// build dir
+			buildFile = new File(buildDir.getPath() + File.separator + buildInfo.getBuildName());// filename
 			tempDir = new File(buildDir.getPath() + TEMP_DIR);// temp dir
 			tempDir.mkdirs();
 		} catch (Exception e) {
@@ -158,8 +163,7 @@ public class Deploy implements PluginConstants {
 	private void createDb() throws MojoExecutionException {
 		DatabaseUtil util = new DatabaseUtil();
 		try {
-			util.fetchSqlConfiguration(sqlPath, importSql, baseDir,
-					environmentName);
+			util.fetchSqlConfiguration(sqlPath, importSql, workingDirectory, environmentName);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
@@ -167,8 +171,7 @@ public class Deploy implements PluginConstants {
 
 	private void extractBuild() throws MojoExecutionException {
 		try {
-			ArchiveUtil.extractArchive(buildFile.getPath(), tempDir.getPath(),
-					ArchiveType.ZIP);
+			ArchiveUtil.extractArchive(buildFile.getPath(), tempDir.getPath(), ArchiveType.ZIP);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getErrorMessage(), e);
 		}
@@ -177,9 +180,7 @@ public class Deploy implements PluginConstants {
 	private void deployToServer() throws MojoExecutionException,
 			PhrescoException {
 		try {
-			List<com.photon.phresco.configuration.Configuration> configurations = pUtil
-					.getConfiguration(baseDir, environmentName,
-							Constants.SETTINGS_TEMPLATE_SERVER);
+			List<com.photon.phresco.configuration.Configuration> configurations = pUtil.getConfiguration(workingDirectory, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
 			for (com.photon.phresco.configuration.Configuration configuration : configurations) {
 				deploy(configuration);
 			}
@@ -188,9 +189,7 @@ public class Deploy implements PluginConstants {
 		}
 	}
 
-	private void deploy(
-			com.photon.phresco.configuration.Configuration configuration)
-			throws MojoExecutionException, PhrescoException {
+	private void deploy(com.photon.phresco.configuration.Configuration configuration) throws MojoExecutionException, PhrescoException {
 		if (configuration == null) {
 			return;
 		}
@@ -230,7 +229,6 @@ public class Deploy implements PluginConstants {
 			list = tempDir.list(new JDWarFileNameFilter());
 			if (list.length > 0) {
 				warFileName = list[0];
-				System.out.println(" war file available warFileName == "+warFileName);
 				bundleFile = new File(tempDir.getPath() + "/"
 						+ warFileName);
 			}
@@ -239,15 +237,38 @@ public class Deploy implements PluginConstants {
 			list = tempDir.list(new JDJarFileNameFilter());
 			if (list.length > 0) {
 				jarFileName = list[0];
-				System.out.println(" jar file available jarFileName == "+jarFileName);
-
 				bundleFile = new File(tempDir.getPath() + "/"
 						+ jarFileName);
 			}
 		}
 		return bundleFile;
 	}
-
+	
+	private File getPomFile() throws PhrescoException {
+		ApplicationInfo appInfo = pUtil.getAppInfo(workingDirectory);
+		String pomFileName = Utility.getPomFileName(appInfo);
+		File pom = new File(workingDirectory.getPath() + File.separator + pomFileName);
+		
+		return pom;
+	}
+	
+	private String getPackagingType() throws PhrescoException {
+		StringBuilder builder = new StringBuilder();
+		builder.append(baseDir.getPath())
+		.append(File.separatorChar);
+		if(StringUtils.isNotEmpty(subModule)) {
+			builder.append(subModule);
+			builder.append(File.separatorChar);
+		}
+		builder.append(pomFile);
+		try {
+			PomProcessor pomProcessor = new PomProcessor(new File(builder.toString()));
+			return pomProcessor.getModel().getPackaging();
+		} catch (PhrescoPomException e) {
+			throw new PhrescoException(e);
+		}
+	}
+	
 	private void deployToServer(File bundleFile, String felixUrl, String username, String password)
 			throws MojoExecutionException {
 		BufferedReader bufferedReader = null;
@@ -268,7 +289,7 @@ public class Deploy implements PluginConstants {
 				sb.append(STR_SPACE);
 				sb.append(PASSWORD+"="+password);
 				sb.append(STR_SPACE);
-				sb.append(PACKAGE_FILE+"="+bundleFile);
+				sb.append(PACKAGE_FILE+"=\""+bundleFile+"\"");
 				sb.append(STR_SPACE);
 				sb.append(SKIP_TESTS);
 						
@@ -278,8 +299,7 @@ public class Deploy implements PluginConstants {
 					sb.append(STR_SPACE);
 					sb.append(pomFile);
 				}
-				
-				bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
+				bufferedReader = Utility.executeCommand(sb.toString(), workingDirectory.getPath());
 				String line = null;
 				
 				while ((line = bufferedReader.readLine()) != null) {
@@ -316,6 +336,7 @@ public class Deploy implements PluginConstants {
 		}
 	}
 }
+
 
 class JDWarFileNameFilter implements FilenameFilter {
 

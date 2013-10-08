@@ -140,6 +140,15 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
         return mavenProjectInfo;
     }
     
+    protected MavenProjectInfo getMavenProjectInfo(MavenProject project, String subModule) {
+        MavenProjectInfo mavenProjectInfo = new MavenProjectInfo();
+    	mavenProjectInfo.setBaseDir(project.getBasedir());
+        mavenProjectInfo.setProject(project);
+        mavenProjectInfo.setProjectCode(project.getBasedir().getName());
+        mavenProjectInfo.setModuleName(subModule);
+        return mavenProjectInfo;
+    }
+    
     protected Dependency getDependency(String infoFile, String goal) throws PhrescoException {
     	MojoProcessor processor = new MojoProcessor(new File(infoFile));
     	if (processor.getImplementationDependency(goal) != null) {

@@ -43,8 +43,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.photon.phresco.api.ConfigManager;
-import com.photon.phresco.commons.model.ProjectInfo;
-import com.photon.phresco.commons.model.TechnologyInfo;
+import com.photon.phresco.commons.model.ApplicationInfo;
 import com.photon.phresco.configuration.Environment;
 import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
@@ -64,8 +63,6 @@ import com.photon.phresco.plugins.util.WarConfigProcessor;
 import com.photon.phresco.util.ArchiveUtil;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 import com.photon.phresco.util.Constants;
-import com.photon.phresco.util.ProjectUtils;
-import com.photon.phresco.util.TechnologyTypes;
 import com.photon.phresco.util.Utility;
 import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.util.PomProcessor;
@@ -75,7 +72,6 @@ public class Package implements PluginConstants {
 	private MavenProject project;
 	private File baseDir;
 	private String environmentName;
-	private String moduleName;
 	private String buildName;
 	private String buildNumber;
 	private int buildNo;
@@ -97,6 +93,8 @@ public class Package implements PluginConstants {
 	private String pomName;
 	private String packageType;
 	private String packagingType;
+	private String subModule = "";
+	private File workingDirectory;
 	
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -112,10 +110,15 @@ public class Package implements PluginConstants {
         util = new PluginPackageUtil();
         pu = new PluginUtils();
         builder = new StringBuilder();
-        moduleName = configs.get(PROJECT_MODULE);
         packageType = configs.get("packageType");
+        subModule = mavenProjectInfo.getModuleName();
         PluginUtils.checkForConfigurations(baseDir, environmentName);
         packagingType = getPackagingType();
+        if (StringUtils.isNotEmpty(subModule)) {
+        	workingDirectory = new File(baseDir.getPath() + File.separator + subModule);
+        } else {
+        	workingDirectory = new File(baseDir.getPath());
+        }
         try { 
 			init();
 			if (environmentName != null) {
@@ -125,8 +128,10 @@ public class Package implements PluginConstants {
 			
 			getMavenCommands(configuration);
 			executeMvnPackage();
-			boolean buildStatus = build();
-			writeBuildInfo(buildStatus);
+			if (!"pom".equals(packagingType)) {
+				boolean buildStatus = build();
+				writeBuildInfo(buildStatus);
+			}
 			cleanUp();
 		} catch (MojoExecutionException e) {
 			throw new PhrescoException(e);
@@ -139,8 +144,8 @@ public class Package implements PluginConstants {
 		StringBuilder builder = new StringBuilder();
 		builder.append(baseDir.getPath())
 		.append(File.separatorChar);
-		if(StringUtils.isNotEmpty(moduleName)) {
-			builder.append(moduleName);
+		if(StringUtils.isNotEmpty(subModule)) {
+			builder.append(subModule);
 			builder.append(File.separatorChar);
 		}
 		builder.append(pomName);
@@ -206,19 +211,19 @@ public class Package implements PluginConstants {
 	
 	private void init() throws MojoExecutionException {
 		try {
-			buildDir = new File(baseDir.getPath() + PluginConstants.BUILD_DIRECTORY);
-			if(StringUtils.isNotEmpty(moduleName)) {
-				targetDir = new File(baseDir.getPath() + File.separator + moduleName + DO_NOT_CHECKIN_FOLDER + File.separator + TARGET);
+			buildDir = new File(workingDirectory.getPath() + PluginConstants.BUILD_DIRECTORY);
+			if(StringUtils.isNotEmpty(subModule)) {
+				targetDir = new File(baseDir.getPath() + File.separator + subModule + DO_NOT_CHECKIN_FOLDER + File.separator + TARGET);
 			} else {
-			targetDir = new File(project.getBuild().getDirectory());
+				targetDir = new File(project.getBuild().getDirectory());
 			}
 			baseDir = getProjectRoot(baseDir);
 			if (!buildDir.exists()) {
 				buildDir.mkdirs();
 				log.info("Build directory created..." + buildDir.getPath());
 			}
-			buildInfoFile = new File(baseDir.getPath() + PluginConstants.BUILD_DIRECTORY + BUILD_INFO_FILE);
-			File buildInfoDir = new File(baseDir.getPath() + PluginConstants.BUILD_DIRECTORY);
+			buildInfoFile = new File(workingDirectory.getPath() + PluginConstants.BUILD_DIRECTORY + BUILD_INFO_FILE);
+			File buildInfoDir = new File(workingDirectory.getPath() + PluginConstants.BUILD_DIRECTORY);
 			if (!buildInfoDir.exists()) {
 				buildInfoDir.mkdirs();
 				log.info("Build directory created..." + buildDir.getPath());
@@ -409,6 +414,9 @@ public class Package implements PluginConstants {
 		}
 		sb.append(STR_SPACE);
 		sb.append(builder.toString());
+		if (StringUtils.isNotEmpty(subModule)) {
+			sb.append(HYPHEN_AM_HYPHEN_PL + subModule);
+		}
 		String line ="";
 		String processName = ManagementFactory.getRuntimeMXBean().getName();
 		String[] split = processName.split("@");
@@ -437,30 +445,26 @@ public class Package implements PluginConstants {
 		log.info("Configuring the project....");
 		try {
 			adaptSourceConfig();
-			pu.writeDatabaseDriverToConfigXml(baseDir, sourceDir, environmentName);
+			pu.writeDatabaseDriverToConfigXml(workingDirectory, sourceDir, environmentName);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
 
 	private void adaptSourceConfig() throws MojoExecutionException {
-		String modulePath = "";
-		if (moduleName != null) {
-			modulePath = File.separatorChar + moduleName;
-		}
 		PomProcessor processor  = null;
 		File sourceConfigXML = null;
 		try {
-			processor = new PomProcessor(project.getFile());
+			processor = new PomProcessor(getPomFile());
 			String configXml = processor.getProperty(POM_PROP_CONFIG_FILE);
 			if(StringUtils.isNotEmpty(configXml)) {
-				sourceConfigXML = new File(baseDir + modulePath + configXml);
+				sourceConfigXML = new File(workingDirectory + configXml);
 			} else {
-				sourceConfigXML = new File(baseDir + modulePath + sourceDir + FORWARD_SLASH +  CONFIG_FILE);
+				sourceConfigXML = new File(workingDirectory + sourceDir + FORWARD_SLASH +  CONFIG_FILE);
 			}
 			File parentFile = sourceConfigXML.getParentFile();
 			if (parentFile.exists()) {
-				pu.executeUtil(environmentName, baseDir.getPath(), sourceConfigXML);
+				pu.executeUtil(environmentName, workingDirectory.getPath(), sourceConfigXML);
 			}
 		} catch (PhrescoPomException e) {
 			throw new MojoExecutionException(e.getMessage());
@@ -468,16 +472,24 @@ public class Package implements PluginConstants {
 			throw new MojoExecutionException(e.getMessage());
 		}
 	}
-
+	
+	private File getPomFile() throws PhrescoException {
+		ApplicationInfo appInfo = pu.getAppInfo(workingDirectory);
+		String pomFileName = Utility.getPomFileName(appInfo);
+		File pom = new File(workingDirectory.getPath() + File.separator + pomFileName);
+		
+		return pom;
+	}
+	
 	private void createPackage() throws MojoExecutionException {
-		if(StringUtils.isNotEmpty(moduleName) && JAR.equals(packagingType) || StringUtils.isEmpty(packagingType)) {
+		if(StringUtils.isEmpty(packagingType)) {
 			return;
 		}
 		try {
 			zipName = util.createPackage(buildName, buildNumber, nextBuildNo, currentDate);
 			String zipFilePath = buildDir.getPath() + File.separator + zipName;
 			String zipNameWithoutExt = zipName.substring(0, zipName.lastIndexOf('.'));
-			File packageInfoFile = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + PHRESCO_PACKAGE_FILE);
+			File packageInfoFile = new File(workingDirectory.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + PHRESCO_PACKAGE_FILE);
 			
 			if ("war".equals(packagingType)) {
 				if("zip".equals(packageType)) {
@@ -486,10 +498,10 @@ public class Package implements PluginConstants {
 				} else {
 					copyWarToPackage(zipNameWithoutExt);
 				}
-			} else  {
+			} else {
 				copyJarToPackage(zipNameWithoutExt);
 			}
-			PluginUtils.createBuildResources(packageInfoFile, baseDir, tempDir);
+			PluginUtils.createBuildResources(packageInfoFile, workingDirectory, tempDir);
 			ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getErrorMessage(), e);
@@ -507,6 +519,7 @@ public class Package implements PluginConstants {
 				tempDir.mkdir();
 				FileUtils.copyFileToDirectory(jarFile, tempDir);
 			}
+			
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
@@ -551,7 +564,7 @@ public class Package implements PluginConstants {
 	}
 	
 	private void writeBuildInfo(boolean isBuildSuccess) throws MojoExecutionException {
-		if(StringUtils.isNotEmpty(moduleName) && JAR.equals(packagingType) || StringUtils.isEmpty(packagingType)) {
+		if(StringUtils.isEmpty(packagingType)) {
 			return;
 		}
 		util.writeBuildInfo(isBuildSuccess, buildName, buildNumber, nextBuildNo, environmentName, buildNo, currentDate, buildInfoFile);
