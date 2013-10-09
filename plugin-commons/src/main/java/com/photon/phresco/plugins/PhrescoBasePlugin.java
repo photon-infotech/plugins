@@ -555,10 +555,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			sb.append(STR_SPACE);
 			sb.append(pomFile);
 		}
-		if (StringUtils.isNotEmpty(subModule)) {
-			sb.append(HYPHEN_AM_HYPHEN_PL + subModule);
-		}
-		boolean status = Utility.executeStreamconsumer(sb.toString(), workingDirectory.getPath(), project.getBasedir().getPath(), CODE_VALIDATE);
+		boolean status = Utility.executeStreamconsumer(sb.toString(), workingDirectory.getPath(), workingDirectory.getPath(), CODE_VALIDATE);
 		if(!status) {
 			try {
 				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);

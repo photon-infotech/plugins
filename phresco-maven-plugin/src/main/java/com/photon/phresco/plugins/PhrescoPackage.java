@@ -85,8 +85,6 @@ public class PhrescoPackage extends PhrescoAbstractMojo {
         	plugin.pack(getConfiguration(infoFile, PACKAGE), getMavenProjectInfo(project, moduleName));
             
         } catch (PhrescoException e) {
-        	System.out.println("*******************");
-        	e.printStackTrace();
             throw new MojoExecutionException(e.getMessage(), e);
         }
     }

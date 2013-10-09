@@ -199,7 +199,7 @@ public class Deploy implements PluginConstants {
 	
 	private File getPomFile() throws PhrescoException {
 		ApplicationInfo appInfo = pUtil.getAppInfo(workingDirectory);
-		String pomFileName = Utility.getPomFileName(appInfo);
+		String pomFileName = Utility.getPomFileNameFromWorkingDirectory(appInfo, workingDirectory);
 		File pom = new File(workingDirectory.getPath() + File.separator + pomFileName);
 		
 		return pom;

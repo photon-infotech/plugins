@@ -100,7 +100,7 @@ public class Package implements PluginConstants {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
         project = mavenProjectInfo.getProject();
-        pomName = project.getFile().getName();
+        pomName = getPomFile().getName();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
         buildName = configs.get(BUILD_NAME);
@@ -475,7 +475,7 @@ public class Package implements PluginConstants {
 	
 	private File getPomFile() throws PhrescoException {
 		ApplicationInfo appInfo = pu.getAppInfo(workingDirectory);
-		String pomFileName = Utility.getPomFileName(appInfo);
+		String pomFileName = Utility.getPomFileNameFromWorkingDirectory(appInfo, workingDirectory);
 		File pom = new File(workingDirectory.getPath() + File.separator + pomFileName);
 		
 		return pom;
