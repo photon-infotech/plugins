@@ -99,7 +99,6 @@ public class Package implements PluginConstants {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
         project = mavenProjectInfo.getProject();
-        pomName = getPomFile().getName();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
         buildName = configs.get(BUILD_NAME);
@@ -119,6 +118,7 @@ public class Package implements PluginConstants {
         } else {
         	workingDirectory = new File(baseDir.getPath());
         }
+        pomName = getPomFile().getName();
         PluginUtils.checkForConfigurations(workingDirectory, environmentName);
         packagingType = getPackagingType();
         try { 

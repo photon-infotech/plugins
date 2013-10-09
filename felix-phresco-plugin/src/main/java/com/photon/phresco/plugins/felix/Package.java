@@ -100,7 +100,6 @@ public class Package implements PluginConstants {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
         project = mavenProjectInfo.getProject();
-        pomName = getPomFile().getName();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
         buildName = configs.get(BUILD_NAME);
@@ -112,13 +111,14 @@ public class Package implements PluginConstants {
         builder = new StringBuilder();
         packageType = configs.get("packageType");
         subModule = mavenProjectInfo.getModuleName();
-        PluginUtils.checkForConfigurations(baseDir, environmentName);
-        packagingType = getPackagingType();
         if (StringUtils.isNotEmpty(subModule)) {
         	workingDirectory = new File(baseDir.getPath() + File.separator + subModule);
         } else {
         	workingDirectory = new File(baseDir.getPath());
         }
+        pomName = getPomFile().getName();  
+        packagingType = getPackagingType();
+        PluginUtils.checkForConfigurations(workingDirectory, environmentName);
         try { 
 			init();
 			if (environmentName != null) {
