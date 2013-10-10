@@ -465,6 +465,8 @@ public abstract class AbstractAndroidMojo extends AbstractMojo
      * @parameter expression="${android.release}" default-value="false"
      */
     protected boolean release;
+    
+    private String[] deviceSerialNumberArr = null;
 
 
     /**
@@ -732,6 +734,22 @@ public abstract class AbstractAndroidMojo extends AbstractMojo
         File apkFile = new File( project.getBuild().getDirectory(), project.getBuild().getFinalName() + "." + APK );
         deployApk( apkFile );
     }
+    
+    private void checkDeviceList() {
+		try {
+			if (StringUtils.isNotBlank(device)) {
+				if (StringUtils.indexOf(device, ",") > -1) {
+					deviceSerialNumberArr = device.split(",");
+				} else {
+					deviceSerialNumberArr = new String[1];
+					deviceSerialNumberArr[0] = device.trim();
+				}
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			getLog().info("checkDeviceList - Exception: " + e.getMessage());
+		}
+	}
 
 
     /**
@@ -749,61 +767,87 @@ public abstract class AbstractAndroidMojo extends AbstractMojo
     protected void doWithDevices( final DeviceCallback deviceCallback )
             throws MojoExecutionException, MojoFailureException
     {
-        final AndroidDebugBridge androidDebugBridge = initAndroidDebugBridge();
+    	try{
+            final AndroidDebugBridge androidDebugBridge = initAndroidDebugBridge();
 
-        if ( !androidDebugBridge.isConnected() )
-        {
-            throw new MojoExecutionException( "Android Debug Bridge is not connected." );
-        }
+            if ( !androidDebugBridge.isConnected() )
+            {
+                throw new MojoExecutionException( "Android Debug Bridge is not connected." );
+            }
 
-        waitForInitialDeviceList( androidDebugBridge );
-        List<IDevice> devices = Arrays.asList( androidDebugBridge.getDevices() );
-        int numberOfDevices = devices.size();
-        getLog().info( "Found " + numberOfDevices + " devices connected with the Android Debug Bridge" );
-        if ( devices.size() == 0 )
-        {
-            throw new MojoExecutionException( "No online devices attached." );
-        }
+            waitForInitialDeviceList( androidDebugBridge );
+            List<IDevice> devices = Arrays.asList( androidDebugBridge.getDevices() );
+            
+            int numberOfDevices = devices.size();
+            getLog().info( "Found " + numberOfDevices + " devices connected with the Android Debug Bridge" );
+            if ( devices.size() == 0 )
+            {
+                throw new MojoExecutionException( "No online devices attached." );
+            }
 
-        boolean shouldRunOnAllDevices = StringUtils.isBlank( device );
-        if ( shouldRunOnAllDevices )
-        {
-            getLog().info( "android.device parameter not set, using all attached devices" );
-        }
-        else
-        {
-            getLog().info( "android.device parameter set to " + device );
-        }
-
-        ArrayList<DoThread> doThreads = new ArrayList<DoThread>();
-        for ( final IDevice idevice : devices )
-        {
+            boolean shouldRunOnAllDevices = StringUtils.isBlank( device );
             if ( shouldRunOnAllDevices )
             {
-                String deviceType = idevice.isEmulator() ? "Emulator " : "Device ";
-                getLog().info( deviceType + DeviceHelper.getDescriptiveName( idevice ) + " found." );
+                getLog().info( "android.device parameter not set, using all attached devices" );
             }
-            if ( shouldRunOnAllDevices || shouldDoWithThisDevice( idevice ) )
+            else
             {
-                DoThread deviceDoThread = new DoThread() {
-                    public void runDo() throws MojoFailureException, MojoExecutionException
-                    {
-                        deviceCallback.doWithDevice( idevice );
-                    }
-                };
-                doThreads.add( deviceDoThread );
-                deviceDoThread.start();
+                getLog().info( "android.device parameter set to " + device );
             }
-        }
 
-        joinAllThreads( doThreads );
-        throwAnyDoThreadErrors( doThreads );
+            ArrayList<DoThread> doThreads = new ArrayList<DoThread>();
+            for ( final IDevice idevice : devices )
+            {     
+            	 if ( shouldRunOnAllDevices )
+                {
+                    String deviceType = idevice.isEmulator() ? "Emulator " : "Device ";
+                    getLog().info( deviceType + DeviceHelper.getDescriptiveName( idevice ) + " found." );
+                }
+                if ( shouldRunOnAllDevices || shouldDoWithThisDevice( idevice ) )
+                {
+                	
+                    DoThread deviceDoThread = new DoThread() {
+                        public void runDo() throws MojoFailureException, MojoExecutionException
+                        {
+                            deviceCallback.doWithDevice( idevice );
+                        }
+                    };
+                    doThreads.add( deviceDoThread );
+                    deviceDoThread.start();
+                }
+                 joinAllThreads( doThreads );
+                 throwAnyDoThreadErrors( doThreads );
+                
+               }
 
-        if ( ! shouldRunOnAllDevices && doThreads.isEmpty() )
-        {
-            throw new MojoExecutionException( "No device found for android.device=" + device );
-        }
-    }
+              if ( ! shouldRunOnAllDevices && doThreads.isEmpty() )
+              {
+            	
+                	checkDeviceList();
+                	for (final IDevice idevice2 : devices) {
+    					for (int i = 0; i < deviceSerialNumberArr.length; i++) {
+    						if (deviceSerialNumberArr[i].equalsIgnoreCase(idevice2.getSerialNumber())) {
+    							DoThread deviceDoThread = new DoThread() {
+    			                    public void runDo() throws MojoFailureException, MojoExecutionException
+    			                    {
+    			                        deviceCallback.doWithDevice( idevice2 );
+    			                    }
+    			                };
+    			                doThreads.add( deviceDoThread );
+    			                deviceDoThread.start();
+    							
+    						}
+    					}
+                 }
+                	
+                  joinAllThreads( doThreads );
+                  throwAnyDoThreadErrors( doThreads );
+                }
+              }catch(Exception e){
+            	  
+            	  throw new MojoExecutionException( "No device found for android.device=" + device );
+           }
+     }
 
     private void joinAllThreads( ArrayList<DoThread> doThreads )
     {
