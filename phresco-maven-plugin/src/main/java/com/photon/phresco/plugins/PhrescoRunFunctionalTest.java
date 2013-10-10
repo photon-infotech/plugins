@@ -24,10 +24,13 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 
+import com.photon.phresco.commons.model.ApplicationInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.PluginConstants;
+import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.Utility;
 import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.util.PomProcessor;
 
@@ -54,23 +57,38 @@ public class PhrescoRunFunctionalTest extends PhrescoAbstractMojo implements Plu
      * @readonly
      */
     protected File baseDir;
+    
+    /**
+     * @parameter expression="${moduleName}"
+     * @readonly
+     */
+    protected String moduleName;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
-			File pomPath = new File(baseDir + File.separator + project.getFile().getName());
+			String infoFile = baseDir + File.separator+ Constants.FUNCTIONAL_TEST_INFO_FILE;
+			File workingDir = baseDir; 
+			if (StringUtils.isNotEmpty(moduleName)) {
+				infoFile = baseDir + File.separator + moduleName + File.separator + Constants.FUNCTIONAL_TEST_INFO_FILE;
+				workingDir = new File(baseDir + File.separator + moduleName);
+			}
+			PluginUtils pu = new PluginUtils();
+			ApplicationInfo appInfo = pu.getAppInfo(workingDir);
+			String pomFileName = Utility.getPomFileNameFromWorkingDirectory(appInfo, workingDir);
+			File pomPath = new File(workingDir + File.separator + pomFileName);
 			PomProcessor processor = new PomProcessor(pomPath);
 			String property = processor.getProperty(FUNCTIONAL_TEST_SELENIUM_TYPE);
 			String goal = "";
 			if(StringUtils.isNotEmpty(property)) {
 				goal = FUNCTIONAL_TEST + HYPEN + property.trim();
 			}
-			String infoFile = baseDir + File.separator+ Constants.FUNCTIONAL_TEST_INFO_FILE;
+			
 			if (isGoalAvailable(infoFile, goal)&& getDependency(infoFile, goal) != null) {
 				PhrescoPlugin plugin = getPlugin(getDependency(infoFile, goal));
-				plugin.runFunctionalTest(getConfiguration(infoFile, goal), getMavenProjectInfo(project));
+				plugin.runFunctionalTest(getConfiguration(infoFile, goal), getMavenProjectInfo(project, moduleName));
 			} else {
 				PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());
-				plugin.runFunctionalTest(getConfiguration(infoFile, goal), getMavenProjectInfo(project));
+				plugin.runFunctionalTest(getConfiguration(infoFile, goal), getMavenProjectInfo(project, moduleName));
 			}
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage(), e);

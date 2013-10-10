@@ -159,42 +159,56 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 	}
 
 	public ExecutionStatus runFunctionalTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		MavenProject project = mavenProjectInfo.getProject();
-		String basedir = project.getBasedir().getPath();
-		Map<String, String> configValues = MojoUtil.getAllValues(configuration);
-		String environmentName = configValues.get(ENVIRONMENT_NAME);
-		String testAgainst = configValues.get(TEST_AGAINST);
-		String functionalTestDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
-		if (StringUtils.isEmpty(functionalTestDir)) { 
-			functionalTestDir = "";
+		try {
+			MavenProject project = mavenProjectInfo.getProject();
+			String basedir = project.getBasedir().getPath();
+			String subModule = mavenProjectInfo.getModuleName();
+			File workingDirectory;
+			if (StringUtils.isNotEmpty(subModule)) {
+				workingDirectory = new File(basedir + File.separator + subModule);
+			} else {
+				workingDirectory = new File(basedir);
+			}
+			File pomFile = getPomFile(workingDirectory);
+			PomProcessor processor = new PomProcessor(pomFile);
+			
+			Map<String, String> configValues = MojoUtil.getAllValues(configuration);
+			String environmentName = configValues.get(ENVIRONMENT_NAME);
+			String testAgainst = configValues.get(TEST_AGAINST);
+			String functionalTestDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
+			if (StringUtils.isEmpty(functionalTestDir)) { 
+				functionalTestDir = "";
+			}
+			String jarLocation = "";
+			if(testAgainst.equals(BUILD)) {
+				environmentName = configValues.get(ENVIRONMENT_NAME);
+				jarLocation = getJarLocation(basedir);
+			} else if (testAgainst.equals(SERVER)) {
+				environmentName = configValues.get(ENVIRONMENT_NAME);
+			} else if(testAgainst.equals(JAR)) {
+				jarLocation = configValues.get(JAR_LOCATION);
+			}
+			if(StringUtils.isNotEmpty(jarLocation)) {
+				setPropertyJarLocation(workingDirectory.toString() + functionalTestDir, jarLocation);
+			}
+			String browserValue = configValues.get(BROWSER);
+			String resolutionValue = configValues.get(RESOLUTION);
+			String resultConfigFileDir = processor.getProperty(Constants.PHRESCO_FUNCTIONAL_TEST_ADAPT_DIR);
+			if(StringUtils.isNotEmpty(resultConfigFileDir)) {
+				File resultConfigXml = new File(workingDirectory + resultConfigFileDir);
+				adaptTestConfig(resultConfigXml, environmentName, browserValue, resolutionValue, workingDirectory.getPath());
+			}
+			String seleniumToolType = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_SELENIUM_TOOL);
+			if(StringUtils.isNotEmpty((seleniumToolType)) && seleniumToolType.equals(CAPYBARA)) {
+				StringBuilder builder = new StringBuilder();
+				builder.append("cucumber -f junit -o target -f html -o target/cuke.html");
+				Utility.executeStreamconsumer(builder.toString(), workingDirectory + File.separator + functionalTestDir, project.getBasedir().getPath(), FUNCTIONAL);
+				return new DefaultExecutionStatus();
+			}
+			generateMavenCommand(mavenProjectInfo, workingDirectory + functionalTestDir, FUNCTIONAL);
+		} catch (Exception e) {
+			throw new PhrescoException(e);
 		}
-		String jarLocation = "";
-		if(testAgainst.equals(BUILD)) {
-			environmentName = configValues.get(ENVIRONMENT_NAME);
-			jarLocation = getJarLocation(basedir);
-		} else if (testAgainst.equals(SERVER)) {
-			environmentName = configValues.get(ENVIRONMENT_NAME);
-		} else if(testAgainst.equals(JAR)) {
-			jarLocation = configValues.get(JAR_LOCATION);
-		}
-		if(StringUtils.isNotEmpty(jarLocation)) {
-			setPropertyJarLocation(basedir + functionalTestDir, jarLocation);
-		}
-		String browserValue = configValues.get(BROWSER);
-		String resolutionValue = configValues.get(RESOLUTION);
-		String resultConfigFileDir = project.getProperties().getProperty(Constants.PHRESCO_FUNCTIONAL_TEST_ADAPT_DIR);
-		if(StringUtils.isNotEmpty(resultConfigFileDir)) {
-			File resultConfigXml = new File(basedir + resultConfigFileDir);
-			adaptTestConfig(resultConfigXml, environmentName, browserValue, resolutionValue, basedir);
-		}
-		String seleniumToolType = project.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_SELENIUM_TOOL);
-		if(StringUtils.isNotEmpty((seleniumToolType)) && seleniumToolType.equals(CAPYBARA)) {
-			StringBuilder builder = new StringBuilder();
-			builder.append("cucumber -f junit -o target -f html -o target/cuke.html");
-			Utility.executeStreamconsumer(builder.toString(), project.getBasedir() + File.separator + functionalTestDir, project.getBasedir().getPath(), FUNCTIONAL);
-			return new DefaultExecutionStatus();
-		}
-		generateMavenCommand(mavenProjectInfo, basedir + functionalTestDir, FUNCTIONAL);
 		
 		return new DefaultExecutionStatus();
 	}
@@ -570,7 +584,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 	private File getPomFile(File workingDirectory) throws PhrescoException {
 		PluginUtils pUtil = new PluginUtils();
 		ApplicationInfo appInfo = pUtil.getAppInfo(workingDirectory);
-		String pomFileName = Utility.getPomFileName(appInfo);
+		String pomFileName = Utility.getPomFileNameFromWorkingDirectory(appInfo, workingDirectory);
 		File pom = new File(workingDirectory.getPath() + File.separator + pomFileName);
 		
 		return pom;
@@ -590,7 +604,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 	private void generateMavenCommand(MavenProjectInfo mavenProjectInfo, String workingDirectory, String actionType) throws PhrescoException {
 		String pomFile = mavenProjectInfo.getProject().getFile().getName();
 		StringBuilder sb = new StringBuilder();
-		File workingFile = new File(workingDirectory + File.separator + pomFile);
+		File workingFile = new File(workingDirectory + File.separator + Constants.POM_NAME);
 		sb.append(TEST_COMMAND);
 		if(workingFile.exists()) {
 			sb.append(STR_SPACE);
@@ -598,7 +612,11 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			sb.append(STR_SPACE);
 			sb.append(pomFile);
 		}
-		boolean status = Utility.executeStreamconsumer(sb.toString(), workingDirectory, mavenProjectInfo.getBaseDir().getPath(), actionType);
+		File baseDir = mavenProjectInfo.getBaseDir();
+		if (StringUtils.isNotEmpty(mavenProjectInfo.getModuleName())) {
+			baseDir = new File(baseDir + File.separator + mavenProjectInfo.getModuleName());
+		}
+		boolean status = Utility.executeStreamconsumer(sb.toString(), workingDirectory, baseDir.getPath(), actionType);
 		if(!status) {
 		throw new PhrescoException(Constants.MOJO_ERROR_MESSAGE);
 		}

@@ -36,6 +36,7 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
 import com.google.gson.Gson;
+import com.photon.phresco.commons.model.ApplicationInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginUtils;
@@ -67,8 +68,12 @@ public class DefaultSeleniumPlugin implements SeleniumPlugin {
 
 	public ExecutionStatus startHub(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		File baseDir = mavenProjectInfo.getBaseDir();
-		MavenProject project = mavenProjectInfo.getProject();
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
+		String subModule = mavenProjectInfo.getModuleName();
+		File workingDir = baseDir;
+		if (StringUtils.isNotEmpty(subModule)) {
+			workingDir = new File(baseDir + File.separator + subModule);
+		}
 		Integer port = Integer.parseInt(configs.get("port"));
 		int newSessionTimeout = 0;
 		if (StringUtils.isNotEmpty(configs.get("newSessionWaitTimeout"))) {
@@ -117,12 +122,12 @@ public class DefaultSeleniumPlugin implements SeleniumPlugin {
 			hubConfig.setTimeout(timeout);
 			hubConfig.setBrowserTimeout(browserTimeout);
 			hubConfig.setMaxSession(maxSession);
-			File pomFile = project.getFile();
+			File pomFile = getPomFile(workingDir);
 			PomProcessor processor = new PomProcessor(pomFile);
 			String funcDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
-			pluginUtils.updateHubConfigInfo(baseDir, funcDir, hubConfig);
+			pluginUtils.updateHubConfigInfo(workingDir, funcDir, hubConfig);
 			log.info("Starting the Hub...");
-			pluginUtils.startHub(baseDir, pomFile.getName());
+			pluginUtils.startHub(workingDir, pomFile.getName(), subModule);
 		} catch (PhrescoPomException e) {
 			throw new PhrescoException(e);
 		} catch (UnknownHostException e) {
@@ -134,17 +139,21 @@ public class DefaultSeleniumPlugin implements SeleniumPlugin {
 	public ExecutionStatus stopHub(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		try {
 			File baseDir = mavenProjectInfo.getBaseDir();
-			MavenProject project = mavenProjectInfo.getProject();
-			File pomFile = new File(baseDir  + File.separator + project.getFile().getName());
+			String subModule = mavenProjectInfo.getModuleName();
+			File workingDir = baseDir;
+			if (StringUtils.isNotEmpty(subModule)) {
+				workingDir = new File(baseDir + File.separator + subModule);
+			}
+			File pomFile = getPomFile(workingDir);
 			PomProcessor processor = new PomProcessor(pomFile);
 			String funcDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
-			File configFile = new File(baseDir + funcDir + File.separator + Constants.HUB_CONFIG_JSON);
+			File configFile = new File(workingDir + funcDir + File.separator + Constants.HUB_CONFIG_JSON);
 			Gson gson = new Gson();
 	        BufferedReader reader = new BufferedReader(new FileReader(configFile));
 	        HubConfiguration hubConfiguration = gson.fromJson(reader, HubConfiguration.class);
 	        int portNumber = hubConfiguration.getPort();
 			PluginUtils pluginutil = new PluginUtils();
-			pluginutil.stopServer("" + portNumber, baseDir);
+			pluginutil.stopServer("" + portNumber, workingDir);
 			log.info("Hub Stopped Successfully...");
 		} catch (PhrescoPomException e) {
 			throw new PhrescoException(e);
@@ -156,7 +165,11 @@ public class DefaultSeleniumPlugin implements SeleniumPlugin {
 
 	public ExecutionStatus startNode(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		File baseDir = mavenProjectInfo.getBaseDir();
-		MavenProject project = mavenProjectInfo.getProject();
+		String subModule = mavenProjectInfo.getModuleName();
+		File workingDir = baseDir;
+		if (StringUtils.isNotEmpty(subModule)) {
+			workingDir = new File(baseDir + File.separator + subModule);
+		}
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
 		String hubHost = configs.get("hubHost");
 		Integer maxSession = 0;
@@ -214,13 +227,13 @@ public class DefaultSeleniumPlugin implements SeleniumPlugin {
 			nodeConfig.setHubPort(hubPort);
 			nodeConfig.setHubHost(hubHost);
 			nodeConfiguration.setConfiguration(nodeConfig);
-			File pomFile = project.getFile();
+			File pomFile = getPomFile(workingDir);
 			PomProcessor processor = new PomProcessor(pomFile);
 			String funcDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
 			PluginUtils plugniutil = new PluginUtils();
-			plugniutil.updateNodeConfigInfo(baseDir, funcDir, nodeConfiguration);
+			plugniutil.updateNodeConfigInfo(workingDir, funcDir, nodeConfiguration);
 			log.info("Starting the Node...");
-			plugniutil.startNode(baseDir, pomFile.getName());
+			plugniutil.startNode(workingDir, pomFile.getName(),subModule);
 		}  catch (PhrescoPomException e) {
 			throw new PhrescoException(e);
 		} catch (IOException e) {
@@ -232,17 +245,21 @@ public class DefaultSeleniumPlugin implements SeleniumPlugin {
 	public ExecutionStatus stopNode(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		try {
 			File baseDir = mavenProjectInfo.getBaseDir();
-			MavenProject project = mavenProjectInfo.getProject();
-			File pomFile = new File(baseDir  + File.separator + project.getFile().getName());
+			String subModule = mavenProjectInfo.getModuleName();
+			File workingDir = baseDir;
+			if (StringUtils.isNotEmpty(subModule)) {
+				workingDir = new File(baseDir + File.separator + subModule);
+			}
+			File pomFile = getPomFile(workingDir);
 			PomProcessor processor = new PomProcessor(pomFile);
 			String funcDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
-			File configFile = new File(baseDir + funcDir + File.separator + Constants.NODE_CONFIG_JSON);
+			File configFile = new File(workingDir + funcDir + File.separator + Constants.NODE_CONFIG_JSON);
 			Gson gson = new Gson();
 			BufferedReader reader = new BufferedReader(new FileReader(configFile));
 	        NodeConfiguration nodeConfiguration = gson.fromJson(reader, NodeConfiguration.class);
 	        int portNumber = nodeConfiguration.getConfiguration().getPort();
 			PluginUtils pluginutil = new PluginUtils();
-			pluginutil.stopServer("" + portNumber, baseDir);
+			pluginutil.stopServer("" + portNumber, workingDir);
 			log.info("Node Stopped Successfully...");
 		} catch (PhrescoPomException e) {
 			throw new PhrescoException(e);
@@ -250,6 +267,15 @@ public class DefaultSeleniumPlugin implements SeleniumPlugin {
 		    throw new PhrescoException(e);
 	    }
 		return new DefaultExecutionStatus();
+	}
+	
+	private File getPomFile(File workingDirectory) throws PhrescoException {
+		PluginUtils pUtil = new PluginUtils();
+		ApplicationInfo appInfo = pUtil.getAppInfo(workingDirectory);
+		String pomFileName = Utility.getPomFileNameFromWorkingDirectory(appInfo, workingDirectory);
+		File pom = new File(workingDirectory.getPath() + File.separator + pomFileName);
+		
+		return pom;
 	}
 
 }

@@ -19,6 +19,7 @@ package com.photon.phresco.plugins;
 
 import java.io.File;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -26,6 +27,7 @@ import org.apache.maven.project.MavenProject;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugins.api.SeleniumPlugin;
 import com.photon.phresco.util.Constants;
+
 
 /**
  * Goal which deploys the PHP project
@@ -55,12 +57,21 @@ public class PhrescoStartHub extends PhrescoAbstractMojo {
 	 */
 	protected String projectCode;
     
+	/**
+     * @parameter expression="${moduleName}"
+     * @readonly
+     */
+    protected String moduleName;
+    
 	public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().info(baseDir.getPath());
         try {
         	String infoFile = baseDir + File.separator + Constants.START_HUB_INFO_FILE;
+        	if (StringUtils.isNotEmpty(moduleName)) {
+        		infoFile = baseDir + File.separator + moduleName + File.separator + Constants.START_HUB_INFO_FILE;
+        	}
         	SeleniumPlugin plugin = new DefaultSeleniumPlugin(getLog());
-			plugin.startHub(getConfiguration(infoFile, Constants.PHASE_START_HUB),getMavenProjectInfo(project));
+			plugin.startHub(getConfiguration(infoFile, Constants.PHASE_START_HUB),getMavenProjectInfo(project, moduleName));
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }

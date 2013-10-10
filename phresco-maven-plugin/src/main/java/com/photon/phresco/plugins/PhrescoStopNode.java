@@ -24,7 +24,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.exception.PhrescoException;
-import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.api.SeleniumPlugin;
 
 /**
@@ -55,11 +54,17 @@ public class PhrescoStopNode extends PhrescoAbstractMojo {
 	 */
 	protected String projectCode;
     
+	/**
+     * @parameter expression="${moduleName}"
+     * @readonly
+     */
+    protected String moduleName;
+    
 	public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().info(baseDir.getPath());
         try {
         	SeleniumPlugin plugin = new DefaultSeleniumPlugin(getLog());
-			plugin.stopNode(getMavenProjectInfo(project));
+			plugin.stopNode(getMavenProjectInfo(project, moduleName));
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }

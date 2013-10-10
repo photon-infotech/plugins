@@ -863,10 +863,10 @@ public class PluginUtils {
 		BufferedWriter out = null;
 		FileWriter fileWriter = null;
 		try {
-			File hubConfigFile = new File(baseDir + funcDir + File.separator + Constants.NODE_CONFIG_JSON);
+			File nodeConfigFile = new File(baseDir + funcDir + File.separator + Constants.NODE_CONFIG_JSON);
 			Gson gson = new Gson();
 			String infoJSON = gson.toJson(nodeConfiguration);
-			fileWriter = new FileWriter(hubConfigFile);
+			fileWriter = new FileWriter(nodeConfigFile);
 			out = new BufferedWriter(fileWriter);
 			out.write(infoJSON);
 		} catch (IOException e) {
@@ -877,7 +877,7 @@ public class PluginUtils {
 		}
 	}
 
-	public void startNode(File baseDir, String pomFile) throws PhrescoException {
+	public void startNode(File baseDir, String pomFile, String submodule) throws PhrescoException {
 		FileOutputStream fos = null;
 		try {
 			File LogDir = new File(baseDir + File.separator + Constants.DO_NOT_CHECKIN_DIRY + File.separator + Constants.LOG_DIRECTORY);
@@ -894,21 +894,33 @@ public class PluginUtils {
             
 			File logFile  = new File(LogDir + Constants.SLASH + Constants.NODE_LOG);
 			StringBuilder sb = new StringBuilder()
-			.append(PluginConstants.JAVA_DWEBDRIVER_CHROME_DRIVER)
-			.append(functionalTestDir.substring(1, functionalTestDir.length()));
+			.append(PluginConstants.JAVA_DWEBDRIVER_CHROME_DRIVER);
+			 if(StringUtils.isNotEmpty(submodule)) {
+	        	sb.append(submodule);
+	        	sb.append("/");
+	        }
+			sb.append(functionalTestDir.substring(1, functionalTestDir.length()));
 			if (findPlatform().equals(Constants.WINDOWS)) {
 				sb.append(PluginConstants.CHROMEDRIVER_CHROMEDRIVER_EXE_JAR);
 			} else {
 				sb.append(PluginConstants.CHROMEDRIVER_CHROMEDRIVER_JAR);
 			}
 			
+			 if(StringUtils.isNotEmpty(submodule)) {
+		        	sb.append(submodule);
+		        	sb.append("/");
+		        }
 			sb.append(functionalTestDir.substring(1, functionalTestDir.length()))
 			.append(PluginConstants.LIB_SELENIUM_SERVER_STANDALONE)
 			.append(PluginConstants.HYPEN)
 			.append(getVersion(baseDir, pomFile))
 			.append(PluginConstants.DOT_JAR)
-			.append(PluginConstants.ROLE_NODE_NODE_CONFIG)
-			.append(functionalTestDir.substring(1, functionalTestDir.length()))
+			.append(PluginConstants.ROLE_NODE_NODE_CONFIG);
+			 if(StringUtils.isNotEmpty(submodule)) {
+	        	sb.append(submodule);
+	        	sb.append("/");
+	        }
+			sb.append(functionalTestDir.substring(1, functionalTestDir.length()))
 	        .append(PluginConstants.NODECONFIG_JSON);
 			fos = new FileOutputStream(logFile, false);
 			Utility.executeStreamconsumer(sb.toString(), fos);
@@ -929,7 +941,7 @@ public class PluginUtils {
 		return dependency.getVersion();
 	}
 
-	public void startHub(File baseDir, String pomFile) throws PhrescoException {
+	public void startHub(File baseDir, String pomFile, String submodule) throws PhrescoException {
 	    FileOutputStream fos = null;
 	    try {
 	        File pomPath = new File(baseDir + File.separator + pomFile);
@@ -946,14 +958,22 @@ public class PluginUtils {
 	        }
 	        File logFile  = new File(LogDir + Constants.SLASH + Constants.HUB_LOG);
 	        StringBuilder sb = new StringBuilder()
-	        .append(PluginConstants.JAVA_JAR)
-	        .append(functionalTestDir.substring(1, functionalTestDir.length()))
+	        .append(PluginConstants.JAVA_JAR);
+	        if(StringUtils.isNotEmpty(submodule)) {
+	        	sb.append(submodule);
+	        	sb.append("/");
+	        }
+	       sb.append(functionalTestDir.substring(1, functionalTestDir.length()))
 	        .append(PluginConstants.LIB_SELENIUM_SERVER_STANDALONE)
 	        .append(PluginConstants.HYPEN)
 			.append(getVersion(baseDir, pomFile))
 			.append(PluginConstants.DOT_JAR)
-	        .append(PluginConstants.ROLE_HUB_HUB_CONFIG)
-	        .append(functionalTestDir.substring(1, functionalTestDir.length()))
+			.append(PluginConstants.ROLE_HUB_HUB_CONFIG);
+	         if(StringUtils.isNotEmpty(submodule)) {
+	        	sb.append(submodule);
+	        	sb.append("/");
+	        }
+	       sb.append(functionalTestDir.substring(1, functionalTestDir.length()))
 	        .append(PluginConstants.HUBCONFIG_JSON);
 	        fos = new FileOutputStream(logFile, false);
 	        Utility.executeStreamconsumer(sb.toString(), fos);
