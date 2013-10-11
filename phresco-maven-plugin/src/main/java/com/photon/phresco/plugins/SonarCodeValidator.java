@@ -40,6 +40,7 @@ import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+import com.photon.phresco.plugins.util.MojoProcessor;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.TechnologyTypes;
@@ -79,6 +80,13 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
      * @readonly
      */
     protected String moduleName;
+    
+    /**
+     * @parameter expression="${interactive}" required="true"
+     * @readonly
+     */
+    private boolean interactive;
+    private Configuration config;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		getLog().info("Executing Code Validation");
@@ -99,7 +107,11 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
 			ProjectInfo projectInfo = gson.fromJson(projectInfoJson , projectInfoType);
 			ApplicationInfo applicationInfo = projectInfo.getAppInfos().get(0);
 			String techId = applicationInfo.getTechInfo().getId();
-			Configuration config = getConfiguration(infoFile, VALIDATE_CODE);
+			MojoProcessor mojoProcessor = new MojoProcessor(new File(infoFile));
+			config = mojoProcessor.getConfiguration(VALIDATE_CODE);
+	    	if(interactive) {
+	    		config = getInteractiveConfiguration(config, mojoProcessor, project,VALIDATE_CODE);
+	    	} 
 			Map<String, String> parameters = MojoUtil.getAllValues(config);
 			String testAgainst = parameters.get("sonar");
 			String environmentName = parameters.get(ENVIRONMENT_NAME);
@@ -154,10 +166,10 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
 	private void pluginValidate(String infoFile) throws PhrescoException {
 		if (isGoalAvailable(infoFile, VALIDATE_CODE) && getDependency(infoFile, VALIDATE_CODE) != null) {
 			PhrescoPlugin plugin = getPlugin(getDependency(infoFile, VALIDATE_CODE));
-			plugin.validate(getConfiguration(infoFile, VALIDATE_CODE), getMavenProjectInfo(project, moduleName));
+			plugin.validate(config, getMavenProjectInfo(project, moduleName));
 		} else {
 			PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());
-			plugin.validate(getConfiguration(infoFile, VALIDATE_CODE), getMavenProjectInfo(project, moduleName));
+			plugin.validate(config, getMavenProjectInfo(project, moduleName));
 		}
 	}
 }

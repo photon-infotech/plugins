@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Collections;
@@ -28,6 +29,7 @@ import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.framework.api.ProjectManager;
 import com.photon.phresco.service.client.api.ServiceContext;
 import com.photon.phresco.service.client.api.ServiceManager;
+import com.photon.phresco.service.client.impl.ServiceManagerImpl;
 
 /**
  * Phresco Maven Plugin for create project
@@ -62,34 +64,71 @@ public class PhrescoCreate extends AbstractMojo {
     private ServiceManager serviceManager;
     private Properties serverProperties;
     private Properties projectProperties;
+    private File serverFile;
     
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		initProperty();
 		try {
-			serviceManager = PhrescoFrameworkFactory.getServiceManager(getServiceContext());
+			getServiceManager();
 			ProjectManager projectManager = PhrescoFrameworkFactory.getProjectManager();
 			projectManager.create(createProjectInfo(), serviceManager);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage());
+		} catch (IOException e) {
+			throw new MojoExecutionException(e.getMessage());
 		}
 	}
+
+	/**
+	 * @throws PhrescoException
+	 * @throws MojoExecutionException
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
+	public ServiceManager getServiceManager() throws PhrescoException,
+			MojoExecutionException, FileNotFoundException, IOException {
+		initProperty();
+		String serverUrl = (String) serverProperties.get("phresco.service.url");
+		String authToken = (String) serverProperties.get("auth.token");
+		serviceManager = new ServiceManagerImpl(serverUrl, authToken);
+		boolean validToken = serviceManager.isValidToken();
+		if (!validToken) {
+			serviceManager = PhrescoFrameworkFactory.getServiceManager(getServiceContext());
+			authToken = serviceManager.getUserInfo().getToken();
+			serverProperties.setProperty("auth.token", authToken);
+			FileOutputStream out = new FileOutputStream(serverFile);
+			serverProperties.store(out, "");
+		}
+		return serviceManager;
+	}
 	
-	private ServiceContext getServiceContext() {
-		ServiceContext serviceContext = new ServiceContext();
-		serviceContext.put("phresco.service.url", serverProperties.get("phresco.service.url"));
-		serviceContext.put("phresco.service.password", serverProperties.get("phresco.service.password"));
-		serviceContext.put("phresco.service.username", serverProperties.get("phresco.service.username"));
+	private ServiceContext getServiceContext() throws MojoExecutionException {
+		ServiceContext serviceContext;
+		try {
+			serviceContext = new ServiceContext();
+			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+			serviceContext.put("phresco.service.url", serverProperties.get("phresco.service.url"));
+			System.out.println("Enter Username : ");
+			String userName = br.readLine();
+			serviceContext.put("phresco.service.username", userName);
+			serverProperties.put("phresco.service.username", userName);
+			System.out.println("Enter Password : ");
+			String password = br.readLine();
+			serviceContext.put("phresco.service.password", password);
+		} catch (IOException e) {
+			throw new MojoExecutionException(e.getMessage());
+		}
 		return serviceContext;
 	}
 	
 	private void initProperty() throws MojoExecutionException {
-		if(servicePropertyFile == null) {
-			throw new MojoExecutionException("The Service Property File Or ProjectProperty File Should Not Be Empty ");
-		}
 		try {
+			if(servicePropertyFile == null) {
+				throw new MojoExecutionException("The Service Property File Or ProjectProperty File Should Not Be Empty ");
+			}
 			serverProperties = new Properties();
 			projectProperties = new Properties();
-			File serverFile = new File(servicePropertyFile);
+			serverFile = new File(servicePropertyFile);
 			if(!serverFile.exists()) {
 				serverFile = new File(baseDir, servicePropertyFile);
 				if(!serverFile.exists()) {
@@ -195,28 +234,33 @@ public class PhrescoCreate extends AbstractMojo {
 		}
 	}
 	
-	private String getSelectedCustomerName() {
+	private String getSelectedCustomerName() throws MojoExecutionException {
 		String customerName = "";
 		Map<Integer, String> customerMap = new HashMap<Integer, String>(); 
 		User userInfo = serviceManager.getUserInfo();
-		if(userInfo == null) {
-			return customerName;
-		}
-		List<Customer> customers = userInfo.getCustomers();
-		StringBuilder builder = new StringBuilder();
-		for (int i = 0; i < customers.size(); i++) {
-			builder.append( i  + " " + customers.get(i).getName());
-			if(i != customers.size()-1) {
-				builder.append("\n");
-			}
-			customerMap.put(i, customers.get(i).getName());
-		}
-		System.out.println(builder.toString());
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		List<Customer> customers = null;
 		try {
+			if(userInfo == null) {
+				customers = serviceManager.getCustomers();
+			} else {
+				customers = userInfo.getCustomers();
+			}
+			StringBuilder builder = new StringBuilder();
+			for (int i = 0; i < customers.size(); i++) {
+				builder.append( i  + " " + customers.get(i).getName());
+				if(i != customers.size()-1) {
+					builder.append("\n");
+				}
+				customerMap.put(i, customers.get(i).getName());
+			}
+			System.out.println(builder.toString());
+			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 			int read = Integer.parseInt(br.readLine());
 			customerName = customerMap.get(read);
 		} catch (IOException e) {
+			throw new MojoExecutionException(e.getMessage());
+		} catch (PhrescoException e) {
+			throw new MojoExecutionException(e.getMessage());
 		}
 		return customerName;
 	}

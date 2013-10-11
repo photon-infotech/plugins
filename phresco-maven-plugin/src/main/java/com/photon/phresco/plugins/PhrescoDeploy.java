@@ -25,6 +25,8 @@ import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+import com.photon.phresco.plugins.util.MojoProcessor;
 import com.photon.phresco.util.Constants;
 
 import fr.opensagres.xdocreport.utils.StringUtils;
@@ -60,6 +62,12 @@ public class PhrescoDeploy extends PhrescoAbstractMojo {
 	 */
 	protected String projectCode;
 	
+	 /**
+     * @parameter expression="${interactive}" required="true"
+     * @readonly
+     */
+    private boolean interactive;
+    
 	/**
      * @parameter expression="${moduleName}"
      * @readonly
@@ -73,8 +81,14 @@ public class PhrescoDeploy extends PhrescoAbstractMojo {
         	if (StringUtils.isNotEmpty(moduleName)) {
         		infoFile = baseDir + File.separator + moduleName + File.separator + Constants.DEPLOY_INFO_FILE;
         	} 
+        	Configuration configuration = null;
+        	MojoProcessor processor = new MojoProcessor(new File(infoFile));
+        	configuration = processor.getConfiguration(DEPLOY);
+        	if(interactive) {
+        		configuration = getInteractiveConfiguration(configuration, processor, project,DEPLOY);
+        	} 
             PhrescoPlugin plugin = getPlugin(getDependency(infoFile, DEPLOY));
-            plugin.deploy(getConfiguration(infoFile, DEPLOY), getMavenProjectInfo(project, moduleName));
+            plugin.deploy(configuration, getMavenProjectInfo(project, moduleName));
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
