@@ -24,6 +24,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +33,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
@@ -100,6 +103,8 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 	private static final String HYPHEN = "-";
 
 	private static final String CMD_BUILD = "build";
+	
+	private static final String CMD_TEST = "test";
 
 	private static final String CMD_CLEAN = "clean";
 
@@ -469,16 +474,54 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 			throw new MojoExecutionException("Failed to generate falt library file. ", e);
 		}
 	}
+	private String executeCreateCmdForXcode() throws IOException  
+	{
+		String version = "";
+		ProcessBuilder pb = new ProcessBuilder(BIN_SH, C,"xcodebuild -version");
+		pb.redirectErrorStream(true);
+		pb.directory(new File(basedir));
+		Process process = pb.start();
+		InputStream is = process.getInputStream();
+	    InputStreamReader isr = new InputStreamReader(is);
+	    BufferedReader br = new BufferedReader(isr);
+	    String line;
+	    while ((line = br.readLine()) != null) {
+	      String[] splited = line.split("\\s");
+	    	  version = splited[1];
+	      break;
+	    }
+		return version;
+	}
+
+    private boolean isXcodeLatestVersion(String str1, String str2) {
+		String[] vals1 = str1.split("\\.");
+		String[] vals2 = str2.split("\\.");
+		int i=0;
+		while(i<vals1.length&&i<vals2.length&&vals1[i].equals(vals2[i])) {
+		  i++;
+		}
+
+		if (i<vals1.length&&i<vals2.length) {
+		    int diff = Integer.valueOf(vals1[i]).compareTo(Integer.valueOf(vals2[i]));
+		    return diff<0?false:diff==0?true:true;
+		}
+
+		return vals1.length<vals2.length?false:vals1.length==vals2.length?true:true;
+	}
 	
 	private void executeAppCreateCommads() throws IOException, InterruptedException, MojoExecutionException {
-//		ProcessBuilder pb = new ProcessBuilder(xcodeCommandLine.getAbsolutePath());
+		Boolean isLogicalTest = unittest && !applicationTest ? true : false;
+		String executeCreateCmdForXcode = executeCreateCmdForXcode();
+		boolean isXcodeLatestVersion = isXcodeLatestVersion(executeCreateCmdForXcode, "5.0");
+		String sdkVersion = getSDKVersion(sdk);
+
 		ProcessBuilder pb = new ProcessBuilder(BIN_SH, C);
 		// Include errors in output
 		pb.redirectErrorStream(true);
 
-//		List<String> commands = pb.command();
 		List<String> commands = new ArrayList<String>();
 		commands.add(XCODEBUILD);
+		
 		if (xcodeProject != null) {
 			// based on project type , it should be changed to -workspace
 			if (PACKAGING_XCODE_WORLSAPCE.equals(projectType)) {
@@ -490,20 +533,29 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 		}
 		
 		if (StringUtils.isNotBlank(xcodeTarget)) {
-			// based on project type , it should be changed
-			if (PACKAGING_XCODE_WORLSAPCE.equals(projectType)) {
+			// latest version xcode logical test command changes
+			if (isXcodeLatestVersion && isLogicalTest) {
 				commands.add(SCHEME);
 			} else {
-				commands.add(TARGET);
+				// same for other operations
+				// based on project type , it should be changed
+				if (PACKAGING_XCODE_WORLSAPCE.equals(projectType)) {
+					commands.add(SCHEME);
+				} else {
+					commands.add(TARGET);
+				}
 			}
 			commands.add(xcodeTarget.replace(STR_SPACE, SHELL_SPACE));
 		}
 		
-		if (StringUtils.isNotBlank(configuration)) {
+		
+		if (StringUtils.isNotBlank(sdkVersion.trim()) && isXcodeLatestVersion && isLogicalTest) {
+			commands.add("-destination OS=" + sdkVersion.trim() + ",name=" + "\"" + "iPhone Retina (4-inch)" + "\"");
+		} else if (StringUtils.isNotBlank(configuration)) {
 			commands.add(CONFIGURATION);
 			commands.add(configuration);
 		}
-
+		
 		// if it is unit test, we have to set TEST_AFTER_BUILD=YES in build settings
 		if (unittest) {
 			commands.add(TEST_AFTER_BUILD_YES);
@@ -514,15 +566,15 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 			commands.add(RUN_UNIT_TEST_WITH_IOS_SIM_YES);
 		}
 		
-		if (StringUtils.isNotBlank(sdk) && !projectType.equals(MAC)) {
+		if (StringUtils.isNotBlank(sdk) && !projectType.equals(MAC) && ((isXcodeLatestVersion && !isLogicalTest) || !isXcodeLatestVersion)) {
 			commands.add(SDK);
 			commands.add(sdk);
 		}
-
+		
 		commands.add("OBJROOT=" + buildDirectory.toString().replace(STR_SPACE, SHELL_SPACE));
 		commands.add("SYMROOT=" + buildDirectory.toString().replace(STR_SPACE, SHELL_SPACE));
 		commands.add("DSTROOT=" + buildDirectory.toString().replace(STR_SPACE, SHELL_SPACE));
-
+		
 		if(StringUtils.isNotBlank(gccpreprocessor)) {
 			commands.add("GCC_PREPROCESSOR_DEFINITIONS="+gccpreprocessor);
 		}
@@ -530,13 +582,16 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 		
 		getLog().info("Unit test triggered from UI " + applicationTest);
 		// if the user selects , logical test, we need to add clean test... for other test nothing will be added except target.
-		if (unittest && !applicationTest) {
+		if ((isLogicalTest && !isXcodeLatestVersion)) {
 			getLog().info("Unit test for logical test triggered ");
 			commands.add(CMD_CLEAN);
-//				commands.add("build");
 		}
-
-		commands.add(CMD_BUILD);
+		
+		if (isXcodeLatestVersion && isLogicalTest) {
+			commands.add(CMD_TEST);
+		} else {
+			commands.add(CMD_BUILD);
+		}
 		
 		// All the reports are generated using the ruby file
 		if (unittest) {
@@ -575,6 +630,16 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 		if (exitValue != 0) {
 			throw new MojoExecutionException("Compilation error occured. Resolve the error(s) and try again!");
 		}
+	}
+
+	private String getSDKVersion(String sdk) {
+		String sdkVersion = "";
+		Pattern pattern = Pattern.compile("[0-9]+.[0-9]*|[0-9]+");
+		Matcher m = pattern.matcher(sdk);
+		while (m.find()) {
+		 sdkVersion = m.group();
+		}
+		return sdkVersion;
 	}
 
 	private void init() throws MojoExecutionException, MojoFailureException {
