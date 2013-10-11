@@ -56,7 +56,6 @@ public class CQ5Test implements PluginConstants {
 		pomFile = project.getFile().getName();
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
 		String testAgainst = configs.get(TEST_AGAINST);
-		String environment = configs.get(ENVIRONMENT_NAME);
 		String goalPackBeforeTest = "";
 		String projectModule= "";
 		PluginUtils pluginUtils = new PluginUtils();
@@ -85,39 +84,9 @@ public class CQ5Test implements PluginConstants {
 			}
 		}
 		if (testAgainst.equals(JS)) {
-			ApplicationInfo appInfo = pluginUtils.getAppInfo(mavenProjectInfo.getBaseDir());
-			String techId = appInfo.getTechInfo().getId();
-			copyUnitInfoFile(environment, techId , projectModule);
 			goalPackBeforeTest = getGoalPackBeforeTest(baseDir);
 		}
 		buildCommand(configuration, testAgainst, goalPackBeforeTest, projectModule);
-	}
-
-	private void copyUnitInfoFile(String environment, String techId, String projectModule) throws PhrescoException {
-		try {
-			PomProcessor processor ;
-			String testSourcePath;
-			if(StringUtils.isEmpty(projectModule)) {
-				processor = new PomProcessor( new File(baseDir.getPath() + File.separator + pomFile));
-				testSourcePath = processor.getProperty("phresco.env.test.config.xml");
-				testConfigPath = new File(baseDir + File.separator + testSourcePath);
-			} else {
-				processor = new PomProcessor( new File(baseDir.getPath() + projectModule + File.separator + pomFile));
-				testSourcePath = processor.getProperty("phresco.env.test.config.xml");
-				testConfigPath = new File(baseDir + projectModule + File.separator + testSourcePath);
-			} 
-			if (!techId.equals(TechnologyTypes.JAVA_STANDALONE) && !techId.equals(TechnologyTypes.JAVA_WEBSERVICE) ) {
-				PluginUtils utils = new PluginUtils();
-				String fullPathNoEndSeparator = FilenameUtils.getFullPathNoEndSeparator(testConfigPath.getAbsolutePath());
-				File fullPathNoEndSeparatorFile = new File(fullPathNoEndSeparator);
-				fullPathNoEndSeparatorFile.mkdirs();
-				utils.executeUtil(environment, baseDir.getPath(), testConfigPath);
-			}
-		} catch (PhrescoPomException e) {
-			throw new  PhrescoException(e);
-		} catch (PhrescoException e) {
-			throw new  PhrescoException(e);
-		} 
 	}
 
 	private void buildCommand(Configuration configuration, String testAgainst, String goalPackBeforeTest, String projectModule) throws PhrescoException {
