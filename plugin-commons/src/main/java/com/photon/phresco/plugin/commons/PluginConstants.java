@@ -78,6 +78,7 @@ public interface PluginConstants {
      String CI_INFO_FILE				= "ciJob.info";
      String WAR_CONFIG_FILE				= "war-config.xml";
      String POM_PROP_CONFIG_FILE        = "phresco.env.config.xml";
+     String DEPENDENCY_JAR_DIRECTORY	= DO_NOT_CHECKIN_FOLDER + "/dependencyJars";;
      
 	//Constants for Maven commands
      String MVN_CMD 					= "mvn";
