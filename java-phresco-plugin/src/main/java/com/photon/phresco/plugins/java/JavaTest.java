@@ -187,7 +187,7 @@ public class JavaTest implements PluginConstants {
 		try {
 			PomProcessor processor = new PomProcessor(new File(baseDir.getPath() + File.separator + pomFile));
 			Plugin plugin = processor.getPlugin("net.awired.jstest", "jstest-maven-plugin");
-			if(plugin.getExecutions() != null && CollectionUtils.isNotEmpty(plugin.getExecutions().getExecution())) {
+			if(plugin != null && plugin.getExecutions() != null && CollectionUtils.isNotEmpty(plugin.getExecutions().getExecution())) {
 				List<PluginExecution> execution = plugin.getExecutions().getExecution();
 				for (PluginExecution pluginExecution : execution) {
 					if(pluginExecution.getGoals() != null && CollectionUtils.isNotEmpty(pluginExecution.getGoals().getGoal())) {

@@ -42,8 +42,9 @@ import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+import com.photon.phresco.plugins.util.MojoProcessor;
 import com.photon.phresco.util.Constants;
-
 
 /**
  * Phresco Maven Plugin for executing package command of the plugins
@@ -69,6 +70,12 @@ public class PhrescoPackage extends PhrescoAbstractMojo {
     protected File baseDir;
     
     /**
+     * @parameter expression="${interactive}" required="true"
+     * @readonly
+     */
+    private boolean interactive;
+    
+    /**
      * @parameter expression="${moduleName}"
      * @readonly
      */
@@ -76,16 +83,22 @@ public class PhrescoPackage extends PhrescoAbstractMojo {
     
     public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().info(baseDir.getPath());
+        Configuration configuration = null;
         try {
         	String infoFile = baseDir + File.separator + Constants.PACKAGE_INFO_FILE; 
         	if (StringUtils.isNotEmpty(moduleName)) {
         		infoFile = baseDir + File.separator + moduleName + File.separator + Constants.PACKAGE_INFO_FILE;
         	} 
         	PhrescoPlugin plugin = getPlugin(getDependency(infoFile, PACKAGE));
-        	plugin.pack(getConfiguration(infoFile, PACKAGE), getMavenProjectInfo(project, moduleName));
-            
+        	MojoProcessor processor = new MojoProcessor(new File(infoFile));
+        	configuration = processor.getConfiguration(PACKAGE);
+        	if(interactive) {
+        		configuration = getInteractiveConfiguration(configuration, processor, project, PACKAGE);
+        	} 
+            plugin.pack(configuration, getMavenProjectInfo(project, moduleName));
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
     }
+	
 }

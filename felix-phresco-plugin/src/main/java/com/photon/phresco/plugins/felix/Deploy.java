@@ -21,6 +21,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,6 +76,8 @@ public class Deploy implements PluginConstants {
 	private String packaging;
 	private String subModule = "";
 	private File workingDirectory;
+	private File dependencyJarDir;
+	private String dependencyJars;
 
 	public void deploy(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
@@ -85,6 +89,7 @@ public class Deploy implements PluginConstants {
 		buildNumber = configs.get(BUILD_NUMBER);
 		importSql = Boolean.parseBoolean(configs.get(EXECUTE_SQL));
 		sqlPath = configs.get(FETCH_SQL);
+		dependencyJars = configs.get("fetchDependency");
 		pUtil = new PluginUtils();
 		subModule = mavenProjectInfo.getModuleName();
 		if (StringUtils.isNotEmpty(subModule)) {
@@ -118,6 +123,8 @@ public class Deploy implements PluginConstants {
 			buildFile = new File(buildDir.getPath() + File.separator + buildInfo.getBuildName());// filename
 			tempDir = new File(buildDir.getPath() + TEMP_DIR);// temp dir
 			tempDir.mkdirs();
+			dependencyJarDir = new File(workingDirectory.getPath()
+					+ PluginConstants.DEPENDENCY_JAR_DIRECTORY);
 		} catch (Exception e) {
 			log.error(e.getMessage());
 			throw new MojoExecutionException(e.getMessage(), e);
@@ -214,11 +221,25 @@ public class Deploy implements PluginConstants {
 		felixUrl.append(serverport);
 		felixUrl.append(FORWARD_SLASH);
 		felixUrl.append(context);
-
-		File bundleFile = getBundleFile();
-
+		File bundleFile;
 		// remote deployment
-		deployToServer(bundleFile, felixUrl.toString(), serverusername, serverpassword);
+		if (dependencyJars != null && dependencyJarDir.exists()) {
+			List<String> dependencyJarList = Arrays.asList(dependencyJars
+					.split("\\s*,\\s*"));
+			for (String nextFile : dependencyJarList) {
+				bundleFile = new File(dependencyJarDir + File.separator
+						+ nextFile);
+				if (bundleFile.exists()) {
+					log.info("Deploying Dependency Bundle "+ nextFile +" ...");
+					deployToServer(bundleFile, felixUrl.toString(),
+							serverusername, serverpassword);
+				}
+			}
+		}
+		bundleFile = getBundleFile();
+		log.info("Deploying Bundle "+ bundleFile +" ...");
+		deployToServer(bundleFile, felixUrl.toString(), serverusername,
+				serverpassword);
 	}
 
 	private File getBundleFile() {
@@ -312,7 +333,7 @@ public class Deploy implements PluginConstants {
 				if (errorParam) {
 					throw new MojoExecutionException("Deployment Failed ");
 				} else {
-					log.info(" Project is Deployed into " + felixUrl);
+					log.info(" Bumdle Deployed to " + felixUrl);
 				}
 			} catch (IOException e) {
 				throw new MojoExecutionException(e.getMessage(), e);

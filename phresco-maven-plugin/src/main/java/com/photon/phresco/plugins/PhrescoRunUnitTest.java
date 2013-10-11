@@ -26,6 +26,8 @@ import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+import com.photon.phresco.plugins.util.MojoProcessor;
 import com.photon.phresco.util.Constants;
 
 /**
@@ -54,6 +56,12 @@ public class PhrescoRunUnitTest extends PhrescoAbstractMojo {
     protected File baseDir;
     
     /**
+     * @parameter expression="${interactive}" required="true"
+     * @readonly
+     */
+    private boolean interactive;
+    
+    /**
      * @parameter expression="${moduleName}"
      * @readonly
      */
@@ -65,12 +73,17 @@ public class PhrescoRunUnitTest extends PhrescoAbstractMojo {
     		if (StringUtils.isNotEmpty(moduleName)) {
         		infoFile = new File(baseDir + File.separator + moduleName + File.separator + Constants.UNIT_TEST_INFO_FILE);
         	} 
+    		MojoProcessor processor = new MojoProcessor(infoFile);
+        	Configuration configuration = processor.getConfiguration(UNIT_TEST);
+        	if(interactive) {
+        		configuration = getInteractiveConfiguration(configuration, processor, project,UNIT_TEST);
+        	} 
     		if (infoFile.exists() && isGoalAvailable(infoFile.getPath(), UNIT_TEST) && getDependency(infoFile.getPath(), UNIT_TEST) != null) {
 				PhrescoPlugin plugin = getPlugin(getDependency(infoFile.getPath(), UNIT_TEST));
-		        plugin.runUnitTest(getConfiguration(infoFile.getPath(), UNIT_TEST), getMavenProjectInfo(project, moduleName));
+		        plugin.runUnitTest(configuration, getMavenProjectInfo(project, moduleName));
 			} else {
 				PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());
-		        plugin.runUnitTest(getConfiguration(infoFile.getPath(), UNIT_TEST) ,getMavenProjectInfo(project, moduleName));
+		        plugin.runUnitTest(configuration ,getMavenProjectInfo(project,moduleName));
 			}
     	} catch (PhrescoException e) {
     		throw new MojoExecutionException(e.getMessage(), e);
