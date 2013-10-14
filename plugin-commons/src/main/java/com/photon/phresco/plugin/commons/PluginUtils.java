@@ -679,7 +679,7 @@ public class PluginUtils {
 	 
 	 public void adaptLoadJmx(String jmxFileLocation, int noOfUsers, int rampUpPeriod, int loopCount, boolean authMngr, String authorizationUrl,
 			 String authorizationUserName, String authorizationPassword, String authorizationDomain, String authorizationRealm 
-			 ,Map<String, String> headersMap, List<ContextUrls> contextUrls) throws Exception {
+			 , List<ContextUrls> contextUrls) throws Exception {
 	        File jmxFile = null;
 	        File jmxDir = new File(jmxFileLocation);
 	        if(jmxDir.isDirectory()){
