@@ -997,11 +997,13 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 			
 			buildInfo.setDeliverables(deliverable);
 			buildInfo.setEnvironments(envList);
-
-			Map<String, Boolean> sdkOptions = new HashMap<String, Boolean>(2);
-			sdkOptions.put(XCodeConstants.CAN_CREATE_IPA, isDeviceBuild1);
-			sdkOptions.put(XCodeConstants.DEVICE_DEPLOY, isDeviceBuild1);
-	        buildInfo.setOptions(sdkOptions);
+			
+			if(StringUtils.isNotEmpty(projectType) && !projectType.equals(MAC)) {
+				Map<String, Boolean> sdkOptions = new HashMap<String, Boolean>(2);
+				sdkOptions.put(XCodeConstants.CAN_CREATE_IPA, isDeviceBuild1);
+				sdkOptions.put(XCodeConstants.DEVICE_DEPLOY, isDeviceBuild1);
+		        buildInfo.setOptions(sdkOptions);
+			}
 	        
 			buildInfoList.add(buildInfo);
 			Gson gson2 = new Gson();

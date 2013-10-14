@@ -249,7 +249,7 @@ public class Deploy implements PluginConstants {
 
 	private void addCargoDependency(String version) throws PhrescoException {
 		try {
-			PomProcessor processor = new PomProcessor(project.getFile());
+			PomProcessor processor = new PomProcessor(getPomFile());
 			processor.deletePluginDependency(CODEHAUS_CARGO_PLUGIN, CARGO_MAVEN2_PLUGIN);
 			
 			//For Jboss4 dependency is not needed
