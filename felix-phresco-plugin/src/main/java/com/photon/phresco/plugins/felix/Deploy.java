@@ -333,7 +333,7 @@ public class Deploy implements PluginConstants {
 				if (errorParam) {
 					throw new MojoExecutionException("Deployment Failed ");
 				} else {
-					log.info(" Bumdle Deployed to " + felixUrl);
+					log.info(" Bundle Deployed to " + felixUrl);
 				}
 			} catch (IOException e) {
 				throw new MojoExecutionException(e.getMessage(), e);
