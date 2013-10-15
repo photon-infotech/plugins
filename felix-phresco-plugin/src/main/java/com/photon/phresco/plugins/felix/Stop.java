@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.logging.Log;
 
 import com.google.gson.Gson;
@@ -32,19 +33,22 @@ import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
-import com.photon.phresco.util.Utility;
 
 public class Stop implements PluginConstants {
-	private String projectCode;
+	private File workingDirectory;
+	private String subModule = "";
 
 	public void stop(MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
-		projectCode = mavenProjectInfo.getProjectCode();
 		File baseDir = mavenProjectInfo.getBaseDir();
-		File runagsInfoFile = new File(Utility.getProjectHome() + File.separator + projectCode + File.separator
-                + DOT_PHRESCO_FOLDER + File.separator + ENV_FILE);
+		subModule = mavenProjectInfo.getModuleName();
+		workingDirectory = baseDir;
+		if (StringUtils.isNotEmpty(subModule)) {
+			workingDirectory = new File(baseDir + File.separator + subModule);
+		}
+		File runagsInfoFile = new File(workingDirectory + File.separator + DOT_PHRESCO_FOLDER + File.separator + ENV_FILE);
 		String portNumber = findPortNumber(runagsInfoFile);
 		PluginUtils pluginutil = new PluginUtils();
-		pluginutil.stopServer(portNumber, baseDir);
+		pluginutil.stopServer(portNumber, workingDirectory);
 		log.info("Server stopped successfully");
 	}
 

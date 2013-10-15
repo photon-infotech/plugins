@@ -19,6 +19,7 @@ package com.photon.phresco.plugins;
 
 import java.io.File;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -56,12 +57,22 @@ public class PhrescoStop extends PhrescoAbstractMojo {
 	 * @parameter expression="${phresco.project.code}" required="true"
 	 */
 	protected String projectCode;
+	
+
+    /**
+     * @parameter expression="${moduleName}"
+     * @readonly
+     */
+    protected String moduleName;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
 			String infoFile = baseDir + File.separator + Constants.STOP_INFO_FILE;
+			if (StringUtils.isNotEmpty(moduleName)) {
+        		infoFile = baseDir + File.separator + moduleName + File.separator + Constants.STOP_INFO_FILE;
+        	}
 			PhrescoPlugin plugin = getPlugin(getDependency(infoFile, STOP));
-			plugin.stopServer(getMavenProjectInfo(project));
+			plugin.stopServer(getMavenProjectInfo(project, moduleName));
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
