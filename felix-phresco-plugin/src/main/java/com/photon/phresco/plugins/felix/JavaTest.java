@@ -61,13 +61,14 @@ public class JavaTest implements PluginConstants {
 			} else {
 				workingDirectory = new File(baseDir.getPath());
 			}
-			pomFile = getPomFile().getName();
+			File pom = getPomFile();
+			pomFile = pom.getName();
 			Map<String, String> configs = MojoUtil.getAllValues(configuration);
 			String testAgainst = configs.get(TEST_AGAINST);
 			String environment = configs.get(ENVIRONMENT_NAME);
 			String goalPackBeforeTest = "";
 			PluginUtils pluginUtils = new PluginUtils();
-			PomProcessor processor = new PomProcessor(getPomFile());
+			PomProcessor processor = new PomProcessor(pom);
 			if (testAgainst.equals(JAVA)) {
 				String reportDir = processor.getProperty("phresco.unitTest.java.report.dir");
 				File reportLoc = new File(workingDirectory.getPath() + File.separator  + reportDir);
@@ -104,7 +105,7 @@ public class JavaTest implements PluginConstants {
 			} else {
 				processor = new PomProcessor( new File(baseDir.getPath() + File.separator + projectModule + File.separator + pomFile));
 				testSourcePath = processor.getProperty("phresco.env.test.config.xml");
-				testConfigPath = new File(baseDir + projectModule + File.separator + testSourcePath);
+				testConfigPath = new File(baseDir + File.separator + projectModule + File.separator + testSourcePath);
 			} 
 			if (!techId.equals(TechnologyTypes.JAVA_STANDALONE) && !techId.equals(TechnologyTypes.JAVA_WEBSERVICE) ) {
 				PluginUtils utils = new PluginUtils();
@@ -154,18 +155,13 @@ public class JavaTest implements PluginConstants {
 			if (StringUtils.isNotEmpty(projectModule)) {
 				sb.append(STR_SPACE).append("-pl "+ projectModule);
 			}
-			if(!Constants.POM_NAME.equals(pomFile)) {
+			if(!Constants.POM_NAME.equals(project.getFile().getName())) {
 				sb.append(STR_SPACE);
 				sb.append(Constants.HYPHEN_F);
 				sb.append(STR_SPACE); 
-				sb.append(pomFile);
+				sb.append(project.getFile().getName());
 			}
-			boolean status;
-//			if(StringUtils.isNotEmpty(projectModule)) {
-//				status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath() + projectModule, baseDir.getPath(), UNIT);
-//			} else {
-				status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(), UNIT);
-//			} 
+			boolean status  = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(), UNIT);
 			if(!status) {
 				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
 			}

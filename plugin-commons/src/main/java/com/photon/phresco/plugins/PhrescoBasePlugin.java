@@ -24,14 +24,12 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -60,12 +58,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.FileUtils;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import com.google.gson.Gson;
 import com.photon.phresco.api.ConfigManager;
@@ -100,7 +96,6 @@ import com.phresco.pom.util.PomProcessor;
 public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginConstants {
 
 	public Log log;
-	private String pomFileName = "";
 	public PhrescoBasePlugin(Log log) {
 		this.log = log;
 	}
@@ -119,7 +114,6 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 	    	Map<String, String> configs = MojoUtil.getAllValues(configuration);
 	    	projectModule = configs.get(PROJECT_MODULE);
 	    }
-	    pomFileName = getPomFile(baseDir).getName();
 	    String workingDirectory = project.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_DIR);
 	    reportDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_RPT_DIR);
 	    if (StringUtils.isEmpty(workingDirectory)) {
@@ -140,22 +134,33 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 	}
 	
 	public ExecutionStatus runComponentTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		File baseDir = mavenProjectInfo.getBaseDir();
-		MavenProject project = mavenProjectInfo.getProject();
-		pomFileName = getPomFile(baseDir).getName();
-		String workingDirectory = project.getProperties().getProperty(Constants.POM_PROP_KEY_COMPONENTTEST_DIR);
-		if (StringUtils.isEmpty(workingDirectory)) {
-			workingDirectory = "";
+		try {
+			File baseDir = mavenProjectInfo.getBaseDir();
+			String subModule = mavenProjectInfo.getModuleName();
+			File workingDirectory;
+			if (StringUtils.isNotEmpty(subModule)) {
+				workingDirectory = new File(baseDir + File.separator + subModule);
+			} else {
+				workingDirectory = baseDir;
+			}
+			File pomFile = getPomFile(workingDirectory);
+			PomProcessor processor = new PomProcessor(pomFile);
+			String componentTestDir = processor.getProperty(Constants.POM_PROP_KEY_COMPONENTTEST_DIR);
+			if (StringUtils.isEmpty(componentTestDir)) {
+				componentTestDir = "";
+			}
+			if(configuration != null) {
+				Map<String, String> configs = MojoUtil.getAllValues(configuration);
+				String environmentName = configs.get(ENVIRONMENT_NAME);
+				PluginUtils pluginUtils = new PluginUtils();
+				String configXmlFile =processor.getProperty(Constants.POM_PROP_KEY_COMPONENTTEST_ADAPT_CONFIG);
+				File configXMLFile = new File(workingDirectory.getPath() + configXmlFile);
+				pluginUtils.executeUtil(environmentName, workingDirectory.getPath(), configXMLFile);
+			}
+			generateMavenCommand(mavenProjectInfo, workingDirectory.getPath() + componentTestDir, COMPONENT);
+		} catch (Exception e) {
+			throw new PhrescoException(e);
 		}
-		if(configuration != null) {
-			Map<String, String> configs = MojoUtil.getAllValues(configuration);
-			String environmentName = configs.get(ENVIRONMENT_NAME);
-			PluginUtils pluginUtils = new PluginUtils();
-			String configXmlFile = project.getProperties().getProperty(Constants.POM_PROP_KEY_COMPONENTTEST_ADAPT_CONFIG);
-			File configXMLFile = new File(baseDir.getPath() + configXmlFile);
-			pluginUtils.executeUtil(environmentName, baseDir.getPath(), configXMLFile);
-		}
-		generateMavenCommand(mavenProjectInfo, baseDir.getPath() + workingDirectory, COMPONENT);
 
 		return new DefaultExecutionStatus();
 	}
@@ -172,7 +177,6 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 				workingDirectory = new File(basedir);
 			}
 			File pomFile = getPomFile(workingDirectory);
-			pomFileName = pomFile.getName();
 			PomProcessor processor = new PomProcessor(pomFile);
 			
 			Map<String, String> configValues = MojoUtil.getAllValues(configuration);
@@ -264,7 +268,6 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			int loopCount = 1;
 			File pomFile = getPomFile(workingDir);
 			PomProcessor processor = new PomProcessor(pomFile);
-			pomFileName = pomFile.getName();
 			String performanceTestDir = processor.getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR) + File.separator + performanceAgainst;
 			if(StringUtils.isNotEmpty(performanceTestDir)) {
 				StringBuilder testPomPath = new StringBuilder(workingDir.getPath())
@@ -469,7 +472,6 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			}
 			File pomFile = getPomFile(workingDir);
 			PomProcessor processor = new PomProcessor(pomFile);
-			pomFileName = pomFile.getName();
 			String loadTestDir = processor.getProperty(Constants.POM_PROP_KEY_LOADTEST_DIR);
 			if(StringUtils.isNotEmpty(loadTestDir)) {
 				loadTestDir = loadTestDir +  File.separator + loadTestAgainst;
@@ -610,7 +612,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			sb.append(STR_SPACE);
 			sb.append(Constants.HYPHEN_F);
 			sb.append(STR_SPACE);
-			sb.append(pomFileName);
+			sb.append(Constants.POM_NAME);
 		}
 		File baseDir = mavenProjectInfo.getBaseDir();
 		if (StringUtils.isNotEmpty(mavenProjectInfo.getModuleName())) {

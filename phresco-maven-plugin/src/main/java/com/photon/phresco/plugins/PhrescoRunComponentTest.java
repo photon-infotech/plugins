@@ -19,6 +19,7 @@ package com.photon.phresco.plugins;
 
 import java.io.File;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -52,15 +53,24 @@ public class PhrescoRunComponentTest extends PhrescoAbstractMojo {
      */
     protected File baseDir;
     
+    /**
+     * @parameter expression="${moduleName}"
+     * @readonly
+     */
+    protected String moduleName;
+    
     public void execute() throws MojoExecutionException, MojoFailureException {
     	try {
     		File infoFile = new File(baseDir + File.separator + Constants.COMPONENT_TEST_INFO_FILE);
+    		if (StringUtils.isNotEmpty(moduleName)) {
+        		infoFile = new File(baseDir + File.separator + moduleName + File.separator + Constants.COMPONENT_TEST_INFO_FILE);
+        	} 
     		if (infoFile.exists() && isGoalAvailable(infoFile.getPath(), COMPONENT_TEST) && getDependency(infoFile.getPath(), COMPONENT_TEST) != null) {
 				PhrescoPlugin plugin = getPlugin(getDependency(infoFile.getPath(), COMPONENT_TEST));
-		        plugin.runComponentTest(getConfiguration(infoFile.getPath(), COMPONENT_TEST), getMavenProjectInfo(project));
+		        plugin.runComponentTest(getConfiguration(infoFile.getPath(), COMPONENT_TEST), getMavenProjectInfo(project, moduleName));
 			} else {
 				PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());
-		        plugin.runComponentTest(getConfiguration(infoFile.getPath(), COMPONENT_TEST) ,getMavenProjectInfo(project));
+		        plugin.runComponentTest(getConfiguration(infoFile.getPath(), COMPONENT_TEST) ,getMavenProjectInfo(project, moduleName));
 			}
     	} catch (PhrescoException e) {
     		throw new MojoExecutionException(e.getMessage(), e);
