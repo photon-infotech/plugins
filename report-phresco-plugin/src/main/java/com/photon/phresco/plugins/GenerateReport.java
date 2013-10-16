@@ -156,8 +156,10 @@ public class GenerateReport implements PluginConstants {
 	private MavenProject mavenProject;
 	private File baseDir;
 	private Log log;
-	private PluginPackageUtil util;
-
+	
+	private File pomFile;
+	private String pomFileName = "";
+	
 	private static final String INDEX = "index";
 	private static final String HTML = "html";
 	
@@ -168,6 +170,7 @@ public class GenerateReport implements PluginConstants {
 	private String version = null;
 	private String projName = null;
 	private String appDir = "";
+	private String moduleName = "";
     private String reportType = null;
     private String sonarUrl = null;
 	private boolean isClangReport;
@@ -1422,7 +1425,6 @@ public class GenerateReport implements PluginConstants {
 			  Float f= Float.parseFloat(value);
 			 
 			  int total = Math.round(f);
-			  System.out.println("afetre... " + total);
 			  if(StringUtils.isNotEmpty(value)) {
 				  testSuite.setTotal(total);
 			  }
@@ -2547,12 +2549,43 @@ public class GenerateReport implements PluginConstants {
 		return null;
 	}
 	
+	private File getPomFile() throws PhrescoException {
+		PluginUtils pu = new PluginUtils();
+		ApplicationInfo appInfo = pu.getAppInfo(baseDir);
+		pomFileName = Utility.getPomFileNameFromWorkingDirectory(appInfo, baseDir);
+		File pom = new File(baseDir.getPath() + File.separator + pomFileName);
+		return pom;
+	}
+	
 	public void generate(Configuration config, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		try {
 			this.log = log;
 	        baseDir = mavenProjectInfo.getBaseDir();
 	        mavenProject = mavenProjectInfo.getProject();
+	        moduleName = mavenProjectInfo.getModuleName();
 	        
+	        String pomVersion = mavenProject.getVersion();
+	        
+	        // Multi module handling
+	        if (StringUtils.isNotEmpty(moduleName)) {
+	        	baseDir = new File(baseDir, moduleName);
+	        }
+	        
+	        pomFile = getPomFile();
+			org.apache.maven.model.Model project = new org.apache.maven.model.Model();
+			PomProcessor pp = new PomProcessor(pomFile);
+			com.phresco.pom.model.Model.Properties modelProperties = pp.getModel().getProperties();
+			List<Element> propElem = modelProperties.getAny();
+			Properties properties = new Properties();
+			for (Element element : propElem) {
+				properties.put(element.getTagName(), element.getTextContent());
+			}
+			project.setProperties(properties);
+			
+			mavenProject = new MavenProject(project);
+			mavenProject.setFile(pomFile);
+			mavenProject.setVersion(pomVersion);
+			
 	        // get projects plugin info file path
 	        File projectInfo = new File(baseDir, DOT_PHRESCO_FOLDER + File.separator + PROJECT_INFO_FILE);
 			if (!projectInfo.exists()) {
@@ -2631,10 +2664,8 @@ public class GenerateReport implements PluginConstants {
 			String testType, String reportType, String sonarUrl,
 			Properties properties, String logoimage64, String themeJson1, String technologyName, String pomPath)
 			throws PhrescoException {
-			System.out.println("Generate Report generate Test");
 		try {
 	        baseDir = new File(baseDirPath);
-	        System.out.println("generate test called .... ");
 	        
 			org.apache.maven.model.Model project = new org.apache.maven.model.Model();
 			project.setProperties(properties);
@@ -2683,12 +2714,6 @@ public class GenerateReport implements PluginConstants {
 	        	this.fileName = pdfReportName + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName;
 	        }
 	        
-			System.out.println("TestType => " + testType);
-			System.out.println("ReportType => " + reportType);
-			System.out.println("ProjectCode => " + projectCode);
-			System.out.println("TechName => "	+ appInfo.getTechInfo().getId());
-			System.out.println("Version => " + appInfo.getVersion());
-			
 	        if (StringUtils.isEmpty(reportType)) {
 	        	throw new PhrescoException("Report type is empty ");
 	        }

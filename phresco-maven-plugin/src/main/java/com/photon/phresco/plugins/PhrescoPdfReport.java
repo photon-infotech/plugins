@@ -59,16 +59,24 @@ public class PhrescoPdfReport extends PhrescoAbstractMojo implements PluginConst
      */
     protected File baseDir;
     
+    /**
+     * @parameter expression="${moduleName}"
+     * @readonly
+     */
+    protected String moduleName;
+    
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		
 		getLog().info("Executing pdf report generation ");
 		try {
 			String infoFile = baseDir + File.separator + Constants.PDF_REPORT_INFO_FILE;
+        	if (StringUtils.isNotEmpty(moduleName)) {
+        		infoFile = baseDir + File.separator + moduleName + File.separator + Constants.PDF_REPORT_INFO_FILE;
+        	}
 			Configuration configuration = getConfiguration(infoFile, PDF_REPORT);
 			// To kill the process
 			Map<String, String> configs = MojoUtil.getAllValues(configuration);
 			String testType = configs.get("testType");
-			if(StringUtils.isNotEmpty(testType)) {
+			if (StringUtils.isNotEmpty(testType)) {
 				String processName = ManagementFactory.getRuntimeMXBean().getName();
 	    		String[] split = processName.split("@");
 	    		String processId = split[0].toString();
@@ -76,10 +84,10 @@ public class PhrescoPdfReport extends PhrescoAbstractMojo implements PluginConst
 			}
 			if (isGoalAvailable(infoFile, PDF_REPORT) && getDependency(infoFile, PDF_REPORT) != null) {
 				PhrescoPlugin plugin = getPlugin(getDependency(infoFile, PDF_REPORT));
-		        plugin.generateReport(configuration, getMavenProjectInfo(project));
+		        plugin.generateReport(configuration, getMavenProjectInfo(project, moduleName));
 			} else {
 				PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());
-		        plugin.generateReport(configuration, getMavenProjectInfo(project));
+		        plugin.generateReport(configuration, getMavenProjectInfo(project, moduleName));
 			}
 	    } catch (PhrescoException e) {
 	        throw new MojoExecutionException(e.getMessage(), e);
