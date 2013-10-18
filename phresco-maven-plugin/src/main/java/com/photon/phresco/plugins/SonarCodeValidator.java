@@ -157,7 +157,7 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
 	private File getPomFile(File workingDirectory) throws PhrescoException {
 		PluginUtils pUtils = new PluginUtils();
 		ApplicationInfo appInfo = pUtils.getAppInfo(workingDirectory);
-		String pomFileName = Utility.getPomFileNameFromWorkingDirectory(appInfo, workingDirectory);
+		String pomFileName = Utility.getPhrescoPomFromWorkingDirectory(appInfo, workingDirectory);
 		File pom = new File(workingDirectory.getPath() + File.separator + pomFileName);
 		
 		return pom;

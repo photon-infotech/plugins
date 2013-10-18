@@ -173,7 +173,7 @@ public class JavaTest implements PluginConstants {
 	private File getPomFile() throws PhrescoException {
 		PluginUtils pu = new PluginUtils();
 		ApplicationInfo appInfo = pu.getAppInfo(workingDirectory);
-		String pomFileName = Utility.getPomFileNameFromWorkingDirectory(appInfo, workingDirectory);
+		String pomFileName = Utility.getPhrescoPomFromWorkingDirectory(appInfo, workingDirectory);
 		File pom = new File(workingDirectory.getPath() + File.separator + pomFileName);
 		
 		return pom;

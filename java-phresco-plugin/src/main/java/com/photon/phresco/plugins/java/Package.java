@@ -311,7 +311,7 @@ public class Package implements PluginConstants {
 
 	private File getPomFile() throws PhrescoException {
 		ApplicationInfo appInfo = pu.getAppInfo(workingDirectory);
-		String pomFileName = Utility.getPomFileNameFromWorkingDirectory(appInfo, workingDirectory);
+		String pomFileName = Utility.getPhrescoPomFromWorkingDirectory(appInfo, workingDirectory);
 		File pom = new File(workingDirectory.getPath() + File.separator + pomFileName);
 		
 		return pom;
