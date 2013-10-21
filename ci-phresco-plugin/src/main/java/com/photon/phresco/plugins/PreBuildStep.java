@@ -65,7 +65,7 @@ public class PreBuildStep  implements PluginConstants {
     private File getPomFile() throws PhrescoException {
     	PluginUtils pu = new PluginUtils();
     	ApplicationInfo appInfo = pu.getAppInfo(baseDir);
-    	pomFileName = Utility.getPomFileNameFromWorkingDirectory(appInfo, baseDir);
+    	pomFileName = Utility.getPhrescoPomFromWorkingDirectory(appInfo, baseDir);
     	pom = pomFileName;
     	File pom = new File(baseDir.getPath() + File.separator + pomFileName);
     	return pom;
