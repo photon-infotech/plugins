@@ -12,11 +12,10 @@
 	<style name="UCRHeading"/>
 	<style name="UCRHeadingLabel"/>
 	<style name="UCRHeadingLabelValue"/>
-	<parameter name="reportsDataType" class="java.lang.String"/>
 	<parameter name="testType" class="java.lang.String"/>
 	<parameter name="isClassEmpty" class="java.lang.Boolean"/>
-	<parameter name="masterPageNo" class="java.lang.Integer"/>
-	<parameter name="headingsMap" class="java.util.HashMap"/>
+	<parameter name="testTypeLabel" class="java.lang.String"/>
+	<parameter name="reportsDataType" class="java.lang.String"/>
 	<field name="testSuites" class="java.util.List"/>
 	<field name="allTestSuites" class="java.util.List"/>
 	<variable name="count" class="java.lang.Integer" calculation="Count">
@@ -27,54 +26,58 @@
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="2">
-			<line>
-				<reportElement x="1" y="1" width="1" height="1">
-					<printWhenExpression><![CDATA[$P{REPORT_SCRIPTLET}.updateTOC("UnitTestReport", $P{masterPageNo})]]></printWhenExpression>
-				</reportElement>
-			</line>
-		</band>
+		<band height="2"/>
 	</title>
 	<pageHeader>
 		<band height="27">
-			<printWhenExpression><![CDATA[$P{testType}.contains("unit")]]></printWhenExpression>
 			<frame>
 				<reportElement style="UCRHeading" mode="Opaque" x="0" y="0" width="555" height="24"/>
 				<textField>
-					<reportElement x="5" y="4" width="269" height="20" forecolor="#333333"/>
-					<textElement>
+					<reportElement x="11" y="4" width="270" height="20"/>
+					<textElement verticalAlignment="Middle">
 						<font fontName="Times New Roman" size="12" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Unit Test Report"]]></textFieldExpression>
-					<anchorNameExpression><![CDATA["Unit Test Report"]]></anchorNameExpression>
+					<textFieldExpression><![CDATA[$P{testTypeLabel}]]></textFieldExpression>
 				</textField>
 			</frame>
-			<line>
-				<reportElement x="0" y="0" width="1" height="1"/>
-			</line>
 		</band>
 	</pageHeader>
 	<detail>
-		<band height="217">
+		<band height="211">
 			<frame>
-				<reportElement x="0" y="5" width="555" height="211" isRemoveLineWhenBlank="true">
-					<printWhenExpression><![CDATA[$P{testType}.contains("unit") && !$F{testSuites}.isEmpty()]]></printWhenExpression>
+				<reportElement x="0" y="0" width="555" height="211" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[!$F{allTestSuites}.isEmpty()]]></printWhenExpression>
 				</reportElement>
 				<subreport>
-					<reportElement x="0" y="0" width="555" height="211" isRemoveLineWhenBlank="true">
-						<printWhenExpression><![CDATA[$P{reportsDataType}.equals("detail")]]></printWhenExpression>
-					</reportElement>
+					<reportElement x="0" y="0" width="555" height="211" isRemoveLineWhenBlank="true"/>
 					<subreportParameter name="testType">
 						<subreportParameterExpression><![CDATA[$P{testType}]]></subreportParameterExpression>
 					</subreportParameter>
-					<subreportParameter name="reportsDataType">
-						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
+					<subreportParameter name="allTestSuites">
+						<subreportParameterExpression><![CDATA[$F{allTestSuites}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="isClassEmpty">
+						<subreportParameterExpression><![CDATA[$P{isClassEmpty}]]></subreportParameterExpression>
+					</subreportParameter>
+					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.JREmptyDataSource()]]></dataSourceExpression>
+					<subreportExpression><![CDATA["PhrescoSureFireReport_subreport1.jasper"]]></subreportExpression>
+				</subreport>
+			</frame>
+		</band>
+		<band height="211">
+			<printWhenExpression><![CDATA[$P{reportsDataType}.equals("detail")]]></printWhenExpression>
+			<frame>
+				<reportElement x="0" y="0" width="555" height="211" isRemoveLineWhenBlank="true"/>
+				<subreport>
+					<reportElement x="0" y="0" width="555" height="211"/>
+					<subreportParameter name="testType">
+						<subreportParameterExpression><![CDATA[$P{testType}]]></subreportParameterExpression>
 					</subreportParameter>
 					<subreportParameter name="isClassEmpty">
 						<subreportParameterExpression><![CDATA[$P{isClassEmpty}]]></subreportParameterExpression>
 					</subreportParameter>
 					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{testSuites})]]></dataSourceExpression>
-					<subreportExpression><![CDATA["PhrescoSureFireDetailReport.jasper"]]></subreportExpression>
+					<subreportExpression><![CDATA["MultiModuleUnitTestSureFireDetailReport.jasper"]]></subreportExpression>
 				</subreport>
 			</frame>
 		</band>

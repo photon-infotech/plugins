@@ -155,6 +155,7 @@ public class GenerateReport implements PluginConstants {
 	private static final String MMM_DD_YYYY_HH_MMA = "ddMMMyyyy_hh.mma";
 	private MavenProject mavenProject;
 	private File baseDir;
+	private File rootDir;
 	private Log log;
 	
 	private File pomFile;
@@ -167,12 +168,14 @@ public class GenerateReport implements PluginConstants {
 	private String projectCode = null;
 	
 	private String testType = null;
+	private String rootTestType = null;
 	private String version = null;
 	private String projName = null;
 	private String appDir = "";
 	private String moduleName = "";
     private String reportType = null;
     private String sonarUrl = null;
+    private String pdfReportName = "";
 	private boolean isClangReport;
 	private boolean showDeviceReport;
 	
@@ -712,7 +715,7 @@ public class GenerateReport implements PluginConstants {
             } else {
             	builder.append(POM_XML);
             }
-        	log.debug("Sonar pom path => " + builder.toString());
+        	log.debug("Sonar pom path " + builder.toString());
         	File pomPath = new File(builder.toString());
         	if (pomPath.exists()) {
         		PomProcessor processor = new PomProcessor(pomPath);
@@ -763,7 +766,7 @@ public class GenerateReport implements PluginConstants {
         	}
 			return sonarReport;
 		} catch (Exception e) {
-			e.printStackTrace();
+			e.getLocalizedMessage();
 		}
 		return sonarReport;
 	}
@@ -1236,6 +1239,7 @@ public class GenerateReport implements PluginConstants {
 			if (StringUtils.isNotEmpty(componentTestDir)) {
 				reportPath = reportFilePath + componentTestDir;
 			}
+			
 			List<File> testResultFiles = getTestResultFilesAsList(reportPath);
 			for (File testResultFile : testResultFiles) {
 				reportDirWithTestSuitePath.put(testResultFile.getPath(), componentTestSuitePath + "," + componentTestCasePath);
@@ -1314,7 +1318,6 @@ public class GenerateReport implements PluginConstants {
 					errorTestSuites = errorTestSuites + errors;
 					successTestSuites = (int) (successTestSuites + success);
 					String rstValues = tests + "," + success + "," + failures + "," + errors;
-	//				log.info("rstValues ... " + rstValues);
 					AllTestSuite allTestSuiteDetail = new AllTestSuite(testSuite.getName(), tests, success, failures, errors);
 					allTestSuiteDetails.add(allTestSuiteDetail);
 					testSuite.setTestCases(testCases);
@@ -1322,7 +1325,8 @@ public class GenerateReport implements PluginConstants {
 				}
 				// detailed info
 				sureFireReport.setTestSuites(testSuiteWithTestCase);
-				// printDetailedObj(testSuiteWithTestCase);
+//				printDetailedObj(testSuiteWithTestCase);
+				
 				// crisp info
 				sureFireReport.setAllTestSuites(allTestSuiteDetails);
 			}
@@ -1364,6 +1368,7 @@ public class GenerateReport implements PluginConstants {
 				sb.append(file.getName());
 			}
 		}
+		
 		FileInputStream myInput = new FileInputStream(sb.toString());
 		HSSFWorkbook myWorkBook = new HSSFWorkbook(myInput);
 		HSSFSheet mySheet = myWorkBook.getSheetAt(0);
@@ -1422,55 +1427,48 @@ public class GenerateReport implements PluginConstants {
 		  if(next.getCell(3)!=null){
 			  Cell cell = next.getCell(3);
 			  String value=getValue(cell);
-			  Float f= Float.parseFloat(value);
-			 
-			  int total = Math.round(f);
 			  if(StringUtils.isNotEmpty(value)) {
-				  testSuite.setTotal(total);
+				  float pass=Float.parseFloat(value);
+				  testSuite.setTotal(pass);
 			  }
 		  }
 		  if(next.getCell(4)!=null){
 			  Cell cell = next.getCell(4);
 			  String value=getValue(cell);
-			  Float f= Float.parseFloat(value);
-			  int fail = Math.round(f);
 			  if(StringUtils.isNotEmpty(value)) {
+				  float fail=Float.parseFloat(value);
 				  testSuite.setFailure(fail);
 			  }
 		  }
 		  if(next.getCell(5)!=null){
 			  Cell cell = next.getCell(5);
 			  String value=getValue(cell);
-			  Float f= Float.parseFloat(value);
-			  int notApp=Math.round(f);
 			  if(StringUtils.isNotEmpty(value)) {
+				  float notApp=Float.parseFloat(value);
 				  testSuite.setNotApplicable(notApp);
 			  }
 		  }
 		  if(next.getCell(6)!=null){
 			  Cell cell = next.getCell(6);
 			  String value=getValue(cell);
-			  Float f= Float.parseFloat(value);
-			  int notExecuted=Math.round(f);
 			  if(StringUtils.isNotEmpty(value)) {
+				  float notExecuted=Float.parseFloat(value);
 				  testSuite.setNotExecuted(notExecuted);
 			  }
 		  }
 		  if(next.getCell(7)!=null){
 			  Cell cell = next.getCell(7);
 			  String value=getValue(cell);
-			  Float f= Float.parseFloat(value);
-			  int blocked=Math.round(f);
 			  if(StringUtils.isNotEmpty(value)) {
+				  float blocked=Float.parseFloat(value);
 				  testSuite.setBlocked(blocked);
 			  }
 		  }
 		  if(next.getCell(8)!=null){
 			  Cell cell = next.getCell(8);
 			  String value=getValue(cell);
-			  Float f= Float.parseFloat(value);
-			  int total=Math.round(f);
 			  if(StringUtils.isNotEmpty(value)) {
+				  float total=Float.parseFloat(value);
 				  testSuite.setTotal(total);
 			  }
 		  }
@@ -1788,14 +1786,6 @@ public class GenerateReport implements PluginConstants {
 					}
 				}
 			}
-		}
-	}
-
-	//detailed object info
-	private void printDetailedObj(ArrayList<TestSuite> testSuiteWithTestCase) {
-		log.debug("printing required values!!!!!");
-		for (TestSuite testSuite : testSuiteWithTestCase) {
-//			log.info("getName " + testSuite.getName() + " tests " + testSuite.getTests() + " Failure " + testSuite.getFailures() + " Error" + testSuite.getErrors() + " testcases size " + testSuite.getTestCases().size());
 		}
 	}
 	
@@ -2540,7 +2530,6 @@ public class GenerateReport implements PluginConstants {
 	        this.projName = projectInfo.getName();
 	        List<ApplicationInfo> appInfos = projectInfo.getAppInfos();
 	        for (ApplicationInfo appInfo : appInfos) {
-//	        	log.info("appInfo dir name ... " + appInfo.getAppDirName());
 				return appInfo;
 			}
 		} catch (Exception e) {
@@ -2557,21 +2546,12 @@ public class GenerateReport implements PluginConstants {
 		return pom;
 	}
 	
-	public void generate(Configuration config, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
-		try {
-			this.log = log;
-	        baseDir = mavenProjectInfo.getBaseDir();
-	        mavenProject = mavenProjectInfo.getProject();
-	        moduleName = mavenProjectInfo.getModuleName();
-	        
-	        String pomVersion = mavenProject.getVersion();
-	        
-	        // Multi module handling
-	        if (StringUtils.isNotEmpty(moduleName)) {
-	        	baseDir = new File(baseDir, moduleName);
-	        }
-	        
-	        pomFile = getPomFile();
+	private void setMavenProject(File rootDir, String moduleName) throws Exception {
+		String pomVersion = mavenProject.getVersion();
+        // Multi module handling
+        if (StringUtils.isNotEmpty(moduleName)) {
+        	baseDir = new File(rootDir, moduleName);
+        	pomFile = getPomFile();
 			org.apache.maven.model.Model project = new org.apache.maven.model.Model();
 			PomProcessor pp = new PomProcessor(pomFile);
 			com.phresco.pom.model.Model.Properties modelProperties = pp.getModel().getProperties();
@@ -2581,59 +2561,305 @@ public class GenerateReport implements PluginConstants {
 				properties.put(element.getTagName(), element.getTextContent());
 			}
 			project.setProperties(properties);
-			
 			mavenProject = new MavenProject(project);
 			mavenProject.setFile(pomFile);
 			mavenProject.setVersion(pomVersion);
-			
-	        // get projects plugin info file path
-	        File projectInfo = new File(baseDir, DOT_PHRESCO_FOLDER + File.separator + PROJECT_INFO_FILE);
-			if (!projectInfo.exists()) {
-				throw new MojoExecutionException("Project info file is not found in jenkins workspace dir " + baseDir.getCanonicalPath());
-			}
-			ApplicationInfo appInfo = getApplicationInfo(projectInfo);
-			if (appInfo == null) {
-				throw new MojoExecutionException("AppInfo value is Null ");
-			}
-	        
-	        Map<String, String> configs = MojoUtil.getAllValues(config);
-	        String reportType = configs.get(REPORT_TYPE);
-	        String testType = configs.get(TEST_TYPE);
-	        String sonarUrl = configs.get("sonarUrl");
-	        String appVersion = mavenProjectInfo.getProject().getVersion();
-	        String pdfReportName = configs.get("reportName");
-	        
-	        logo = configs.get("logo");
-	        // Default copyrights
-	        this.copyRights = DEFAULT_COPYRIGHTS;
-	        String themeJson = configs.get("theme");
-	        if (StringUtils.isNotEmpty(themeJson)) {
-	        	Gson gson = new Gson();
-	        	Type mapType = new TypeToken<Map<String, String>>() {}.getType();
-		        theme = (Map<String, String>)gson.fromJson(themeJson, mapType);
-		        if (MapUtils.isNotEmpty(theme) && StringUtils.isNotEmpty(theme.get("CopyRight"))) {
-		        	this.copyRights = theme.get("CopyRight");
-		        }
+			this.version = pomVersion;
+        }
+	}
+	
+	public void setConfigurationValues(Configuration config) {
+		Map<String, String> configs = MojoUtil.getAllValues(config);
+        String reportType = configs.get(REPORT_TYPE);
+        String testType = configs.get(TEST_TYPE);
+        String sonarUrl = configs.get("sonarUrl");
+        String appVersion = mavenProject.getVersion();
+        String pdfReportName = configs.get("reportName");
+        
+        logo = configs.get("logo");
+        // Default copyrights
+        this.copyRights = DEFAULT_COPYRIGHTS;
+        String themeJson = configs.get("theme");
+        if (StringUtils.isNotEmpty(themeJson)) {
+        	Gson gson = new Gson();
+        	Type mapType = new TypeToken<Map<String, String>>() {}.getType();
+	        theme = (Map<String, String>)gson.fromJson(themeJson, mapType);
+	        if (MapUtils.isNotEmpty(theme) && StringUtils.isNotEmpty(theme.get("CopyRight"))) {
+	        	this.copyRights = theme.get("CopyRight");
 	        }
-	        
-	        this.testType = testType;
-	        this.reportType = reportType;
-	        this.appDir = appInfo.getAppDirName();
-	        this.projectCode = appInfo.getName();
-	        this.techName = configs.get("technologyName");
-	        this.version = appVersion;
-	        this.sonarUrl = sonarUrl;
-	        if (StringUtils.isEmpty(pdfReportName)) {
+        }
+        
+        this.testType = testType;
+        this.rootTestType = testType;
+        this.reportType = reportType;
+        this.techName = configs.get("technologyName");
+        this.version = appVersion;
+        this.sonarUrl = sonarUrl;
+        this.pdfReportName = pdfReportName;
+	}
+	
+	public void setAppinfoConfigValues(ApplicationInfo appInfo) {
+        this.appDir = appInfo.getAppDirName();
+        this.projectCode = appInfo.getName();
+	}
+	
+	public void setReportFileName() {
+		 if (StringUtils.isEmpty(pdfReportName)) {
 	        	if (testType.equals("All")) {
-	        		this.fileName = baseDir.getName() + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName;
+	        		this.fileName = baseDir.getName() + STR_UNDERSCORE + this.reportType + STR_UNDERSCORE + fileName;
 	        	} else {
-	        		this.fileName = testType + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName; // time
+	        		this.fileName = testType + STR_UNDERSCORE + this.reportType + STR_UNDERSCORE + fileName; // time
 	        	}
 	        } else {
-	        	this.fileName = pdfReportName + STR_UNDERSCORE + reportType;
+	        	this.fileName = pdfReportName + STR_UNDERSCORE + this.reportType;
 	        }
+	}
+	
+	public void isClangReport() {
+    	String clangReportPath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_VALIDATE_REPORT);
+    	if (StringUtils.isNotEmpty(clangReportPath)) {
+    		isClangReport = true;
+    	}
+	}
+	
+	public void getUnitTestReport(MultiModuleReports appendTestReport) throws Exception {
+		testType = UNIT;
+		SureFireReport unitTestSureFireReports = sureFireReports(null);
+		
+		List<TestSuite> testSuitesUnit = unitTestSureFireReports.getTestSuites();
+		List<AllTestSuite> allTestSuitesUnit = unitTestSureFireReports.getAllTestSuites();
+		if (CollectionUtils.isNotEmpty(allTestSuitesUnit) || CollectionUtils.isNotEmpty(testSuitesUnit)) {
+			appendTestReport.setUnitTestReport(unitTestSureFireReports);
+		}
+	}
+	
+	public void getManualTestReport(MultiModuleReports appendTestReport) throws Exception {
+		testType = MANUAL;
+		SureFireReport manualTestReport = sureFireReports(null);
+		List<AllTestSuite> allTestSuitesManual = manualTestReport.getAllTestSuites();
+		List<TestSuite> testSuitesManual = manualTestReport.getTestSuites();
+		if (CollectionUtils.isNotEmpty(testSuitesManual) || CollectionUtils.isNotEmpty(allTestSuitesManual)) {
+			appendTestReport.setManualTestReport(manualTestReport);
+		}
+	}
+	
+	public void getFunctionalTestReport(MultiModuleReports appendTestReport) throws Exception {
+		testType = FUNCTIONAL;
+		boolean isClassEmpty = true;
+		List<TestSuite> testSuitesFunctional = null;
+		SureFireReport functionalSureFireReports = sureFireReports(null);
+		List<AllTestSuite> allTestSuitesFunctional = functionalSureFireReports.getAllTestSuites();
+		testSuitesFunctional = functionalSureFireReports.getTestSuites();
+		if (CollectionUtils.isNotEmpty(testSuitesFunctional) || CollectionUtils.isNotEmpty(allTestSuitesFunctional)) {
+			for (TestSuite testSuite : testSuitesFunctional) {
+				List<TestCase> testcases = testSuite.getTestCases();
+				for (TestCase testCase : testcases) {
+					if (StringUtils.isNotEmpty(testCase.getTestClass())) {
+						isClassEmpty = false;
+					}
+				}
+			}
+			appendTestReport.setFunctionalTestReport(functionalSureFireReports);
+		}
+		appendTestReport.setIsClangReport(isClangReport);
+	}
+	
+	public void getComponentTestReport(MultiModuleReports appendTestReport) throws Exception {
+		testType = COMPONENT;
+		List<TestSuite> testSuitesComponent = null;
+		SureFireReport componentSureFireReports = sureFireReports(null);
+		List<AllTestSuite> allTestSuitesComponent = null;
+		allTestSuitesComponent = componentSureFireReports.getAllTestSuites();
+		testSuitesComponent = componentSureFireReports.getTestSuites();
+		if (CollectionUtils.isNotEmpty(testSuitesComponent) || CollectionUtils.isNotEmpty(allTestSuitesComponent)) {
+			appendTestReport.setComponentTestReport(componentSureFireReports);
+		}
+	}
+	
+	public void getPerformanceTestReport(MultiModuleReports appendTestReport) throws Exception {
+		testType = PERFORMACE;
+		//performance details
+		boolean deviceReportAvail = isDeviceReportAvail();
+		showDeviceReport = deviceReportAvail;
+		
+		if(showDeviceReport) { //showDeviceReport
+			List<AndroidPerfReport> perforamceTest = getJmeterTestResultsForAndroid();
+			if (CollectionUtils.isNotEmpty(perforamceTest)) {
+				appendTestReport.setIsAndroidSpecialHandling(true);
+				appendTestReport.setAndroidPerformaceTestReport(perforamceTest);
+			}
+		} else {
+			List<JmeterTypeReport> perforamceTest = getJmeterTestResults();
+			if (CollectionUtils.isNotEmpty(perforamceTest)) {
+				appendTestReport.setIsAndroidSpecialHandling(false);
+				appendTestReport.setPerformanceTestReport(perforamceTest);
+			}
+		}
+	}
+	
+	public void getLoadTestReport(MultiModuleReports appendTestReport) throws Exception {
+		testType = LOAD;
+		List<JmeterTypeReport> loadTestReport  = getJmeterTestResults();
+		if (CollectionUtils.isNotEmpty(loadTestReport)) {
+			appendTestReport.setLoadTestReport(loadTestReport);
+		}
+	}
+	
+	public void getCodeValidationReport(MultiModuleReports appendTestReport) throws Exception {
+		if (!isClangReport) {
+			//Sonar details
+			List<SonarReport> sonarReports = new ArrayList<SonarReport>();
+			String pomPath =  baseDir + File.separator + mavenProject.getFile().getName();
+			if (StringUtils.isNotEmpty(sonarUrl)) {
+				List<String> sonarTechReports = getSonarProfiles(pomPath);
+				if (sonarTechReports != null) {
+					if(CollectionUtils.isEmpty(sonarTechReports)) {
+						sonarTechReports.add(SONAR_SOURCE);
+					}
+					sonarTechReports.add(FUNCTIONAL);
+					for (String sonarTechReport : sonarTechReports) {
+						SonarReport srcSonarReport = generateSonarReport(sonarTechReport, null);
+						if(srcSonarReport != null) {
+							sonarReports.add(srcSonarReport);
+						}
+					}
+				}
+				if (CollectionUtils.isNotEmpty(sonarReports)) {
+					appendTestReport.setCodeValidationReports(sonarReports);
+				}
+			}
+		}
+	}
+	
+	public void getTestReport(MultiModuleReports appendTestReport) throws Exception {
+		getUnitTestReport(appendTestReport);
+		getManualTestReport(appendTestReport);
+		getFunctionalTestReport(appendTestReport);
+		getComponentTestReport(appendTestReport);
+		getPerformanceTestReport(appendTestReport);
+		getLoadTestReport(appendTestReport);
+		getCodeValidationReport(appendTestReport);
+	}
+	
+	public void multiModulereport(Configuration config) throws Exception {
+    	setReportFileName();
+    	
+    	List<String> modules = PluginUtils.getProjectModules(mavenProject);
+    	
+		Map<String, Object> reportParams = new HashMap<String,Object>();
+		reportParams.put(COPY_RIGHTS, copyRights);
+		reportParams.put(REPORTS_TYPE, reportType);
+		reportParams.put(LOGO, logo);
+		
+    	List<MultiModuleReports> multiModuleReports = new ArrayList<MultiModuleReports>(modules.size());
+    	
+    	// Root module data
+    	ApplicationInfo rootAppInfo = getApplicationInfo(); // sets appName and ProjectName
+        setAppinfoConfigValues(rootAppInfo);
+        isClangReport(); // isClangReport check
+        
+    	MultiModuleReports rootModuleReport = new MultiModuleReports();
+    	rootModuleReport.setIsRootModule(true);
+    	rootModuleReport.setApplicationLabel("Application Name :");
+    	
+    	rootModuleReport.setIsClangReport(isClangReport);
+    	rootModuleReport.setProjectName(projName);
+    	rootModuleReport.setApplicationName(projectCode);
+    	rootModuleReport.setTechnologyName(techName);
+    	rootModuleReport.setVersion(version);
+    	rootModuleReport.setReportType(reportType);
+    	rootModuleReport.setLogo(logo);
+    	
+    	// set Report objects on rootModuleReport
+    	getTestReport(rootModuleReport);
+    	// add the each application or module object here
+    	multiModuleReports.add(rootModuleReport);
+    	// multi module object
+    	if (CollectionUtils.isNotEmpty(modules)) {
+	    	for (String module : modules) {
+	    		setMavenProject(rootDir, module); // it will set the mavenProject info
+		        ApplicationInfo appInfo = getApplicationInfo(); // sets appName and ProjectName
+		        setAppinfoConfigValues(appInfo);
+		        isClangReport(); // isClangReport check
+		        
+	    		MultiModuleReports multiModuleReport = new MultiModuleReports();
+	    		multiModuleReport.setIsRootModule(false);
+	    		multiModuleReport.setApplicationLabel("Module Name :");
+	    		
+	    		multiModuleReport.setProjectName(projName);
+	    		multiModuleReport.setApplicationName(projectCode);
+	        	multiModuleReport.setIsClangReport(isClangReport);
+	        	multiModuleReport.setTechnologyName(techName);
+	        	multiModuleReport.setVersion(version);
+	        	multiModuleReport.setReportType(reportType);
+	    		// set report objects
+	        	getTestReport(multiModuleReport);
+	        	// add the each application or module object here
+	        	multiModuleReports.add(multiModuleReport);
+			}
+    	}
+    	
+    	// generate report method call here
+    	generateMultiModuleReport(multiModuleReports, reportParams);
+	}
+	
+	// Generate the pdf report with all modules
+	public void generateMultiModuleReport(List<MultiModuleReports> multiModuleReports, Map<String, Object> reportParams) throws PhrescoException {
+		String outFileNamePDF = rootDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + CUMULATIVE + File.separator + fileName + DOT + PDF;
+		new File(outFileNamePDF).getParentFile().mkdirs();
+		
+		InputStream reportStream = null;
+		BufferedInputStream bufferedInputStream = null;
+		try {
+			String containerJasperFile = "MultiModuleReportRootPage.jasper";
+			reportStream = this.getClass().getClassLoader().getResourceAsStream(REPORTS_JASPER + containerJasperFile);
+			bufferedInputStream = new BufferedInputStream(reportStream);
+			
+			JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(multiModuleReports);
+			JasperReport jasperReport = (JasperReport) JRLoader.loadObject(bufferedInputStream);
+			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, reportParams, dataSource);
+			
+			// applying theme
+			applyTheme(jasperPrint);
+			JRExporter exporter = new net.sf.jasperreports.engine.export.JRPdfExporter(); 
+			exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, outFileNamePDF);
+			exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
+			exporter.exportReport();
+		} catch(Exception e) {
+			log.error("Unit and functional generation error");
+			e.printStackTrace();
+			throw new PhrescoException(e);
+		} finally {
+			if (reportStream != null) {
+				try {
+					reportStream.close();
+				} catch (IOException e) {
+					log.error("Report generation errorr ");
+				}
+			}
+			if (bufferedInputStream != null) {
+				try {
+					bufferedInputStream.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+					log.error("Report generation errorr ");
+				}
+			}
+		}
+	}
+	
+	public void generate(Configuration config, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
+		try {
+			this.log = log;
+	        baseDir = mavenProjectInfo.getBaseDir();
+	        mavenProject = mavenProjectInfo.getProject();
+	        moduleName = mavenProjectInfo.getModuleName();
+	        rootDir = mavenProjectInfo.getBaseDir();
 	        
-	        if (StringUtils.isEmpty(reportType)) {
+	        // set pdf basic config values
+	        setConfigurationValues(config);
+	        
+	        if (StringUtils.isEmpty(this.reportType)) {
 	        	throw new PhrescoException("Report type is empty ");
 	        }
 	        
@@ -2641,22 +2867,50 @@ public class GenerateReport implements PluginConstants {
 	        	throw new PhrescoException("Test Type is empty ");
 	        }
 	        
-	    	String clangReportPath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_VALIDATE_REPORT);
-	    	if (StringUtils.isNotEmpty(clangReportPath)) {
-	    		isClangReport = true;
-	    	}
-	    	
-	        if ("All".equalsIgnoreCase(testType)) {
-	        	log.info("all report generation started ... "); // all report
-	        	cumalitiveTestReport();
+	        // Report generation part
+	        if (isMultiModuleProject() && StringUtils.isEmpty(moduleName) && "All".equalsIgnoreCase(testType)) {
+	        	multiModulereport(config);
 	        } else {
-	        	log.info("indivudal report generation started ... "); // specified type report
-	        	generatePdfReport();
+		        setMavenProject(rootDir, moduleName);
+		        ApplicationInfo appInfo = getApplicationInfo();
+		        setAppinfoConfigValues(appInfo);
+		        setReportFileName();
+		        isClangReport();
+		    	
+		    	if ("All".equalsIgnoreCase(testType)) {
+		        	log.info("all report generation started ... "); // all report
+		        	cumalitiveTestReport();
+		        } else {
+		        	log.info("indivudal report generation started ... "); // specified type report
+		        	generatePdfReport();
+		        }
+		        log.info("Report generation completed ... ");
 	        }
-	        log.info("Report generation completed ... ");
 		} catch (Exception e) {
 			throw new PhrescoException(e);
 		}
+	}
+
+	private ApplicationInfo getApplicationInfo() throws MojoExecutionException, IOException {
+		// get projects plugin info file path
+		File projectInfo = new File(baseDir, DOT_PHRESCO_FOLDER + File.separator + PROJECT_INFO_FILE);
+		if (!projectInfo.exists()) {
+			throw new MojoExecutionException("Project info file is not found in jenkins workspace dir " + baseDir.getCanonicalPath());
+		}
+		ApplicationInfo appInfo = getApplicationInfo(projectInfo);
+		if (appInfo == null) {
+			throw new MojoExecutionException("AppInfo value is Null ");
+		}
+		return appInfo;
+	}
+	
+	private boolean isMultiModuleProject() throws PhrescoException {
+		List<String> modules = PluginUtils.getProjectModules(mavenProject);
+		boolean isMultiModuleProject = false;
+		if (CollectionUtils.isNotEmpty(modules)) {
+			isMultiModuleProject = true;
+		}
+		return isMultiModuleProject;
 	}
 	
 	// This method is used by test cases for testing purpose
@@ -2692,9 +2946,9 @@ public class GenerateReport implements PluginConstants {
 		        }
 	        }
 	        
-	        String appVersion = appInfo.getVersion();
-	     // Default copyrights
-	        this.copyRights = DEFAULT_COPYRIGHTS;
+			if (StringUtils.isEmpty(this.copyRights)) {
+				this.copyRights = DEFAULT_COPYRIGHTS;
+			}
 	        
 	        this.testType = testType;
 	        this.reportType = reportType;

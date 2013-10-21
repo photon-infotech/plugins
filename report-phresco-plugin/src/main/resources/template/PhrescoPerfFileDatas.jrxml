@@ -439,12 +439,12 @@
 		</band>
 	</detail>
 	<summary>
-		<band height="231">
+		<band height="211">
 			<printWhenExpression><![CDATA[$P{showGraphs}.booleanValue()]]></printWhenExpression>
 			<frame>
-				<reportElement x="1" y="0" width="554" height="229"/>
+				<reportElement positionType="Float" x="1" y="0" width="554" height="210"/>
 				<subreport>
-					<reportElement x="0" y="0" width="554" height="229"/>
+					<reportElement x="0" y="0" width="554" height="210"/>
 					<subreportParameter name="reportsDataType">
 						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
 					</subreportParameter>

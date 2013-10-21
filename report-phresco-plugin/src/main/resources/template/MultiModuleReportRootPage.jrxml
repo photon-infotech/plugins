@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="MultiModuleReport" pageWidth="595" pageHeight="842" whenNoDataType="BlankPage" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" scriptletClass="com.photon.phresco.plugins.Scriptlet">
+	<property name="ireport.zoom" value="1.100000000000001"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="130"/>
+	<import value="org.apache.commons.collections.CollectionUtils"/>
+	<import value="org.apache.commons.codec.binary.Base64"/>
+	<style name="PCRTitle"/>
+	<style name="PCRTitleRect"/>
+	<style name="PCRTitleRectLogo"/>
+	<style name="PCRTitleRectDetail"/>
+	<style name="PCRTitleLabel"/>
+	<style name="PCRTitleLabelValue"/>
+	<style name="PCRHeading"/>
+	<style name="PCRHeadingLabel"/>
+	<style name="PCRHeadingLabelValue"/>
+	<style name="PCRCopyRight"/>
+	<style name="PCRCopyRightPageNo"/>
+	<parameter name="copyRights" class="java.lang.String"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["/Users/kaleeswaran/work/photon-infotech/2.2/plugins/report-phresco-plugin/src/main/resources/"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="logo" class="java.lang.String"/>
+	<parameter name="logoBase64Img" class="java.io.InputStream">
+		<defaultValueExpression><![CDATA[new ByteArrayInputStream(new Base64().decodeBase64($P{logo}.getBytes("UTF-8")))]]></defaultValueExpression>
+	</parameter>
+	<parameter name="reportsDataType" class="java.lang.String"/>
+	<field name="applicationName" class="java.lang.String"/>
+	<field name="projectName" class="java.lang.String"/>
+	<field name="isRootModule" class="java.lang.Boolean"/>
+	<field name="applicationLabel" class="java.lang.String"/>
+	<field name="technologyName" class="java.lang.String"/>
+	<field name="version" class="java.lang.String"/>
+	<field name="reportType" class="java.lang.String"/>
+	<field name="isAndroidSpecialHandling" class="java.lang.Boolean"/>
+	<field name="isClassEmpty" class="java.lang.Boolean"/>
+	<field name="isClangReport" class="java.lang.Boolean"/>
+	<field name="logo" class="java.lang.String"/>
+	<field name="unitTestReport" class="java.lang.Object"/>
+	<field name="functionalTestReport" class="java.lang.Object"/>
+	<field name="componentTestReport" class="java.lang.Object"/>
+	<field name="manualTestReport" class="java.lang.Object"/>
+	<field name="androidPerformaceTestReport" class="java.util.Collection"/>
+	<field name="performanceTestReport" class="java.util.Collection"/>
+	<field name="loadTestReport" class="java.util.Collection"/>
+	<field name="codeValidationReports" class="java.util.Collection"/>
+	<variable name="isShowGraphs" class="java.lang.Boolean">
+		<variableExpression><![CDATA[$P{reportsDataType}.equals("detail")]]></variableExpression>
+		<initialValueExpression><![CDATA[$P{reportsDataType}.equals("detail")]]></initialValueExpression>
+	</variable>
+	<variable name="headingsMap" class="java.util.HashMap" calculation="System">
+		<initialValueExpression><![CDATA[new java.util.HashMap()]]></initialValueExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<detail>
+		<band height="655">
+			<frame>
+				<reportElement positionType="Float" x="0" y="0" width="555" height="120" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$F{isRootModule}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<rectangle radius="3">
+					<reportElement style="PCRTitleRectLogo" x="0" y="2" width="555" height="115"/>
+				</rectangle>
+				<rectangle radius="10">
+					<reportElement style="PCRTitleRectDetail" x="176" y="5" width="376" height="108"/>
+				</rectangle>
+				<staticText>
+					<reportElement style="PCRTitleLabel" x="20" y="27" width="55" height="18">
+						<printWhenExpression><![CDATA[$F{logo}.equals("")]]></printWhenExpression>
+					</reportElement>
+					<textElement verticalAlignment="Bottom">
+						<font fontName="Times New Roman" size="13" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Photon]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="PCRTitleLabel" x="18" y="38" width="158" height="41">
+						<printWhenExpression><![CDATA[$F{logo}.equals("")]]></printWhenExpression>
+					</reportElement>
+					<textElement verticalAlignment="Top" rotation="None">
+						<font fontName="Times New Roman" size="28" isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[PHRESCO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="PCRTitleLabel" x="176" y="9" width="112" height="20"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Project Name :]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="PCRTitleLabel" x="176" y="29" width="112" height="20"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Application Name :]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="PCRTitleLabel" x="176" y="49" width="112" height="20"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Technology :]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="PCRTitleLabel" x="176" y="69" width="112" height="20"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Version :]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="PCRTitleLabel" x="176" y="89" width="112" height="20"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Date :]]></text>
+				</staticText>
+				<textField>
+					<reportElement style="PCRTitleLabelValue" x="290" y="9" width="257" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{projectName}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement style="PCRTitleLabelValue" x="290" y="29" width="257" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{applicationName}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement style="PCRTitleLabelValue" x="290" y="49" width="257" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{technologyName}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement style="PCRTitleLabelValue" x="290" y="89" width="257" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement style="PCRTitleLabelValue" x="290" y="69" width="257" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{version}]]></textFieldExpression>
+				</textField>
+				<image hAlign="Center" vAlign="Middle">
+					<reportElement x="4" y="5" width="170" height="108"/>
+					<imageExpression><![CDATA[$P{logoBase64Img}]]></imageExpression>
+				</image>
+			</frame>
+			<frame>
+				<reportElement positionType="Float" x="0" y="120" width="555" height="80" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[!$F{isRootModule}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<rectangle radius="3">
+					<reportElement style="PCRTitleRectLogo" x="0" y="2" width="555" height="77"/>
+				</rectangle>
+				<staticText>
+					<reportElement style="PCRTitleLabel" x="18" y="29" width="112" height="20"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Version :]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="PCRTitleLabel" x="18" y="49" width="112" height="20"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Date :]]></text>
+				</staticText>
+				<textField>
+					<reportElement style="PCRTitleLabelValue" x="132" y="9" width="257" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{applicationName}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement style="PCRTitleLabelValue" x="132" y="49" width="257" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement style="PCRTitleLabelValue" x="132" y="29" width="257" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{version}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement style="PCRTitleLabel" x="18" y="9" width="112" height="20"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{applicationLabel}]]></textFieldExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement positionType="Float" x="0" y="203" width="555" height="50" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$F{unitTestReport} != null]]></printWhenExpression>
+				</reportElement>
+				<subreport>
+					<reportElement x="0" y="0" width="555" height="50"/>
+					<subreportParameter name="testType">
+						<subreportParameterExpression><![CDATA["unit"]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="reportsDataType">
+						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="testTypeLabel">
+						<subreportParameterExpression><![CDATA["Unit Test Report"]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="isClassEmpty">
+						<subreportParameterExpression><![CDATA[$F{isClassEmpty}]]></subreportParameterExpression>
+					</subreportParameter>
+					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource(java.util.Collections.singleton($F{unitTestReport}))]]></dataSourceExpression>
+					<subreportExpression><![CDATA["MultiModuleUnitTestRootReport.jasper"]]></subreportExpression>
+				</subreport>
+			</frame>
+			<frame>
+				<reportElement positionType="Float" x="0" y="253" width="555" height="50" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$F{functionalTestReport} != null]]></printWhenExpression>
+				</reportElement>
+				<subreport>
+					<reportElement x="0" y="0" width="555" height="50"/>
+					<subreportParameter name="testType">
+						<subreportParameterExpression><![CDATA["functional"]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="reportsDataType">
+						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="testTypeLabel">
+						<subreportParameterExpression><![CDATA["Functional Test Report"]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="isClassEmpty">
+						<subreportParameterExpression><![CDATA[$F{isClassEmpty}]]></subreportParameterExpression>
+					</subreportParameter>
+					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource(java.util.Collections.singleton($F{functionalTestReport}))]]></dataSourceExpression>
+					<subreportExpression><![CDATA["MultiModuleUnitTestRootReport.jasper"]]></subreportExpression>
+				</subreport>
+			</frame>
+			<frame>
+				<reportElement positionType="Float" x="0" y="303" width="555" height="50" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$F{componentTestReport} != null]]></printWhenExpression>
+				</reportElement>
+				<subreport>
+					<reportElement x="0" y="0" width="555" height="50"/>
+					<subreportParameter name="testType">
+						<subreportParameterExpression><![CDATA["component"]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="reportsDataType">
+						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="testTypeLabel">
+						<subreportParameterExpression><![CDATA["Component Test Report"]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="isClassEmpty">
+						<subreportParameterExpression><![CDATA[$F{isClassEmpty}]]></subreportParameterExpression>
+					</subreportParameter>
+					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource(java.util.Collections.singleton($F{componentTestReport}))]]></dataSourceExpression>
+					<subreportExpression><![CDATA["MultiModuleUnitTestRootReport.jasper"]]></subreportExpression>
+				</subreport>
+			</frame>
+			<frame>
+				<reportElement positionType="Float" x="0" y="353" width="555" height="50" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$F{manualTestReport} != null]]></printWhenExpression>
+				</reportElement>
+				<subreport>
+					<reportElement x="0" y="0" width="555" height="50"/>
+					<subreportParameter name="testType">
+						<subreportParameterExpression><![CDATA["manual"]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="reportsDataType">
+						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="testTypeLabel">
+						<subreportParameterExpression><![CDATA["Manual Test Report"]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="isClassEmpty">
+						<subreportParameterExpression><![CDATA[$F{isClassEmpty}]]></subreportParameterExpression>
+					</subreportParameter>
+					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource(java.util.Collections.singleton($F{manualTestReport}))]]></dataSourceExpression>
+					<subreportExpression><![CDATA["MultiModuleUnitTestRootReport.jasper"]]></subreportExpression>
+				</subreport>
+			</frame>
+			<frame>
+				<reportElement positionType="Float" x="0" y="403" width="555" height="50" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[!$F{isAndroidSpecialHandling}.booleanValue() && CollectionUtils.isNotEmpty($F{performanceTestReport})]]></printWhenExpression>
+				</reportElement>
+				<subreport>
+					<reportElement x="0" y="0" width="555" height="50"/>
+					<subreportParameter name="performanceSpecialHandle">
+						<subreportParameterExpression><![CDATA[$F{isAndroidSpecialHandling}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="reportsDataType">
+						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="showGraphs">
+						<subreportParameterExpression><![CDATA[$V{isShowGraphs}]]></subreportParameterExpression>
+					</subreportParameter>
+					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{performanceTestReport})]]></dataSourceExpression>
+					<subreportExpression><![CDATA["PhrescoPerfCumulativeReport.jasper"]]></subreportExpression>
+				</subreport>
+			</frame>
+			<frame>
+				<reportElement positionType="Float" x="0" y="453" width="555" height="50" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$F{isAndroidSpecialHandling}.booleanValue() && CollectionUtils.isNotEmpty($F{androidPerformaceTestReport})]]></printWhenExpression>
+				</reportElement>
+				<subreport>
+					<reportElement x="0" y="0" width="555" height="50"/>
+					<subreportParameter name="performanceSpecialHandle">
+						<subreportParameterExpression><![CDATA[$F{isAndroidSpecialHandling}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="reportsDataType">
+						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="showGraphs">
+						<subreportParameterExpression><![CDATA[$V{isShowGraphs}]]></subreportParameterExpression>
+					</subreportParameter>
+					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{androidPerformaceTestReport})]]></dataSourceExpression>
+					<subreportExpression><![CDATA["PhrescoAndroidPerfCumulativeReport.jasper"]]></subreportExpression>
+				</subreport>
+			</frame>
+			<frame>
+				<reportElement positionType="Float" x="0" y="503" width="555" height="50" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[CollectionUtils.isNotEmpty($F{loadTestReport})]]></printWhenExpression>
+				</reportElement>
+				<subreport>
+					<reportElement x="0" y="0" width="555" height="50"/>
+					<subreportParameter name="reportsDataType">
+						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="showGraphs">
+						<subreportParameterExpression><![CDATA[$V{isShowGraphs}]]></subreportParameterExpression>
+					</subreportParameter>
+					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{loadTestReport})]]></dataSourceExpression>
+					<subreportExpression><![CDATA["PhrescoLoadCumulativeTest.jasper"]]></subreportExpression>
+				</subreport>
+			</frame>
+			<frame>
+				<reportElement positionType="Float" x="0" y="553" width="555" height="50" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$F{codeValidationReports} != null]]></printWhenExpression>
+				</reportElement>
+				<subreport>
+					<reportElement x="0" y="0" width="555" height="50"/>
+					<subreportParameter name="reportsDataType">
+						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
+					</subreportParameter>
+					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{codeValidationReports})]]></dataSourceExpression>
+					<subreportExpression><![CDATA["SonarJavaJsWebReport.jasper"]]></subreportExpression>
+				</subreport>
+			</frame>
+			<frame>
+				<reportElement positionType="Float" x="0" y="603" width="555" height="50" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[($F{unitTestReport} == null && $F{functionalTestReport} == null && $F{componentTestReport} == null && $F{manualTestReport} == null && (CollectionUtils.isEmpty($F{performanceTestReport}) || CollectionUtils.isEmpty($F{androidPerformaceTestReport})) && CollectionUtils.isEmpty($F{loadTestReport}) && $F{codeValidationReports} == null)]]></printWhenExpression>
+				</reportElement>
+				<staticText>
+					<reportElement key="NoDataKey" style="PCRTitleLabel" x="63" y="14" width="410" height="24"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="18" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Reports are not available]]></text>
+				</staticText>
+			</frame>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="29" splitType="Stretch">
+			<rectangle>
+				<reportElement style="PCRCopyRight" x="0" y="3" width="555" height="25"/>
+			</rectangle>
+			<textField>
+				<reportElement key="copyright" style="PCRCopyRight" x="4" y="5" width="414" height="22"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{copyRights}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="pageNo" style="PCRCopyRightPageNo" x="431" y="5" width="80" height="24"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Page "+$V{PAGE_NUMBER}+" of "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement key="pageCount" style="PCRCopyRightPageNo" x="511" y="5" width="40" height="24"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>
