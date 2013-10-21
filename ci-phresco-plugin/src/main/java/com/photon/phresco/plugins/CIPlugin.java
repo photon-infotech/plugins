@@ -47,9 +47,9 @@ public class CIPlugin  extends PhrescoBasePlugin {
 	}
 	
 	@Override
-	public ExecutionStatus performCIPreBuildStep(String jobName, String goal, String phase,String creationType, String id, String continuousDeliveryName, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+	public ExecutionStatus performCIPreBuildStep(String jobName, String goal, String phase,String creationType, String id, String continuousDeliveryName, String moduleName, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		PreBuildStep pbs = new PreBuildStep();
-		pbs.performCIPreBuildStep(jobName, goal, phase, creationType,  id,  continuousDeliveryName, mavenProjectInfo, getLog());
+		pbs.performCIPreBuildStep(jobName, goal, phase, creationType,  id,  continuousDeliveryName, moduleName, mavenProjectInfo, getLog());
 		return new DefaultExecutionStatus();
 	}
 	

@@ -23,6 +23,7 @@ import java.io.FileReader;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -31,6 +32,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
+import org.w3c.dom.Element;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -42,6 +44,7 @@ import com.photon.phresco.commons.model.ContinuousDelivery;
 import com.photon.phresco.commons.model.ProjectDelivery;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
+import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
 import com.photon.phresco.plugins.util.MojoProcessor;
@@ -56,18 +59,55 @@ public class PreBuildStep  implements PluginConstants {
     private File baseDir;
     private Log log;
     private String pom;
+    private String pomFileName;
+    private File pomFile;
     
-	public void performCIPreBuildStep(String name, String goal, String phase,String creationType, String id, String continuousDeliveryName, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
+    private File getPomFile() throws PhrescoException {
+    	PluginUtils pu = new PluginUtils();
+    	ApplicationInfo appInfo = pu.getAppInfo(baseDir);
+    	pomFileName = Utility.getPomFileNameFromWorkingDirectory(appInfo, baseDir);
+    	pom = pomFileName;
+    	File pom = new File(baseDir.getPath() + File.separator + pomFileName);
+    	return pom;
+    }
+
+    
+	public void performCIPreBuildStep(String name, String goal, String phase,String creationType, String id, String continuousDeliveryName, String moduleName, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		log.info("CI prebuild step execution reached " + name);
 		log.info("goal is  " + goal);
 		try {
 	        this.log = log;
 	        baseDir = mavenProjectInfo.getBaseDir();
 	        project = mavenProjectInfo.getProject();
+	        
+	        // module name
+	        String pomVersion = mavenProjectInfo.getProject().getVersion();
+	     // Multi module handling
+	        if (StringUtils.isNotEmpty(moduleName)) {
+	        	baseDir = new File(baseDir, moduleName);
+	        }
+	        pomFile = getPomFile();
 	        pom = project.getFile().getName();
 	        
+	        System.out.println("pomFile > " + pomFile.getPath());
+	        org.apache.maven.model.Model project = new org.apache.maven.model.Model();
+	        PomProcessor pp = new PomProcessor(pomFile);
+	        com.phresco.pom.model.Model.Properties modelProperties = pp.getModel().getProperties();
+	        List<Element> propElem = modelProperties.getAny();
+	        Properties properties = new Properties();
+	        for (Element element : propElem) {
+	        	properties.put(element.getTagName(), element.getTextContent());
+	        }
+	        project.setProperties(properties);
+
+	        MavenProject mavenProject = new MavenProject(project);
+	        mavenProject.setFile(pomFile);
+	        mavenProject.setVersion(pomVersion);
+	        mavenProjectInfo.setProject(mavenProject);
+	        mavenProjectInfo.setBaseDir(pomFile);
+	        
 	        // getting jenkins workspace job dir
-	        String jenkinsJobDirPath = getJenkinsJobDirPath(name);
+	        String jenkinsJobDirPath = getJenkinsJobDirPath(name, moduleName);
 	        log.info("jenkinsJobDirPath ... " + jenkinsJobDirPath);
 			
 			// get projects plugin info file path
@@ -96,7 +136,8 @@ public class PreBuildStep  implements PluginConstants {
 				throw new PhrescoException("Job object is empty ");
 			}
 			
-			File phrescoPluginInfoFile = getPhrescoPluginInfoFileInJenkins(name, phase);
+			
+			File phrescoPluginInfoFile = getPhrescoPluginInfoFileInJenkins(name, phase, moduleName);
 			log.info("phresco Plugin Info File in phresco projects workspace ... " + phrescoPluginInfoFile.getPath());
 			log.info("phresco Plugin Info File exists ... " + phrescoPluginInfoFile.exists());
 			
@@ -265,7 +306,7 @@ public class PreBuildStep  implements PluginConstants {
 		return null;
 	}
 	
-	public File getPhrescoPluginInfoFileInJenkins(String name, String phase) throws MojoExecutionException {
+	public File getPhrescoPluginInfoFileInJenkins(String name, String phase, String moduleName) throws MojoExecutionException {
 		log.info("getPhrescoPluginInfoFileInJenkins method called ... ");
 		try {
 			String jenkinsHomePath = System.getenv(JENKINS_HOME);
@@ -278,6 +319,10 @@ public class PreBuildStep  implements PluginConstants {
 	        builder.append(File.separator);
 	        builder.append(name);
 	        builder.append(File.separator);
+	        if(StringUtils.isNotEmpty(moduleName)) {
+	        	builder.append(moduleName);
+	        	builder.append(File.separator);
+	        }
 	        builder.append(DOT_PHRESCO_FOLDER);
 	        builder.append(File.separator);
 	        builder.append(PHRESCO_HYPEN);
@@ -294,7 +339,7 @@ public class PreBuildStep  implements PluginConstants {
 		}
 	}
 	
-	private String getJenkinsJobDirPath(String name) throws MojoExecutionException {
+	private String getJenkinsJobDirPath(String name, String moduleName) throws MojoExecutionException {
 		log.info("getJenkinsJobDirPath method called ... ");
 		try {
 			String jenkinsHomePath = System.getenv(JENKINS_HOME);
@@ -307,6 +352,10 @@ public class PreBuildStep  implements PluginConstants {
 	        builder.append(File.separator);
 	        builder.append(name);
 	        builder.append(File.separator);
+	        if(StringUtils.isNotEmpty(moduleName)) {
+	        	builder.append(moduleName);
+	        	builder.append(File.separator);
+	        }
 	        builder.append(DOT_PHRESCO_FOLDER);
 	        builder.append(File.separator);
 	        FileUtils.mkdir(builder.toString());
