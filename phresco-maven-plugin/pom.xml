@@ -5,12 +5,12 @@
   <parent>
     <artifactId>phresco-plugins-root</artifactId>
     <groupId>com.photon.phresco.plugins</groupId>
-    <version>3.1.0.3001-SNAPSHOT</version>
+    <version>3.1.0.3002-SNAPSHOT</version>
 	<relativePath>../</relativePath>
   </parent>
   <groupId>com.photon.phresco.plugins</groupId>
   <artifactId>phresco-maven-plugin</artifactId>
-  <version>3.1.0.3001-SNAPSHOT</version>
+  <version>3.1.0.3002-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
   <name>Phresco Maven Plugin</name>
   <url>http://phresco.com</url>
