@@ -82,6 +82,15 @@ public class PreBuildStep  implements PluginConstants {
 	        
 	        // module name
 	        String pomVersion = mavenProjectInfo.getProject().getVersion();
+	        
+			// get projects plugin info file path
+			File rootProjectInfo = new File(baseDir, DOT_PHRESCO_FOLDER + File.separator + PROJECT_INFO_FILE);
+			if (!rootProjectInfo.exists()) {
+				throw new MojoExecutionException("Project info file is not found in jenkins workspace dir " + baseDir.getCanonicalPath());
+			}
+			log.info("projectInfo path ... " + rootProjectInfo.getCanonicalPath());
+			ApplicationInfo rootAppInfo = getApplicationInfo(rootProjectInfo);
+			String rootAppDirName = rootAppInfo.getAppDirName();
 	     // Multi module handling
 	        if (StringUtils.isNotEmpty(moduleName)) {
 	        	baseDir = new File(baseDir, moduleName);
@@ -157,11 +166,11 @@ public class PreBuildStep  implements PluginConstants {
 				//for each values present in the ci.info file.
 				log.info("Execute Performance Test");
 				testDirectory = Constants.POM_PROP_KEY_PERFORMANCETEST_DIR;
-				loadPerformanceTestHandler(mavenProjectInfo, appInfo, testDirectory, phase);	
+				loadPerformanceTestHandler(mavenProjectInfo, appInfo, testDirectory, phase, rootAppDirName, moduleName);	
 			} else if(Constants.PHASE_LOAD_TEST.equals(phase)) {
 				log.info("Execute Load Test");
 				testDirectory = Constants.POM_PROP_KEY_LOADTEST_DIR;
-				loadPerformanceTestHandler(mavenProjectInfo, appInfo, testDirectory, phase);
+				loadPerformanceTestHandler(mavenProjectInfo, appInfo, testDirectory, phase,rootAppDirName, moduleName);
 			}
 			
 			log.info("phase " + phase);
@@ -190,7 +199,7 @@ public class PreBuildStep  implements PluginConstants {
 	}
 
 	private void loadPerformanceTestHandler(MavenProjectInfo mavenProjectInfo,
-			ApplicationInfo appInfo, String testDirectory, String phase) throws Exception {
+			ApplicationInfo appInfo, String testDirectory, String phase, String rootAppDirName, String moduleName) throws Exception {
 		
 		BufferedReader reader = null ;	
 		
@@ -212,8 +221,14 @@ public class PreBuildStep  implements PluginConstants {
 				.append(File.separator)
 				.append(Constants.FOLDER_JSON);				
 				
+				String dirName = appInfo.getAppDirName();
+				if (StringUtils.isNotEmpty(moduleName)) {
+					dirName = rootAppDirName + File.separator + appInfo.getAppDirName();
+				}
+				
 				StringBuilder infoFilePath = new StringBuilder(Utility.getProjectHome())
-				.append(appInfo.getAppDirName())
+				
+				.append(dirName)
 				.append(mavenProjectInfo.getProject().getProperties().getProperty(testDirectory))
 				.append(File.separator)
 				.append(test)
@@ -225,7 +240,8 @@ public class PreBuildStep  implements PluginConstants {
 				.append(CI_INFO);
 				
 				File infoFile = new File(infoFilePath.toString());
-				if(infoFile.exists()) {	
+				System.out.println("infoFile >> "+infoFile);
+				if(infoFile.exists()) {
 					reader = new BufferedReader(new FileReader(infoFilePath.toString()));
 					String lineToRead = null ;
 					while((lineToRead = reader.readLine()) != null) {
@@ -251,13 +267,15 @@ public class PreBuildStep  implements PluginConstants {
 							
 							File source = new File(sb.toString());
 							File destination = new File(s.toString());
+							System.out.println("source >> "+source);
+							System.out.println("destination >> "+destination);
 							// source file is exist check . . .
 							if(source.exists()) {
 								FileUtils.copyFile(source, destination);								
 							}							
 						}
 					}						
-				}					
+				} 
 			}
 		} catch (Exception e) {		
 		} finally {
