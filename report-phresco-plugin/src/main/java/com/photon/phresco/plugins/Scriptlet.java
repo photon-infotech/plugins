@@ -39,18 +39,14 @@ public class Scriptlet extends JRDefaultScriptlet {
 			HashMap headingsMap = null;
 			
 			if (this.variablesMap.containsKey("headingsMap")) {
-				System.out.println("Variable MAP Called........ ");
 				headingsMap = (HashMap)this.getVariableValue("headingsMap");
-				System.out.println("Existing values : " + headingsMap);
 				if (headingsMap != null) {
 					headingsMap.put(title, pageNo + 1);
 				}
 			}
 			
 			if (this.parametersMap.containsKey("headingsMap")) {
-				System.out.println("Parametere MAP Called........ ");
 				headingsMap = (HashMap)this.getParameterValue("headingsMap");
-				System.out.println("Existing values : " + headingsMap);
 				if (headingsMap != null) {
 					if (headingsMap.size() == 0 && SONAR_REPORT.equals(title)) {
 						headingsMap.put(title, pageNo);

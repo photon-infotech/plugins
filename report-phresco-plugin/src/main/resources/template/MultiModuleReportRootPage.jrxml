@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="MultiModuleReport" pageWidth="595" pageHeight="842" whenNoDataType="BlankPage" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryNewPage="true" scriptletClass="com.photon.phresco.plugins.Scriptlet">
 	<property name="ireport.zoom" value="1.100000000000001"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="158"/>
+	<property name="ireport.y" value="144"/>
 	<import value="org.apache.commons.collections.CollectionUtils"/>
 	<import value="org.apache.commons.codec.binary.Base64"/>
 	<style name="PCRTitle"/>
@@ -73,7 +73,7 @@
 		<band splitType="Stretch"/>
 	</background>
 	<detail>
-		<band height="655">
+		<band height="200">
 			<frame>
 				<reportElement positionType="Float" x="0" y="0" width="555" height="120" isRemoveLineWhenBlank="true">
 					<printWhenExpression><![CDATA[$F{isRootModule}.booleanValue()]]></printWhenExpression>
@@ -240,14 +240,23 @@
 					<textFieldExpression><![CDATA[$F{applicationLabel}]]></textFieldExpression>
 				</textField>
 			</frame>
+		</band>
+		<band height="50">
+			<printWhenExpression><![CDATA[$F{unitTestReport} != null]]></printWhenExpression>
 			<frame>
-				<reportElement positionType="Float" x="0" y="203" width="555" height="50" isRemoveLineWhenBlank="true">
+				<reportElement positionType="Float" x="0" y="0" width="555" height="50" isRemoveLineWhenBlank="true">
 					<printWhenExpression><![CDATA[$F{unitTestReport} != null]]></printWhenExpression>
 				</reportElement>
 				<subreport>
 					<reportElement x="0" y="0" width="555" height="50"/>
 					<subreportParameter name="testType">
 						<subreportParameterExpression><![CDATA["unit"]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="masterPageNo">
+						<subreportParameterExpression><![CDATA[$V{PAGE_NUMBER}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="HeadingsCollection">
+						<subreportParameterExpression><![CDATA[$V{HeadingsCollection}]]></subreportParameterExpression>
 					</subreportParameter>
 					<subreportParameter name="reportsDataType">
 						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
@@ -262,14 +271,23 @@
 					<subreportExpression><![CDATA["MultiModuleUnitTestRootReport.jasper"]]></subreportExpression>
 				</subreport>
 			</frame>
+		</band>
+		<band height="50">
+			<printWhenExpression><![CDATA[$F{functionalTestReport} != null]]></printWhenExpression>
 			<frame>
-				<reportElement positionType="Float" x="0" y="253" width="555" height="50" isRemoveLineWhenBlank="true">
+				<reportElement positionType="Float" x="0" y="0" width="555" height="50" isRemoveLineWhenBlank="true">
 					<printWhenExpression><![CDATA[$F{functionalTestReport} != null]]></printWhenExpression>
 				</reportElement>
 				<subreport>
 					<reportElement x="0" y="0" width="555" height="50"/>
 					<subreportParameter name="testType">
 						<subreportParameterExpression><![CDATA["functional"]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="masterPageNo">
+						<subreportParameterExpression><![CDATA[$V{PAGE_NUMBER}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="HeadingsCollection">
+						<subreportParameterExpression><![CDATA[$V{HeadingsCollection}]]></subreportParameterExpression>
 					</subreportParameter>
 					<subreportParameter name="reportsDataType">
 						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
@@ -284,14 +302,23 @@
 					<subreportExpression><![CDATA["MultiModuleUnitTestRootReport.jasper"]]></subreportExpression>
 				</subreport>
 			</frame>
+		</band>
+		<band height="50">
+			<printWhenExpression><![CDATA[$F{componentTestReport} != null]]></printWhenExpression>
 			<frame>
-				<reportElement positionType="Float" x="0" y="303" width="555" height="50" isRemoveLineWhenBlank="true">
+				<reportElement positionType="Float" x="0" y="0" width="555" height="50" isRemoveLineWhenBlank="true">
 					<printWhenExpression><![CDATA[$F{componentTestReport} != null]]></printWhenExpression>
 				</reportElement>
 				<subreport>
 					<reportElement x="0" y="0" width="555" height="50"/>
 					<subreportParameter name="testType">
 						<subreportParameterExpression><![CDATA["component"]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="masterPageNo">
+						<subreportParameterExpression><![CDATA[$V{PAGE_NUMBER}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="HeadingsCollection">
+						<subreportParameterExpression><![CDATA[$V{HeadingsCollection}]]></subreportParameterExpression>
 					</subreportParameter>
 					<subreportParameter name="reportsDataType">
 						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
@@ -306,14 +333,23 @@
 					<subreportExpression><![CDATA["MultiModuleUnitTestRootReport.jasper"]]></subreportExpression>
 				</subreport>
 			</frame>
+		</band>
+		<band height="50">
+			<printWhenExpression><![CDATA[$F{manualTestReport} != null]]></printWhenExpression>
 			<frame>
-				<reportElement positionType="Float" x="0" y="353" width="555" height="50" isRemoveLineWhenBlank="true">
+				<reportElement positionType="Float" x="0" y="0" width="555" height="50" isRemoveLineWhenBlank="true">
 					<printWhenExpression><![CDATA[$F{manualTestReport} != null]]></printWhenExpression>
 				</reportElement>
 				<subreport>
 					<reportElement x="0" y="0" width="555" height="50"/>
 					<subreportParameter name="testType">
 						<subreportParameterExpression><![CDATA["manual"]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="masterPageNo">
+						<subreportParameterExpression><![CDATA[$V{PAGE_NUMBER}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="HeadingsCollection">
+						<subreportParameterExpression><![CDATA[$V{HeadingsCollection}]]></subreportParameterExpression>
 					</subreportParameter>
 					<subreportParameter name="reportsDataType">
 						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
@@ -328,14 +364,23 @@
 					<subreportExpression><![CDATA["MultiModuleUnitTestRootReport.jasper"]]></subreportExpression>
 				</subreport>
 			</frame>
+		</band>
+		<band height="50">
+			<printWhenExpression><![CDATA[!$F{isAndroidSpecialHandling}.booleanValue() && CollectionUtils.isNotEmpty($F{performanceTestReport})]]></printWhenExpression>
 			<frame>
-				<reportElement positionType="Float" x="0" y="403" width="555" height="50" isRemoveLineWhenBlank="true">
+				<reportElement positionType="Float" x="0" y="0" width="555" height="50" isRemoveLineWhenBlank="true">
 					<printWhenExpression><![CDATA[!$F{isAndroidSpecialHandling}.booleanValue() && CollectionUtils.isNotEmpty($F{performanceTestReport})]]></printWhenExpression>
 				</reportElement>
 				<subreport>
 					<reportElement x="0" y="0" width="555" height="50"/>
+					<subreportParameter name="HeadingsCollection">
+						<subreportParameterExpression><![CDATA[$V{HeadingsCollection}]]></subreportParameterExpression>
+					</subreportParameter>
 					<subreportParameter name="performanceSpecialHandle">
 						<subreportParameterExpression><![CDATA[$F{isAndroidSpecialHandling}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="masterPageNo">
+						<subreportParameterExpression><![CDATA[$V{PAGE_NUMBER}]]></subreportParameterExpression>
 					</subreportParameter>
 					<subreportParameter name="reportsDataType">
 						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
@@ -344,17 +389,26 @@
 						<subreportParameterExpression><![CDATA[$V{isShowGraphs}]]></subreportParameterExpression>
 					</subreportParameter>
 					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{performanceTestReport})]]></dataSourceExpression>
-					<subreportExpression><![CDATA["PhrescoPerfCumulativeReport.jasper"]]></subreportExpression>
+					<subreportExpression><![CDATA["MultiModulePerformanceTestReport.jasper"]]></subreportExpression>
 				</subreport>
 			</frame>
+		</band>
+		<band height="50">
+			<printWhenExpression><![CDATA[$F{isAndroidSpecialHandling}.booleanValue() && CollectionUtils.isNotEmpty($F{androidPerformaceTestReport})]]></printWhenExpression>
 			<frame>
-				<reportElement positionType="Float" x="0" y="453" width="555" height="50" isRemoveLineWhenBlank="true">
+				<reportElement positionType="Float" x="0" y="0" width="555" height="50" isRemoveLineWhenBlank="true">
 					<printWhenExpression><![CDATA[$F{isAndroidSpecialHandling}.booleanValue() && CollectionUtils.isNotEmpty($F{androidPerformaceTestReport})]]></printWhenExpression>
 				</reportElement>
 				<subreport>
 					<reportElement x="0" y="0" width="555" height="50"/>
+					<subreportParameter name="masterPageNo">
+						<subreportParameterExpression><![CDATA[$V{PAGE_NUMBER}]]></subreportParameterExpression>
+					</subreportParameter>
 					<subreportParameter name="performanceSpecialHandle">
 						<subreportParameterExpression><![CDATA[$F{isAndroidSpecialHandling}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="HeadingsCollection">
+						<subreportParameterExpression><![CDATA[$V{HeadingsCollection}]]></subreportParameterExpression>
 					</subreportParameter>
 					<subreportParameter name="reportsDataType">
 						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
@@ -363,15 +417,24 @@
 						<subreportParameterExpression><![CDATA[$V{isShowGraphs}]]></subreportParameterExpression>
 					</subreportParameter>
 					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{androidPerformaceTestReport})]]></dataSourceExpression>
-					<subreportExpression><![CDATA["PhrescoAndroidPerfCumulativeReport.jasper"]]></subreportExpression>
+					<subreportExpression><![CDATA["MultiModuleAndroidPerformanceTestReport.jasper"]]></subreportExpression>
 				</subreport>
 			</frame>
+		</band>
+		<band height="50">
+			<printWhenExpression><![CDATA[CollectionUtils.isNotEmpty($F{loadTestReport})]]></printWhenExpression>
 			<frame>
-				<reportElement positionType="Float" x="0" y="503" width="555" height="50" isRemoveLineWhenBlank="true">
+				<reportElement positionType="Float" x="0" y="0" width="555" height="50" isRemoveLineWhenBlank="true">
 					<printWhenExpression><![CDATA[CollectionUtils.isNotEmpty($F{loadTestReport})]]></printWhenExpression>
 				</reportElement>
 				<subreport>
 					<reportElement x="0" y="0" width="555" height="50"/>
+					<subreportParameter name="masterPageNo">
+						<subreportParameterExpression><![CDATA[$V{PAGE_NUMBER}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="HeadingsCollection">
+						<subreportParameterExpression><![CDATA[$V{HeadingsCollection}]]></subreportParameterExpression>
+					</subreportParameter>
 					<subreportParameter name="reportsDataType">
 						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
 					</subreportParameter>
@@ -379,24 +442,36 @@
 						<subreportParameterExpression><![CDATA[$V{isShowGraphs}]]></subreportParameterExpression>
 					</subreportParameter>
 					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{loadTestReport})]]></dataSourceExpression>
-					<subreportExpression><![CDATA["PhrescoLoadCumulativeTest.jasper"]]></subreportExpression>
+					<subreportExpression><![CDATA["MultiModuleLoadTestReport.jasper"]]></subreportExpression>
 				</subreport>
 			</frame>
+		</band>
+		<band height="50">
+			<printWhenExpression><![CDATA[$F{codeValidationReports} != null]]></printWhenExpression>
 			<frame>
-				<reportElement positionType="Float" x="0" y="553" width="555" height="50" isRemoveLineWhenBlank="true">
+				<reportElement positionType="Float" x="0" y="0" width="555" height="50" isRemoveLineWhenBlank="true">
 					<printWhenExpression><![CDATA[$F{codeValidationReports} != null]]></printWhenExpression>
 				</reportElement>
 				<subreport>
 					<reportElement x="0" y="0" width="555" height="50"/>
+					<subreportParameter name="masterPageNo">
+						<subreportParameterExpression><![CDATA[$V{PAGE_NUMBER}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="HeadingsCollection">
+						<subreportParameterExpression><![CDATA[$V{HeadingsCollection}]]></subreportParameterExpression>
+					</subreportParameter>
 					<subreportParameter name="reportsDataType">
 						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
 					</subreportParameter>
 					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{codeValidationReports})]]></dataSourceExpression>
-					<subreportExpression><![CDATA["SonarJavaJsWebReport.jasper"]]></subreportExpression>
+					<subreportExpression><![CDATA["MultiModuleCodeValidationReport.jasper"]]></subreportExpression>
 				</subreport>
 			</frame>
+		</band>
+		<band height="50">
+			<printWhenExpression><![CDATA[($F{unitTestReport} == null && $F{functionalTestReport} == null && $F{componentTestReport} == null && $F{manualTestReport} == null && (CollectionUtils.isEmpty($F{performanceTestReport}) || CollectionUtils.isEmpty($F{androidPerformaceTestReport})) && CollectionUtils.isEmpty($F{loadTestReport}) && $F{codeValidationReports} == null)]]></printWhenExpression>
 			<frame>
-				<reportElement positionType="Float" x="0" y="603" width="555" height="50" isRemoveLineWhenBlank="true">
+				<reportElement positionType="Float" x="0" y="0" width="555" height="50" isRemoveLineWhenBlank="true">
 					<printWhenExpression><![CDATA[($F{unitTestReport} == null && $F{functionalTestReport} == null && $F{componentTestReport} == null && $F{manualTestReport} == null && (CollectionUtils.isEmpty($F{performanceTestReport}) || CollectionUtils.isEmpty($F{androidPerformaceTestReport})) && CollectionUtils.isEmpty($F{loadTestReport}) && $F{codeValidationReports} == null)]]></printWhenExpression>
 				</reportElement>
 				<staticText>
