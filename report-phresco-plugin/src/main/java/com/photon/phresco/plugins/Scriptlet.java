@@ -25,6 +25,7 @@ package com.photon.phresco.plugins;
  */
 
 import java.util.HashMap;
+import java.util.Collection;
 
 import net.sf.jasperreports.engine.JRDefaultScriptlet;
 import net.sf.jasperreports.engine.JRScriptletException;
@@ -35,7 +36,6 @@ public class Scriptlet extends JRDefaultScriptlet {
 
 	public Boolean updateTOC(String title, int pageNo)  throws JRScriptletException {
 		try {
-			System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ");
 			HashMap headingsMap = null;
 			
 			if (this.variablesMap.containsKey("headingsMap")) {
@@ -45,8 +45,6 @@ public class Scriptlet extends JRDefaultScriptlet {
 				if (headingsMap != null) {
 					headingsMap.put(title, pageNo + 1);
 				}
-				System.out.println("After values : " + headingsMap);
-				System.out.println("Variable MAP Completed ........ ");
 			}
 			
 			if (this.parametersMap.containsKey("headingsMap")) {
@@ -60,14 +58,54 @@ public class Scriptlet extends JRDefaultScriptlet {
 						headingsMap.put(title, pageNo + 1);
 					}
 				}
-				System.out.println("After values : " + headingsMap);
-				System.out.println("Parametere MAP Completed ........ ");
 			}
-			System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ");
 			return Boolean.FALSE;
 		} catch (JRScriptletException e) {
-			System.out.println("I found the error here " + e.getLocalizedMessage());
-			throw e;
+			System.out.println("Error here " + e.getLocalizedMessage());
+			return Boolean.FALSE;
+		}
+	}
+	
+	public Boolean updateHeadingMapTOC(String groupName, String title, int pageNo)  throws JRScriptletException {
+		try {
+			Collection headingsCollection = null;
+			Integer type = null;
+			String text = null;
+			String reference = null;
+			Integer pageIndex = pageNo;
+			
+			// Group name specification
+			if ("1".equals(groupName)) { // application wise
+				type = new Integer(1);
+			} else if ("2".equals(groupName)) { // report wise
+				type = new Integer(2);
+			}
+			
+			// Heading collection
+			if (this.variablesMap.containsKey("HeadingsCollection")) {
+				headingsCollection = (Collection)this.getVariableValue("HeadingsCollection");
+				text = title;
+				reference = title + pageNo;
+				
+				if (headingsCollection != null) {
+					headingsCollection.add(new HeadingBean(type, text, reference, pageIndex));
+				}
+			}
+			
+			if (this.parametersMap.containsKey("HeadingsCollection")) {
+				headingsCollection = (Collection)this.getParameterValue("HeadingsCollection");
+				text = title;
+				reference = title + pageNo;
+				
+				if (headingsCollection != null) {
+					headingsCollection.add(new HeadingBean(type, text, reference, pageIndex));
+				}
+			}
+			
+			return Boolean.FALSE;
+		} catch (JRScriptletException e) {
+			System.out.println("Error here " + e.getLocalizedMessage());
+			return Boolean.FALSE;
 		}
 	}
 }

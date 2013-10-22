@@ -47,6 +47,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Collection;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -575,6 +576,94 @@ public class GenerateReport implements PluginConstants {
 			}
 		}
 		
+	}
+	
+	
+	/**
+	 * This method moves TOC page to first page and sets page number to all the pages
+	 */
+	private static JasperPrint moveMultiModuleTableOfContents(JasperPrint jasperPrint)	{
+		JasperPrint moveIndexPage = moveIndexPage(jasperPrint);
+		
+		if (moveIndexPage != null) {
+			List<JRPrintPage> pages = moveIndexPage.getPages();
+			int minPageSizeForTOC = 2;
+			if (pages != null && pages.size() > minPageSizeForTOC) {
+				
+				List<JRPrintPage> tocPages = moveIndexPage.getPages();
+				
+				for (int i = 0; i < tocPages.size(); i++) {
+					
+					JRPrintPage jrPrintPage = (JRPrintPage) tocPages.get(i);
+					// set Page number as 1 for TOC
+					String pageNoKey = "pageNo";
+					String pageCountKey = "pageCount";
+					List<JRPrintElement> elements = jrPrintPage.getElements();
+					
+					if (CollectionUtils.isNotEmpty(elements)) {
+						
+						for (JRPrintElement jrPrintElement : elements) {
+							
+							// For the first page alone
+							if (jrPrintElement instanceof JRPrintText) {
+								JRPrintText jrPrintText = (JRPrintText)jrPrintElement;
+								String key = jrPrintText.getKey();
+								// For all pages
+								if (pageCountKey.equals(key)) {
+									String text = jrPrintText.getText().trim();
+									int pageCount = Integer.parseInt(text);
+									pageCount = pageCount - 1;
+									jrPrintText.setText(" " + pageCount);
+								}
+							}
+						}
+						
+					}
+					
+				}
+			}
+		}
+		return moveIndexPage;
+	}
+	
+	private static JasperPrint moveIndexPage(JasperPrint jasperPrint) {
+		if (jasperPrint != null) {
+			List pages = jasperPrint.getPages();
+			if (pages != null && pages.size() > 0) {
+				String key = "HIDDEN TEXT TO MARK THE BEGINNING OF THE TABLE OF CONTENTS";
+				JRPrintPage page = null;
+				Collection elements = null;
+				Iterator it = null;
+				JRPrintElement element = null;
+				int i = pages.size() - 1;
+				boolean isFound = false;
+				while(i >= 0 && !isFound) {
+					page = (JRPrintPage)pages.get(i);
+					elements = page.getElements();
+					if (elements != null && elements.size() > 0) {
+						it = elements.iterator();
+						while(it.hasNext() && !isFound) {
+							element = (JRPrintElement)it.next();
+							if (element instanceof JRPrintText) {
+								if ( key.equals( ((JRPrintText)element).getText() ) ) {
+									isFound = true;
+									break;
+								}
+							}
+						}
+					}
+					i--;
+				}
+				
+				if (isFound) {
+					for(int j = i + 1; j < pages.size(); j++) {
+						jasperPrint.addPage(j - i - 1, jasperPrint.removePage(j));
+					}
+				}
+			}
+		}
+		
+		return jasperPrint;
 	}
 	
 	/**
@@ -2821,6 +2910,10 @@ public class GenerateReport implements PluginConstants {
 			
 			// applying theme
 			applyTheme(jasperPrint);
+			
+			// move table of contents
+			jasperPrint = moveMultiModuleTableOfContents(jasperPrint);
+			
 			JRExporter exporter = new net.sf.jasperreports.engine.export.JRPdfExporter(); 
 			exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, outFileNamePDF);
 			exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);

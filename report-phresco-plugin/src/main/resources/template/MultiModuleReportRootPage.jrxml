@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="MultiModuleReport" pageWidth="595" pageHeight="842" whenNoDataType="BlankPage" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" scriptletClass="com.photon.phresco.plugins.Scriptlet">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="MultiModuleReport" pageWidth="595" pageHeight="842" whenNoDataType="BlankPage" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryNewPage="true" scriptletClass="com.photon.phresco.plugins.Scriptlet">
 	<property name="ireport.zoom" value="1.100000000000001"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="130"/>
+	<property name="ireport.y" value="158"/>
 	<import value="org.apache.commons.collections.CollectionUtils"/>
 	<import value="org.apache.commons.codec.binary.Base64"/>
 	<style name="PCRTitle"/>
@@ -51,6 +51,24 @@
 	<variable name="headingsMap" class="java.util.HashMap" calculation="System">
 		<initialValueExpression><![CDATA[new java.util.HashMap()]]></initialValueExpression>
 	</variable>
+	<variable name="HeadingsCollection" class="java.util.Collection" calculation="System">
+		<initialValueExpression><![CDATA[new java.util.ArrayList()]]></initialValueExpression>
+	</variable>
+	<variable name="logoBase64Img" class="java.io.InputStream" calculation="System">
+		<initialValueExpression><![CDATA[$P{logoBase64Img}]]></initialValueExpression>
+	</variable>
+	<variable name="projectName" class="java.lang.String" calculation="System">
+		<initialValueExpression><![CDATA[$F{projectName}]]></initialValueExpression>
+	</variable>
+	<variable name="applicationName" class="java.lang.String" calculation="System">
+		<initialValueExpression><![CDATA[$F{applicationName}]]></initialValueExpression>
+	</variable>
+	<variable name="technologyName" class="java.lang.String" calculation="System">
+		<initialValueExpression><![CDATA[$F{technologyName}]]></initialValueExpression>
+	</variable>
+	<variable name="version" class="java.lang.String" calculation="System">
+		<initialValueExpression><![CDATA[$F{version}]]></initialValueExpression>
+	</variable>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -60,6 +78,11 @@
 				<reportElement positionType="Float" x="0" y="0" width="555" height="120" isRemoveLineWhenBlank="true">
 					<printWhenExpression><![CDATA[$F{isRootModule}.booleanValue()]]></printWhenExpression>
 				</reportElement>
+				<line>
+					<reportElement x="1" y="1" width="1" height="1">
+						<printWhenExpression><![CDATA[$P{REPORT_SCRIPTLET}.updateHeadingMapTOC("1", $F{applicationName} ,$V{PAGE_NUMBER})]]></printWhenExpression>
+					</reportElement>
+				</line>
 				<rectangle radius="3">
 					<reportElement style="PCRTitleRectLogo" x="0" y="2" width="555" height="115"/>
 				</rectangle>
@@ -126,6 +149,7 @@
 						<font fontName="Times New Roman" size="11" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{projectName}]]></textFieldExpression>
+					<anchorNameExpression><![CDATA[$F{applicationName} + $V{PAGE_NUMBER}]]></anchorNameExpression>
 				</textField>
 				<textField>
 					<reportElement style="PCRTitleLabelValue" x="290" y="29" width="257" height="20"/>
@@ -164,6 +188,11 @@
 				<reportElement positionType="Float" x="0" y="120" width="555" height="80" isRemoveLineWhenBlank="true">
 					<printWhenExpression><![CDATA[!$F{isRootModule}.booleanValue()]]></printWhenExpression>
 				</reportElement>
+				<line>
+					<reportElement x="1" y="1" width="1" height="1">
+						<printWhenExpression><![CDATA[$P{REPORT_SCRIPTLET}.updateHeadingMapTOC("1", $F{applicationName} ,$V{PAGE_NUMBER})]]></printWhenExpression>
+					</reportElement>
+				</line>
 				<rectangle radius="3">
 					<reportElement style="PCRTitleRectLogo" x="0" y="2" width="555" height="77"/>
 				</rectangle>
@@ -187,6 +216,7 @@
 						<font fontName="Times New Roman" size="11" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{applicationName}]]></textFieldExpression>
+					<anchorNameExpression><![CDATA[$F{applicationName} + $V{PAGE_NUMBER}]]></anchorNameExpression>
 				</textField>
 				<textField>
 					<reportElement style="PCRTitleLabelValue" x="132" y="49" width="257" height="20"/>
@@ -407,4 +437,28 @@
 			</textField>
 		</band>
 	</pageFooter>
+	<summary>
+		<band height="23">
+			<subreport>
+				<reportElement x="0" y="0" width="555" height="20"/>
+				<subreportParameter name="logo">
+					<subreportParameterExpression><![CDATA[$P{logo}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="applicationName">
+					<subreportParameterExpression><![CDATA[$V{applicationName}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="projectName">
+					<subreportParameterExpression><![CDATA[$V{projectName}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="techName">
+					<subreportParameterExpression><![CDATA[$V{technologyName}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="version">
+					<subreportParameterExpression><![CDATA[$V{version}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($V{HeadingsCollection})]]></dataSourceExpression>
+				<subreportExpression><![CDATA["MultiModuleIndexReport.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</summary>
 </jasperReport>
