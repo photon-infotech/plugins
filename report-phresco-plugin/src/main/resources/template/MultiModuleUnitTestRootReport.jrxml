@@ -3,6 +3,7 @@
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<import value="org.apache.commons.collections.CollectionUtils"/>
 	<style name="UCRTitle"/>
 	<style name="UCRTitleRect"/>
 	<style name="UCRTitleRectLogo"/>
@@ -65,7 +66,7 @@
 			</frame>
 		</band>
 		<band height="211">
-			<printWhenExpression><![CDATA[$P{reportsDataType}.equals("detail")]]></printWhenExpression>
+			<printWhenExpression><![CDATA[$P{reportsDataType}.equals("detail") && CollectionUtils.isNotEmpty($F{testSuites})]]></printWhenExpression>
 			<frame>
 				<reportElement x="0" y="0" width="555" height="211" isRemoveLineWhenBlank="true"/>
 				<subreport>
