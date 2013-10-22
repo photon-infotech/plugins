@@ -42,7 +42,7 @@
 			<frame>
 				<reportElement x="0" y="0" width="555" height="194"/>
 				<bar3DChart>
-					<chart>
+					<chart customizerClass="com.photon.phresco.plugins.ChartCustomizer">
 						<reportElement x="10" y="10" width="535" height="184"/>
 						<chartTitle/>
 						<chartSubtitle/>

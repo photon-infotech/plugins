@@ -2673,10 +2673,15 @@ public class GenerateReport implements PluginConstants {
         	Gson gson = new Gson();
         	Type mapType = new TypeToken<Map<String, String>>() {}.getType();
 	        theme = (Map<String, String>)gson.fromJson(themeJson, mapType);
-	        if (MapUtils.isNotEmpty(theme) && StringUtils.isNotEmpty(theme.get("CopyRight"))) {
-	        	this.copyRights = theme.get("CopyRight");
+	        
+	        if (MapUtils.isNotEmpty(theme) && StringUtils.isNotEmpty(theme.get("copyRightText"))) {
+	        	this.copyRights = theme.get("copyRightText");
 	        }
         }
+        
+        if (StringUtils.isEmpty(this.copyRights)) {
+			this.copyRights = DEFAULT_COPYRIGHTS;
+		}
         
         this.testType = testType;
         this.rootTestType = testType;
