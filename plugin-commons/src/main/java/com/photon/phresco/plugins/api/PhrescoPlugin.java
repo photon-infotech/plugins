@@ -140,6 +140,16 @@ public interface PhrescoPlugin {
     ExecutionStatus runLoadTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
     
     /**
+     * Goal for running integration tests
+     * @param configuration
+     * @param mavenProjectInfo
+     * @return
+     * 
+     * @throws PhrescoException
+     */
+    ExecutionStatus runIntegrationTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
+    
+    /**
      * @param configuration project configuration
      * @param mavenProjectInfo customized Maven Project object
      * @return ExecutionStatus

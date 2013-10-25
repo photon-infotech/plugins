@@ -528,6 +528,19 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 		}
 		return new DefaultExecutionStatus();
 	}
+	
+	public ExecutionStatus runIntegrationTest(Configuration configuration,
+			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		String workingDirectory = mavenProjectInfo.getBaseDir().getPath();
+		StringBuilder sb = new StringBuilder();
+		Map<String, String> configs = MojoUtil.getAllValues(configuration);
+		String environment = configs.get("environment");
+		sb.append(TEST_COMMAND)
+		.append(STR_SPACE)
+		.append("-Denvironment=" + environment);
+		Utility.executeStreamconsumer(sb.toString(), workingDirectory, workingDirectory, Constants.PHASE_INTEGRATION_TEST);
+		return new DefaultExecutionStatus();
+	}
 
 	public ExecutionStatus validate(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		StringBuilder sb = new StringBuilder();
@@ -868,5 +881,4 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 	        throw new PhrescoException(e);
 	    }
 	}
-
 }

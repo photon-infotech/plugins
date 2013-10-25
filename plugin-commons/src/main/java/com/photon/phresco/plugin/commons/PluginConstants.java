@@ -446,6 +446,7 @@ public interface PluginConstants {
 	 String COMPONENT 					= "component";
 	 String LOAD 						= "load";
 	 String PERFORMACE 					= "performance";
+	 String INTEGRATION					= "integration";
      String ELEMENT_FAILURE 			= "failure";
      String ELEMENT_ERROR 				= "error";
      String NAME_FILTER_PREFIX 			= "[@name='";
