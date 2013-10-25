@@ -1298,6 +1298,7 @@ public class GenerateReport implements PluginConstants {
 				reportPath = reportFilePath + manualTestReportDir;
 				SureFireReport sureFireReport = new SureFireReport();
 				List<AllTestSuite> allTestSuites = readAllTestSuites(reportPath);
+				
 				sureFireReport.setAllTestSuites(allTestSuites);
 				List<TestSuite> testSuites = readTestSuitesWithTestCases(reportPath);
 				sureFireReport.setTestSuites(testSuites);
@@ -1644,7 +1645,6 @@ public class GenerateReport implements PluginConstants {
 			}
 		}
 	} catch (Exception e) {
-		// e.printStackTrace();
 	}
 	return excels;
   }
@@ -1661,54 +1661,54 @@ public class GenerateReport implements PluginConstants {
 		  if(next.getCell(3)!=null){
 			  Cell cell = next.getCell(3);
 			  String value=getValue(cell);
-			  Float f= Float.parseFloat(value);
-			  int pass = Math.round(f);
 			  if(StringUtils.isNotEmpty(value)) {
+				  Float f= Float.parseFloat(value);
+				  int pass = Math.round(f);
 				  testSuite.setSuccess(pass);
 			  }
 		  }
 		  if(next.getCell(4)!=null){
 			  Cell cell = next.getCell(4);
 			  String value=getValue(cell);
-			  Float f= Float.parseFloat(value);
-			  int fail = Math.round(f);
 			  if(StringUtils.isNotEmpty(value)) {
+				  Float f= Float.parseFloat(value);
+				  int fail = Math.round(f);
 				  testSuite.setFailures(fail);
 			  }
 		  }
 		  if(next.getCell(5)!=null){
 			  Cell cell = next.getCell(5);
 			  String value=getValue(cell);
-			  Float f= Float.parseFloat(value);
-			  int notApp = Math.round(f);
 			  if(StringUtils.isNotEmpty(value)) {
+				  Float f= Float.parseFloat(value);
+				  int notApp = Math.round(f);
 				  testSuite.setNotApplicable(notApp);
 			  }
 		  }
 		  if(next.getCell(6)!=null){
 			  Cell cell = next.getCell(6);
 			  String value=getValue(cell);
-			  Float f= Float.parseFloat(value);
-			  int notExecuted = Math.round(f);
 			  if(StringUtils.isNotEmpty(value)) {
+				  Float f= Float.parseFloat(value);
+				  int notExecuted = Math.round(f);
 				  testSuite.setNotExecuted(notExecuted);
 			  }
 		  }
 		  if(next.getCell(7)!=null){
 			  Cell cell = next.getCell(7);
 			  String value=getValue(cell);
-			  Float f= Float.parseFloat(value);
-			  int blocked = Math.round(f);
 			  if(StringUtils.isNotEmpty(value)) {
+				  Float f= Float.parseFloat(value);
+				  int blocked = Math.round(f);
 				  testSuite.setBlocked(blocked);
 			  }
 		  }
 		  if(next.getCell(8)!=null){
 			  Cell cell = next.getCell(8);
 			  String value=getValue(cell);
-			  Float f= Float.parseFloat(value);
-			  int total = Math.round(f);
 			  if(StringUtils.isNotEmpty(value)) {
+				  Float f= Float.parseFloat(value);
+				  int total = Math.round(f);
 				  testSuite.setTotal(total);
 			  }
 		  }
@@ -1778,7 +1778,7 @@ public class GenerateReport implements PluginConstants {
 						  HSSFSheet mySheet = myWorkBook.getSheetAt(j);
 						  if(mySheet.getSheetName().equals(fileName)) {
 							  Iterator<Row> rowIterator = mySheet.rowIterator();
-							  for (int i = 0; i <=23; i++) {
+							  for (int i = 0; i <=24; i++) {
 								  rowIterator.next();
 							  }
 							  while (rowIterator.hasNext()) {

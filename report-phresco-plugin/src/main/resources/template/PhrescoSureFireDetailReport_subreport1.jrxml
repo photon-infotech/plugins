@@ -573,12 +573,27 @@
 		</band>
 	</detail>
 	<summary>
-		<band height="194">
-			<subreport>
-				<reportElement x="0" y="0" width="555" height="191"/>
-				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{testCases})]]></dataSourceExpression>
-				<subreportExpression><![CDATA["PhrescoSureFireTestCaseReport.jasper"]]></subreportExpression>
-			</subreport>
+		<band height="100">
+			<frame>
+				<reportElement positionType="Float" x="0" y="0" width="555" height="50" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[!$P{testType}.equals("manual")]]></printWhenExpression>
+				</reportElement>
+				<subreport>
+					<reportElement x="0" y="0" width="555" height="50"/>
+					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{testCases})]]></dataSourceExpression>
+					<subreportExpression><![CDATA["PhrescoSureFireTestCaseReport.jasper"]]></subreportExpression>
+				</subreport>
+			</frame>
+			<frame>
+				<reportElement positionType="Float" x="0" y="50" width="555" height="50" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$P{testType}.equals("manual")]]></printWhenExpression>
+				</reportElement>
+				<subreport>
+					<reportElement x="0" y="0" width="555" height="50"/>
+					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{testCases})]]></dataSourceExpression>
+					<subreportExpression><![CDATA["PhrescoSureFireManualTestCaseReport.jasper"]]></subreportExpression>
+				</subreport>
+			</frame>
 		</band>
 	</summary>
 </jasperReport>

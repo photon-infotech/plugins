@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="PhrescoTestCaseReport" pageWidth="555" pageHeight="802" columnWidth="535" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="org.apache.commons.lang.StringUtils"/>
+	<style name="PSFTCRTitle"/>
+	<style name="PSFTCRTitleRect"/>
+	<style name="PSFTCRTitleRectLogo"/>
+	<style name="PSFTCRTitleRectDetail"/>
+	<style name="PSFTCRTitleLabel"/>
+	<style name="PSFTCRTitleLabelValue"/>
+	<style name="PSFTCRHeading"/>
+	<style name="PSFTCRHeadingLabel"/>
+	<style name="PSFTCRHeadingLabelValue"/>
+	<style name="PSFTCRTHeadingRow"/>
+	<style name="PSFTCRTHeadingRowLabel"/>
+	<style name="PSFTCRTHeadingRowLabelValue"/>
+	<field name="name" class="java.lang.String"/>
+	<field name="testClass" class="java.lang.String"/>
+	<field name="file" class="java.lang.String"/>
+	<field name="line" class="java.lang.Float"/>
+	<field name="assertions" class="java.lang.Float"/>
+	<field name="time" class="java.lang.String"/>
+	<field name="testCaseError" class="java.lang.String"/>
+	<field name="testCaseFailure" class="java.lang.String"/>
+	<field name="status" class="java.lang.String"/>
+	<variable name="NoOfSuccess" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[($F{status}.equalsIgnoreCase("success") || $F{status}.equalsIgnoreCase("pass")) ? "" : null]]></variableExpression>
+	</variable>
+	<variable name="NoOfFailure" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[($F{status}.equalsIgnoreCase("failure") || $F{status}.equalsIgnoreCase("fail")) ? "" : null]]></variableExpression>
+	</variable>
+	<variable name="Success" class="java.lang.String">
+		<variableExpression><![CDATA[str("Success")]]></variableExpression>
+	</variable>
+	<variable name="Failure" class="java.lang.String">
+		<variableExpression><![CDATA[str("Failure")]]></variableExpression>
+	</variable>
+	<variable name="Error" class="java.lang.String">
+		<variableExpression><![CDATA[str("Error")]]></variableExpression>
+	</variable>
+	<variable name="NoOfNotApplicable" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[$F{status}.equalsIgnoreCase("notApplicable") ? "" : null]]></variableExpression>
+	</variable>
+	<variable name="NoOfBlocked" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[$F{status}.equalsIgnoreCase("blocked") ? "" : null]]></variableExpression>
+	</variable>
+	<lastPageFooter>
+		<band height="310">
+			<frame>
+				<reportElement mode="Opaque" x="0" y="2" width="555" height="45" forecolor="#000000" backcolor="#FFFFFF"/>
+				<rectangle radius="10">
+					<reportElement style="PSFTCRTHeadingRow" x="0" y="2" width="555" height="43"/>
+					<graphicElement>
+						<pen lineColor="#999999"/>
+					</graphicElement>
+				</rectangle>
+				<textField evaluationTime="Report" isBlankWhenNull="true">
+					<reportElement style="PSFTCRTHeadingRowLabelValue" x="112" y="6" width="30" height="16"/>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font fontName="Times New Roman" size="12"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{NoOfSuccess}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report">
+					<reportElement style="PSFTCRTHeadingRowLabelValue" x="295" y="6" width="30" height="16"/>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font fontName="Times New Roman" size="12"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{NoOfFailure}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report">
+					<reportElement style="PSFTCRTHeadingRowLabelValue" x="475" y="6" width="30" height="16"/>
+					<textElement textAlignment="Left">
+						<font fontName="Times New Roman" size="12"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{NoOfNotApplicable}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement style="PSFTCRTHeadingRowLabelValue" x="15" y="6" width="97" height="16"/>
+					<textElement>
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[No of Success  :]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="PSFTCRTHeadingRowLabelValue" x="203" y="6" width="92" height="16"/>
+					<textElement>
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[No of Failures  :]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="PSFTCRTHeadingRowLabelValue" x="357" y="6" width="118" height="16"/>
+					<textElement>
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[No of NotApplicable :]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="PSFTCRTHeadingRowLabelValue" x="15" y="25" width="97" height="16"/>
+					<textElement>
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[No of Blocked  :]]></text>
+				</staticText>
+				<textField evaluationTime="Report" isBlankWhenNull="true">
+					<reportElement style="PSFTCRTHeadingRowLabelValue" x="112" y="25" width="30" height="16"/>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font fontName="Times New Roman" size="12"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{NoOfBlocked}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement style="PSFTCRTHeadingRowLabelValue" x="203" y="25" width="97" height="16"/>
+					<textElement>
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[No of Executed :]]></text>
+				</staticText>
+				<textField evaluationTime="Report" isBlankWhenNull="true">
+					<reportElement style="PSFTCRTHeadingRowLabelValue" x="295" y="25" width="30" height="16"/>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font fontName="Times New Roman" size="12"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{REPORT_COUNT}-($V{NoOfSuccess} + $V{NoOfFailure} + $V{NoOfNotApplicable} + $V{NoOfBlocked})]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement style="PSFTCRTHeadingRowLabelValue" x="357" y="25" width="118" height="16"/>
+					<textElement>
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Total TestCases        :]]></text>
+				</staticText>
+				<textField evaluationTime="Report" isBlankWhenNull="true">
+					<reportElement style="PSFTCRTHeadingRowLabelValue" x="475" y="25" width="30" height="16"/>
+					<textElement>
+						<font fontName="Times New Roman" size="12"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement mode="Opaque" x="0" y="57" width="555" height="253" forecolor="#000000" backcolor="#FFFFFF"/>
+				<pie3DChart>
+					<chart>
+						<reportElement x="37" y="8" width="468" height="228"/>
+						<chartTitle/>
+						<chartSubtitle/>
+						<chartLegend/>
+					</chart>
+					<pieDataset>
+						<pieSeries>
+							<keyExpression><![CDATA["Success"]]></keyExpression>
+							<valueExpression><![CDATA[$V{NoOfSuccess}]]></valueExpression>
+							<labelExpression><![CDATA["Success"]]></labelExpression>
+						</pieSeries>
+						<pieSeries>
+							<keyExpression><![CDATA["Failure"]]></keyExpression>
+							<valueExpression><![CDATA[$V{NoOfFailure}]]></valueExpression>
+							<labelExpression><![CDATA["Failure"]]></labelExpression>
+						</pieSeries>
+						<pieSeries>
+							<keyExpression><![CDATA["NotApplicable"]]></keyExpression>
+							<valueExpression><![CDATA[$V{NoOfNotApplicable}]]></valueExpression>
+							<labelExpression><![CDATA["NotApplicable"]]></labelExpression>
+						</pieSeries>
+						<pieSeries>
+							<keyExpression><![CDATA["Blocked"]]></keyExpression>
+							<valueExpression><![CDATA[$V{NoOfBlocked}]]></valueExpression>
+							<labelExpression><![CDATA["Blocked"]]></labelExpression>
+						</pieSeries>
+						<pieSeries>
+							<keyExpression><![CDATA["NoOfNotExecuted"]]></keyExpression>
+							<valueExpression><![CDATA[$V{REPORT_COUNT}-($V{NoOfSuccess} + $V{NoOfFailure} + $V{NoOfNotApplicable} + $V{NoOfBlocked})]]></valueExpression>
+							<labelExpression><![CDATA["NoOfNotExecuted"]]></labelExpression>
+						</pieSeries>
+					</pieDataset>
+					<pie3DPlot isCircular="false">
+						<plot>
+							<seriesColor seriesOrder="0" color="#66FF66"/>
+							<seriesColor seriesOrder="1" color="#FF0000"/>
+							<seriesColor seriesOrder="2" color="#800000"/>
+							<seriesColor seriesOrder="3" color="#FFA500"/>
+							<seriesColor seriesOrder="4" color="#999999"/>
+						</plot>
+						<itemLabel/>
+					</pie3DPlot>
+				</pie3DChart>
+			</frame>
+		</band>
+	</lastPageFooter>
+</jasperReport>

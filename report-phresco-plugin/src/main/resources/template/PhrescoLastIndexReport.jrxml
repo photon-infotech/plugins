@@ -42,6 +42,7 @@
 	<parameter name="headingsMap" class="java.util.HashMap">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
+	<parameter name="manualTestReports" class="java.util.Collection"/>
 	<variable name="KeyTOC" class="java.lang.String">
 		<initialValueExpression><![CDATA[String.valueOf("HIDDEN TEXT TO MARK THE BEGINNING OF THE TABLE OF CONTENTS")]]></initialValueExpression>
 	</variable>
@@ -170,7 +171,7 @@
 		</band>
 	</pageHeader>
 	<detail>
-		<band height="297">
+		<band height="325">
 			<frame>
 				<reportElement x="100" y="79" width="323" height="32" isRemoveLineWhenBlank="true">
 					<printWhenExpression><![CDATA[($P{unitTestReports} == null ? Boolean.FALSE : Boolean.TRUE) || ($P{multiModuleUnitTestReports} == null ? Boolean.FALSE : Boolean.TRUE)]]></printWhenExpression>
@@ -218,7 +219,7 @@
 				</textField>
 			</frame>
 			<frame>
-				<reportElement x="100" y="175" width="323" height="32" isRemoveLineWhenBlank="true">
+				<reportElement x="100" y="207" width="323" height="32" isRemoveLineWhenBlank="true">
 					<printWhenExpression><![CDATA[!$P{performanceTestReports}.isEmpty()]]></printWhenExpression>
 				</reportElement>
 				<ellipse>
@@ -241,7 +242,7 @@
 				</textField>
 			</frame>
 			<frame>
-				<reportElement x="100" y="207" width="323" height="32" isRemoveLineWhenBlank="true">
+				<reportElement x="100" y="239" width="323" height="32" isRemoveLineWhenBlank="true">
 					<printWhenExpression><![CDATA[!$P{loadTestReports}.isEmpty()]]></printWhenExpression>
 				</reportElement>
 				<ellipse>
@@ -264,7 +265,7 @@
 				</textField>
 			</frame>
 			<frame>
-				<reportElement x="100" y="239" width="323" height="32" isRemoveLineWhenBlank="true">
+				<reportElement x="100" y="271" width="323" height="32" isRemoveLineWhenBlank="true">
 					<printWhenExpression><![CDATA[!$P{sonarReport}.isEmpty()]]></printWhenExpression>
 				</reportElement>
 				<ellipse>
@@ -287,20 +288,20 @@
 				</textField>
 			</frame>
 			<break>
-				<reportElement x="0" y="296" width="555" height="1"/>
+				<reportElement x="0" y="324" width="555" height="1"/>
 			</break>
 			<rectangle radius="10">
 				<reportElement style="PIRHeading" x="65" y="48" width="389" height="26" forecolor="#FFFFFF"/>
 			</rectangle>
 			<staticText>
-				<reportElement x="120" y="52" width="197" height="20" forecolor="#333333"/>
+				<reportElement x="120" y="52" width="197" height="20" forecolor="#FFFFFF"/>
 				<textElement>
 					<font fontName="Times New Roman" size="13" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Reports Available]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="345" y="52" width="100" height="20" forecolor="#333333"/>
+				<reportElement x="345" y="52" width="100" height="20" forecolor="#FFFFFF"/>
 				<textElement>
 					<font fontName="Times New Roman" size="13" isBold="true"/>
 				</textElement>
@@ -327,6 +328,29 @@
 					</textElement>
 					<textFieldExpression><![CDATA["Component Test Report"]]></textFieldExpression>
 					<hyperlinkAnchorExpression><![CDATA["Component Test Report"]]></hyperlinkAnchorExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement x="100" y="175" width="323" height="32" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[!$P{manualTestReports}.isEmpty()]]></printWhenExpression>
+				</reportElement>
+				<ellipse>
+					<reportElement style="PIRTitleLabel" x="17" y="16" width="5" height="5" isRemoveLineWhenBlank="true"/>
+				</ellipse>
+				<textField>
+					<reportElement style="PIRTitleLabel" x="240" y="5" width="51" height="20" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Times New Roman" isStrikeThrough="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{headingsMap}.get("ManualTestReport")]]></textFieldExpression>
+				</textField>
+				<textField hyperlinkType="LocalAnchor">
+					<reportElement style="PIRTitleLabel" x="32" y="2" width="187" height="30" isRemoveLineWhenBlank="true"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Manual Test Report"]]></textFieldExpression>
+					<hyperlinkAnchorExpression><![CDATA["Manual Test Report"]]></hyperlinkAnchorExpression>
 				</textField>
 			</frame>
 		</band>
