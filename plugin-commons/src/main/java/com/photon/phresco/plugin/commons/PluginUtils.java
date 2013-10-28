@@ -727,6 +727,8 @@ public class PluginUtils {
 							 hashTreeElement.appendChild(document.createElement("hashTree"));
 							 hashTree.appendChild(hashTreeElement);
 						 }
+					 } else {
+						 hashTree.appendChild(document.createElement("hashTree")); 
 					 }
 				 }
 			 }
