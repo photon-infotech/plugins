@@ -69,10 +69,9 @@ public class Deploy implements PluginConstants {
 	private String sqlPath;
 	private PluginUtils pUtil;
 	private String servertype;
-	private String pomFile;
 	private String subModule = "";
 	private File workingDirectory;
-	
+	private String pomFile;
 	public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
@@ -89,7 +88,7 @@ public class Deploy implements PluginConstants {
         } else {
         	workingDirectory = new File(baseDir.getPath());
         }
-        pomFile = getPomFile().getName();
+        pomFile = project.getFile().getName();
 		try {
 			init();
 			initMap();
@@ -348,12 +347,10 @@ public class Deploy implements PluginConstants {
 			sb.append(context);
 			sb.append(STR_SPACE);
 			sb.append(SKIP_TESTS);
-			if(!Constants.POM_NAME.equals(pomFile)) {
-				sb.append(STR_SPACE);
-				sb.append(Constants.HYPHEN_F);
-				sb.append(STR_SPACE);
-				sb.append(pomFile);
-			}
+			sb.append(STR_SPACE);
+			sb.append(Constants.HYPHEN_F);
+			sb.append(STR_SPACE);
+			sb.append(pomFile);
 			
 			if (serverprotocol.equals(HTTPS) && certificatePath != null) {
 				File certificateFile = null;
@@ -440,7 +437,10 @@ public class Deploy implements PluginConstants {
 			sb.append(serverpassword);
 			sb.append(STR_SPACE);
 			sb.append(SKIP_TESTS);
-			
+			sb.append(STR_SPACE);
+			sb.append(Constants.HYPHEN_F);
+			sb.append(STR_SPACE);
+			sb.append(pomFile);
 						
 			 bufferedReader = Utility.executeCommand(sb.toString(), workingDirectory.getPath());
 				String line = null;

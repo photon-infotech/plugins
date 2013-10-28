@@ -48,27 +48,26 @@ public class JavaTest implements PluginConstants {
 	private File baseDir;
 	private File testConfigPath;
 	private MavenProject project;
-	private String pomFile;
 	private File workingDirectory;
 	private String subModule = "";
+	private File pomFile;
 	public void runTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException{
 		try {
 			baseDir = mavenProjectInfo.getBaseDir();
 			subModule = mavenProjectInfo.getModuleName();
 			project = mavenProjectInfo.getProject();
+			pomFile = project.getFile();
 			if (StringUtils.isNotEmpty(subModule)) {
 				workingDirectory = new File(baseDir.getPath() + File.separator + subModule);
 			} else {
 				workingDirectory = new File(baseDir.getPath());
 			}
-			File pom = getPomFile();
-			pomFile = pom.getName();
 			Map<String, String> configs = MojoUtil.getAllValues(configuration);
 			String testAgainst = configs.get(TEST_AGAINST);
 			String environment = configs.get(ENVIRONMENT_NAME);
 			String goalPackBeforeTest = "";
 			PluginUtils pluginUtils = new PluginUtils();
-			PomProcessor processor = new PomProcessor(pom);
+			PomProcessor processor = new PomProcessor(pomFile);
 			if (testAgainst.equals(JAVA)) {
 				String reportDir = processor.getProperty("phresco.unitTest.java.report.dir");
 				File reportLoc = new File(workingDirectory.getPath() + File.separator  + reportDir);
@@ -152,14 +151,15 @@ public class JavaTest implements PluginConstants {
 			}
 			sb.append(STR_SPACE).
 			append(mavenCommandValue);
-			if (StringUtils.isNotEmpty(projectModule)) {
-				sb.append(STR_SPACE).append("-pl "+ projectModule);
-			}
-			if(!Constants.POM_NAME.equals(project.getFile().getName())) {
-				sb.append(STR_SPACE);
-				sb.append(Constants.HYPHEN_F);
-				sb.append(STR_SPACE); 
-				sb.append(project.getFile().getName());
+//			if (StringUtils.isNotEmpty(projectModule)) {
+//				sb.append(STR_SPACE).append("-pl "+ projectModule);
+//			}
+			sb.append(STR_SPACE);
+			sb.append(Constants.HYPHEN_F);
+			sb.append(STR_SPACE); 
+			sb.append(project.getFile().getName());
+			if(StringUtils.isNotEmpty(subModule)) {
+				baseDir = new File(baseDir, subModule);
 			}
 			boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(), UNIT);
 			if(!status) {
@@ -168,15 +168,6 @@ public class JavaTest implements PluginConstants {
 		} catch (Exception e) {
 			throw new  PhrescoException(e);
 		}
-	}
-	
-	private File getPomFile() throws PhrescoException {
-		PluginUtils pu = new PluginUtils();
-		ApplicationInfo appInfo = pu.getAppInfo(workingDirectory);
-		String pomFileName = Utility.getPhrescoPomFromWorkingDirectory(appInfo, workingDirectory);
-		File pom = new File(workingDirectory.getPath() + File.separator + pomFileName);
-		
-		return pom;
 	}
 	
 	private String getGoalPackBeforeTest(File baseDir) throws PhrescoException {

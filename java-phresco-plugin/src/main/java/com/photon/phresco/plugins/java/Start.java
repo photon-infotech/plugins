@@ -67,19 +67,18 @@ public class Start implements PluginConstants {
 	private PluginUtils pu;
 	private File pomFile;
 	private String pomFileName;
-
 	public void start(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
 		project = mavenProjectInfo.getProject();
+		pomFile = project.getFile();
+		pomFileName = project.getFile().getName();
 		subModule = mavenProjectInfo.getModuleName();
 		workingDirectory = baseDir;
 		if (StringUtils.isNotEmpty(subModule)) {
 			workingDirectory = new File(baseDir + File.separator + subModule);
 		}
 		pu = new PluginUtils();
-		pomFile = getPomFile();
-		pomFileName = pomFile.getName();
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
 		environmentName = configs.get(ENVIRONMENT_NAME);
 		importSql = Boolean.parseBoolean(configs.get(EXECUTE_SQL));
@@ -189,12 +188,10 @@ public class Start implements PluginConstants {
 				sb.append(STR_SPACE);
 				sb.append(SERVER_ENV);
 				sb.append(environmentName);
-				if(!Constants.POM_NAME.equals(pomFileName)) {
-					sb.append(STR_SPACE);
-					sb.append(Constants.HYPHEN_F);
-					sb.append(STR_SPACE);
-					sb.append(pomFileName);
-				}
+				sb.append(STR_SPACE);
+				sb.append(Constants.HYPHEN_F);
+				sb.append(STR_SPACE);
+				sb.append(pomFileName);
 				fos = new FileOutputStream(errorLog, false);
 				Utility.executeStreamconsumerFOS(workingDirectory.toString(),sb.toString(), fos);
 			} catch (FileNotFoundException e) {
