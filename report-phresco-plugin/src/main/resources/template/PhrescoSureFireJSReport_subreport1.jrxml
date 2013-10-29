@@ -61,7 +61,7 @@
 			<initialValueExpression><![CDATA[0]]></initialValueExpression>
 		</variable>
 	</subDataset>
-	<parameter name="allTestSuites" class="java.util.List"/>
+	<parameter name="jsAllTestSuites" class="java.util.List" isForPrompting="false"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -72,7 +72,14 @@
 				<textElement>
 					<font fontName="Times New Roman" size="14" isBold="true" isItalic="false" isUnderline="true"/>
 				</textElement>
-				<text><![CDATA[Overall Report:]]></text>
+				<text><![CDATA[Overall Report]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="158" y="10" width="122" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="14" isBold="true" isItalic="false" isUnderline="false"/>
+				</textElement>
+				<text><![CDATA[Type : JS]]></text>
 			</staticText>
 		</band>
 	</title>
@@ -84,7 +91,7 @@
 					<reportElement key="table" style="table" x="0" y="0" width="555" height="85"/>
 					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
 						<datasetRun subDataset="Table Dataset 1">
-							<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{allTestSuites})]]></dataSourceExpression>
+							<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{jsAllTestSuites})]]></dataSourceExpression>
 						</datasetRun>
 						<jr:column width="193">
 							<jr:tableFooter style="table_CH" height="30" rowSpan="1">
@@ -251,13 +258,13 @@
 		<band height="161">
 			<frame>
 				<reportElement x="0" y="0" width="555" height="159">
-					<printWhenExpression><![CDATA[!$P{allTestSuites}.isEmpty()]]></printWhenExpression>
+					<printWhenExpression><![CDATA[!$P{jsAllTestSuites}.isEmpty()]]></printWhenExpression>
 				</reportElement>
 				<subreport>
 					<reportElement x="0" y="0" width="555" height="159">
-						<printWhenExpression><![CDATA[!$P{allTestSuites}.isEmpty()]]></printWhenExpression>
+						<printWhenExpression><![CDATA[!$P{jsAllTestSuites}.isEmpty()]]></printWhenExpression>
 					</reportElement>
-					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{allTestSuites})]]></dataSourceExpression>
+					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{jsAllTestSuites})]]></dataSourceExpression>
 					<subreportExpression><![CDATA["PhrescoSureFireCrispReport.jasper"]]></subreportExpression>
 				</subreport>
 			</frame>

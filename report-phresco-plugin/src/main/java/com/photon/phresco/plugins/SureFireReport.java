@@ -24,6 +24,12 @@ public class SureFireReport {
 	private List<AllTestSuite> allTestSuites;
 	//detail report
 	private List<TestSuite> testSuites;
+	
+	//js custom report
+	private List<AllTestSuite> jsAllTestSuites;
+	//js detail report
+	private List<TestSuite> jsTestSuites;
+	
 	public List<AllTestSuite> getAllTestSuites() {
 		return allTestSuites;
 	}
@@ -35,5 +41,17 @@ public class SureFireReport {
 	}
 	public void setTestSuites(List<TestSuite> testSuites) {
 		this.testSuites = testSuites;
+	}
+	public List<AllTestSuite> getJsAllTestSuites() {
+		return jsAllTestSuites;
+	}
+	public void setJsAllTestSuites(List<AllTestSuite> jsAllTestSuites) {
+		this.jsAllTestSuites = jsAllTestSuites;
+	}
+	public List<TestSuite> getJsTestSuites() {
+		return jsTestSuites;
+	}
+	public void setJsTestSuites(List<TestSuite> jsTestSuites) {
+		this.jsTestSuites = jsTestSuites;
 	}
 }

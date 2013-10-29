@@ -299,6 +299,7 @@ public class GenerateReport implements PluginConstants {
 				} else {
 					// none module projects....
 					SureFireReport sureFireReports = sureFireReports(null);
+					
 					generateUnitAndFunctionalReport(sureFireReports);				
 				}
 			// Report generation for performance
@@ -1280,7 +1281,8 @@ public class GenerateReport implements PluginConstants {
 	
 	// unit and functional test report
 	public SureFireReport sureFireReports(String module) throws Exception {
-
+		
+		String type = "";
 		Map<String, String> reportDirWithTestSuitePath = new HashMap<String, String>(); // <file
 																						// -
 																						// testsuitePath,testcasePath>
@@ -1290,6 +1292,7 @@ public class GenerateReport implements PluginConstants {
 				reportFilePath = reportFilePath + File.separatorChar + module;
 			}
 			getUnitTestXmlFilesAndXpaths(reportFilePath, reportDirWithTestSuitePath);
+			
 		} else if (MANUAL.equals(testType)) {
 			String reportFilePath = baseDir.getAbsolutePath();
 			String manualTestReportDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_MANUALTEST_RPT_DIR);
@@ -1337,9 +1340,16 @@ public class GenerateReport implements PluginConstants {
 		}
 		
 		SureFireReport sureFireReport = new SureFireReport();
+		
 		ArrayList<TestSuite> testSuiteWithTestCase = null;
 		ArrayList<AllTestSuite> allTestSuiteDetails = null;
 
+		ArrayList<TestSuite> jsTestSuiteWithTestCase = null;
+		ArrayList<AllTestSuite> allJsTestSuiteDetails = null;
+				
+		jsTestSuiteWithTestCase = new ArrayList<TestSuite>();
+		allJsTestSuiteDetails = new ArrayList<AllTestSuite>();
+		
 		// detailed information object
 		testSuiteWithTestCase = new ArrayList<TestSuite>();
 		// crisp information of the test
@@ -1348,13 +1358,21 @@ public class GenerateReport implements PluginConstants {
 		// Iterate over each file
 		// testsuite path and testcase path
 		for (Map.Entry entry : reportDirWithTestSuitePath.entrySet()) {
-			String mapKey = (String) entry.getKey();
-			String mapValue = (String) entry.getValue();
+			String mapKey = (String) entry.getKey(); // file
+			String mapValue = (String) entry.getValue(); // /testSuite,/testcase	
+			
+			if(mapValue.contains("#SEP#")) {
+				String[] split = mapValue.split("#SEP#");
+				type = split[1];
+				String[] split2 = mapValue.split("#");
+				mapValue = split2[0];
+			}
 			String[] testsuiteAndTestcasePath = mapValue.split(",");
 			File reportFile = new File(mapKey);
+			
 			String testSuitePath = testsuiteAndTestcasePath[0];
 			String testCasePath = testsuiteAndTestcasePath[1];
-
+			
 			Document doc = getDocumentOfFile(reportFile);
 			if (doc == null) {
 				// if doc is null, the file does not have any values (i.e) zero
@@ -1408,17 +1426,31 @@ public class GenerateReport implements PluginConstants {
 					errorTestSuites = errorTestSuites + errors;
 					successTestSuites = (int) (successTestSuites + success);
 					String rstValues = tests + "," + success + "," + failures + "," + errors;
+					
 					AllTestSuite allTestSuiteDetail = new AllTestSuite(testSuite.getName(), tests, success, failures, errors);
-					allTestSuiteDetails.add(allTestSuiteDetail);
+					
+					
 					testSuite.setTestCases(testCases);
-					testSuiteWithTestCase.add(testSuite);
+					if(type.equalsIgnoreCase("js")) {
+						jsTestSuiteWithTestCase.add(testSuite);
+						allJsTestSuiteDetails.add(allTestSuiteDetail);
+					} else {
+						testSuiteWithTestCase.add(testSuite);
+						allTestSuiteDetails.add(allTestSuiteDetail);
+					}
 				}
-				// detailed info
-				sureFireReport.setTestSuites(testSuiteWithTestCase);
-//				printDetailedObj(testSuiteWithTestCase);
 				
+				
+//				printDetailedObj(testSuiteWithTestCase);
 				// crisp info
-				sureFireReport.setAllTestSuites(allTestSuiteDetails);
+				if(StringUtils.isNotEmpty(type) && type.equalsIgnoreCase("js")) {
+					sureFireReport.setJsTestSuites(jsTestSuiteWithTestCase);
+					sureFireReport.setJsAllTestSuites(allJsTestSuiteDetails);
+				} else {
+					// detailed info
+					sureFireReport.setTestSuites(testSuiteWithTestCase);
+					sureFireReport.setAllTestSuites(allTestSuiteDetails);
+				}
 			}
 		}
 		
@@ -1871,7 +1903,7 @@ public class GenerateReport implements PluginConstants {
 					String reportPath = reportFilePath + unitTestDir;
 					List<File> testResultFiles = getTestResultFilesAsList(reportPath);
 					for (File testResultFile : testResultFiles) {
-						reportDirWithTestSuitePath.put(testResultFile.getPath(), unitTestSuitePath + "," + unitTestCasePath);
+						reportDirWithTestSuitePath.put(testResultFile.getPath(), unitTestSuitePath + "," + unitTestCasePath + "#SEP#" + unitTestTech);
 					}
 				}
 			}
