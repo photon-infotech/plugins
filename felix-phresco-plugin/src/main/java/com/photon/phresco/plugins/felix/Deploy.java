@@ -71,14 +71,14 @@ public class Deploy implements PluginConstants {
 	private Log log;
 	private String sqlPath;
 	private PluginUtils pUtil;
-	private String servertype;
-	private String pomFile;
-	private String packaging;
 	private String subModule = "";
 	private File workingDirectory;
 	private File dependencyJarDir;
 	private String dependencyJars;
-
+//	private File pomFile;
+//	private File pomFile;
+	private String srcPomFileName;
+	private String packagingType;
 	public void deploy(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -97,10 +97,9 @@ public class Deploy implements PluginConstants {
 		} else {
 			workingDirectory = new File(baseDir.getPath());
 		}
-		pomFile = getPomFile().getName();
-		packaging = getPackagingType();
 		try {
 			init();
+			initPomAndPackage();
 			//updateFinalName();
 			createDb();
 			extractBuild();
@@ -111,7 +110,25 @@ public class Deploy implements PluginConstants {
 		}
 
 	}
-
+	
+	private void initPomAndPackage() throws PhrescoException {
+		ApplicationInfo appInfo = new PluginUtils().getAppInfo(workingDirectory);
+		srcPomFileName = project.getFile().getName();
+		packagingType = project.getPackaging();
+		if(project.getFile().getName().equals(appInfo.getPhrescoPomFile())) {
+			try {
+				File srcPomFile = new File(workingDirectory.getPath() + File.separator + appInfo.getPomFile());
+				if(!srcPomFile.exists()) {
+					srcPomFile = new File(workingDirectory.getPath() + File.separator + "pom.xml");
+				}
+				packagingType = new PomProcessor(srcPomFile).getModel().getPackaging();
+				srcPomFileName = srcPomFile.getName();
+			} catch (PhrescoPomException e) {
+				throw new PhrescoException(e);
+			}
+		}
+	}
+	
 	private void init() throws MojoExecutionException {
 		try {
 			if (StringUtils.isEmpty(buildNumber)
@@ -245,7 +262,7 @@ public class Deploy implements PluginConstants {
 	private File getBundleFile() {
 		String[] list;
 		File bundleFile = null;
-		if (packaging.equals("war")) {
+		if (packagingType.equals("war")) {
 			String warFileName = "";
 			list = tempDir.list(new JDWarFileNameFilter());
 			if (list.length > 0) {
@@ -273,23 +290,6 @@ public class Deploy implements PluginConstants {
 		return pom;
 	}
 	
-	private String getPackagingType() throws PhrescoException {
-		StringBuilder builder = new StringBuilder();
-		builder.append(baseDir.getPath())
-		.append(File.separatorChar);
-		if(StringUtils.isNotEmpty(subModule)) {
-			builder.append(subModule);
-			builder.append(File.separatorChar);
-		}
-		builder.append(pomFile);
-		try {
-			PomProcessor pomProcessor = new PomProcessor(new File(builder.toString()));
-			return pomProcessor.getModel().getPackaging();
-		} catch (PhrescoPomException e) {
-			throw new PhrescoException(e);
-		}
-	}
-	
 	private void deployToServer(File bundleFile, String felixUrl, String username, String password)
 			throws MojoExecutionException {
 		BufferedReader bufferedReader = null;
@@ -313,13 +313,10 @@ public class Deploy implements PluginConstants {
 				sb.append(PACKAGE_FILE+"=\""+bundleFile+"\"");
 				sb.append(STR_SPACE);
 				sb.append(SKIP_TESTS);
-						
-				if(!Constants.POM_NAME.equals(pomFile)) {
-					sb.append(STR_SPACE);
-					sb.append(Constants.HYPHEN_F);
-					sb.append(STR_SPACE);
-					sb.append(pomFile);
-				}
+				sb.append(STR_SPACE);
+				sb.append(Constants.HYPHEN_F);
+				sb.append(STR_SPACE);
+				sb.append(project.getFile().getName());
 				bufferedReader = Utility.executeCommand(sb.toString(), workingDirectory.getPath());
 				String line = null;
 				

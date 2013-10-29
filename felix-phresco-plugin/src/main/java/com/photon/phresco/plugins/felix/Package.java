@@ -65,6 +65,7 @@ import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
 import com.phresco.pom.exception.PhrescoPomException;
+import com.phresco.pom.model.Model.Modules;
 import com.phresco.pom.util.PomProcessor;
 
 public class Package implements PluginConstants {
@@ -90,14 +91,17 @@ public class Package implements PluginConstants {
 	private PluginUtils pu;
 	private String sourceDir;
 	private StringBuilder builder;
-	private String pomName;
 	private String packageType;
-	private String packagingType;
 	private String subModule = "";
 	private File workingDirectory;
-	
+	private String packagingType;
+	private String srcPomFileName;
+	private File pomFile;
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
+		System.out.println("**********************************");
+		System.out.println("FELIX PLUGIN CALLED");
+		System.out.println("**********************************");
 		baseDir = mavenProjectInfo.getBaseDir();
         project = mavenProjectInfo.getProject();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
@@ -116,8 +120,7 @@ public class Package implements PluginConstants {
         } else {
         	workingDirectory = new File(baseDir.getPath());
         }
-        pomName = getPomFile().getName();  
-        packagingType = getPackagingType();
+        initPomAndPackage();
         PluginUtils.checkForConfigurations(workingDirectory, environmentName);
         try { 
 			init();
@@ -134,27 +137,48 @@ public class Package implements PluginConstants {
 			}
 			cleanUp();
 		} catch (MojoExecutionException e) {
+			e.printStackTrace();
 			throw new PhrescoException(e);
 		} catch (IOException e) {
 			throw new PhrescoException(e);
 		}	
 	}
 	
-	private String getPackagingType() throws PhrescoException {
-		StringBuilder builder = new StringBuilder();
-		builder.append(baseDir.getPath())
-		.append(File.separatorChar);
-		if(StringUtils.isNotEmpty(subModule)) {
-			builder.append(subModule);
-			builder.append(File.separatorChar);
+	private void initPomAndPackage() throws PhrescoException {
+		System.out.println("WORKING DIR IS " + workingDirectory);
+		ApplicationInfo appInfo = pu.getAppInfo(workingDirectory);
+		String pomFileName = Utility.getPhrescoPomFromWorkingDirectory(appInfo, workingDirectory);
+		pomFile = new File(workingDirectory.getPath() + File.separator + pomFileName);
+		srcPomFileName = project.getFile().getName();
+		packagingType = project.getPackaging();
+		if(project.getFile().getName().equals(appInfo.getPhrescoPomFile())) {
+			try {
+				File srcPomFile = new File(workingDirectory.getPath() + File.separator + appInfo.getPomFile());
+				if(!srcPomFile.exists()) {
+					srcPomFile = new File(workingDirectory.getPath() + File.separator + "pom.xml");
+				}
+				packagingType = new PomProcessor(srcPomFile).getModel().getPackaging();
+				srcPomFileName = srcPomFile.getName();
+			} catch (PhrescoPomException e) {
+				throw new PhrescoException(e);
+			}
 		}
-		builder.append(pomName);
+	}
+	
+	private List<String> getModules() throws PhrescoException {
+		List<String> modules = new ArrayList<String>();
+		File pomFile = new File(baseDir, project.getProperties().getProperty("source.pom"));
+		PomProcessor processor;
 		try {
-			PomProcessor pomProcessor = new PomProcessor(new File(builder.toString()));
-			return pomProcessor.getModel().getPackaging();
+			processor = new PomProcessor(pomFile);
+			Modules pomModule = processor.getPomModule();
+			if(pomModule != null) {
+				modules = pomModule.getModule();
+			}
 		} catch (PhrescoPomException e) {
 			throw new PhrescoException(e);
 		}
+		return modules;
 	}
 	
 	private void setFileSetExcludes(WarConfigProcessor configProcessor, String FileSetId, List<String> exclues) throws PhrescoException {
@@ -300,7 +324,7 @@ public class Package implements PluginConstants {
 		if(CollectionUtils.isNotEmpty(modules)) {
 			for (String mavenProject : modules) {
 				File pomFile = new File(project.getBasedir(), File.separator
-						+ mavenProject + File.separator + pomName);
+						+ mavenProject + File.separator + srcPomFileName);
 				if (pomFile.exists()) {
 					PomProcessor processor = new PomProcessor(pomFile);
 					if (processor.getPackage().equals(PACKAGING_TYPE_WAR)) {
@@ -397,37 +421,61 @@ public class Package implements PluginConstants {
 		}
 	}
 	
-	private void executeMvnPackage() throws MojoExecutionException, IOException {
+	private void executeMvnPackage() throws MojoExecutionException, IOException, PhrescoException {
 		log.info("Packaging the project...");
-		BufferedReader bufferedReader = null;
 		StringBuilder sb = new StringBuilder();
 		sb.append(MVN_CMD);
 		sb.append(STR_SPACE);
 		sb.append(MVN_PHASE_CLEAN);
 		sb.append(STR_SPACE);
 		sb.append(MVN_PHASE_INSTALL);
-		if(!Constants.POM_NAME.equals(pomName)) {
-			sb.append(STR_SPACE);
-			sb.append(Constants.HYPHEN_F);
-			sb.append(STR_SPACE);
-			sb.append(pomName);
-		}
+		sb.append(STR_SPACE);
+		sb.append(Constants.HYPHEN_F);
+		sb.append(STR_SPACE);
+		sb.append(project.getFile().getName());
 		sb.append(STR_SPACE);
 		sb.append(builder.toString());
-		if (StringUtils.isNotEmpty(subModule)) {
-			sb.append(HYPHEN_AM_HYPHEN_PL + subModule);
-		}
-		String line ="";
+//		if (StringUtils.isNotEmpty(subModule)) {
+//			sb.append(HYPHEN_AM_HYPHEN_PL + subModule);
+//		}
 		String processName = ManagementFactory.getRuntimeMXBean().getName();
 		String[] split = processName.split("@");
 		String processId = split[0].toString();
-		Utility.writeProcessid(baseDir.getPath(), "package", processId);
-		bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
-		while ((line = bufferedReader.readLine()) != null) {
-				System.out.println(line); //do not use getLog() here as this line already contains the log type.
+		Utility.writeProcessid(workingDirectory.getPath(), "package", processId);
+		
+		String command = sb.toString();
+		List<String> buildModules = getBuildModules(subModule);
+		if(CollectionUtils.isEmpty(buildModules) && CollectionUtils.isNotEmpty(getModules())) {
+			buildModules = getModules();
+		}
+		if(CollectionUtils.isNotEmpty(buildModules)) {
+			for (String string : buildModules) {
+				File dir = new File(baseDir, string);
+				executeCommand(command, dir);
 			}
+			return;
+		}
+		executeCommand(command, baseDir);
 	}
-
+	
+	private void executeCommand(String command, File workDir) throws IOException {
+		String line ="";
+		BufferedReader bufferedReader = Utility.executeCommand(command, workDir.toString());
+		while ((line = bufferedReader.readLine()) != null) {
+			System.out.println(line); //do not use getLog() here as this line already contains the log type.
+		}
+	}
+	
+	private List<String> getBuildModules(String module) throws PhrescoException {
+		List<String> buildModules = new ArrayList<String>();
+		List<String> modules = getModules();
+		if(CollectionUtils.isNotEmpty(modules)) {
+			int intex = modules.indexOf(module);
+			buildModules = modules.subList(0, intex+ 1);
+		}
+		return buildModules;
+	}
+	
 	private boolean build() throws MojoExecutionException {
 		boolean isBuildSuccess = true;
 		try {
@@ -455,7 +503,7 @@ public class Package implements PluginConstants {
 		PomProcessor processor  = null;
 		File sourceConfigXML = null;
 		try {
-			processor = new PomProcessor(getPomFile());
+			processor = new PomProcessor(pomFile);
 			String configXml = processor.getProperty(POM_PROP_CONFIG_FILE);
 			if(StringUtils.isNotEmpty(configXml)) {
 				sourceConfigXML = new File(workingDirectory + configXml);
@@ -471,14 +519,6 @@ public class Package implements PluginConstants {
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage());
 		}
-	}
-	
-	private File getPomFile() throws PhrescoException {
-		ApplicationInfo appInfo = pu.getAppInfo(workingDirectory);
-		String pomFileName = Utility.getPhrescoPomFromWorkingDirectory(appInfo, workingDirectory);
-		File pom = new File(workingDirectory.getPath() + File.separator + pomFileName);
-		
-		return pom;
 	}
 	
 	private void createPackage() throws MojoExecutionException {

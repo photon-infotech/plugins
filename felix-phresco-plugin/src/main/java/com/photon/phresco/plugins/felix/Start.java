@@ -78,8 +78,8 @@ public class Start implements PluginConstants {
 			workingDirectory = new File(baseDir + File.separator + subModule);
 		}
 		pu = new PluginUtils();
-		pomFile = getPomFile();
-		pomFileName = pomFile.getName();
+		pomFile = project.getFile();
+		pomFileName = project.getFile().getName();
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
 		environmentName = configs.get(ENVIRONMENT_NAME);
 		importSql = Boolean.parseBoolean(configs.get(EXECUTE_SQL));
@@ -189,24 +189,14 @@ public class Start implements PluginConstants {
 				sb.append(STR_SPACE);
 				sb.append(SERVER_ENV);
 				sb.append(environmentName);
-				if(!Constants.POM_NAME.equals(pomFileName)) {
-					sb.append(STR_SPACE);
-					sb.append(Constants.HYPHEN_F);
-					sb.append(STR_SPACE);
-					sb.append(pomFileName);
-				}
+				sb.append(STR_SPACE);
+				sb.append(Constants.HYPHEN_F);
+				sb.append(STR_SPACE);
+				sb.append(pomFileName);
 				fos = new FileOutputStream(errorLog, false);
 				Utility.executeStreamconsumerFOS(workingDirectory.toString(),sb.toString(), fos);
 			} catch (FileNotFoundException e) {
 				throw new MojoExecutionException(e.getMessage(), e);
 			}
-	}
-	
-	private File getPomFile() throws PhrescoException {
-		ApplicationInfo appInfo = pu.getAppInfo(workingDirectory);
-		String pomFileName = Utility.getPhrescoPomFromWorkingDirectory(appInfo, workingDirectory);
-		File pom = new File(workingDirectory.getPath() + File.separator + pomFileName);
-		
-		return pom;
 	}
 }
