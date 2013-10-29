@@ -569,9 +569,10 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 				}
 			}
 		}
+		workingDir = workingDirectory.getPath();
 		if(value.equals(FUNCTIONAL)) {
 			sb.delete(0, sb.length());
-			workingDir = workingDir + getFunctionalDir(workingDirectory);
+			workingDir = workingDirectory.getPath() + getFunctionalDir(workingDirectory);
 			sb.append(SONAR_COMMAND).
 			append(STR_SPACE).
 			append(SKIP_TESTS).
@@ -585,7 +586,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			sb.append(STR_SPACE);
 			sb.append(pomFile);
 		}
-		boolean status = Utility.executeStreamconsumer(sb.toString(), workingDirectory.getPath(), workingDirectory.getPath(), CODE_VALIDATE);
+		boolean status = Utility.executeStreamconsumer(sb.toString(), workingDir, workingDirectory.getPath(), CODE_VALIDATE);
 		if(!status) {
 			try {
 				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
