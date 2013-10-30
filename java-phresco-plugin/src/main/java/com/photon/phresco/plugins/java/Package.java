@@ -465,10 +465,12 @@ public class Package implements PluginConstants {
 		if(CollectionUtils.isNotEmpty(buildModules)) {
 			for (String string : buildModules) {
 				File dir = new File(baseDir, string);
+				executeCommand(command, baseDir);
 				executeCommand(command, dir);
 			}
 			return;
 		}
+		
 		executeCommand(command, baseDir);
 	}
 	
