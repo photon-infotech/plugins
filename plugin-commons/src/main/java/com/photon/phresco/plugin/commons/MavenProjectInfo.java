@@ -19,6 +19,9 @@ package com.photon.phresco.plugin.commons;
 
 import java.io.File;
 
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.project.MavenProject;
 
 public class MavenProjectInfo {
@@ -27,6 +30,9 @@ public class MavenProjectInfo {
     private MavenProject project;
     private String projectCode;
     private String moduleName;
+    private MavenSession mavenSession;
+    private BuildPluginManager pluginManager;
+    private ArtifactRepository localRepository;
     
 	public String getProjectCode() {
 		return projectCode;
@@ -58,6 +64,30 @@ public class MavenProjectInfo {
 
 	public void setModuleName(String moduleName) {
 		this.moduleName = moduleName;
+	}
+
+	public void setMavenSession(MavenSession mavenSession) {
+		this.mavenSession = mavenSession;
+	}
+
+	public MavenSession getMavenSession() {
+		return mavenSession;
+	}
+
+	public void setPluginManager(BuildPluginManager pluginManager) {
+		this.pluginManager = pluginManager;
+	}
+
+	public BuildPluginManager getPluginManager() {
+		return pluginManager;
+	}
+
+	public void setLocalRepository(ArtifactRepository localRepository) {
+		this.localRepository = localRepository;
+	}
+
+	public ArtifactRepository getLocalRepository() {
+		return localRepository;
 	}
     
 }

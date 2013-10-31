@@ -35,7 +35,10 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
@@ -176,7 +179,20 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
         mavenProjectInfo.setModuleName(subModule);
         return mavenProjectInfo;
     }
-
+	
+	protected MavenProjectInfo getMavenProjectInfo(MavenProject project, String subModule, MavenSession mavenSession, 
+			BuildPluginManager pluginManager,ArtifactRepository localRepository) {
+        MavenProjectInfo mavenProjectInfo = new MavenProjectInfo();
+    	mavenProjectInfo.setBaseDir(project.getBasedir());
+        mavenProjectInfo.setProject(project);
+        mavenProjectInfo.setProjectCode(project.getBasedir().getName());
+        mavenProjectInfo.setModuleName(subModule);
+        mavenProjectInfo.setPluginManager(pluginManager);
+        mavenProjectInfo.setMavenSession(mavenSession);
+        mavenProjectInfo.setLocalRepository(localRepository);
+        return mavenProjectInfo;
+    }
+	
 	protected Dependency getDependency(String infoFile, String goal) throws PhrescoException {
 		MojoProcessor processor = new MojoProcessor(new File(infoFile));
 		if (processor.getImplementationDependency(goal) != null) {
