@@ -104,6 +104,8 @@ public class PluginUtils {
 	private String port = null;
 	private String protocol = null;
 	private String serverContext = null;
+	private String performanceTestContext = null;
+	private String loadTestContext = null;
 
 	public void executeUtil(String environmentType, String basedir, File sourceConfigXML) throws PhrescoException {
 		try {
@@ -338,7 +340,7 @@ public class PluginUtils {
 			}
 		}
 	 
-	 public void adaptTestConfig(String testDirPath, Configuration configuration) throws PhrescoException {
+	 public void adaptTestConfig(String testDirPath, Configuration configuration, String testType) throws PhrescoException {
 			FileWriter out = null;
 			try {
 				File configFile = new File(testDirPath + PluginConstants.LOAD_TEST_CONFIG_FILE);
@@ -352,7 +354,15 @@ public class PluginUtils {
 				out.write(host + Constants.COMMA);
 				out.write(port + Constants.COMMA);
 				out.write(protocol + Constants.COMMA);
-				out.write(serverContext);
+				
+				if("performanceTest".equals(testType) && StringUtils.isNotEmpty(performanceTestContext)) {
+					out.write(performanceTestContext);
+				} else if("loadTest".equals(testType) && StringUtils.isNotEmpty(loadTestContext)) {
+					out.write(loadTestContext);
+				} else {
+					out.write(serverContext);
+				}
+				
 				out.flush();
 			} catch (IOException e) {
 				throw new PhrescoException(e);
@@ -374,6 +384,9 @@ public class PluginUtils {
 				port = configuration.getProperties().getProperty(Constants.SERVER_PORT);
 				protocol = configuration.getProperties().getProperty(Constants.SERVER_PROTOCOL);
 				serverContext = configuration.getProperties().getProperty(Constants.SERVER_CONTEXT);
+				
+				performanceTestContext = configuration.getProperties().getProperty(Constants.PERFORMANCE_CONTEXT);
+				loadTestContext = configuration.getProperties().getProperty(Constants.LOAD_CONTEXT);
 			}
 
 			if (type.equalsIgnoreCase("WebService")) {

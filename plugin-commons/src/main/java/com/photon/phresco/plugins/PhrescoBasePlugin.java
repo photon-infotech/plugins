@@ -304,7 +304,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 					pomProcessor.addConfiguration(COM_LAZERYCODE_JMETER, JMETER_MAVEN_PLUGIN, configList);
 					pomProcessor.save();
 					String testConfigFilePath = workingDir.getPath() + File.separator + performanceTestDir + File.separator + TESTS_FOLDER;
-					pluginUtils.adaptTestConfig(testConfigFilePath + File.separator , config);
+					pluginUtils.adaptTestConfig(testConfigFilePath + File.separator , config, "performanceTest");
 					String jsonFile = workingDir.getPath() + File.separator + performanceTestDir + File.separator + Constants.FOLDER_JSON + File.separator+ testName + Constants.DOT_JSON;
 					BufferedReader bufferedReader = new BufferedReader(new FileReader(jsonFile));
 					Gson gson = new Gson();
@@ -508,7 +508,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 					pomProcessor.addConfiguration(COM_LAZERYCODE_JMETER, JMETER_MAVEN_PLUGIN, configList);
 					pomProcessor.save();
 					String testConfigFilePath = workingDir.getPath() + File.separator + loadTestDir + File.separator + TESTS_FOLDER;
-					pluginUtils.adaptTestConfig(testConfigFilePath + File.separator , config);
+					pluginUtils.adaptTestConfig(testConfigFilePath + File.separator , config, "loadTest");
 					String jsonFile = workingDir.getPath() + File.separator + loadTestDir + File.separator + Constants.FOLDER_JSON + File.separator+ testName + Constants.DOT_JSON;
 					BufferedReader bufferedReader = new BufferedReader(new FileReader(jsonFile));
 					Gson gson = new Gson();

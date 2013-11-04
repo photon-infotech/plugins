@@ -68,4 +68,17 @@ public class CQ5Plugin extends PhrescoBasePlugin {
 		return new DefaultExecutionStatus();
 	}
 	
+	@Override
+	public ExecutionStatus runPerformanceTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		PerformanceTest performanceTest = new PerformanceTest();
+		performanceTest.runPerformanceTest(configuration, mavenProjectInfo);
+		return new DefaultExecutionStatus();
+	}
+	
+	@Override
+	public ExecutionStatus runLoadTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		LoadTest loadTest = new LoadTest();
+		loadTest.runLoadTest(configuration, mavenProjectInfo);
+		return new DefaultExecutionStatus();
+	}
 }
