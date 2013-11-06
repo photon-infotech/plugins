@@ -212,7 +212,11 @@ public class Package implements PluginConstants {
 	
 	private List<String> getModules() throws PhrescoException {
 		List<String> modules = new ArrayList<String>();
-		File pomFile = new File(baseDir, project.getProperties().getProperty("source.pom"));
+		String sourcePom = project.getProperties().getProperty("source.pom");
+		if(StringUtils.isEmpty(sourcePom)) {
+			sourcePom = project.getFile().getName();
+		}
+		File pomFile = new File(baseDir, sourcePom);
 		PomProcessor processor;
 		try {
 			processor = new PomProcessor(pomFile);
