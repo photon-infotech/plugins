@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="MultiModuleReport" pageWidth="595" pageHeight="842" whenNoDataType="BlankPage" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryNewPage="true" scriptletClass="com.photon.phresco.plugins.Scriptlet">
 	<property name="ireport.zoom" value="1.100000000000001"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="144"/>
+	<property name="ireport.y" value="118"/>
 	<import value="org.apache.commons.collections.CollectionUtils"/>
 	<import value="org.apache.commons.codec.binary.Base64"/>
 	<style name="PCRTitle"/>
@@ -197,21 +197,21 @@
 					<reportElement style="PCRTitleRectLogo" x="0" y="2" width="555" height="77"/>
 				</rectangle>
 				<staticText>
-					<reportElement style="PCRTitleLabel" x="18" y="29" width="112" height="20"/>
+					<reportElement style="PCRTitleLabel" x="18" y="29" width="112" height="20" forecolor="#FFFFFF"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Times New Roman" size="12" isBold="true"/>
 					</textElement>
 					<text><![CDATA[Version :]]></text>
 				</staticText>
 				<staticText>
-					<reportElement style="PCRTitleLabel" x="18" y="49" width="112" height="20"/>
+					<reportElement style="PCRTitleLabel" x="18" y="49" width="112" height="20" forecolor="#FFFFFF"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Times New Roman" size="12" isBold="true"/>
 					</textElement>
 					<text><![CDATA[Date :]]></text>
 				</staticText>
 				<textField>
-					<reportElement style="PCRTitleLabelValue" x="132" y="9" width="257" height="20"/>
+					<reportElement style="PCRTitleLabelValue" x="132" y="9" width="257" height="20" forecolor="#FFFFFF"/>
 					<textElement verticalAlignment="Middle">
 						<font fontName="Times New Roman" size="11" isBold="true"/>
 					</textElement>
@@ -219,21 +219,21 @@
 					<anchorNameExpression><![CDATA[$F{applicationName} + $V{PAGE_NUMBER}]]></anchorNameExpression>
 				</textField>
 				<textField>
-					<reportElement style="PCRTitleLabelValue" x="132" y="49" width="257" height="20"/>
+					<reportElement style="PCRTitleLabelValue" x="132" y="49" width="257" height="20" forecolor="#FFFFFF"/>
 					<textElement verticalAlignment="Middle">
 						<font fontName="Times New Roman" size="11" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement style="PCRTitleLabelValue" x="132" y="29" width="257" height="20"/>
+					<reportElement style="PCRTitleLabelValue" x="132" y="29" width="257" height="20" forecolor="#FFFFFF"/>
 					<textElement verticalAlignment="Middle">
 						<font fontName="Times New Roman" size="11" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{version}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement style="PCRTitleLabel" x="18" y="9" width="112" height="20"/>
+					<reportElement style="PCRTitleLabel" x="18" y="9" width="112" height="20" forecolor="#FFFFFF"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Times New Roman" size="12" isBold="true"/>
 					</textElement>

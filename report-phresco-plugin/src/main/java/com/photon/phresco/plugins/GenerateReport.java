@@ -132,7 +132,9 @@ import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.plugins.util.PluginPackageUtil;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
+import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.model.Model;
+import com.phresco.pom.model.Model.Modules;
 import com.phresco.pom.model.Model.Profiles;
 import com.phresco.pom.model.Profile;
 import com.phresco.pom.util.PomProcessor;
@@ -2870,8 +2872,15 @@ public class GenerateReport implements PluginConstants {
 	public void multiModulereport(Configuration config) throws Exception {
     	setReportFileName();
     	
-    	List<String> modules = PluginUtils.getProjectModules(mavenProject);
+    	List<String> modules = null;
     	
+    	String rootPomFile = mavenProject.getProperties().getProperty("source.pom");
+		if (StringUtils.isNotEmpty(rootPomFile)) {
+			modules = getMultiModules(modules, rootPomFile);
+		} else {
+			modules = PluginUtils.getProjectModules(mavenProject);
+		}
+		
 		Map<String, Object> reportParams = new HashMap<String,Object>();
 		reportParams.put(COPY_RIGHTS, copyRights);
 		reportParams.put(REPORTS_TYPE, reportType);
@@ -2924,9 +2933,24 @@ public class GenerateReport implements PluginConstants {
 	        	multiModuleReports.add(multiModuleReport);
 			}
     	}
-    	
     	// generate report method call here
     	generateMultiModuleReport(multiModuleReports, reportParams);
+	}
+
+	private List<String> getMultiModules(List<String> modules,
+			String rootPomFile) throws PhrescoException {
+		File pomFile = new File(baseDir, rootPomFile);
+		PomProcessor processor;
+		try {
+			processor = new PomProcessor(pomFile);
+			Modules pomModule = processor.getPomModule();
+			if(pomModule != null) {
+				modules = pomModule.getModule();
+			}
+		} catch (PhrescoPomException e) {
+			throw new PhrescoException(e);
+		}
+		return modules;
 	}
 	
 	// Generate the pdf report with all modules
@@ -3035,7 +3059,13 @@ public class GenerateReport implements PluginConstants {
 	}
 	
 	private boolean isMultiModuleProject() throws PhrescoException {
-		List<String> modules = PluginUtils.getProjectModules(mavenProject);
+		List<String> modules = null;
+		String rootPomFile = mavenProject.getProperties().getProperty("source.pom");
+		if (StringUtils.isNotEmpty(rootPomFile)) {
+			modules = getMultiModules(modules, rootPomFile);
+		} else {
+			modules = PluginUtils.getProjectModules(mavenProject);
+		}
 		boolean isMultiModuleProject = false;
 		if (CollectionUtils.isNotEmpty(modules)) {
 			isMultiModuleProject = true;
@@ -3158,24 +3188,31 @@ public class GenerateReport implements PluginConstants {
 	}
 	
 	private void applyTheme(JasperPrint jasperPrint) throws Exception {
+		
+		
 		if (MapUtils.isNotEmpty(theme)) {
-			titleColor = "#d3d3d3";
-//			titleLabelColor = theme.get("PageHeaderColor");
-			
-			headingForeColor = "#333333"; // heading yellow color
-			headingBackColor = "#d3d3d3";
-
-			headingRowBackColor = "#d3d3d3"; //HeadingRow - light color
-			headingRowLabelBackColor = "#d3d3d3";
-			headingRowTextBackColor = "#d3d3d3";
-			headingRowLabelForeColor = "#333333"; 
-			headingRowTextForeColor = "#333333"; 
-//			
-			copyRightBackColor = "#d3d3d3";
-			copyRightForeColor = "#333333";
-//			
-			copyRightPageNumberForeColor = "#333333";
-			copyRightPageNumberBackColor = "#d3d3d3";
+			if(StringUtils.isNotEmpty(theme.get("headerBackGroundcolorTop"))){
+				titleColor = theme.get("headerBackGroundcolorTop");
+				titleLabelColor = theme.get("headerBackGroundcolorTop");
+				headingForeColor = theme.get("headerBackGroundcolorTop");
+//				headingRowBackColor = theme.get("headerBackGroundcolorTop");
+				copyRightBackColor = theme.get("headerBackGroundcolorTop");
+				copyRightPageNumberBackColor = theme.get("headerBackGroundcolorTop");
+			}
+			if(StringUtils.isNotEmpty(theme.get("pageTitleBackGroundTop"))){
+				headingBackColor = theme.get("pageTitleBackGroundTop");
+				headingRowTextBackColor = theme.get("pageTitleBackGroundTop");
+				headingRowBackColor = theme.get("headerBackGroundcolorTop");
+			}
+			if(StringUtils.isNotEmpty(theme.get("editNavigationActiveBackGroundTop"))){
+				headingRowLabelBackColor = theme.get("editNavigationActiveBackGroundTop");
+			}
+			if(StringUtils.isNotEmpty(theme.get("pageTitleBackGroundBottom"))){
+				headingRowLabelForeColor = theme.get("pageTitleBackGroundBottom");
+				headingRowTextForeColor = theme.get("pageTitleBackGroundBottom");
+				copyRightForeColor = theme.get("pageTitleBackGroundBottom");
+				copyRightPageNumberForeColor = theme.get("pageTitleBackGroundBottom");
+			}
 		}
 		
 		java.awt.Color userTitleColor = java.awt.Color.decode(titleColor);
