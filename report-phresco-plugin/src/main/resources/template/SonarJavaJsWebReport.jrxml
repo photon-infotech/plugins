@@ -64,7 +64,13 @@
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="2"/>
+		<band height="2">
+			<line>
+				<reportElement x="1" y="1" width="1" height="1">
+					<printWhenExpression><![CDATA[$P{REPORT_SCRIPTLET}.updateTOC("SonarReport", $P{masterPageNo})]]></printWhenExpression>
+				</reportElement>
+			</line>
+		</band>
 	</title>
 	<detail>
 		<band height="625" splitType="Stretch">
