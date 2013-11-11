@@ -580,7 +580,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			append("-Dsonar.branch=functional");
 		}
 		File workingFile = new File(workingDir + File.separator + POM_XML);
-		if(workingFile.exists()) {
+		if(workingFile.exists() && !value.equals(FUNCTIONAL)) {
 			sb.append(STR_SPACE);
 			sb.append(Constants.HYPHEN_F);
 			sb.append(STR_SPACE);
