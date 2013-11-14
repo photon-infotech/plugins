@@ -39,16 +39,21 @@ public class FunctionalTest implements PluginConstants {
 		String workingDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
 		String baseDir = mavenProjectInfo.getBaseDir().getPath();
 		String pomFile = project.getFile().getName();
+		Map<String, String> configs = MojoUtil.getAllValues(config);
 		// calabash Execution
 		if(StringUtils.isNotEmpty((seleniumToolType)) && seleniumToolType.equals(CALABASH)) {
 			StringBuilder builder = new StringBuilder();
 			builder.append(CALABASH_IOS_COMMAND)
-			.append(STR_SPACE)
-			.append("-f junit -o test-reports -f html -o test-reports/calabash.html");
+			.append(STR_SPACE);
+			String device = configs.get(DEVICE);
+			if (StringUtils.isNotEmpty(device) && device.equals(DEVICE_IPAD)) {
+				builder.append("DEVICE=" + device)
+				.append(STR_SPACE);
+			}
+			builder.append("-f junit -o test-reports -f html -o test-reports/calabash.html");
 			Utility.executeStreamconsumer(builder.toString(), baseDir + File.separator + workingDir, baseDir, FUNCTIONAL);
 			return;
 		}
-		Map<String, String> configs = MojoUtil.getAllValues(config);
 		String buildNumber = configs.get(BUILD_NUMBER);
 		String deviceId = configs.get(DEVICE_ID);
 		if (StringUtils.isEmpty(buildNumber)) {

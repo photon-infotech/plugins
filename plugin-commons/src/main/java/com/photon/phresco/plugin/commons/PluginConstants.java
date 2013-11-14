@@ -358,6 +358,8 @@ public interface PluginConstants {
 	 String JSTEST						= "jstest/src/WEB-INF";
 	 String CALABASH_IOS_COMMAND		= "cucumber";
 	 String MAC							= "mac";
+	 String DEVICE						= "device";
+	 String DEVICE_IPAD					= "ipad";
 	 
 	 //Constants for Android
 	 
