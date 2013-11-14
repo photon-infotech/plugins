@@ -70,9 +70,11 @@ import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.util.JRLoader;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
@@ -134,6 +136,7 @@ import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
 import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.model.Model;
+import com.phresco.pom.model.Plugin;
 import com.phresco.pom.model.Model.Modules;
 import com.phresco.pom.model.Model.Profiles;
 import com.phresco.pom.model.Profile;
@@ -1140,6 +1143,7 @@ public class GenerateReport implements PluginConstants {
         
         // List of performance test types
         ArrayList<JmeterTypeReport> jmeterTypeReports = new ArrayList<JmeterTypeReport>();
+        ApplicationInfo applicationInfo = getApplicationInfo();
         for(String testResultsType : testResultsTypes) {
         	String reportDir = "";
         	String reportExtension = "";
@@ -1169,8 +1173,15 @@ public class GenerateReport implements PluginConstants {
 			List<JmeterReport> jmeterReports = new ArrayList<JmeterReport>();
 			if (CollectionUtils.isNotEmpty(testResultFiles)) {
 				for (String testResultFile : testResultFiles) {
+					List<Images> screenShots = new ArrayList<Images>();
 					Document document = getDocumentOfFile(reportDir, testResultFile);
 					JmeterReport jmeterReport = getPerformanceReport(document, testResultFile, deviceId); // need to pass tech id and tag name
+					// get images of the perforamce report file
+					screenShots = getScreenShot(testResultsType, testResultFile, applicationInfo.getAppDirName(), testType);
+					if(CollectionUtils.isNotEmpty(screenShots)) {
+						jmeterReport.setImages(screenShots); 
+					}
+					
 					jmeterReports.add(jmeterReport);
 				}
 			}
@@ -1189,6 +1200,56 @@ public class GenerateReport implements PluginConstants {
         	List<JmeterReport> fileReports = jmeterTypeReport.getFileReport();
 		}
         return jmeterTypeReports;
+	}
+	
+	private List<Images> getScreenShot(String testAgainst, String resultFile, String appDirName, String from) throws PhrescoException {
+		List<Images> imgSources = new ArrayList<Images>();
+		try {
+			String testDir = "";
+			StringBuilder sb = new StringBuilder(baseDir.toString());
+			StringBuilder pomDir = new StringBuilder(baseDir.toString());
+			pomDir.append(File.separator)
+			.append("test")
+			.append(File.separator)
+			.append(from)
+			.append(File.separator)
+			.append(testAgainst)
+			.append(File.separator);
+			
+			int lastDot = resultFile.lastIndexOf(".");
+			String resultName = resultFile.substring(0, lastDot);
+
+			File testPomFile = new File(pomDir.toString() + File.separator + POM_XML);
+			PomProcessor pomProcessor = new PomProcessor(testPomFile);
+			Plugin plugin = pomProcessor.getPlugin(COM_LAZERYCODE_JMETER, JMETER_MAVEN_PLUGIN);
+			com.phresco.pom.model.Plugin.Configuration jmeterConfiguration = plugin.getConfiguration();
+			List<Element> jmeterConfigs = jmeterConfiguration.getAny();
+			for (Element element : jmeterConfigs) {
+				if (PLUGIN_TYPES.equalsIgnoreCase(element.getTagName()) && element.hasChildNodes()) {
+					NodeList types = element.getChildNodes();
+					for (int i = 0; i < types.getLength(); i++) {
+						Node pluginType = types.item(i);
+						if (StringUtils.isNotEmpty(pluginType.getTextContent())) {
+							File imgFile = new File(pomDir.toString() + RESULTS_JMETER_GRAPHS + resultName + HYPHEN + pluginType.getTextContent() + PNG);
+							if (imgFile.exists()) {
+								Images imgSource = new Images();
+								InputStream imageStream = new FileInputStream(imgFile);
+								String imgSrc = new String(Base64.encodeBase64(IOUtils.toByteArray(imageStream)));
+								imgSource.setImage(imgSrc);
+								imgSource.setImageName(resultName + HYPHEN + pluginType.getTextContent());
+								imgSources.add(imgSource);
+							}
+						}
+					}
+				}
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new PhrescoException(e);
+		}
+		
+		return imgSources;
 	}
 	
 	public List<AndroidPerfReport> getJmeterTestResultsForAndroid() throws Exception {

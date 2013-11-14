@@ -31,6 +31,7 @@
 	<field name="totalKbPerSec" class="java.lang.String"/>
 	<field name="totalAvgBytes" class="java.lang.String"/>
 	<field name="jmeterTestResult" class="java.util.List"/>
+	<field name="images" class="java.util.List"/>
 	<detail>
 		<band height="82" splitType="Stretch">
 			<frame>
@@ -95,6 +96,17 @@
 					</subreportParameter>
 					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.JREmptyDataSource()]]></dataSourceExpression>
 					<subreportExpression><![CDATA["PhrescoPerfFileDatas.jasper"]]></subreportExpression>
+				</subreport>
+			</frame>
+		</band>
+		<band height="50">
+			<printWhenExpression><![CDATA[$P{showGraphs}.booleanValue()]]></printWhenExpression>
+			<frame>
+				<reportElement x="0" y="0" width="555" height="50"/>
+				<subreport>
+					<reportElement x="0" y="0" width="555" height="50"/>
+					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{images})]]></dataSourceExpression>
+					<subreportExpression><![CDATA["PhrescoPerfFiles_subreport2.jasper"]]></subreportExpression>
 				</subreport>
 			</frame>
 		</band>

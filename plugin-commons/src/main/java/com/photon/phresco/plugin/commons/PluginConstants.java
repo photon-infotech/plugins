@@ -33,6 +33,7 @@ public interface PluginConstants {
      String STR_SPACE 					= " ";
      String SHELL_SPACE 				= "\\ ";
      String STR_UNDERSCORE				= "_";
+     String HYPHEN						= "-";
      String PROJECT_INFO_FILE			= "project.info";
      String PLUGIN_INFO_FILE			= "phresco-plugin-info.xml";
      String FORWARD_SLASH               = "/";
@@ -58,7 +59,10 @@ public interface PluginConstants {
      String CSV_PATTERN 				= "\\s*,\\s*";
      String JMETER_MAVEN_PLUGIN 		= "jmeter-maven-plugin";
  	 String COM_LAZERYCODE_JMETER 		= "com.lazerycode.jmeter";
+ 	 String RESULTS_JMETER_GRAPHS       = "/results/jmeter/graphs/";
+ 	 String PLUGIN_TYPES                = "pluginTypes";
 	 String TESTS_SLASH  				= "tests/";
+	 String PNG                         = ".png";
 	 String PHRESCO_FRAME_WORK_TEST_PLAN_JMX = "PhrescoFrameWork_TestPlan.jmx";
 	 String SEP 						= "#SEP#";
 	 String JMETER_TEST_FILE 			= "jMeterTestFile";

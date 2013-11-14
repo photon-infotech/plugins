@@ -33,6 +33,7 @@ public class JmeterReport {
 	private String totalErr;
 	private String totalKbPerSec;
 	private String totalAvgBytes;
+	private List<Images> images;
 	
 	public String getFileName() {
 		return fileName;
@@ -100,6 +101,11 @@ public class JmeterReport {
 	public void setTotalAvgBytes(String totalAvgBytes) {
 		this.totalAvgBytes = totalAvgBytes;
 	}
-
+	public List<Images> getImages() {
+		return images;
+	}
+	public void setImages(List<Images> images) {
+		this.images = images;
+	}
 
 }
