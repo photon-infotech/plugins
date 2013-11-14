@@ -98,11 +98,11 @@ public class JavaTest implements PluginConstants {
 			PomProcessor processor ;
 			String testSourcePath;
 			if(StringUtils.isEmpty(projectModule)) {
-				processor = new PomProcessor( new File(baseDir.getPath() + File.separator + pomFile));
+				processor = new PomProcessor(pomFile);
 				testSourcePath = processor.getProperty("phresco.env.test.config.xml");
 				testConfigPath = new File(baseDir + File.separator + testSourcePath);
 			} else {
-				processor = new PomProcessor( new File(baseDir.getPath() + File.separator + projectModule + File.separator + pomFile));
+				processor = new PomProcessor( new File(baseDir.getPath() + File.separator + projectModule + File.separator + pomFile.getName()));
 				testSourcePath = processor.getProperty("phresco.env.test.config.xml");
 				testConfigPath = new File(baseDir + File.separator + projectModule + File.separator + testSourcePath);
 			} 
@@ -172,7 +172,7 @@ public class JavaTest implements PluginConstants {
 	
 	private String getGoalPackBeforeTest(File baseDir) throws PhrescoException {
 		try {
-			PomProcessor processor = new PomProcessor(new File(baseDir.getPath() + File.separator + pomFile));
+			PomProcessor processor = new PomProcessor(pomFile);
 			Plugin plugin = processor.getPlugin("net.awired.jstest", "jstest-maven-plugin");
 			if(plugin != null && plugin.getExecutions() != null && CollectionUtils.isNotEmpty(plugin.getExecutions().getExecution())) {
 				List<PluginExecution> execution = plugin.getExecutions().getExecution();
