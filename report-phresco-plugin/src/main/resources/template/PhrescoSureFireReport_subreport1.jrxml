@@ -3,6 +3,7 @@
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+    <import value="org.apache.commons.collections.CollectionUtils"/>
 	<style name="table" fontName="Times New Roman" fontSize="12">
 		<box>
 			<pen lineWidth="1.0" lineColor="#000000"/>
@@ -67,6 +68,7 @@
 	</background>
 	<title>
 		<band height="34" splitType="Stretch">
+			<printWhenExpression><![CDATA[CollectionUtils.isNotEmpty($P{allTestSuites})]]></printWhenExpression>
 			<staticText>
 				<reportElement x="0" y="10" width="122" height="20"/>
 				<textElement>
@@ -78,10 +80,11 @@
 	</title>
 	<detail>
 		<band height="87" splitType="Stretch">
+			<printWhenExpression><![CDATA[CollectionUtils.isNotEmpty($P{allTestSuites})]]></printWhenExpression>
 			<frame>
-				<reportElement x="0" y="0" width="555" height="87"/>
+				<reportElement x="0" y="0" width="555" height="87" isRemoveLineWhenBlank="true"/>
 				<componentElement>
-					<reportElement key="table" style="table" x="0" y="0" width="555" height="85"/>
+					<reportElement key="table" style="table" x="0" y="0" width="555" height="85" isRemoveLineWhenBlank="true"/>
 					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
 						<datasetRun subDataset="Table Dataset 1">
 							<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{allTestSuites})]]></dataSourceExpression>
@@ -249,8 +252,9 @@
 	</detail>
 	<summary>
 		<band height="161">
+			<printWhenExpression><![CDATA[CollectionUtils.isNotEmpty($P{allTestSuites})]]></printWhenExpression>
 			<frame>
-				<reportElement x="0" y="0" width="555" height="159">
+				<reportElement x="0" y="0" width="555" height="159" isRemoveLineWhenBlank="true">
 					<printWhenExpression><![CDATA[!$P{allTestSuites}.isEmpty()]]></printWhenExpression>
 				</reportElement>
 				<subreport>
