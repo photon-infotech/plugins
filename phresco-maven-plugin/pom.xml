@@ -73,5 +73,11 @@
         <artifactId>maven-project</artifactId>
         <version>${maven-project.version}</version>
     </dependency>
+    
+    <dependency>
+        <groupId>com.photon.phresco.plugins</groupId>
+        <artifactId>liquibase-phresco-plugin</artifactId>
+        <version>3.2.0.1004-SNAPSHOT</version>
+    </dependency>
   </dependencies>
 </project>
