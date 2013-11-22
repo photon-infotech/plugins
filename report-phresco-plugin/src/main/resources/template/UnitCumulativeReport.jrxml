@@ -3,6 +3,7 @@
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<import value="org.apache.commons.collections.CollectionUtils"/>
 	<style name="UCRTitle"/>
 	<style name="UCRTitleRect"/>
 	<style name="UCRTitleRectLogo"/>
@@ -58,9 +59,10 @@
 	</pageHeader>
 	<detail>
 		<band height="55">
+			<printWhenExpression><![CDATA[CollectionUtils.isNotEmpty($F{testSuites})]]></printWhenExpression>
 			<frame>
 				<reportElement positionType="Float" x="0" y="5" width="555" height="50" isRemoveLineWhenBlank="true">
-					<printWhenExpression><![CDATA[$P{testType}.contains("unit") && !$F{testSuites}.isEmpty()]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$P{testType}.contains("unit") && CollectionUtils.isNotEmpty($F{testSuites})]]></printWhenExpression>
 				</reportElement>
 				<subreport>
 					<reportElement x="0" y="0" width="555" height="50" isRemoveLineWhenBlank="true">
@@ -81,10 +83,10 @@
 			</frame>
 		</band>
 		<band height="50">
-			<printWhenExpression><![CDATA[!$F{jsTestSuites}.isEmpty()]]></printWhenExpression>
+			<printWhenExpression><![CDATA[CollectionUtils.isNotEmpty($F{jsTestSuites})]]></printWhenExpression>
 			<frame>
 				<reportElement positionType="Float" x="0" y="0" width="555" height="50" isRemoveLineWhenBlank="true">
-					<printWhenExpression><![CDATA[$P{testType}.contains("unit") && !$F{jsTestSuites}.isEmpty()]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$P{testType}.contains("unit") && CollectionUtils.isNotEmpty($F{jsTestSuites})]]></printWhenExpression>
 				</reportElement>
 			</frame>
 			<subreport>

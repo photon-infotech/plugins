@@ -370,9 +370,11 @@ public class GenerateReport implements PluginConstants {
 				
 				List<TestSuite> testSuitesUnit = unitTestSureFireReports.getTestSuites();
 				List<AllTestSuite> allTestSuitesUnit = unitTestSureFireReports.getAllTestSuites();
+				List<TestSuite> jsTestSuitesUnit = unitTestSureFireReports.getJsTestSuites();
+				List<AllTestSuite> jsAllTestSuitesUnit = unitTestSureFireReports.getJsAllTestSuites();
 				
 				cumulativeReportparams.put(IS_MULTI_MODULE_PROJECT, false);
-				if (CollectionUtils.isNotEmpty(allTestSuitesUnit) || CollectionUtils.isNotEmpty(testSuitesUnit)) {
+				if (CollectionUtils.isNotEmpty(allTestSuitesUnit) || CollectionUtils.isNotEmpty(testSuitesUnit) || CollectionUtils.isNotEmpty(jsTestSuitesUnit) || CollectionUtils.isNotEmpty(jsAllTestSuitesUnit)) {
 					cumulativeReportparams.put(UNIT_TEST_REPORTS, Arrays.asList(unitTestSureFireReports));
 				}
 			}

@@ -3,6 +3,7 @@
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<import value="org.apache.commons.collections.CollectionUtils"/>
 	<import value="org.apache.commons.codec.binary.Base64"/>
 	<style name="PSFRTitle"/>
 	<style name="PSFRTitleRect"/>
@@ -158,8 +159,9 @@
 	</title>
 	<detail>
 		<band height="50">
+			<printWhenExpression><![CDATA[CollectionUtils.isNotEmpty($F{allTestSuites})]]></printWhenExpression>
 			<frame>
-				<reportElement positionType="Float" x="0" y="0" width="555" height="50"/>
+				<reportElement positionType="Float" x="0" y="0" width="555" height="50" isRemoveLineWhenBlank="true"/>
 				<subreport>
 					<reportElement x="0" y="0" width="555" height="50"/>
 					<subreportParameter name="testType">
@@ -174,9 +176,9 @@
 			</frame>
 		</band>
 		<band height="50">
-			<printWhenExpression><![CDATA[!$F{jsAllTestSuites}.isEmpty()]]></printWhenExpression>
+			<printWhenExpression><![CDATA[CollectionUtils.isNotEmpty($F{jsAllTestSuites})]]></printWhenExpression>
 			<frame>
-				<reportElement positionType="Float" x="0" y="0" width="555" height="50"/>
+				<reportElement positionType="Float" x="0" y="0" width="555" height="50" isRemoveLineWhenBlank="true"/>
 				<subreport>
 					<reportElement x="0" y="0" width="555" height="50"/>
 					<subreportParameter name="testType">
@@ -191,9 +193,10 @@
 			</frame>
 		</band>
 		<band height="50">
+			<printWhenExpression><![CDATA[CollectionUtils.isNotEmpty($F{testSuites})]]></printWhenExpression>
 			<frame>
-				<reportElement positionType="Float" x="0" y="0" width="555" height="50">
-					<printWhenExpression><![CDATA[!$F{testSuites}.isEmpty()]]></printWhenExpression>
+				<reportElement positionType="Float" x="0" y="0" width="555" height="50" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[CollectionUtils.isNotEmpty($F{testSuites})]]></printWhenExpression>
 				</reportElement>
 				<subreport>
 					<reportElement x="0" y="0" width="555" height="50">
