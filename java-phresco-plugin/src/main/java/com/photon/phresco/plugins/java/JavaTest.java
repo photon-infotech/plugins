@@ -65,6 +65,7 @@ public class JavaTest implements PluginConstants {
 			Map<String, String> configs = MojoUtil.getAllValues(configuration);
 			String testAgainst = configs.get(TEST_AGAINST);
 			String environment = configs.get(ENVIRONMENT_NAME);
+			String webSeviceName = configs.get(WEBSERVICES);
 			String goalPackBeforeTest = "";
 			PluginUtils pluginUtils = new PluginUtils();
 			PomProcessor processor = new PomProcessor(pomFile);
@@ -84,7 +85,7 @@ public class JavaTest implements PluginConstants {
 			if (testAgainst.equals(JS)) {
 				ApplicationInfo appInfo = pluginUtils.getAppInfo(workingDirectory);
 				String techId = appInfo.getTechInfo().getId();
-				copyUnitInfoFile(environment, techId, subModule);
+				copyUnitInfoFile(environment, webSeviceName, techId, subModule);
 				goalPackBeforeTest = getGoalPackBeforeTest(workingDirectory);
 			}
 			buildCommand(configuration, testAgainst, goalPackBeforeTest, subModule);
@@ -93,7 +94,7 @@ public class JavaTest implements PluginConstants {
 		}
 	}
 
-	private void copyUnitInfoFile(String environment, String techId, String projectModule) throws PhrescoException {
+	private void copyUnitInfoFile(String environment, String selectedWebService, String techId, String projectModule) throws PhrescoException {
 		try {
 			PomProcessor processor ;
 			String testSourcePath;
@@ -111,7 +112,7 @@ public class JavaTest implements PluginConstants {
 				String fullPathNoEndSeparator = FilenameUtils.getFullPathNoEndSeparator(testConfigPath.getAbsolutePath());
 				File fullPathNoEndSeparatorFile = new File(fullPathNoEndSeparator);
 				fullPathNoEndSeparatorFile.mkdirs();
-				utils.executeUtil(environment, workingDirectory.getPath(), testConfigPath);
+				utils.executeUtil(environment, selectedWebService, workingDirectory.getPath(), testConfigPath);
 			}
 		} catch (PhrescoPomException e) {
 			throw new  PhrescoException(e);
