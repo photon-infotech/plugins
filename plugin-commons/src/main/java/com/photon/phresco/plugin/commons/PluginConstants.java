@@ -80,6 +80,7 @@ public interface PluginConstants {
      String JS 							= "js";
      String SONAR_LANGUAGE 				= "sonar.language";
      String CI_INFO_FILE				= "ciJob.info";
+     String GLOBAL_CI_INFO_FILE			= "global-ciJob.info";
      String WAR_CONFIG_FILE				= "war-config.xml";
      String POM_PROP_CONFIG_FILE        = "phresco.env.config.xml";
      String DEPENDENCY_JAR_DIRECTORY	= DO_NOT_CHECKIN_FOLDER + "/dependencyJars";
@@ -492,6 +493,7 @@ public interface PluginConstants {
 	 String BUILD_NAME 					= "buildName";
 	 String ENVIRONMENT_NAME 			= "environmentName";
 	 String WEBSERVICE 					= "webservice";
+	 String WEBSERVICES                 = "webservices"; 
 	 String WINDOWS_PLATFORM_TYPE		= "type";
 	 String CONFIG 						= "configuration";
 	 String PLATFORM 					= "platform";

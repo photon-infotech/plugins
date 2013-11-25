@@ -128,6 +128,30 @@ public class PluginUtils {
 			throw new PhrescoException(e);
 		}
 	}
+	
+	public void executeUtil(String environmentType, String selectedWebService, String basedir, File sourceConfigXML) throws PhrescoException {
+		try {
+			String projectCode = readProjectCode(new File(basedir));
+			File currentDirectory = new File(basedir);
+			File configXML = new File(currentDirectory + File.separator + 
+			PluginConstants.DOT_PHRESCO_FOLDER + File.separator + PluginConstants.CONFIG_FILE);
+			File settingsXML = new File(Utility.getProjectHome() + projectCode + Constants.SETTINGS_XML);
+			ConfigReader reader = new ConfigReader(configXML);
+			ConfigWriter writer = new ConfigWriter(reader, true);
+			writer.saveXml(sourceConfigXML, environmentType, selectedWebService);
+			if (settingsXML.exists()) {
+				ConfigReader srcReaderToAppend = new ConfigReader(sourceConfigXML);
+				
+				ConfigReader globalReader = new ConfigReader(settingsXML);
+				ConfigWriter globalWriter = new ConfigWriter(globalReader, true);
+				globalWriter.saveXml(srcReaderToAppend, environmentType, selectedWebService);
+			}
+		} catch (ConfigurationException e) {
+			throw new PhrescoException(e);
+		}
+	}
+
+	
 
 	public List<String> csvToList(String csvString) {
 		List<String> envs = new ArrayList<String>();
@@ -1278,6 +1302,29 @@ public class PluginUtils {
 		} catch (FileNotFoundException e) {
 			throw new PhrescoException(e);
 		}
+	}
+	
+	public String readProjectCode(File baseDir) throws PhrescoException {
+		ProjectInfo Projectinfo = null;
+		try {
+			File projectInfoPath = new File(baseDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER
+					+ File.separator + Constants.PROJECT_INFO_FILE);
+			if (projectInfoPath.exists()) {
+				BufferedReader bufferedReader = new BufferedReader(new FileReader(projectInfoPath));
+				Gson gson = new Gson();
+				Type type = new TypeToken<ProjectInfo>() {
+				}.getType();
+				Projectinfo = gson.fromJson(bufferedReader, type);
+			}
+			return Projectinfo.getProjectCode();
+		} catch (JsonIOException e) {
+			throw new PhrescoException(e);
+		} catch (JsonSyntaxException e) {
+			throw new PhrescoException(e);
+		} catch (FileNotFoundException e) {
+			throw new PhrescoException(e);
+		}
+		
 	}
 	
 	public static void createBuildResources(File packageInfoFile, File baseDir, File tempDir) throws MojoExecutionException {
