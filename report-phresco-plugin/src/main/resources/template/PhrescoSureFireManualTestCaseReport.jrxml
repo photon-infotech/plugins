@@ -181,7 +181,7 @@
 						<plot>
 							<seriesColor seriesOrder="0" color="#66FF66"/>
 							<seriesColor seriesOrder="1" color="#FF0000"/>
-							<seriesColor seriesOrder="2" color="#800000"/>
+							<seriesColor seriesOrder="2" color="#7474F7"/>
 							<seriesColor seriesOrder="3" color="#FFA500"/>
 							<seriesColor seriesOrder="4" color="#999999"/>
 						</plot>

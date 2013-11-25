@@ -1616,7 +1616,7 @@ public class GenerateReport implements PluginConstants {
 			  String value=getValue(cell);
 			  if(StringUtils.isNotEmpty(value)) {
 				  float pass=Float.parseFloat(value);
-				  testSuite.setTotal(pass);
+				  testSuite.setSuccess(pass);
 			  }
 		  }
 		  if(next.getCell(4)!=null){

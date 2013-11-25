@@ -52,7 +52,7 @@
 						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
 					</subreportParameter>
 					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.JREmptyDataSource()]]></dataSourceExpression>
-					<subreportExpression><![CDATA["PhrescoSureFireReport_subreport1.jasper"]]></subreportExpression>
+					<subreportExpression><![CDATA["PhrescoSureFireManualReport_subreport1.jasper"]]></subreportExpression>
 				</subreport>
 			</frame>
 		</band>
