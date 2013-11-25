@@ -492,6 +492,7 @@ public interface PluginConstants {
 	 String BUILD_NAME 					= "buildName";
 	 String ENVIRONMENT_NAME 			= "environmentName";
 	 String WEBSERVICE 					= "webservice";
+	 String WEBSERVICES                 = "webservices"; 
 	 String WINDOWS_PLATFORM_TYPE		= "type";
 	 String CONFIG 						= "configuration";
 	 String PLATFORM 					= "platform";
