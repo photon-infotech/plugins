@@ -2,10 +2,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>phresco-plugins-root</artifactId>
-        <groupId>com.photon.phresco.plugins</groupId>
-        <version>3.2.0.2002-SNAPSHOT</version>
-        <relativePath>../</relativePath>
+        <artifactId>oss-parent</artifactId>
+        <groupId>org.sonatype.oss</groupId>
+        <version>7</version>
     </parent> 
 	<!-- 
 	<parent>
