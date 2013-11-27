@@ -11,6 +11,7 @@
     </scm>
 	<description>phresco-plugins-root</description>
     <modules>
+        <module>phresco-maven-plugin</module>
         <module>drupal-phresco-plugin</module>
         <module>php-phresco-plugin</module>
         <module>android-phresco-plugin</module> 
@@ -35,7 +36,7 @@
     	<module>xcode-maven-plugin</module>
     	<module>android-maven-plugin</module>
 		<module>liquibase-phresco-plugin</module>
-		<module>phresco-maven-plugin</module>
+		<!-- <module>phresco-maven-plugin</module> -->
 		<module>report-phresco-plugin</module>
 		<module>hybridAppLauncher-maven-plugin</module>
         <module>cq5-phresco-plugin</module>
