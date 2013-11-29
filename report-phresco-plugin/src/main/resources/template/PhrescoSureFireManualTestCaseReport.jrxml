@@ -64,7 +64,7 @@
 					<textFieldExpression><![CDATA[$V{NoOfSuccess}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Report">
-					<reportElement style="PSFTCRTHeadingRowLabelValue" x="295" y="6" width="30" height="16"/>
+					<reportElement style="PSFTCRTHeadingRowLabelValue" x="297" y="6" width="30" height="16"/>
 					<textElement textAlignment="Left" verticalAlignment="Top">
 						<font fontName="Times New Roman" size="12"/>
 					</textElement>
@@ -113,14 +113,14 @@
 					<textFieldExpression><![CDATA[$V{NoOfBlocked}]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement style="PSFTCRTHeadingRowLabelValue" x="203" y="25" width="97" height="16"/>
+					<reportElement style="PSFTCRTHeadingRowLabelValue" x="203" y="25" width="107" height="16"/>
 					<textElement>
 						<font fontName="Times New Roman" size="12" isBold="true"/>
 					</textElement>
-					<text><![CDATA[No of Executed :]]></text>
+					<text><![CDATA[No of NotExecuted :]]></text>
 				</staticText>
 				<textField evaluationTime="Report" isBlankWhenNull="true">
-					<reportElement style="PSFTCRTHeadingRowLabelValue" x="295" y="25" width="30" height="16"/>
+					<reportElement style="PSFTCRTHeadingRowLabelValue" x="312" y="25" width="30" height="16"/>
 					<textElement textAlignment="Left" verticalAlignment="Top">
 						<font fontName="Times New Roman" size="12"/>
 					</textElement>
