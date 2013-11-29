@@ -1,4 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>net.awired.jscoverage</groupId>
@@ -8,9 +8,10 @@
 	<name>js-coverage-maven-plugin</name>
 
 	<parent>
-		<groupId>net.awired.parent.parent-java</groupId>
-		<artifactId>parent-java</artifactId>
-		<version>1.14</version>
+		<groupId>com.photon.phresco.plugins</groupId>
+		<artifactId>phresco-plugins-root</artifactId>
+		<version>3.2.0.2004-SNAPSHOT</version>
+        <relativePath>../</relativePath>
 	</parent>
 	
    	<scm>
@@ -36,8 +37,8 @@
     </distributionManagement>
 	
 	<properties>
-		<antlr.version>3.4</antlr.version>
-	</properties>
+        <antlr.version>3.4</antlr.version>
+    </properties>
 
 	<dependencies>
 		<dependency>
@@ -75,17 +76,17 @@
 							<execution>
 								<phase>generate-resources</phase>
 								<configuration>
-									<target>
-										<java jar="${settings.localRepository}/org/antlr/antlr/${antlr.version}/antlr-${antlr.version}-jar-with-dependencies.jar" fork="true" dir="src/main/java">
-											<arg value="-make" />
-											<arg value="net/awired/jscoverage/instrumentation/es3/ES3Instrument.g" />
+                                    <target>
+                                        <java dir="src/main/java" fork="true" jar="${settings.localRepository}/org/antlr/antlr/${antlr.version}/antlr-${antlr.version}-jar-with-dependencies.jar">
+                                            <arg value="-make"/>
+                                            <arg value="net/awired/jscoverage/instrumentation/es3/ES3Instrument.g"/>
 										</java>
-										<java jar="${settings.localRepository}/org/antlr/antlr/${antlr.version}/antlr-${antlr.version}-jar-with-dependencies.jar" fork="true" dir="src/main/java">
-											<arg value="-make" />
-											<arg value="net/awired/jscoverage/instrumentation/es3/ES3.g" />
+                                        <java dir="src/main/java" fork="true" jar="${settings.localRepository}/org/antlr/antlr/${antlr.version}/antlr-${antlr.version}-jar-with-dependencies.jar">
+                                            <arg value="-make"/>
+                                            <arg value="net/awired/jscoverage/instrumentation/es3/ES3.g"/>
 										</java>
 									</target>
-								</configuration>
+                                </configuration>
 								<goals>
 									<goal>run</goal>
 								</goals>
@@ -110,30 +111,30 @@
 							<artifactId>lifecycle-mapping</artifactId>
 							<version>1.0.0</version>
 							<configuration>
-								<lifecycleMappingMetadata>
-									<pluginExecutions>
-										<pluginExecution>
-											<pluginExecutionFilter>
-												<groupId>
+                                <lifecycleMappingMetadata>
+                                    <pluginExecutions>
+                                        <pluginExecution>
+                                            <pluginExecutionFilter>
+                                                <groupId>
 													org.apache.maven.plugins
 										</groupId>
-												<artifactId>
+                                                <artifactId>
 													maven-antrun-plugin
 										</artifactId>
-												<versionRange>
+                                                <versionRange>
 													[1.7,)
 										</versionRange>
-												<goals>
-													<goal>run</goal>
+                                                <goals>
+                                                    <goal>run</goal>
 												</goals>
 											</pluginExecutionFilter>
-											<action>
-												<ignore />
+                                            <action>
+                                                <ignore/>
 											</action>
 										</pluginExecution>
 									</pluginExecutions>
 								</lifecycleMappingMetadata>
-							</configuration>
+                            </configuration>
 						</plugin>
 					</plugins>
 				</pluginManagement>
