@@ -569,8 +569,20 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 				}
 			}
 		}
-		workingDir = workingDirectory.getPath();
+		
+		File pomFileNew = getPomFile(workingDirectory);
+		PomProcessor processor;
+		String functionalTestDir="";
+		try {
+			processor = new PomProcessor(pomFileNew);
+			functionalTestDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
+		} catch (PhrescoPomException e) {
+			throw new PhrescoException(e);
+		}
+		
 		if(value.equals(FUNCTIONAL)) {
+			String jarLocation = getJarLocation(workingDir);
+			setPropertyJarLocation(workingDirectory.toString() + functionalTestDir, jarLocation);
 			sb.delete(0, sb.length());
 			workingDir = workingDirectory.getPath() + getFunctionalDir(workingDirectory);
 			sb.append(SONAR_COMMAND).
