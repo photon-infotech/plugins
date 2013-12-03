@@ -9,7 +9,7 @@
   <groupId>com.photon.phresco.plugins</groupId>
   <artifactId>phresco-maven-plugin</artifactId>
   <version>3.2.0.3001-SNAPSHOT</version>
-  <packaging>maven-plugin</packaging>
+  <packaging>jar</packaging>
   <name>Phresco Maven Plugin</name>
   <url>http://phresco.com</url>
   <organization>
