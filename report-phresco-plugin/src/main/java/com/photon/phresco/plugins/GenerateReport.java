@@ -1875,7 +1875,7 @@ public class GenerateReport implements PluginConstants {
 						  HSSFSheet mySheet = myWorkBook.getSheetAt(j);
 						  if(mySheet.getSheetName().equals(fileName)) {
 							  Iterator<Row> rowIterator = mySheet.rowIterator();
-							  for (int i = 0; i <=24; i++) {
+							  for (int i = 0; i <=23; i++) {
 								  rowIterator.next();
 							  }
 							  while (rowIterator.hasNext()) {
@@ -1912,30 +1912,30 @@ public class GenerateReport implements PluginConstants {
 			  }
 		  }
 
-		  if(next.getCell(8)!=null){
-			  Cell cell=next.getCell(8);
-			  String value=getValue(cell);
-			  if(StringUtils.isNotEmpty(value)) {
-				  testcase.setExpectedResult(value);
-			  }
-		  }
 		  if(next.getCell(9)!=null){
 			  Cell cell=next.getCell(9);
 			  String value=getValue(cell);
 			  if(StringUtils.isNotEmpty(value)) {
-				  testcase.setActualResult(value);
+				  testcase.setExpectedResult(value);
 			  }
 		  }
 		  if(next.getCell(10)!=null){
 			  Cell cell=next.getCell(10);
 			  String value=getValue(cell);
 			  if(StringUtils.isNotEmpty(value)) {
+				  testcase.setActualResult(value);
+			  }
+		  }
+		  if(next.getCell(11)!=null){
+			  Cell cell=next.getCell(11);
+			  String value=getValue(cell);
+			  if(StringUtils.isNotEmpty(value)) {
 				  testcase.setStatus(value);
 			  }
 		  }
 
-		  if(next.getCell(13)!=null){
-			  Cell cell=next.getCell(13);
+		  if(next.getCell(12)!=null){
+			  Cell cell=next.getCell(12);
 			  String value=getValue(cell);
 			  if(StringUtils.isNotEmpty(value)) {
 				  testcase.setBugComment(value);
