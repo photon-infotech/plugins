@@ -60,6 +60,13 @@ public class PhrescoRunLoadTest extends PhrescoAbstractMojo {
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
+			String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+        	if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
+        		baseDir = new File(baseDir.getParent() +  File.separatorChar + dotPhrescoDirName);
+        	}
+        	if (StringUtils.isNotEmpty(dotPhrescoDirName) && StringUtils.isNotEmpty(moduleName)) {
+        		baseDir = new File(baseDir.getParentFile().getPath() +  File.separatorChar + dotPhrescoDirName);
+        	}
 			String infoFile = baseDir + File.separator + Constants.LOAD_TEST_INFO_FILE;
 			if (StringUtils.isNotEmpty(moduleName)) {
 				infoFile = baseDir + File.separator + moduleName + File.separator + Constants.LOAD_TEST_INFO_FILE;

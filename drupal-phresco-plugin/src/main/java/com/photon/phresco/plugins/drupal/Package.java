@@ -28,6 +28,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
+import com.photon.phresco.commons.model.ApplicationInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
@@ -36,6 +37,8 @@ import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.plugins.util.PluginPackageUtil;
 import com.photon.phresco.util.ArchiveUtil;
+import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.Utility;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.util.PomProcessor;
@@ -56,6 +59,9 @@ public class Package implements PluginConstants {
 	private Date currentDate;
 	private Log log;
 	private PluginPackageUtil util;
+	private File directory;
+	private String dotPhrescoDirName;
+    private File dotPhrescoDir;
 	
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -66,7 +72,12 @@ public class Package implements PluginConstants {
         buildName = configs.get(BUILD_NAME);
         buildNumber = configs.get(BUILD_NUMBER);
         util = new PluginPackageUtil();
-        PluginUtils.checkForConfigurations(baseDir, environmentName);
+        dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+        dotPhrescoDir = baseDir;
+        if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
+        	dotPhrescoDir = new File(baseDir.getParent() + File.separator + dotPhrescoDirName);
+        }
+        PluginUtils.checkForConfigurations(dotPhrescoDir, environmentName);
 		try {
 			init();
 			boolean buildStatus = build();
@@ -79,7 +90,17 @@ public class Package implements PluginConstants {
 	
 	private void init() throws MojoExecutionException {
 		try {
-			srcDir = new File(baseDir.getPath() + File.separator + PROJECT_FOLDER);
+			File pom = project.getFile();
+			PomProcessor pomProcessor = new PomProcessor(pom);
+			String srcDirName = pomProcessor.getProperty(Constants.POM_PROP_KEY_SPLIT_SRC_DIR);
+			PluginUtils pluginUtils = new PluginUtils();
+			ApplicationInfo appInfo = pluginUtils.getAppInfo(dotPhrescoDir);
+			String appDirName = appInfo.getAppDirName();
+			directory = baseDir;
+			if (StringUtils.isNotEmpty(srcDirName)) {
+				directory = new File(Utility.getProjectHome() + File.separatorChar + appDirName + File.separatorChar + srcDirName);
+			}
+			srcDir = new File(directory.getPath() + File.separator + PROJECT_FOLDER);
 			buildDir = new File(baseDir.getPath() + BUILD_DIRECTORY);
 			if (!buildDir.exists()) {
 				buildDir.mkdir();
@@ -99,7 +120,7 @@ public class Package implements PluginConstants {
 		boolean isBuildSuccess = true;
 		try {
 			configure();
-			File packageInfoFile = new File(baseDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + PHRESCO_PACKAGE_FILE);
+			File packageInfoFile = new File(dotPhrescoDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + PHRESCO_PACKAGE_FILE);
 			if(packageInfoFile.exists()) {
 				FileUtils.copyDirectory(srcDir, targetDir);
 				PluginUtils.createBuildResources(packageInfoFile, baseDir, targetDir);
@@ -133,12 +154,12 @@ public class Package implements PluginConstants {
 			String configSourceDir = pomProcessor.getProperty(POM_PROP_CONFIG_FILE);
 			File srcConfigFile = null;
 			if(StringUtils.isNotEmpty(configSourceDir)) {
-				srcConfigFile  = new File(baseDir + configSourceDir);
+				srcConfigFile  = new File(directory + configSourceDir);
 			} else {
-				srcConfigFile = new File(baseDir + sourceDir + FORWARD_SLASH +  CONFIG_FILE);
+				srcConfigFile = new File(directory + sourceDir + FORWARD_SLASH +  CONFIG_FILE);
 			}
 			PluginUtils pu = new PluginUtils();
-			pu.executeUtil(environmentName, baseDir.getPath(), srcConfigFile);
+			pu.executeUtil(environmentName, dotPhrescoDir.getPath(), srcConfigFile);
 			pu.encryptConfigFile(srcConfigFile.getPath());
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage(), e);

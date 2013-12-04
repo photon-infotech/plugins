@@ -195,6 +195,23 @@ public class PluginUtils {
 		}
 	}
 	
+	public File getSplitProjectDirectory(File pomFile, File dotPhrescoDir, String subModule) throws PhrescoException {
+		try {
+			PomProcessor pomProcessor = new PomProcessor(pomFile);
+			String srcDirName = pomProcessor.getProperty(Constants.POM_PROP_KEY_SPLIT_SRC_DIR);
+			ApplicationInfo appInfo = getAppInfo(dotPhrescoDir);
+			String appDirName = appInfo.getAppDirName();
+			if (StringUtils.isNotEmpty(srcDirName)) {
+				return new File(Utility.getProjectHome() + File.separatorChar + appDirName + File.separatorChar + srcDirName + File.separatorChar + subModule);
+			}
+		} catch (PhrescoException e) {
+			throw new PhrescoException(e);
+		} catch (PhrescoPomException e) {
+			throw new PhrescoException(e);
+		}
+		return null;
+	}
+	
 	private void writeXml(String encrStr, String fileName) throws PhrescoException  {
 		DataOutputStream dos = null;
 		FileOutputStream fos = null;

@@ -60,10 +60,18 @@ public class PhrescoRunPerformanceTest extends PhrescoAbstractMojo {
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
+			String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+        	if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
+        		baseDir = new File(baseDir.getParent() +  File.separatorChar + dotPhrescoDirName);
+        	}
+        	if (StringUtils.isNotEmpty(dotPhrescoDirName) && StringUtils.isNotEmpty(moduleName)) {
+        		baseDir = new File(baseDir.getParentFile().getPath() +  File.separatorChar + dotPhrescoDirName);
+        	}
 			String infoFile = baseDir + File.separator + Constants.PERFORMANCE_TEST_INFO_FILE;
 			if (StringUtils.isNotEmpty(moduleName)) {
 				infoFile = baseDir + File.separator + moduleName + File.separator + Constants.PERFORMANCE_TEST_INFO_FILE;
 			}
+			System.out.println("infoFile====> " + infoFile);
     		if (isGoalAvailable(infoFile, PERFORMANCE_TEST) && getDependency(infoFile, PERFORMANCE_TEST) != null) {
 				PhrescoPlugin plugin = getPlugin(getDependency(infoFile, PERFORMANCE_TEST));
 		        plugin.runPerformanceTest(getConfiguration(infoFile, PERFORMANCE_TEST), getMavenProjectInfo(project, moduleName));

@@ -8,6 +8,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.AbstractMavenLifecycleParticipant;
 import org.apache.maven.MavenExecutionException;
 import org.apache.maven.execution.MavenSession;
@@ -18,7 +19,12 @@ import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.project.MavenProject;
 import org.sonatype.aether.repository.RemoteRepository;
 
+import com.photon.phresco.commons.model.ApplicationInfo;
+import com.photon.phresco.commons.model.ModuleInfo;
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.plugin.commons.PluginUtils;
+import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.Utility;
 
 public class Configurer extends AbstractMavenLifecycleParticipant {
 
@@ -91,8 +97,21 @@ public class Configurer extends AbstractMavenLifecycleParticipant {
     	FileReader reader = null;
     	MavenXpp3Reader mavenreader = new MavenXpp3Reader();
     	try {
-    		File pomFile = new File(phrescoProject.getBasedir(), phrescoProject.getProperties().getProperty("source.pom"));
-    	    reader = new FileReader(pomFile);
+    		File baseDir = phrescoProject.getBasedir();
+    		File pomFile = new File(baseDir, phrescoProject.getProperties().getProperty("source.pom"));
+    		String source = phrescoProject.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_SRC_DIR);
+    		if (StringUtils.isNotEmpty(source)) {
+    			PluginUtils pluginUtils = new PluginUtils();
+    			ApplicationInfo appInfo = pluginUtils.getAppInfo(baseDir);
+        		String appDirName = appInfo.getAppDirName();
+        		String code = "";
+        		if (appInfo.getModules() != null && appInfo.getModules().size() == 1) {
+        			ModuleInfo moduleInfo = appInfo.getModules().get(0);
+            		code = moduleInfo.getCode();
+        		}
+    			pomFile = new File(Utility.getProjectHome() + File.separatorChar + appDirName + File.separatorChar + source + File.separatorChar + code, phrescoProject.getProperties().getProperty("source.pom"));
+    		}
+    		reader = new FileReader(pomFile);
     	    model = mavenreader.read(reader);
     	    model.setPomFile(pomFile);
     	}catch(Exception ex){

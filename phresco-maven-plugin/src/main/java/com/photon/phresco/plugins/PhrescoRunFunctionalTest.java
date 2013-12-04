@@ -66,6 +66,13 @@ public class PhrescoRunFunctionalTest extends PhrescoAbstractMojo implements Plu
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
+			String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+        	if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
+        		baseDir = new File(baseDir.getParent() +  File.separatorChar + dotPhrescoDirName);
+        	}
+        	if (StringUtils.isNotEmpty(dotPhrescoDirName) && StringUtils.isNotEmpty(moduleName)) {
+        		baseDir = new File(baseDir.getParentFile().getPath() +  File.separatorChar + dotPhrescoDirName);
+        	}
 			String infoFile = baseDir + File.separator+ Constants.FUNCTIONAL_TEST_INFO_FILE;
 			File workingDir = baseDir; 
 			if (StringUtils.isNotEmpty(moduleName)) {
@@ -82,7 +89,7 @@ public class PhrescoRunFunctionalTest extends PhrescoAbstractMojo implements Plu
 			if(StringUtils.isNotEmpty(property)) {
 				goal = FUNCTIONAL_TEST + HYPEN + property.trim();
 			}
-			
+			System.out.println("infofile=====> " + infoFile);
 			if (isGoalAvailable(infoFile, goal)&& getDependency(infoFile, goal) != null) {
 				PhrescoPlugin plugin = getPlugin(getDependency(infoFile, goal));
 				plugin.runFunctionalTest(getConfiguration(infoFile, goal), getMavenProjectInfo(project, moduleName));

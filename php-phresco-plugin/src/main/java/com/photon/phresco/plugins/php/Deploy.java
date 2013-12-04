@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.project.MavenProject;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
@@ -52,17 +53,34 @@ public class Deploy implements PluginConstants {
 	private Log log;
 	private String sqlPath;
     private PluginUtils pUtil;
+    private String dotPhrescoDirName;
+    private File dotPhrescoDir;
+    private File srcDirectory;
+    private MavenProject project;
+	private File pomFile;
 	
     public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException, JSONException {
     	this.log = log;
     	baseDir = mavenProjectInfo.getBaseDir();
+    	project = mavenProjectInfo.getProject();
+    	pomFile = project.getFile();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
         buildNumber = configs.get(BUILD_NUMBER);
         importSql = Boolean.parseBoolean(configs.get(EXECUTE_SQL));
         sqlPath = configs.get(FETCH_SQL);
         pUtil = new PluginUtils();
-    	try { 
+        dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+        dotPhrescoDir = baseDir;
+        if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
+        	dotPhrescoDir = new File(baseDir.getParent() + File.separator + dotPhrescoDirName);
+        }
+        srcDirectory = baseDir;
+        File splitProjectDirectory = pUtil.getSplitProjectDirectory(pomFile, dotPhrescoDir, "");
+        if (splitProjectDirectory != null) {
+        	srcDirectory = splitProjectDirectory;
+        }
+    	try {  
 			init();
 			createDb();
 			extractBuild();
@@ -102,7 +120,7 @@ public class Deploy implements PluginConstants {
 	private void createDb() throws MojoExecutionException, PhrescoException {
 		DatabaseUtil util = new DatabaseUtil();
 		try {
-			util.fetchSqlConfiguration(sqlPath, importSql, baseDir, environmentName);
+			util.fetchSqlConfiguration(sqlPath, importSql, srcDirectory, environmentName, dotPhrescoDir);
 		} catch (Exception e) {
 			throw new PhrescoException(e);
 		}
@@ -111,7 +129,7 @@ public class Deploy implements PluginConstants {
 	private void extractBuild() throws MojoExecutionException {
 		try {
 			String context = "";
-			List<com.photon.phresco.configuration.Configuration> configuration = pUtil.getConfiguration(baseDir, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
+			List<com.photon.phresco.configuration.Configuration> configuration = pUtil.getConfiguration(dotPhrescoDir, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
 			for (com.photon.phresco.configuration.Configuration config : configuration) {
 				context = config.getProperties().getProperty(Constants.SERVER_CONTEXT);
 				break;
@@ -128,7 +146,7 @@ public class Deploy implements PluginConstants {
 	private void deploy() throws MojoExecutionException {
 		String deployLocation = "";
 		try {
-			List<com.photon.phresco.configuration.Configuration> configuration = pUtil.getConfiguration(baseDir, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
+			List<com.photon.phresco.configuration.Configuration> configuration = pUtil.getConfiguration(dotPhrescoDir, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
 			for (com.photon.phresco.configuration.Configuration config : configuration) {
 				deployLocation = config.getProperties().getProperty(Constants.SERVER_DEPLOY_DIR);
 				break;

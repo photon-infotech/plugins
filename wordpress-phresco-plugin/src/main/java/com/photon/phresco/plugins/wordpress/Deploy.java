@@ -183,7 +183,7 @@ public class Deploy implements PluginConstants {
 	private void createDb() throws MojoExecutionException {
 		DatabaseUtil util = new DatabaseUtil();
 		try {
-			util.fetchSqlConfiguration(sqlPath, importSql, baseDir, environmentName);
+			util.fetchSqlConfiguration(sqlPath, importSql, baseDir, environmentName, baseDir);
 			if(importSql) {
 				List<com.photon.phresco.configuration.Configuration> configurations = pUtil.getConfiguration(baseDir, environmentName, Constants.SETTINGS_TEMPLATE_DB);
 				for (com.photon.phresco.configuration.Configuration configuration : configurations) {

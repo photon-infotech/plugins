@@ -117,10 +117,18 @@ public class PhrescoPackage extends PhrescoAbstractMojo {
         getLog().info(baseDir.getPath());
         Configuration configuration = null;
         try {
+        	String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+        	if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
+        		baseDir = new File(baseDir.getParent() +  File.separatorChar + dotPhrescoDirName);
+        	}
+        	if (StringUtils.isNotEmpty(dotPhrescoDirName) && StringUtils.isNotEmpty(moduleName)) {
+        		baseDir = new File(baseDir.getParentFile().getPath() +  File.separatorChar + dotPhrescoDirName);
+        	}
         	String infoFile = baseDir + File.separator + Constants.PACKAGE_INFO_FILE; 
         	if (StringUtils.isNotEmpty(moduleName)) {
         		infoFile = baseDir + File.separator + moduleName + File.separator + Constants.PACKAGE_INFO_FILE;
         	} 
+        	System.out.println("infofile path====> " + infoFile);
         	PhrescoPlugin plugin = getPlugin(getDependency(infoFile, PACKAGE));
         	MojoProcessor processor = new MojoProcessor(new File(infoFile));
         	configuration = processor.getConfiguration(PACKAGE);

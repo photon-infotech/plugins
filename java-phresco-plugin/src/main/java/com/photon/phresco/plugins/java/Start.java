@@ -31,7 +31,6 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
 import com.google.gson.Gson;
-import com.photon.phresco.commons.model.ApplicationInfo;
 import com.photon.phresco.configuration.ConfigurationInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.DatabaseUtil;
@@ -48,11 +47,6 @@ import com.phresco.pom.util.PomProcessor;
 
 public class Start implements PluginConstants {
 
-	/**
-	 * @parameter expression="${projectModule}" required="true"
-	 */
-	protected String projectModule;
-
 	private String environmentName;
 	private MavenProject project;
 	private String serverPort;
@@ -67,30 +61,44 @@ public class Start implements PluginConstants {
 	private PluginUtils pu;
 	private File pomFile;
 	private String pomFileName;
+	private String dotPhrescoDirName;
+	private File dotPhrescoDir;
+	private File srcDirectory;
 	public void start(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
 		project = mavenProjectInfo.getProject();
 		pomFile = project.getFile();
 		pomFileName = project.getFile().getName();
-		subModule = mavenProjectInfo.getModuleName();
+		pu = new PluginUtils();
 		workingDirectory = baseDir;
-		if (StringUtils.isNotEmpty(subModule)) {
+		if (StringUtils.isNotEmpty(mavenProjectInfo.getModuleName())) {
+			subModule = mavenProjectInfo.getModuleName();
 			workingDirectory = new File(baseDir + File.separator + subModule);
 		}
-		pu = new PluginUtils();
+		dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+		dotPhrescoDir = baseDir;
+		if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
+			dotPhrescoDir = new File(baseDir.getParent() + File.separator + dotPhrescoDirName);
+		}
+		dotPhrescoDir = new File(dotPhrescoDir.getPath() + File.separatorChar + subModule);
+		srcDirectory = baseDir;
+		File splitProjectDirectory = pu.getSplitProjectDirectory(pomFile, dotPhrescoDir, subModule);
+		if (splitProjectDirectory != null) {
+			srcDirectory = splitProjectDirectory;
+		}
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
 		environmentName = configs.get(ENVIRONMENT_NAME);
 		importSql = Boolean.parseBoolean(configs.get(EXECUTE_SQL));
-	    sqlPath = configs.get(FETCH_SQL);
-	    PluginUtils.checkForConfigurations(workingDirectory, environmentName);
+		sqlPath = configs.get(FETCH_SQL);
+		PluginUtils.checkForConfigurations(dotPhrescoDir, environmentName);
 		try {
 			if (environmentName != null) {
 				updateFinalName();
 				configure();
 				storeEnvName();
 			}
-		    createDb();
+			createDb();
 			executePhase();
 		} catch (MojoExecutionException e) {
 			throw new PhrescoException(e);
@@ -99,7 +107,7 @@ public class Start implements PluginConstants {
 
 	private void updateFinalName() throws MojoExecutionException {
 		try {
-			List<com.photon.phresco.configuration.Configuration> configuration = pu.getConfiguration(workingDirectory, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
+			List<com.photon.phresco.configuration.Configuration> configuration = pu.getConfiguration(dotPhrescoDir, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
 			if(CollectionUtils.isEmpty(configuration)) {
 				throw new PhrescoException("Configuration is Empty...");
 			}
@@ -122,7 +130,7 @@ public class Start implements PluginConstants {
 		log.info("Configuring the project....");
 		try {
 			adaptSourceConfig();
-			pu.writeDatabaseDriverToConfigXml(workingDirectory, sourceDir, environmentName);
+			pu.writeDatabaseDriverToConfigXml(srcDirectory, sourceDir, environmentName);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage());
 		}
@@ -136,7 +144,7 @@ public class Start implements PluginConstants {
 		Gson gson = new Gson();
 		String envName = gson.toJson(info);
 		FileOutputStream fos = null;
-		File runAgstSrcFile = new File(workingDirectory + File.separator + DOT_PHRESCO_FOLDER + File.separator + ENV_FILE);
+		File runAgstSrcFile = new File(dotPhrescoDir + File.separator + DOT_PHRESCO_FOLDER + File.separator + ENV_FILE);
 		try {
 			fos = new FileOutputStream(runAgstSrcFile, false);
 			fos.write(envName.getBytes());
@@ -156,18 +164,18 @@ public class Start implements PluginConstants {
 	private void createDb() throws MojoExecutionException {
 		DatabaseUtil util = new DatabaseUtil();
 		try {
-			util.fetchSqlConfiguration(sqlPath, importSql, workingDirectory, environmentName);
+			util.fetchSqlConfiguration(sqlPath, importSql, srcDirectory, environmentName, dotPhrescoDir);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
 
 	private void adaptSourceConfig() throws MojoExecutionException {
-		File wsConfigFile = new File(workingDirectory + sourceDir + FORWARD_SLASH +  CONFIG_FILE);
+		File wsConfigFile = new File(dotPhrescoDir + sourceDir + FORWARD_SLASH +  CONFIG_FILE);
 		File parentFile = wsConfigFile.getParentFile();
 		try {
 			if (parentFile.exists()) {
-				pu.executeUtil(environmentName, workingDirectory.getPath(), wsConfigFile);
+				pu.executeUtil(environmentName, dotPhrescoDir.getPath(), wsConfigFile);
 			}
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
@@ -176,34 +184,29 @@ public class Start implements PluginConstants {
 
 	private void executePhase() throws MojoExecutionException {
 		FileOutputStream fos = null;
-			File errorLog = new File(workingDirectory + File.separator + LOG_FILE_DIRECTORY + RUN_AGS_LOG_FILE);
-			try {
-				StringBuilder sb = new StringBuilder();
-				sb.append(MVN_CMD);
-				sb.append(STR_SPACE);
-				sb.append(JAVA_TOMCAT_RUN);
-				sb.append(STR_SPACE);
-				sb.append(SERVER_PORT);
-				sb.append(serverPort);
-				sb.append(STR_SPACE);
-				sb.append(SERVER_ENV);
-				sb.append(environmentName);
-				sb.append(STR_SPACE);
-				sb.append(Constants.HYPHEN_F);
-				sb.append(STR_SPACE);
-				sb.append(pomFileName);
-				fos = new FileOutputStream(errorLog, false);
-				Utility.executeStreamconsumerFOS(workingDirectory.toString(),sb.toString(), fos);
-			} catch (FileNotFoundException e) {
-				throw new MojoExecutionException(e.getMessage(), e);
-			}
-	}
-	
-	private File getPomFile() throws PhrescoException {
-		ApplicationInfo appInfo = pu.getAppInfo(workingDirectory);
-		String pomFileName = Utility.getPhrescoPomFromWorkingDirectory(appInfo, workingDirectory);
-		File pom = new File(workingDirectory.getPath() + File.separator + pomFileName);
-		
-		return pom;
+		File errorLog = new File(workingDirectory + File.separator + LOG_FILE_DIRECTORY + RUN_AGS_LOG_FILE);
+		if (!errorLog.exists()) {
+			errorLog.mkdirs();
+		}
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append(MVN_CMD);
+			sb.append(STR_SPACE);
+			sb.append(JAVA_TOMCAT_RUN);
+			sb.append(STR_SPACE);
+			sb.append(SERVER_PORT);
+			sb.append(serverPort);
+			sb.append(STR_SPACE);
+			sb.append(SERVER_ENV);
+			sb.append(environmentName);
+			sb.append(STR_SPACE);
+			sb.append(Constants.HYPHEN_F);
+			sb.append(STR_SPACE);
+			sb.append(pomFileName);
+			fos = new FileOutputStream(errorLog, false);
+			Utility.executeStreamconsumerFOS(workingDirectory.toString(),sb.toString(), fos);
+		} catch (FileNotFoundException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		}
 	}
 }
