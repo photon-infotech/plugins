@@ -57,9 +57,14 @@ import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.util.PomProcessor;
 
 public class Package implements PluginConstants {
+	
 
 	private String environmentName;
 	private Log log;
+	private File dotPhrescoDir;
+	private String dotPhrescoDirName;
+	private File srcDir;
+	private String srcDirName;
 	/**
 	 * Execute the xcode command line utility.
 	 * @throws PhrescoException 
@@ -68,9 +73,23 @@ public class Package implements PluginConstants {
 	    BufferedReader projectInfoReader = null;
 		try {
 		    this.log = log;
+		    
 		    File baseDir = mavenProjectInfo.getBaseDir();
 		    MavenProject project = mavenProjectInfo.getProject();
-		    String pomFile = project.getFile().getName();
+		    dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+		    dotPhrescoDir = baseDir;
+        	if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
+        		dotPhrescoDir = new File(baseDir.getParent() + File.separatorChar + dotPhrescoDirName);
+        	}
+        	PluginUtils utils = new PluginUtils();
+        	ApplicationInfo appInfo = utils.getAppInfo(dotPhrescoDir);
+        	String appDirName = appInfo.getAppDirName();
+        	srcDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+        	srcDir = baseDir;
+        	if (StringUtils.isNotEmpty(srcDirName)) {
+        		srcDir = new File(Utility.getProjectHome() + File.separatorChar + appDirName + File.separatorChar + srcDirName);
+        	}
+           	String pomFile = project.getFile().getName();
             Map<String, String> configs = MojoUtil.getAllValues(config);
             environmentName = configs.get(ENVIRONMENT_NAME);
             String buildName = configs.get(BUILD_NAME);
@@ -84,10 +103,9 @@ public class Package implements PluginConstants {
             String encrypt = configs.get(ENCRYPT);
             String plistFile = configs.get(PLIST_FILE);
             String projectType = configs.get(PROJECT_TYPE);
+            PluginUtils.checkForConfigurations(dotPhrescoDir, environmentName);
             
-            PluginUtils.checkForConfigurations(baseDir, environmentName);
-            
-		    StringBuilder projectInfoFile = new StringBuilder(baseDir.getPath())
+		    StringBuilder projectInfoFile = new StringBuilder(dotPhrescoDir.getPath())
 		    .append(File.separator)
 		    .append(Constants.DOT_PHRESCO_FOLDER)
 		    .append(File.separator)
@@ -146,21 +164,20 @@ public class Package implements PluginConstants {
 				sb.append(STR_SPACE);
 				sb.append(pomFile);
 			}
-			
 			List<Parameter> parameters = config.getParameters().getParameter();
 			for (Parameter parameter : parameters) {
 				if(parameter.getPluginParameter() != null && parameter.getMavenCommands() != null) {
 					List<MavenCommand> mavenCommands = parameter.getMavenCommands().getMavenCommand();
 					for (MavenCommand mavenCommand : mavenCommands) {
 						if(parameter.getValue().equals(mavenCommand.getKey())) {
-							sb.append(STR_SPACE);
+						    sb.append(STR_SPACE);
 							sb.append(mavenCommand.getValue());
 						}
 					}
 				}
 			}			
 			
-			boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(), FrameworkConstants.DEPLOY);
+	       boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(), FrameworkConstants.DEPLOY);
 			if(!status) {
 				try {
 					throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
@@ -168,6 +185,7 @@ public class Package implements PluginConstants {
 					throw new PhrescoException(e);
 				}
 			}
+			
 		} catch (FileNotFoundException e) {
 			throw new PhrescoException(e);
 		} finally {
@@ -179,6 +197,7 @@ public class Package implements PluginConstants {
                 }
             }
         }
+		
 
 	}
 
@@ -223,7 +242,7 @@ public class Package implements PluginConstants {
         if(StringUtils.isEmpty(appTargetProp)) {
             throw new PhrescoException("Target directory to embed the selected application is not specified");
         }
-        String appTargetDir = baseDir + File.separator + appTargetProp;
+        String appTargetDir = srcDir + File.separator + appTargetProp;
         File[] wwwFiles = new File(appTargetDir).listFiles();
         if (!ArrayUtils.isEmpty(wwwFiles)) {
             for (File file : wwwFiles) {
