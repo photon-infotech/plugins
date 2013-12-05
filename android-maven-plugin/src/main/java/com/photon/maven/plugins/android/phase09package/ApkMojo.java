@@ -30,8 +30,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -55,10 +53,10 @@ import com.photon.maven.plugins.android.CommandExecutor;
 import com.photon.maven.plugins.android.ExecutionException;
 import com.photon.maven.plugins.android.common.NativeHelper;
 import com.photon.maven.plugins.android.configuration.Sign;
-import com.photon.phresco.commons.model.BuildInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
+import com.photon.phresco.util.Constants;
 import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.util.PomProcessor;
 
@@ -253,23 +251,6 @@ public class ApkMojo extends AbstractAndroidMojo {
 	 */
 	protected ArtifactFactory artifactFactory;
 
-	/**
-	 * Build location
-	 *
-	 * @parameter expression="/do_not_checkin/build"
-	 */
-	private String buildDirectory;
-
-	private File srcDir;
-	private File targetDir;
-	private File buildDir;
-	private File buildInfoFile;
-	private List<BuildInfo> buildInfoList;
-	private int nextBuildNo;
-	private Date currentDate;
-	private String apkFileName;
-	private String deliverable;
-
 	private static final Pattern PATTERN_JAR_EXT = Pattern.compile("^.+\\.jar$", 2);
 
 	@Override
@@ -279,27 +260,9 @@ public class ApkMojo extends AbstractAndroidMojo {
 		if (!generateApk) {
 			return;
 		}
-        
-		buildInfoList = new ArrayList<BuildInfo>(); // initialization
-		srcDir = new File(baseDir.getPath() + File.separator + sourceDirectory);
-		
-		buildDir = new File(baseDir.getPath() + buildDirectory);
-		
-		if (!buildDir.exists()) {
-			buildDir.mkdir();
-			
-		}
-		buildInfoFile = new File(buildDir.getPath() + "/build.info");
-		
-
-		//			nextBuildNo = generateNextBuildNo();
-
-		currentDate = Calendar.getInstance().getTime();
-		
-		configure();
-		generateIntermediateAp_();
-
-		// Initialize apk build configuration
+        configure();
+	    generateIntermediateAp_();
+	    // Initialize apk build configuration
 		File outputFile = new File(project.getBuild().getDirectory(), project.getBuild().getFinalName() + '.' + APK);
 	
 		final boolean signWithDebugKeyStore = getAndroidSigner().isSignWithDebugKeyStore();
@@ -323,35 +286,9 @@ public class ApkMojo extends AbstractAndroidMojo {
 			// If there is a classifier specified, attach the artifact using that
 			projectHelper.attachArtifact(project, outputFile, classifier);
 		}
-		/*if (outputFile.exists()) {
-
-			try {
-				getLog().info("APK created.. Copying to Build directory.....");
-				String buildName = project.getBuild().getFinalName() + '_' + getTimeStampForBuildName(currentDate);
-				File destFile = new File(buildDir, buildName + '.' + APK);
-				FileUtils.copyFile(outputFile, destFile);
-				getLog().info("copied to..." + destFile.getName());
-				apkFileName = destFile.getName();
-
-				getLog().info("Creating deliverables.....");
-				ZipArchiver zipArchiver = new ZipArchiver();
-				File inputFile = new File(apkFileName);
-				zipArchiver.addFile(destFile, destFile.getName());
-				File deliverableZip = new File(buildDir, buildName + ".zip");
-				zipArchiver.setDestFile(deliverableZip);
-				zipArchiver.createArchive();
-
-				deliverable = deliverableZip.getName();
-				getLog().info("Deliverables available at " + deliverableZip.getName());
-				writeBuildInfo(true);
-			} catch (IOException e) {
-				throw new MojoExecutionException("Error in writing output...");
-			}
-
-		}*/
+		
 	}
-
-	private void configure() throws MojoExecutionException {
+  private void configure() throws MojoExecutionException {
 			try {
 				if (StringUtils.isEmpty(environmentName)||baseDir.getPath().endsWith("unit")
 						|| baseDir.getPath().endsWith("functional")) {
@@ -363,56 +300,29 @@ public class ApkMojo extends AbstractAndroidMojo {
 			
 			PomProcessor pomProcessor = new PomProcessor(project.getFile());
 			String configSourceDir = pomProcessor.getProperty(PluginConstants.POM_PROP_CONFIG_FILE);
+			
 			File srcConfigFile = null;
 			if(StringUtils.isNotEmpty(configSourceDir)) {
 				srcConfigFile  = new File(baseDir + configSourceDir);
-			} else {
+			 } else {
 				srcConfigFile = new File(sourceDirectory.getParent(), "/assets/phresco-env-config.xml");
 			}
+			String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+			baseDir =new File(baseDir.getParentFile().getPath());
+			if(dotPhrescoDirName!=null){
+				baseDir = new File(baseDir.getParentFile().getPath()+ File.separator +dotPhrescoDirName);
+				
+			}
 			PluginUtils pu = new PluginUtils();
-			pu.executeUtil(environmentName, baseDir.getParentFile().getPath(), srcConfigFile);
-			pu.setDefaultEnvironment(environmentName, srcConfigFile);
-		} catch (PhrescoException e) {
-			throw new MojoExecutionException(e.getMessage());
+		    pu.executeUtil(environmentName, baseDir.getPath() , srcConfigFile);
+		    pu.setDefaultEnvironment(environmentName, srcConfigFile);
+	     } catch (PhrescoException e) {
+			throw new MojoExecutionException(e.getMessage()); 
 		} catch (PhrescoPomException e) {
 			throw new MojoExecutionException(e.getMessage());
 		}
 	}
-
-	
-
-	/*private int generateNextBuildNo() throws IOException {
-		int nextBuildNo = 1;
-		if (!buildInfoFile.exists()) {
-			return nextBuildNo;
-		}
-
-		BufferedReader read = new BufferedReader(new FileReader(buildInfoFile));
-		String content = read.readLine();
-
-
-		Gson gson = new Gson();
-		java.lang.reflect.Type listType = new TypeToken<List<BuildInfo>>() {
-		}.getType();
-		buildInfoList = (List<BuildInfo>) gson.fromJson(content, listType);
-		if (buildInfoList == null || buildInfoList.size() == 0) {
-			return nextBuildNo;
-		}
-
-		int buildArray[] = new int[buildInfoList.size()];
-		int count = 0;
-		for (BuildInfo buildInfo : buildInfoList) {
-			buildArray[count] = buildInfo.getBuildNo();
-			count++;
-		}
-
-		Arrays.sort(buildArray); // sort to the array to find the max build no
-
-		nextBuildNo = buildArray[buildArray.length - 1] + 1; // increment 1 to the max in the build list
-		return nextBuildNo;
-	}*/
-
-	void createApkFile(File outputFile, boolean signWithDebugKeyStore) throws MojoExecutionException {
+    void createApkFile(File outputFile, boolean signWithDebugKeyStore) throws MojoExecutionException {
 
 		File dexFile = new File(project.getBuild().getDirectory(), "classes.dex");
 		File zipArchive = new File(project.getBuild().getDirectory(), project.getBuild().getFinalName() + ".ap_");

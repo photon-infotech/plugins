@@ -44,11 +44,11 @@ import com.google.gson.reflect.TypeToken;
 import com.photon.maven.plugins.android.AbstractAndroidMojo;
 import com.photon.phresco.commons.model.BuildInfo;
 import com.photon.phresco.exception.PhrescoException;
-import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoProcessor;
 import com.photon.phresco.plugins.util.MojoUtil;
+import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.FileUtil;
 
 /**
@@ -87,6 +87,7 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 	private String buildDirectory;
 
 	private File buildDir;
+	private String finalBuildDir;
 
 	private File buildInfoFile;
 	private List<BuildInfo> buildInfoList;
@@ -94,59 +95,79 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 	private Date currentDate;
 	private String apkFileName;
 	private String deliverable;
-
+	private String dotPhrescoDir;
+	private String testDirName;
+	private String dotPhrescoDirName;
+    private File packageInfoFile;
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		File outputFile = null, outputAlignedFile = null, destFile = null, destAlignedFile = null, packageInfoFile = null;
+		File outputFile = null, outputAlignedFile = null, destFile = null, destAlignedFile = null;
 		String techId;
 		if(baseDir.getPath().endsWith("source")||baseDir.getPath().endsWith("unit")
 				|| baseDir.getPath().endsWith("functional")
 				|| baseDir.getPath().endsWith("performance") ){
 			
 		try {
-
-			buildInfoList = new ArrayList<BuildInfo>(); // initialization
+			
+			dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+			testDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_TEST_DIR);
+			
+			 buildInfoList = new ArrayList<BuildInfo>(); // initialization
 			// srcDir = new File(baseDir.getPath() + File.separator +
 			// sourceDirectory);
-			if (baseDir.getPath().endsWith("source")){
+			if(baseDir.getPath().endsWith("source")&& dotPhrescoDirName==null){
 				
 				buildDir = new File(baseDir.getParentFile().getPath() + buildDirectory);
+				packageInfoFile = new File(baseDir.getParentFile().getPath() + File.separator
+                        + ".phresco" + File.separator
+                        + "phresco-package-info.xml");
+			}else if (baseDir.getPath().endsWith("source")&& dotPhrescoDirName!=null){
+				
+				 // code for new archetype changes starts
+				 dotPhrescoDir = baseDir.getParentFile().getParentFile().getPath()+ File.separator + dotPhrescoDirName;
+				 File projectDir  = new File(baseDir.getParentFile().getParentFile().getPath());
+		         File[] filesInDir = projectDir.listFiles();
+		         fileProcessor(filesInDir);
+		         //code for new archetype changes ends
+		         
+				 buildDir = new File(finalBuildDir+ File.separator + buildDirectory);
+				 packageInfoFile = new File(dotPhrescoDir + File.separator
+							+ ".phresco" + File.separator
+							+ "phresco-package-info.xml");
+			}else if(dotPhrescoDirName!=null){
+				
+				dotPhrescoDir = baseDir.getParentFile().getParentFile().getParentFile().getPath()+ File.separator + dotPhrescoDirName;
+				buildDir = new File(baseDir.getPath() + buildDirectory);
+				
 			}else{
 				
 				buildDir = new File(baseDir.getPath() + buildDirectory);
-				
 			}
 			
 			if (!buildDir.exists()) {
 				buildDir.mkdir();
 			}
+			
 			buildInfoFile = new File(buildDir.getPath() + "/build.info");
-			if (baseDir.getPath().endsWith("unit")
-					|| baseDir.getPath().endsWith("functional")
-					|| baseDir.getPath().endsWith("performance")) {
-				packageInfoFile = new File(baseDir.getParentFile().getParentFile()
+			
+	       if ((baseDir.getPath().endsWith("unit")|| baseDir.getPath().endsWith("functional")
+					|| baseDir.getPath().endsWith("performance"))&& dotPhrescoDir!=null) {
+	    	   packageInfoFile = new File(dotPhrescoDir
 						+ File.separator + ".phresco" + File.separator
 						+ "phresco-package-info.xml");
-		
-			} else {
-				packageInfoFile = new File(baseDir.getParentFile().getPath() + File.separator
-						+ ".phresco" + File.separator
-						+ "phresco-package-info.xml");
+			 }else if (baseDir.getPath().endsWith("unit")|| baseDir.getPath().endsWith("functional")
+					|| baseDir.getPath().endsWith("performance")){
+			   packageInfoFile = new File(baseDir.getParentFile().getParentFile()
+                         + File.separator + ".phresco" + File.separator
+                         + "phresco-package-info.xml");
+			    buildDir = baseDir.getParentFile().getParentFile();
+				buildInfoFile = new File(baseDir.getPath() + buildDirectory+ "/build.info");
 			}
 			
 			MojoProcessor processor = new MojoProcessor(packageInfoFile);
 			Configuration configuration = processor.getConfiguration("package");
-			Map<String, String> configs = MojoUtil.getAllValues(configuration);
-			if (baseDir.getPath().endsWith("unit")
-					|| baseDir.getPath().endsWith("functional")
-					|| baseDir.getPath().endsWith("performance")) {
-				buildDir = baseDir.getParentFile().getParentFile();
-				buildInfoFile = new File(baseDir.getPath() + buildDirectory
-						+ "/build.info");
-			}
-
+	        Map<String, String> configs = MojoUtil.getAllValues(configuration);
 			techId = configs.get("techId");
-			
 			if (StringUtils.isNotEmpty(techId)) {
 
 				outputFile = new File(project.getBuild().getDirectory(),
@@ -158,7 +179,6 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 						project.getBuild().getFinalName() + '.' + APK);
 				outputAlignedFile = new File(project.getBuild().getDirectory(),
 						project.getBuild().getFinalName() + "-aligned." + APK);
-
 			}
 
 			nextBuildNo = generateNextBuildNo();
@@ -330,7 +350,32 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 			getLog().info("It is a component ");
 		}
 	}
-
+    public void fileProcessor (File[] files){
+    	 for(File file : files) {
+             if(file.isDirectory()&& !file.getName().equals(testDirName)){
+                       if(file.getName().equals("target")){
+                          if (hasPom(file.getParentFile().getParentFile().listFiles())){
+                    		 String path = file.getParentFile().getParentFile().getPath();
+                    		 finalBuildDir= path;
+                    		 return ;
+                    	 }
+                     }
+                     fileProcessor(file.listFiles());
+                  }
+               } 
+    }
+    public Boolean hasPom (File[] files){
+   	 for(File file : files) {
+            
+//                    System.out.println("\nDirectory : "+file.getName()+"\n");
+                    if(file.getName().equals("pom.xml")){
+                   	 
+                   	return true;
+            }
+             
+   	 }
+   	 return false;
+   }
 	private void writeBuildInfo(boolean isBuildSuccess)
 			throws MojoExecutionException {
 		try {
