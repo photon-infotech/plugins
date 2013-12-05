@@ -655,7 +655,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			subModule = mavenProjectInfo.getModuleName();
 			workingDirectory = new File(workingDirectory + File.separator + subModule);
 		} 
-		String pomFile = getPomFile(workingDirectory).getName();
+		String pomFile = project.getFile().getName();
 		String value = config.get(SONAR);
 		List<Parameter> parameters = configuration.getParameters().getParameter();
 		for (Parameter parameter : parameters) {
@@ -691,7 +691,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 				} else if (StringUtils.isNotEmpty(srcDirName)) {
 					funTestDir = new File(Utility.getProjectHome() + File.separatorChar + appDirName + File.separatorChar + srcDirName + File.separatorChar + subModule);
 				}
-				workingDirectory = new File(funTestDir.getPath() + getFunctionalDir(workingDirectory));
+				workingDirectory = new File(funTestDir.getPath() + getFunctionalDir(workingDirectory, pomFile));
 				if (StringUtils.isNotEmpty(jarLocation)) {
 					setPropertyJarLocation(workingDirectory.getPath(), jarLocation);
 				}
@@ -723,20 +723,10 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 		return new DefaultExecutionStatus();
 	}
 
-	private File getPomFile(File workingDirectory) throws PhrescoException {
-		PluginUtils pUtil = new PluginUtils();
-		ApplicationInfo appInfo = pUtil.getAppInfo(workingDirectory);
-		String pomFileName = Utility.getPhrescoPomFromWorkingDirectory(appInfo, workingDirectory);
-		File pom = new File(workingDirectory.getPath() + File.separator + pomFileName);
-
-		return pom;
-	}
-
-	private String getFunctionalDir (File workingDirectory) {
+	private String getFunctionalDir (File workingDirectory, String pomFile) {
 		String value = "";
 		try {
-			PomProcessor processor = new PomProcessor(
-					getPomFile(workingDirectory));
+			PomProcessor processor = new PomProcessor(new File(workingDirectory.getPath() + File.separatorChar + pomFile));
 			value = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
 		} catch (Exception e) {
 		}

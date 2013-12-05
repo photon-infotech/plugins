@@ -79,7 +79,7 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
      * @parameter expression="${moduleName}"
      * @readonly
      */
-    protected String moduleName;
+    protected String moduleName = "";
     
     /**
      * @parameter expression="${interactive}" required="true"
@@ -87,21 +87,36 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
      */
     private boolean interactive;
     private Configuration config;
+    private String dotPhrescoDirName;
+    private File dotPhrescoDir;
+    private File srcDirectory;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		getLog().info("Executing Code Validation");
 		File targetDir = null;
 		Gson gson = new Gson();
 		try {
-			File workingDirectory;
+			PluginUtils utils = new PluginUtils();
+			File workingDirectory = baseDir;
 			if (StringUtils.isNotEmpty(moduleName)) {
 				workingDirectory = new File(baseDir.getPath() + File.separator + moduleName);
-			} else {
-				workingDirectory = new File(baseDir.getPath());
-			}
-			String projectInfoPath = workingDirectory + File.separator + DOT_PHRESCO_FOLDER + File.separatorChar + Constants.PROJECT_INFO_FILE;
+			} 
+			dotPhrescoDir = workingDirectory;
+			dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+			if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
+				dotPhrescoDir = new File(baseDir.getParent() +  File.separatorChar + dotPhrescoDirName);
+        	}
+        	if (StringUtils.isNotEmpty(dotPhrescoDirName) && StringUtils.isNotEmpty(moduleName)) {
+        		dotPhrescoDir = new File(baseDir.getParentFile().getPath() +  File.separatorChar + dotPhrescoDirName + File.separatorChar + moduleName);
+        	}
+        	srcDirectory = workingDirectory;
+        	File splitProjectDirectory = utils.getSplitProjectDirectory(project.getFile(), dotPhrescoDir, moduleName);
+        	if (splitProjectDirectory != null) {
+        		srcDirectory = splitProjectDirectory;
+        	}
+			String projectInfoPath = dotPhrescoDir + File.separator + DOT_PHRESCO_FOLDER + File.separatorChar + Constants.PROJECT_INFO_FILE;
 			targetDir = new File(workingDirectory + File.separator + DO_NOT_CHECKIN_FOLDER + File.separatorChar + TARGET);
-			String infoFile = workingDirectory + File.separator + Constants.VALIDATE_CODE_INFO_FILE;
+			String infoFile = dotPhrescoDir + File.separator + Constants.VALIDATE_CODE_INFO_FILE;
 			FileReader projectInfoJson = new FileReader(new File(projectInfoPath));
 			Type projectInfoType = new TypeToken<ProjectInfo>(){}.getType();
 			ProjectInfo projectInfo = gson.fromJson(projectInfoJson , projectInfoType);
@@ -128,12 +143,11 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
 						PomProcessor processor = new PomProcessor(new File(workingDirectory.getPath() + File.separator + getPomFile(workingDirectory).getName()));
 						String testSourcePath = processor.getProperty("phresco.env.test.config.xml");
 						if (!techId.equals(TechnologyTypes.JAVA_STANDALONE) && !techId.equals(TechnologyTypes.JAVA_WEBSERVICE) ) {
-							PluginUtils utils = new PluginUtils();
-							testConfigPath = new File(workingDirectory + File.separator + testSourcePath);
+							testConfigPath = new File(srcDirectory + File.separator + testSourcePath);
 							String fullPathNoEndSeparator = FilenameUtils.getFullPathNoEndSeparator(testConfigPath.getAbsolutePath());
 							File fullPathNoEndSeparatorFile = new File(fullPathNoEndSeparator);
 							fullPathNoEndSeparatorFile.mkdirs();
-							utils.executeUtil(environmentName, workingDirectory.getPath(), testConfigPath);
+							utils.executeUtil(environmentName, dotPhrescoDir.getPath(), testConfigPath);
 						}
 					} catch (PhrescoPomException e) {
 						throw new MojoExecutionException(e.getMessage(), e);
