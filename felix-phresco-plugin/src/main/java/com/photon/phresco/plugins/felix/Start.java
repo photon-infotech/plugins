@@ -157,7 +157,7 @@ public class Start implements PluginConstants {
 	private void createDb() throws MojoExecutionException {
 		DatabaseUtil util = new DatabaseUtil();
 		try {
-			util.fetchSqlConfiguration(sqlPath, importSql, workingDirectory, environmentName);
+			util.fetchSqlConfiguration(sqlPath, importSql, workingDirectory, environmentName,workingDirectory);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
