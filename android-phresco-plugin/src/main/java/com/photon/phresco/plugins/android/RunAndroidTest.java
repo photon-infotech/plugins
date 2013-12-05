@@ -32,6 +32,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.perforce.p4java.Log;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
@@ -46,13 +47,29 @@ import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.util.PomProcessor;
 
 public class RunAndroidTest implements PluginConstants {
-	
+	static String currentWorkingDir;
+	static String dotPhrescoDirName;
+	static File baseDir ;
+	static String testDirName;
 	public static void runAndroidTest(Configuration configuration, MavenProjectInfo mavenProjectInfo, String workingDir ,String fromTest) throws PhrescoException {
-		try {			
-			Map<String, String> configs = MojoUtil.getAllValues(configuration);
+		try {	
 			MavenProject project = mavenProjectInfo.getProject();
-			String seleniumToolType = project.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_SELENIUM_TOOL);
-			String baseDir = mavenProjectInfo.getBaseDir().getPath();
+			baseDir = new File(mavenProjectInfo.getBaseDir().getPath());
+			currentWorkingDir = baseDir.getPath();
+			Map<String, String> configs = MojoUtil.getAllValues(configuration);
+			
+			dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+		    testDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_TEST_DIR);
+		    String seleniumToolType = project.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_SELENIUM_TOOL);
+			if(dotPhrescoDirName!=null && testDirName!=null){
+		    	
+		    	currentWorkingDir = baseDir.getParentFile().getPath() +File.separator + testDirName + workingDir;
+		    	
+		    }else{
+		    	currentWorkingDir = baseDir.getPath()+ workingDir;
+		    	
+		    }
+			
 			// calabash Execution
 			if(fromTest.equals("functional") && StringUtils.isNotEmpty((seleniumToolType)) && seleniumToolType.equals(CALABASH)) {
 				StringBuilder builder = new StringBuilder();
@@ -75,7 +92,6 @@ public class RunAndroidTest implements PluginConstants {
 			String deviceValue = configs.get(DEVICES);
 			String signing = configs.get(SIGNING);
 			String device = configs.get(DEVICES_LIST);
-			System.out.println("Connected Devices . " +device);
 			
 			Boolean isSigning = Boolean.valueOf(signing);
 			System.out.println("isSigning . " + isSigning);
@@ -104,8 +120,9 @@ public class RunAndroidTest implements PluginConstants {
 			}
 			sb.append(STR_SPACE);
 			sb.append(HYPHEN_D + ANDROID_EMULATOR + EQUAL + DEFAULT);
-			File workingFile = new File(baseDir + workingDir + File.separator + project.getFile().getName());
-			if(workingFile.exists()) {
+			File workingFile = new File(currentWorkingDir + File.separator + project.getFile().getName());
+			Log.info("workingFile :"+workingFile);
+		    if(workingFile.exists()) {
 				sb.append(STR_SPACE);
 				sb.append(Constants.HYPHEN_F);
 				sb.append(STR_SPACE);
@@ -121,7 +138,7 @@ public class RunAndroidTest implements PluginConstants {
 				pomProcessor.save();
 			}
 			if (StringUtils.isNotEmpty(workingDir)) {
-				commandline.setWorkingDirectory(baseDir + workingDir);
+				commandline.setWorkingDirectory(currentWorkingDir);
 			}
 			Process pb = commandline.execute();
 			InputStream is = new BufferedInputStream(pb.getInputStream());

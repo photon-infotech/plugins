@@ -31,9 +31,10 @@ import com.photon.phresco.plugins.util.*;
 import com.photon.phresco.util.Constants;
 
 public class PerformanceTest implements PluginConstants {
-
+	private File WorkingFile ;
 	public void performanceTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		try {
+			System.out.println("@@@@@@@@@@@@@PerformanceTest @@@@@@@@@@@ ");
 			Map<String, String> configs = MojoUtil.getAllValues(configuration);
 			String baseDir = mavenProjectInfo.getBaseDir().getPath();
 			String deviceList= configs.get(DEVICES_LIST);
@@ -64,7 +65,11 @@ public class PerformanceTest implements PluginConstants {
 			sb.append(HYPHEN_D + DEVICES_LIST + EQUAL + deviceList);
 			
 			String workingDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR);
-			File WorkingFile = new File(baseDir + workingDir + File.separator + project.getFile().getName());
+			WorkingFile = new File(baseDir + workingDir + File.separator + project.getFile().getName());
+			File baseDirFile =new File(baseDir);
+			if(!WorkingFile.exists()){
+				WorkingFile = new File(baseDirFile.getParentFile().getParentFile() + workingDir + File.separator + project.getFile().getName());
+			}
 			if(WorkingFile.exists()) {
 				sb.append(STR_SPACE);
 				sb.append(Constants.HYPHEN_F);
@@ -74,7 +79,7 @@ public class PerformanceTest implements PluginConstants {
 			System.out.println("Command " + sb.toString());
 			Commandline commandline = new Commandline(sb.toString());
 			if (StringUtils.isNotEmpty(workingDir)) {
-				commandline.setWorkingDirectory(baseDir + workingDir);
+				commandline.setWorkingDirectory(baseDirFile.getParentFile().getParentFile() + workingDir);
 			}
 			
 			Process pb = commandline.execute();

@@ -38,7 +38,6 @@ import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
-import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands.MavenCommand;
 import com.photon.phresco.plugins.util.MojoProcessor;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.Constants;
@@ -52,10 +51,16 @@ import com.phresco.pom.util.AndroidPomProcessor;
 public class Package implements PluginConstants {
 	private Log log;
 	private String baseDir;
+	private String dotPhrescoDirName;
 	private MavenProject project;
 	private String pomFile;
 	private String TRUE = "true";
-	
+	private List<String> projPoms ;
+	private List<String> pomsTobeUpdated ;
+	private String sourceDirName;
+	private String testDirName ;
+	private String currentDir ;
+	private File base;
 	public void pack(com.photon.phresco.plugins.model.Mojos.Mojo.Configuration config, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir().getPath();
@@ -70,7 +75,7 @@ public class Package implements PluginConstants {
 		String proguard = configs.get(PROGUARD);
 		String skipTest = configs.get(SKIP_TEST);
 		String unitCodeCoverage = configs.get(COVERAGE);
-		log.info("unitCodeCoverage . " +unitCodeCoverage);
+		log.info("unitCodeCoverage :" +unitCodeCoverage);
 		
 		String signing = configs.get(SIGNING);
 		String keystore = configs.get(KEYSTORE);
@@ -87,6 +92,13 @@ public class Package implements PluginConstants {
 		if (StringUtils.isEmpty(sdkVersion)) {
 			System.out.println("sdkVersion is empty . ");
 			throw new PhrescoException("sdkVersion is empty . ");
+		}
+		dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+		sourceDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SOURCE_DIR);
+		testDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_TEST_DIR);
+		
+		if(dotPhrescoDirName!=null){
+			baseDir = mavenProjectInfo.getBaseDir().getParentFile()+ File.separator + dotPhrescoDirName;
 		}
 		
 		PluginUtils.checkForConfigurations(new File(baseDir), environmentName);
@@ -108,7 +120,7 @@ public class Package implements PluginConstants {
 			updateAllPOMWithProfile(keystore, storepass, keypass, alias);
 		}
 		
-		updateDotPhrescoInfoFiles(isSigning, mavenProjectInfo);
+		updateDotPhrescoInfoFiles(baseDir ,isSigning, mavenProjectInfo);
 		
 		
 		log.info("Project is Building...");
@@ -201,11 +213,11 @@ public class Package implements PluginConstants {
 	 * @param isSigning
 	 * @param mavenProjectInfo
 	 */
-	private void updateDotPhrescoInfoFiles(Boolean isSigning, MavenProjectInfo mavenProjectInfo){
+	private void updateDotPhrescoInfoFiles(String dotPhrescoLocation, Boolean isSigning, MavenProjectInfo mavenProjectInfo){
 		
 		
 			
-			String baseDir = mavenProjectInfo.getBaseDir().toString();
+			String baseDir = dotPhrescoLocation;
 			
 //			log.info("updateDotPhrescoInfoFiles - baseDir = " + baseDir);
 //			log.info("updateDotPhrescoInfoFiles - isSigning = " + isSigning.toString());
@@ -278,17 +290,39 @@ public class Package implements PluginConstants {
 	}
 	
 	private void updateAllPOMWithProfile(String keystore, String storepass, String keypass, String alias) throws PhrescoException {
-		log.info("baseDir " + baseDir);
-		List<String> pomsTobeUpdated = new ArrayList<String>();
-		pomsTobeUpdated.add(Constants.POM_PROP_KEY_SOURCE_DIR);
+		
+		base = new File(baseDir);
+		
+		if(sourceDirName!=null && testDirName!=null  ){
+		   
+			currentDir = base.getParentFile().getPath() + File.separator;
+			
+	    }
+		
+		pomsTobeUpdated = new ArrayList<String>();
+		pomsTobeUpdated.add(Constants.SOURCE);
 		pomsTobeUpdated.add(Constants.POM_PROP_KEY_UNITTEST_DIR);
 		pomsTobeUpdated.add(Constants.POM_PROP_KEY_FUNCTEST_DIR);
 		pomsTobeUpdated.add(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR);
 		
-		List<String> projPoms = new ArrayList<String>(pomsTobeUpdated.size());
+	    projPoms = new ArrayList<String>(pomsTobeUpdated.size());
+
 		for (String pomTobeUpdated : pomsTobeUpdated) {
 			// get root dir
-			StringBuilder sb = new StringBuilder(baseDir);
+			StringBuilder sb;
+			if(currentDir!=null){
+				 sb = new StringBuilder(currentDir);
+			}else{
+				sb = new StringBuilder(baseDir);
+			}
+			
+		    if(sourceDirName!=null && pomTobeUpdated.equals(pomsTobeUpdated.get(0))){
+		    	sb.append(sourceDirName);
+		    	
+		    }
+		    if(testDirName!=null  && !pomTobeUpdated.equals(pomsTobeUpdated.get(0))){
+		    	sb.append(testDirName);
+		    }
 			// get pom path
 			String property = project.getProperties().getProperty(pomTobeUpdated);
 			if (StringUtils.isNotEmpty(property)) {
@@ -298,16 +332,17 @@ public class Package implements PluginConstants {
 			sb.append(File.separatorChar);
 			sb.append(pomFile);
 			projPoms.add(sb.toString());
+			
+
 		}
 		
 		for (String projPom : projPoms) {
-			log.info("pom updating for " + projPom);
 			createAndroidProfile(projPom, keystore, storepass, keypass, alias);
 		}
 	}
 	
 	private String createAndroidProfile(String filePath, String keystore, String storepass, String keypass, String alias) throws PhrescoException {
-		log.info("Entering Method Build.createAndroidProfile() " + filePath);
+		
 		try {
 			if (StringUtils.isEmpty(keystore)) {
 				throw new PhrescoException("keystore value is empty "); 
