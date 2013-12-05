@@ -54,6 +54,7 @@ import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.xcode.utils.SdkVerifier;
 import com.photon.phresco.plugins.xcode.utils.XcodeUtil;
+import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.FileUtil;
 import com.photon.phresco.util.IosSdkUtil;
 import com.photon.phresco.util.IosSdkUtil.MacSdkType;
@@ -271,8 +272,8 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 			throw new MojoExecutionException("Invalid path, invalid xcodebuild file: "
 					+ xcodeCommandLine.getAbsolutePath());
 		}
-		getLog().info("basedir " + basedir);
-		getLog().info("baseDir Name" + baseDir.getName());
+		getLog().info("basedir xcode " + basedir);
+		getLog().info("baseDir Name Xcode" + baseDir.getName());
 
 		try {
 			if(!SdkVerifier.isAvailable(sdk) && !projectType.equals(MAC)) {
@@ -1039,6 +1040,7 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 			getLog().info("Configuring the project....");
 			getLog().info("environment name :" + environmentName);
 			getLog().info("base dir name :" + baseDir.getName());
+			
 			File srcConfigFile = null;
 			String currentProjectPath = "";
 			// pom.xml file have "/source" as as source directory , in that case we are getting only "/source" as string .
@@ -1054,7 +1056,25 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 			getLog().info("SourceDirectory ... " + project.getBuild().getSourceDirectory());
 			getLog().info("Config file : " + srcConfigFile.getAbsolutePath() );
 			PluginUtils pu = new PluginUtils();
-			pu.executeUtil(environmentName, baseDir.getPath(), srcConfigFile);
+			
+			File[] files = baseDir.listFiles();
+			File dotPhrescoDir = baseDir;
+			Boolean fileFlag = false;
+			
+			for (File f: files) {
+				if (f.isDirectory() && f.getName().equals(Constants.DOT_PHRESCO_FOLDER)){
+					fileFlag = true;
+					break;
+				}
+			}			
+			
+			if (fileFlag == false) {
+				String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+	        	if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
+	        		dotPhrescoDir = new File(baseDir.getParent() + File.separatorChar + dotPhrescoDirName);
+	        	}
+			}
+			pu.executeUtil(environmentName, dotPhrescoDir.getPath(), srcConfigFile);
 			pu.setDefaultEnvironment(environmentName, srcConfigFile);
 			
 			// write project source path inside source folder

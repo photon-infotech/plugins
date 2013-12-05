@@ -43,6 +43,7 @@ import org.w3c.dom.Element;
 import com.photon.phresco.commons.model.*;
 import com.photon.phresco.plugin.commons.*;
 import com.photon.phresco.plugins.xcode.utils.*;
+import com.photon.phresco.util.Constants;
 
 /**
  * APP instrumentation
@@ -215,7 +216,8 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 					if(StringUtils.isNotBlank(script)) {
 						pb.command().add("-e");
 						pb.command().add("UIASCRIPT");
-						String scriptPath = project.getBasedir().getAbsolutePath()+File.separator+script;
+						String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_TEST_DIR);
+						String scriptPath = project.getBasedir().getParentFile()+File.separator+dotPhrescoDirName+File.separator+script;
 						pb.command().add(scriptPath);
 					} else {
 						getLog().error("script is empty");
