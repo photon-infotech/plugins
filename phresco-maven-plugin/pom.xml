@@ -18,27 +18,9 @@
   </organization>
   <dependencies>
     <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-plugin-api</artifactId>
-      <version>2.0</version>
-    </dependency>
-    
-      <dependency>
-        <groupId>com.photon.phresco.commons</groupId>
-        <artifactId>phresco-commons</artifactId>
-        <version>${phresco-commons-version}</version>
-    </dependency>
-	
-    <dependency>
             <groupId>com.photon.phresco</groupId>
             <artifactId>plugin-commons</artifactId>
             <version>${phresco-commons-version}</version>
-    </dependency>
-    
-    <dependency>
-        <groupId>com.photon.phresco.framework</groupId>
-        <artifactId>phresco-framework</artifactId>
-        <version>${phresco-commons-version}</version>
     </dependency>
     
     <dependency>
@@ -49,10 +31,9 @@
     
     <dependency>
         <groupId>org.apache.maven</groupId>
-          <artifactId>maven-plugin-api</artifactId>
-          <version>${maven-plugin-api.version}</version>
-    </dependency>
-    
+        <artifactId>maven-project</artifactId>
+        <version>2.2.1</version>
+    </dependency>    
     <dependency>
           <groupId>junit</groupId>
           <artifactId>junit</artifactId>
@@ -67,9 +48,16 @@
     </dependency>
     
     <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-utils</artifactId>
+        <version>${plexus-utils.version}</version>            
+    </dependency>
+    
+    <dependency>
         <groupId>org.apache.maven</groupId>
-        <artifactId>maven-project</artifactId>
-        <version>${maven-project.version}</version>
+        <artifactId>maven-artifact-manager</artifactId>
+        <version>2.2.1</version>
+        <scope>compile</scope>            
     </dependency>
     
     <dependency>

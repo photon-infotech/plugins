@@ -603,4 +603,14 @@ public interface PluginConstants {
     String ELEMENT_DIRECTORIES  = "directories";
     String ELEMENT_FILES        = "files";
     String ATTR_TODIR           = "toDirectory";
+    
+    //Constants for phresco deploy build
+    String DEPLOY_FILE = "deploy:deploy-file";
+    String ARTIFACT_ID = "artifactId";
+    String GROUP_ID = "groupId";
+    String PACKAGING = "packaging";
+    String POM_FILE = "pomFile";
+    String REPOID = "repositoryId";
+    String SETTINGS_ARG = "-s";
+    String MAVEN_DEF_SETTINGS = "settings.xml";
 }
