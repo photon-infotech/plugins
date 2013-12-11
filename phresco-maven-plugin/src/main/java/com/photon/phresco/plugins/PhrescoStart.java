@@ -79,7 +79,6 @@ public class PhrescoStart extends PhrescoAbstractMojo {
 			if (StringUtils.isNotEmpty(moduleName)) {
         		infoFile = baseDir + File.separator + moduleName + File.separator + Constants.START_INFO_FILE;
         	}
-			System.out.println("infoFile in start====> " + infoFile);
 			PhrescoPlugin plugin = getPlugin(getDependency(infoFile, START));
 			plugin.startServer(getConfiguration(infoFile, START), getMavenProjectInfo(project, moduleName));
 		} catch (PhrescoException e) {

@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Map;
 
@@ -110,7 +109,7 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
         		dotPhrescoDir = new File(baseDir.getParentFile().getPath() +  File.separatorChar + dotPhrescoDirName + File.separatorChar + moduleName);
         	}
         	srcDirectory = workingDirectory;
-        	File splitProjectDirectory = utils.getSplitProjectDirectory(project.getFile(), dotPhrescoDir, moduleName);
+        	File splitProjectDirectory = utils.getSplitProjectSrcDir(project.getFile(), dotPhrescoDir, moduleName);
         	if (splitProjectDirectory != null) {
         		srcDirectory = splitProjectDirectory;
         	}
@@ -162,9 +161,7 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
 			throw new MojoExecutionException(e.getMessage(), e);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
-		} catch (IOException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
-		}
+		} 
 	}
 	
 

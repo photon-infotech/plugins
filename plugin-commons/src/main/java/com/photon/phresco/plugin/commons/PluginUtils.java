@@ -195,7 +195,7 @@ public class PluginUtils {
 		}
 	}
 	
-	public File getSplitProjectDirectory(File pomFile, File dotPhrescoDir, String subModule) throws PhrescoException {
+	public File getSplitProjectSrcDir(File pomFile, File dotPhrescoDir, String subModule) throws PhrescoException {
 		try {
 			PomProcessor pomProcessor = new PomProcessor(pomFile);
 			String srcDirName = pomProcessor.getProperty(Constants.POM_PROP_KEY_SPLIT_SRC_DIR);

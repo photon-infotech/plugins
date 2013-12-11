@@ -29,22 +29,15 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
-import org.w3c.dom.Element;
 
-import com.photon.phresco.commons.model.BuildInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoUtil;
-import com.photon.phresco.util.ArchiveUtil;
-import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
-import com.phresco.pom.model.Profile;
-import com.phresco.pom.model.Profile.Properties;
-import com.phresco.pom.util.PomProcessor;
 
 public class Deploy implements PluginConstants {
 	
@@ -59,11 +52,12 @@ public class Deploy implements PluginConstants {
 	private String buildNumber;
 	private File buildDir;
 	private String environmentName;
-	private File buildFile;
 	private File tempDir;
 	private Log log;
 	private PluginUtils pUtil;
 	private String pomFile;
+	private String dotPhrescoDirName;
+    private File dotPhrescoDir;
 	
 	public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -74,10 +68,13 @@ public class Deploy implements PluginConstants {
         environmentName = configs.get(ENVIRONMENT_NAME);
         buildNumber = configs.get(BUILD_NUMBER);
         pUtil = new PluginUtils();
-        
+        dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+        dotPhrescoDir = baseDir;
+        if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
+        	dotPhrescoDir = new File(baseDir.getParent() + File.separator + dotPhrescoDirName);
+        }
 		try {
 			init();
-//			extractBuild();
 			deployToServer();
 			cleanUp();
 		} catch (MojoExecutionException e) {
@@ -91,9 +88,7 @@ public class Deploy implements PluginConstants {
 			if (StringUtils.isEmpty(buildNumber) || StringUtils.isEmpty(environmentName)) {
 				callUsage();
 			}
-			BuildInfo buildInfo = pUtil.getBuildInfo(Integer.parseInt(buildNumber));
 			buildDir = new File(baseDir.getPath() + PluginConstants.BUILD_DIRECTORY);
-			buildFile = new File(buildDir.getPath() + File.separator + buildInfo.getBuildName());
 			tempDir = new File(buildDir.getPath() + TEMP_DIR);
 			tempDir.mkdirs();
 		} catch (Exception e) {
@@ -109,17 +104,9 @@ public class Deploy implements PluginConstants {
 		throw new MojoExecutionException("Invalid Usage. Please see the Usage of Deploy Goal");
 	}
 	
-	private void extractBuild() throws MojoExecutionException {
-		try {
-			ArchiveUtil.extractArchive(buildFile.getPath(), tempDir.getPath(), ArchiveType.ZIP);
-		} catch (PhrescoException e) {
-			throw new MojoExecutionException(e.getErrorMessage(), e);
-		}
-	}
-	
 	private void deployToServer() throws MojoExecutionException, PhrescoException {
 		try {
-			List<com.photon.phresco.configuration.Configuration> configurations = pUtil.getConfiguration(baseDir, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
+			List<com.photon.phresco.configuration.Configuration> configurations = pUtil.getConfiguration(dotPhrescoDir, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
 			for (com.photon.phresco.configuration.Configuration configuration : configurations) {
 				deploy(configuration);
 			}			
@@ -148,40 +135,8 @@ public class Deploy implements PluginConstants {
 		cq5Url.append(FORWARD_SLASH);
 		cq5Url.append(context);
 		
-		//configurationCq5Url(cq5Url.toString(), serverusername, serverpassword);
 		File cq5File = getCq5File();
-//		if (cq5File == null) {
-//			throw new PhrescoException("Cq5 file is not found to deploy ");
-//		}
 		deployToServer(cq5File, cq5Url.toString(), serverusername, serverpassword);
-	}
-
-	private void configurationCq5Url(String cq5Url, String username, String password) throws PhrescoException {
-		try {
-			PomProcessor processor = new PomProcessor(project.getFile());
-			Profile profile = processor.getProfile(CQ5_PROFILE_ID);
-			System.out.println("profile == "+profile);
-			Properties cq5Configuration = profile.getProperties();
-			System.out.println(" cq5Configuration "+cq5Configuration);
-			List<Element> elements = cq5Configuration.getAny();
-			System.out.println("elements == "+ elements.size());
-			for (Element element : elements) {
-				String tagName = element.getTagName();
-				System.out.println(" tagName "+ tagName);
-				if (TARGET_URL.equals(tagName)) {
-					element.setTextContent(cq5Url);
-				}
-				if (USER_NAME.equals(tagName)) {
-					element.setTextContent(username);			
-				}
-				if (PASSWORD.equals(tagName)) {
-					element.setTextContent(password);
-				}
-			}
-			processor.save();
-		} catch (Exception e) {
-			throw new PhrescoException(e);
-		}
 	}
 
 	private File getCq5File() throws PhrescoException {
@@ -217,7 +172,7 @@ public class Deploy implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(PASSWORD+"="+password);
 			sb.append(STR_SPACE);
-			sb.append(PACKAGE_FILE+"="+cq5File);
+			sb.append(PACKAGE_FILE+"="+"\""+cq5File+"\"");
 			sb.append(STR_SPACE);
 			sb.append(SKIP_TESTS);
 			

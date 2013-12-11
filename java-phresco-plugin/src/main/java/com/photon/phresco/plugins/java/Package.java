@@ -156,7 +156,7 @@ public class Package implements PluginConstants {
         	dotPhrescoDir = new File(dotPhrescoDir.getPath() + File.separatorChar + subModule);
         	pomFile = new File(workingDirectory.getPath() + File.separatorChar + pomFile.getName());
         } 
-        File splitProjectDirectory = pu.getSplitProjectDirectory(pomFile, dotPhrescoDir, subModule);
+        File splitProjectDirectory = pu.getSplitProjectSrcDir(pomFile, dotPhrescoDir, subModule);
     	srcDirectory = workingDirectory;
     	if (splitProjectDirectory != null) {
     		srcDirectory = splitProjectDirectory;
@@ -244,24 +244,6 @@ public class Package implements PluginConstants {
 			throw new PhrescoException(e);
 		}
 		return modules;
-	}
-	
-	private File getSplitProjectDirectory() throws PhrescoException {
-		try {
-			PomProcessor pomProcessor = new PomProcessor(pomFile);
-			String srcDirName = pomProcessor.getProperty(Constants.POM_PROP_KEY_SPLIT_SRC_DIR);
-			PluginUtils pluginUtils = new PluginUtils();
-			ApplicationInfo appInfo = pluginUtils.getAppInfo(dotPhrescoDir);
-			String appDirName = appInfo.getAppDirName();
-			if (StringUtils.isNotEmpty(srcDirName)) {
-				return new File(Utility.getProjectHome() + File.separatorChar + appDirName + File.separatorChar + srcDirName + File.separatorChar + subModule);
-			}
-		} catch (PhrescoException e) {
-			throw new PhrescoException(e);
-		} catch (PhrescoPomException e) {
-			throw new PhrescoException(e);
-		}
-		return null;
 	}
 	
 	private void setFileSetExcludes(WarConfigProcessor configProcessor, String FileSetId, List<String> exclues) throws PhrescoException {

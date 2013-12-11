@@ -62,10 +62,32 @@ public class LoadTest implements PluginConstants{
 		try {
 			PluginUtils pluginUtils = new PluginUtils();
 			MavenProject project = mavenProjectInfo.getProject();
-			String subModule = mavenProjectInfo.getModuleName();
+			String subModule = "";
+			if (StringUtils.isNotEmpty(mavenProjectInfo.getModuleName())) {
+				subModule = mavenProjectInfo.getModuleName();
+			}
+			File baseDir = project.getBasedir();
 			File workingDir = project.getBasedir();
 			if (StringUtils.isNotEmpty(subModule)) {
 				workingDir = new File(workingDir + File.separator + subModule);
+			}
+			File dotPhrescoDir = baseDir;
+			String pomXml = mavenProjectInfo.getProject().getFile().getName();
+			File pomFile = new File(workingDir.getPath() + File.separatorChar + pomXml);
+			PomProcessor processor = new PomProcessor(pomFile);
+			String dotPhrescoDirName = processor.getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+			if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
+				dotPhrescoDir = new File(baseDir.getParent() +  File.separatorChar + dotPhrescoDirName + File.separatorChar + subModule);
+			}
+			ApplicationInfo appInfo = pluginUtils.getAppInfo(dotPhrescoDir);
+			String appDirName = appInfo.getAppDirName();
+			String loadTestDirName = processor.getProperty(Constants.POM_PROP_KEY_SPLIT_TEST_DIR);
+			String srcDirName = processor.getProperty(Constants.POM_PROP_KEY_SPLIT_SRC_DIR);
+			File loadTestSplitDir = workingDir;
+			if (StringUtils.isNotEmpty(loadTestDirName)) {
+				loadTestSplitDir = new File(Utility.getProjectHome() + File.separatorChar + appDirName + File.separatorChar + loadTestDirName + File.separatorChar + subModule);
+			} else if (StringUtils.isNotEmpty(srcDirName)) {
+				loadTestSplitDir = new File(Utility.getProjectHome() + File.separatorChar + appDirName + File.separatorChar + srcDirName + File.separatorChar + subModule);
 			}
  			Map<String, String> configs = MojoUtil.getAllValues(configuration);
 			String testBasis = configs.get(TEST_BASIS);
@@ -91,12 +113,10 @@ public class LoadTest implements PluginConstants{
 			} else {
 				loadTestAgainst = testAgainstType;
 			}
-			File pomFile = getPomFile(workingDir);
-			PomProcessor processor = new PomProcessor(pomFile);
 			String loadTestDir = processor.getProperty(Constants.POM_PROP_KEY_LOADTEST_DIR);
 			if(StringUtils.isNotEmpty(loadTestDir)) {
 				loadTestDir = loadTestDir +  File.separator + loadTestAgainst;
-				StringBuilder testPomPath = new StringBuilder(workingDir.getPath())
+				StringBuilder testPomPath = new StringBuilder(loadTestSplitDir.getPath())
 				.append(loadTestDir)
 				.append(File.separator)
 				.append(POM_XML);
@@ -118,7 +138,7 @@ public class LoadTest implements PluginConstants{
 					}
 				} else {
 					com.photon.phresco.configuration.Configuration config = null;
-					List<com.photon.phresco.configuration.Configuration> configurations = pluginUtils.getConfiguration(workingDir, environmentName, testAgainstType);
+					List<com.photon.phresco.configuration.Configuration> configurations = pluginUtils.getConfiguration(dotPhrescoDir, environmentName, testAgainstType);
 					for (com.photon.phresco.configuration.Configuration conf : configurations) {
 						if (conf.getName().equals(type)) {
 							config = conf;
@@ -128,9 +148,9 @@ public class LoadTest implements PluginConstants{
 					List<Element> configList = testAgainstParameterPluginConfiguration(doc, jmeterConfiguration, testName);
 					pomProcessor.addConfiguration(COM_LAZERYCODE_JMETER, JMETER_MAVEN_PLUGIN, configList);
 					pomProcessor.save();
-					String testConfigFilePath = workingDir.getPath() + File.separator + loadTestDir + File.separator + TESTS_FOLDER;
+					String testConfigFilePath = loadTestSplitDir.getPath() + File.separator + loadTestDir + File.separator + TESTS_FOLDER;
 					pluginUtils.adaptTestConfig(testConfigFilePath + File.separator , config, "loadTest");
-					String jsonFile = workingDir.getPath() + File.separator + loadTestDir + File.separator + Constants.FOLDER_JSON + File.separator+ testName + Constants.DOT_JSON;
+					String jsonFile = loadTestSplitDir.getPath() + File.separator + loadTestDir + File.separator + Constants.FOLDER_JSON + File.separator+ testName + Constants.DOT_JSON;
 					BufferedReader bufferedReader = new BufferedReader(new FileReader(jsonFile));
 					Gson gson = new Gson();
 					PerformanceDetails fromJson = gson.fromJson(bufferedReader, PerformanceDetails.class);
@@ -140,7 +160,7 @@ public class LoadTest implements PluginConstants{
 							authorizationUserName, authorizationPassword, authorizationDomain, authorizationRealm, contextUrls);
 				}
 			}
-			generateMavenCommand(mavenProjectInfo, workingDir.getPath() + File.separator + loadTestDir, LOAD);
+			generateMavenCommand(mavenProjectInfo, loadTestSplitDir.getPath() + File.separator + loadTestDir, LOAD);
 
 		} catch (ConfigurationException e) {
 			throw new PhrescoException(e);
@@ -150,15 +170,6 @@ public class LoadTest implements PluginConstants{
 		return new DefaultExecutionStatus();
 	}
 	
-	private File getPomFile(File workingDirectory) throws PhrescoException {
-		PluginUtils pUtil = new PluginUtils();
-		ApplicationInfo appInfo = pUtil.getAppInfo(workingDirectory);
-		String pomFileName = Utility.getPhrescoPomFromWorkingDirectory(appInfo, workingDirectory);
-		File pom = new File(workingDirectory.getPath() + File.separator + pomFileName);
-
-		return pom;
-	}
-
 	private List<Element> jmxUploadPluginConfiguration(Document doc, com.phresco.pom.model.Plugin.Configuration configuration, List<String> jmxFiles) {
 
 		List<Element> configList = configuration.getAny();

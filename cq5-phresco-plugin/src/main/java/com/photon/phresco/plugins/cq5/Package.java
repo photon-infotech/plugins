@@ -62,7 +62,7 @@ public class Package implements PluginConstants {
 	private MavenProject project;
 	private File baseDir;
 	private String environmentName;
-	private String moduleName;
+	private String moduleName = "";
 	private String buildName;
 	private String buildNumber;
 	private int buildNo;
@@ -73,20 +73,22 @@ public class Package implements PluginConstants {
 	private int nextBuildNo;
 	private String zipName;
 	private Date currentDate;
-	private String context;
 	private Log log;
 	private PluginPackageUtil util;
 	private PluginUtils pu;
 	private String sourceDir;
 	private StringBuilder builder;
-	private String pomName;
+	private File pomFile;
 	private String packagingType;
+	private File srcDirectory;
+	private String dotPhrescoDirName;
+    private File dotPhrescoDir;
 	
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
         project = mavenProjectInfo.getProject();
-        pomName = project.getFile().getName();
+        pomFile = project.getFile();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
         buildName = configs.get(BUILD_NAME);
@@ -94,10 +96,22 @@ public class Package implements PluginConstants {
         util = new PluginPackageUtil();
         pu = new PluginUtils();
         builder = new StringBuilder();
-        moduleName = configs.get(PROJECT_MODULE);
-        PluginUtils.checkForConfigurations(baseDir, environmentName);
-        packagingType = getPackagingType();
+        if(StringUtils.isNotEmpty(mavenProjectInfo.getModuleName())) {
+        	moduleName = mavenProjectInfo.getModuleName();
+        }
+        dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+        dotPhrescoDir = baseDir;
+        if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
+        	dotPhrescoDir = new File(baseDir.getParent() + File.separator + dotPhrescoDirName);
+        }
+        PluginUtils.checkForConfigurations(dotPhrescoDir, environmentName);
         try { 
+        	File splitProjectDirectory = pu.getSplitProjectSrcDir(pomFile, dotPhrescoDir, moduleName);
+        	srcDirectory = baseDir;
+        	if (splitProjectDirectory != null) {
+        		srcDirectory = splitProjectDirectory;
+        	}
+        	packagingType = getPackagingType();
 			init();
 			getMavenCommands(configuration); // -DskipTests cmd
 			adaptSourceConfig();
@@ -123,16 +137,17 @@ public class Package implements PluginConstants {
 		PomProcessor processor  = null;
 		File sourceConfigFile = null;
 		try {
-			processor = new PomProcessor(project.getFile());
+			File pomFilePath = new File(baseDir.getPath() + File.separatorChar + moduleName + File.separatorChar + pomFile.getName());
+			processor = new PomProcessor(pomFilePath);
 			String configXml = processor.getProperty(POM_PROP_CONFIG_FILE);
 			if(StringUtils.isNotEmpty(configXml)) {
-				sourceConfigFile = new File(baseDir + modulePath + configXml);
+				sourceConfigFile = new File(srcDirectory + modulePath + configXml);
 			} else {
-				sourceConfigFile = new File(baseDir + modulePath + sourceDir + FORWARD_SLASH +  "config.json");
+				sourceConfigFile = new File(srcDirectory + modulePath + sourceDir + FORWARD_SLASH +  "config.json");
 			}
 			File parentFile = sourceConfigFile.getParentFile();
 			if (parentFile.exists()) {
-				writeConfiguration(environmentName, baseDir.getPath(), sourceConfigFile);
+				writeConfiguration(environmentName, dotPhrescoDir.getPath(), sourceConfigFile);
 			}
 		} catch (PhrescoPomException e) {
 			throw new MojoExecutionException(e.getMessage());
@@ -143,13 +158,13 @@ public class Package implements PluginConstants {
 
 	private String getPackagingType() throws PhrescoException {
 		StringBuilder builder = new StringBuilder();
-		builder.append(baseDir.getPath())
+		builder.append(srcDirectory.getPath())
 		.append(File.separatorChar);
 		if(StringUtils.isNotEmpty(moduleName)) {
 			builder.append(moduleName);
 			builder.append(File.separatorChar);
 		}
-		builder.append(pomName);
+		builder.append(POM_XML);
 		try {
 			PomProcessor pomProcessor = new PomProcessor(new File(builder.toString()));
 			return pomProcessor.getModel().getPackaging();
@@ -166,7 +181,7 @@ public class Package implements PluginConstants {
 			} else {
 				targetDir = new File(project.getBuild().getDirectory());
 			}
-			baseDir = getProjectRoot(baseDir);
+			dotPhrescoDir = getProjectRoot(dotPhrescoDir);
 			if (!buildDir.exists()) {
 				buildDir.mkdirs();
 				log.info("Build directory created..." + buildDir.getPath());
@@ -203,42 +218,12 @@ public class Package implements PluginConstants {
 		}
 	}
 
-	private void updateFinalName() throws MojoExecutionException {
-		try {
-			File pom = project.getFile();
-			PomProcessor pomprocessor = new PomProcessor(pom);
-			String envName = environmentName;
-			List<String> envList = pu.csvToList(environmentName);
-
-			if (environmentName.indexOf(',') > -1) { // multi-value
-				envName = readDefaultEnv(envList);
-			}
-			List<com.photon.phresco.configuration.Configuration> configurations = pu.getConfiguration(baseDir, envName, Constants.SETTINGS_TEMPLATE_SERVER);
-			if(CollectionUtils.isNotEmpty(configurations)) {
-				for (com.photon.phresco.configuration.Configuration configuration : configurations) {
-					context = configuration.getProperties().getProperty(Constants.SERVER_CONTEXT);
-					break;
-				}
-			}
-			sourceDir = pomprocessor.getProperty(POM_PROP_KEY_SOURCE_DIR);
-			if (StringUtils.isEmpty(context)) {
-				return;
-			}
-			pomprocessor.setFinalName(context);
-			pomprocessor.save();
-		} catch (PhrescoException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
-		} catch (PhrescoPomException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
-		}
-	}
-	
 	public String readDefaultEnv(List<String> envList) throws MojoExecutionException {
 		boolean defaultEnv = false;
 		String defaultEnvName = "";
 		ConfigManager configManager = null;
 		try {
-			String customerId = pu.readCustomerId(baseDir);
+			String customerId = pu.readCustomerId(dotPhrescoDir);
 			File settingsXml = new File(Utility.getProjectHome() + customerId + Constants.SETTINGS_XML);
 			if (settingsXml.exists()) {
 				configManager = new ConfigManagerImpl(new File(Utility.getProjectHome() + customerId
@@ -252,7 +237,7 @@ public class Package implements PluginConstants {
 				}
 			}
 			if (!defaultEnv) {
-				configManager = new ConfigManagerImpl(new File(baseDir.getPath() + File.separator
+				configManager = new ConfigManagerImpl(new File(dotPhrescoDir.getPath() + File.separator
 						+ Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE));
 				List<Environment> configurationEnvironments = configManager.getEnvironments(envList);
 				for (Environment configEnvironment : configurationEnvironments) {
@@ -294,11 +279,11 @@ public class Package implements PluginConstants {
 		sb.append(MVN_PHASE_CLEAN);
 		sb.append(STR_SPACE);
 		sb.append(MVN_PHASE_PACKAGE);
-		if(!Constants.POM_NAME.equals(pomName)) {
+		if(!Constants.POM_NAME.equals(pomFile.getName())) {
 			sb.append(STR_SPACE);
 			sb.append(Constants.HYPHEN_F);
 			sb.append(STR_SPACE);
-			sb.append(pomName);
+			sb.append(pomFile.getName());
 		}
 		sb.append(STR_SPACE);
 		sb.append(builder.toString());
@@ -366,7 +351,6 @@ public class Package implements PluginConstants {
 			return;
 		}
 		zipName = util.createPackage(buildName, buildNumber, nextBuildNo, currentDate);
-		String zipFilePath = buildDir.getPath() + File.separator + zipName;
 		String zipNameWithoutExt = zipName.substring(0, zipName.lastIndexOf('.'));
 		copyZipToPackage(zipNameWithoutExt); // jar package
 	}

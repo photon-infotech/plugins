@@ -170,9 +170,6 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
 				dotPhrescoDir = new File(baseDir.getParent() +  File.separatorChar + dotPhrescoDirName);
 			}
-			if (StringUtils.isNotEmpty(dotPhrescoDirName) && StringUtils.isNotEmpty(subModule)) {
-				dotPhrescoDir = new File(dotPhrescoDir.getParentFile().getPath() +  File.separatorChar + dotPhrescoDirName);
-			}
 			dotPhrescoDir = new File(dotPhrescoDir.getPath() + File.separatorChar + subModule);
 			String testDirName = processor.getProperty(Constants.POM_PROP_KEY_SPLIT_TEST_DIR);
 			String srcDirName = processor.getProperty(Constants.POM_PROP_KEY_SPLIT_SRC_DIR);

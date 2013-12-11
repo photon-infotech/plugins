@@ -22,12 +22,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 
-import com.photon.phresco.commons.model.ApplicationInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
@@ -37,7 +35,6 @@ import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Para
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands.MavenCommand;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.Constants;
-import com.photon.phresco.util.TechnologyTypes;
 import com.photon.phresco.util.Utility;
 import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.model.Plugin;
@@ -46,50 +43,47 @@ import com.phresco.pom.util.PomProcessor;
 
 public class CQ5Test implements PluginConstants {
 	private File baseDir;
-	private File testConfigPath;
 	private MavenProject project;
-	private String pomFile;
-	
+	private File workingDirectory;
+	private String subModule = "";
+	private File pomFile;
 	public void runTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException{
-		baseDir = mavenProjectInfo.getBaseDir();
-		project = mavenProjectInfo.getProject();
-		pomFile = project.getFile().getName();
-		Map<String, String> configs = MojoUtil.getAllValues(configuration);
-		String testAgainst = configs.get(TEST_AGAINST);
-		String goalPackBeforeTest = "";
-		String projectModule= "";
-		PluginUtils pluginUtils = new PluginUtils();
-		if(configuration != null) {
-			projectModule=configs.get(PROJECT_MODULE);
-		}
-		if(StringUtils.isNotEmpty(projectModule)) {
-			projectModule = File.separator + projectModule;
-		} else {
-			projectModule = "";
-		}
-
-		if (testAgainst.equals(JAVA)) {
-			String reportDir = project.getProperties().getProperty("phresco.unitTest.java.report.dir");
-			reportDir = File.separator + projectModule + File.separator + reportDir;
-			File reportLoc = new File(baseDir.getPath() + reportDir);
-			if (reportLoc.exists()) {
-				pluginUtils.delete(reportLoc);
+		try {
+			baseDir = mavenProjectInfo.getBaseDir();
+			if (StringUtils.isNotEmpty(mavenProjectInfo.getModuleName())) {
+				subModule = mavenProjectInfo.getModuleName();
 			}
-		} else if (testAgainst.equals(JS)) {
-			String reportJsDir = project.getProperties().getProperty("phresco.unitTest.js.report.dir");
-			reportJsDir = File.separator + projectModule + File.separator + reportJsDir;
-			File reportJsLoc = new File(baseDir.getPath() + reportJsDir);
-			if (reportJsLoc.exists()) {
-				pluginUtils.delete(reportJsLoc);
+			project = mavenProjectInfo.getProject();
+			pomFile = project.getFile();
+			workingDirectory = new File(baseDir.getPath() + File.separator + subModule);
+			Map<String, String> configs = MojoUtil.getAllValues(configuration);
+			String testAgainst = configs.get(TEST_AGAINST);
+			String goalPackBeforeTest = "";
+			PluginUtils pluginUtils = new PluginUtils();
+			PomProcessor processor = new PomProcessor(new File(workingDirectory, pomFile.getName()));
+			if (testAgainst.equals(JAVA)) {
+				String reportDir = processor.getProperty("phresco.unitTest.java.report.dir");
+				File reportLoc = new File(workingDirectory.getPath() + File.separator  + reportDir);
+				if (reportLoc.exists()) {
+					pluginUtils.delete(reportLoc);
+				}
+			} else if (testAgainst.equals(JS)) {
+				String reportJsDir = processor.getProperty("phresco.unitTest.js.report.dir");
+				File reportJsLoc = new File(workingDirectory.getPath() + File.separator  + reportJsDir);
+				if (reportJsLoc.exists()) {
+					pluginUtils.delete(reportJsLoc);
+				}
 			}
+			if (testAgainst.equals(JS)) {
+				goalPackBeforeTest = getGoalPackBeforeTest(workingDirectory);
+			}
+			buildCommand(configuration, testAgainst, goalPackBeforeTest, subModule);
+		} catch (Exception e) {
+			throw new PhrescoException(e); 
 		}
-		if (testAgainst.equals(JS)) {
-			goalPackBeforeTest = getGoalPackBeforeTest(baseDir);
-		}
-		buildCommand(configuration, testAgainst, goalPackBeforeTest, projectModule);
 	}
 
-	private void buildCommand(Configuration configuration, String testAgainst, String goalPackBeforeTest, String projectModule) throws PhrescoException {
+	private void buildCommand(Configuration configuration, String testAgainst, String goalPackBeforeTest, String subModule) throws PhrescoException {
 		String mavenCommandValue = null;
 		if (testAgainst != null) {
 			List<Parameter> parameters = configuration.getParameters().getParameter();
@@ -104,7 +98,7 @@ public class CQ5Test implements PluginConstants {
 				}
 			}
 		}
-		executeTest(mavenCommandValue, testAgainst, goalPackBeforeTest, projectModule);
+		executeTest(mavenCommandValue, testAgainst, goalPackBeforeTest, subModule);
 	}
 
 	private void executeTest(String mavenCommandValue, String testAgainst, String goalPackBeforeTest, String projectModule) throws PhrescoException {
@@ -120,18 +114,15 @@ public class CQ5Test implements PluginConstants {
 			}
 			sb.append(STR_SPACE).
 			append(mavenCommandValue);
-			if(!Constants.POM_NAME.equals(pomFile)) {
-				sb.append(STR_SPACE);
-				sb.append(Constants.HYPHEN_F);
-				sb.append(STR_SPACE); 
-				sb.append(pomFile);
-			}
-			boolean status;
-			if(StringUtils.isNotEmpty(projectModule)) {
-				status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath() + projectModule, baseDir.getPath(), UNIT);
-			} else {
-				status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(), UNIT);
-			} 
+//			if (StringUtils.isNotEmpty(projectModule)) {
+//				sb.append(STR_SPACE).append("-pl "+ projectModule);
+//			}
+			sb.append(STR_SPACE);
+			sb.append(Constants.HYPHEN_F);
+			sb.append(STR_SPACE); 
+			sb.append(project.getFile().getName());
+			System.out.println("COMMAND IS  " + sb.toString());
+			boolean status = Utility.executeStreamconsumer(sb.toString(), workingDirectory.getPath(), workingDirectory.getPath(), UNIT);
 			if(!status) {
 				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
 			}
@@ -142,9 +133,9 @@ public class CQ5Test implements PluginConstants {
 	
 	private String getGoalPackBeforeTest(File baseDir) throws PhrescoException {
 		try {
-			PomProcessor processor = new PomProcessor(new File(baseDir.getPath() + File.separator + pomFile));
+			PomProcessor processor = new PomProcessor(new File(baseDir.getPath() + File.separator + pomFile.getName()));
 			Plugin plugin = processor.getPlugin("net.awired.jstest", "jstest-maven-plugin");
-			if(plugin.getExecutions() != null && CollectionUtils.isNotEmpty(plugin.getExecutions().getExecution())) {
+			if(plugin != null && plugin.getExecutions() != null && CollectionUtils.isNotEmpty(plugin.getExecutions().getExecution())) {
 				List<PluginExecution> execution = plugin.getExecutions().getExecution();
 				for (PluginExecution pluginExecution : execution) {
 					if(pluginExecution.getGoals() != null && CollectionUtils.isNotEmpty(pluginExecution.getGoals().getGoal())) {

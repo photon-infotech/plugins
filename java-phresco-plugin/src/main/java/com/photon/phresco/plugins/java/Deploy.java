@@ -96,7 +96,7 @@ public class Deploy implements PluginConstants {
         }
         pomFile = project.getFile();
 		try {
-			File splitProjectDirectory = pUtil.getSplitProjectDirectory(pomFile, dotPhrescoDir, "");
+			File splitProjectDirectory = pUtil.getSplitProjectSrcDir(pomFile, dotPhrescoDir, "");
 	    	srcDirectory = workingDirectory;
 	    	if (splitProjectDirectory != null) {
 	    		srcDirectory = splitProjectDirectory;

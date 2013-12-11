@@ -75,6 +75,7 @@ public class Start implements PluginConstants {
 		if (StringUtils.isNotEmpty(mavenProjectInfo.getModuleName())) {
 			subModule = mavenProjectInfo.getModuleName();
 			workingDirectory = new File(baseDir + File.separator + subModule);
+			pomFile = new File(workingDirectory.getPath() + File.separatorChar + pomFile.getName());
 		}
 		dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
 		dotPhrescoDir = baseDir;
@@ -82,8 +83,8 @@ public class Start implements PluginConstants {
 			dotPhrescoDir = new File(baseDir.getParent() + File.separator + dotPhrescoDirName);
 		}
 		dotPhrescoDir = new File(dotPhrescoDir.getPath() + File.separatorChar + subModule);
-		srcDirectory = baseDir;
-		File splitProjectDirectory = pu.getSplitProjectDirectory(pomFile, dotPhrescoDir, subModule);
+		srcDirectory = workingDirectory;
+		File splitProjectDirectory = pu.getSplitProjectSrcDir(pomFile, dotPhrescoDir, subModule);
 		if (splitProjectDirectory != null) {
 			srcDirectory = splitProjectDirectory;
 		}
@@ -185,9 +186,6 @@ public class Start implements PluginConstants {
 	private void executePhase() throws MojoExecutionException {
 		FileOutputStream fos = null;
 		File errorLog = new File(workingDirectory + File.separator + LOG_FILE_DIRECTORY + RUN_AGS_LOG_FILE);
-		if (!errorLog.exists()) {
-			errorLog.mkdirs();
-		}
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append(MVN_CMD);
@@ -207,6 +205,6 @@ public class Start implements PluginConstants {
 			Utility.executeStreamconsumerFOS(workingDirectory.toString(),sb.toString(), fos);
 		} catch (FileNotFoundException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
-		}
+		} 
 	}
 }
