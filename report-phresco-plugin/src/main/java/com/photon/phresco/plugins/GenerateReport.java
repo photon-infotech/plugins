@@ -1197,11 +1197,6 @@ public class GenerateReport implements PluginConstants {
 				jmeterTypeReports.add(jmeterTypeReport);
 			}
 		}
-
-		for (JmeterTypeReport jmeterTypeReport : jmeterTypeReports) {
-			String type = jmeterTypeReport.getType();
-			List<JmeterReport> fileReports = jmeterTypeReport.getFileReport();
-		}
 		return jmeterTypeReports;
 	}
 
@@ -1209,11 +1204,22 @@ public class GenerateReport implements PluginConstants {
 		List<Images> imgSources = new ArrayList<Images>();
 		try {
 //			String testDir = "";
+			PluginUtils utils = new PluginUtils();
+			ApplicationInfo appInfo = utils.getAppInfo(dotPhrescoDir);
+			String pomFile = Utility.getPhrescoPomFromWorkingDirectory(appInfo, baseDir);
+			PomProcessor processor = new PomProcessor(new File(baseDir, pomFile));
+			String testFolderName = processor.getProperty(Constants.POM_PROP_KEY_TEST_DIR);
+			String testdddd = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
 			StringBuilder pomDir = new StringBuilder(testDir.getPath());
-			pomDir.append(File.separator)
-			.append("test")
-			.append(File.separator)
-			.append(from)
+			pomDir.append(File.separator);
+			if (StringUtils.isNotEmpty(testFolderName)) {
+				pomDir.append(testFolderName)
+				.append(File.separator);
+			} else {
+				pomDir.append("test")
+				.append(File.separator);
+			}
+			pomDir.append(from)
 			.append(File.separator)
 			.append(testAgainst)
 			.append(File.separator);
