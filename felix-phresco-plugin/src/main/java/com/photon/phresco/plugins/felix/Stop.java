@@ -24,6 +24,7 @@ import java.io.FileReader;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.project.MavenProject;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
@@ -33,19 +34,28 @@ import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
+import com.photon.phresco.util.Constants;
 
 public class Stop implements PluginConstants {
 	private File workingDirectory;
 	private String subModule = "";
+	private String dotPhrescoDirName;
+	private File dotPhrescoDir;
 
 	public void stop(MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		File baseDir = mavenProjectInfo.getBaseDir();
 		subModule = mavenProjectInfo.getModuleName();
 		workingDirectory = baseDir;
+		MavenProject project = mavenProjectInfo.getProject();
 		if (StringUtils.isNotEmpty(subModule)) {
 			workingDirectory = new File(baseDir + File.separator + subModule);
 		}
-		File runagsInfoFile = new File(workingDirectory + File.separator + DOT_PHRESCO_FOLDER + File.separator + ENV_FILE);
+		dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+		dotPhrescoDir = workingDirectory;
+		if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
+			dotPhrescoDir = new File(baseDir.getParent() + File.separator + dotPhrescoDirName);
+		}
+		File runagsInfoFile = new File(dotPhrescoDir + File.separator + DOT_PHRESCO_FOLDER + File.separator + ENV_FILE);
 		String portNumber = findPortNumber(runagsInfoFile);
 		PluginUtils pluginutil = new PluginUtils();
 		pluginutil.stopServer(portNumber, workingDirectory);

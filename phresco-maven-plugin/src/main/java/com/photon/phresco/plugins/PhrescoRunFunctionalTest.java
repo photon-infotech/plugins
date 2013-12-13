@@ -89,7 +89,6 @@ public class PhrescoRunFunctionalTest extends PhrescoAbstractMojo implements Plu
 			if(StringUtils.isNotEmpty(property)) {
 				goal = FUNCTIONAL_TEST + HYPEN + property.trim();
 			}
-			System.out.println("infofile=====> " + infoFile);
 			if (isGoalAvailable(infoFile, goal)&& getDependency(infoFile, goal) != null) {
 				PhrescoPlugin plugin = getPlugin(getDependency(infoFile, goal));
 				plugin.runFunctionalTest(getConfiguration(infoFile, goal), getMavenProjectInfo(project, moduleName));

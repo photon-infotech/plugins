@@ -71,7 +71,6 @@ public class PhrescoRunPerformanceTest extends PhrescoAbstractMojo {
 			if (StringUtils.isNotEmpty(moduleName)) {
 				infoFile = baseDir + File.separator + moduleName + File.separator + Constants.PERFORMANCE_TEST_INFO_FILE;
 			}
-			System.out.println("infoFile====> " + infoFile);
     		if (isGoalAvailable(infoFile, PERFORMANCE_TEST) && getDependency(infoFile, PERFORMANCE_TEST) != null) {
 				PhrescoPlugin plugin = getPlugin(getDependency(infoFile, PERFORMANCE_TEST));
 		        plugin.runPerformanceTest(getConfiguration(infoFile, PERFORMANCE_TEST), getMavenProjectInfo(project, moduleName));

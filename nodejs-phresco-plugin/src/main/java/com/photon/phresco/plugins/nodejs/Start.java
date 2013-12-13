@@ -77,7 +77,7 @@ public class Start implements PluginConstants {
 			dotPhrescoDir = new File(baseDir.getParent() + File.separator + dotPhrescoDirName);
 		}
 		srcDirectory = baseDir;
-		File splitProjectDirectory = pUtil.getSplitProjectDirectory(pomFile, dotPhrescoDir, "");
+		File splitProjectDirectory = pUtil.getSplitProjectSrcDir(pomFile, dotPhrescoDir, "");
 		if (splitProjectDirectory != null) {
 			srcDirectory = splitProjectDirectory;
 		}
@@ -132,10 +132,6 @@ public class Start implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(environmentName);
 			bufferedReader = Utility.executeCommand(sb.toString(), srcDirectory.getPath() + File.separator + PROJECT_FOLDER);
-			File file = new File(baseDir.getPath() + LOG_FILE_DIRECTORY);
-			if (!file.exists()) {
-				file.mkdirs();
-			}
 			fileWriter = new FileWriter(baseDir.getPath() + LOG_FILE_DIRECTORY + RUN_AGS_LOG_FILE, false);
 			LogWriter logWriter = new LogWriter();
 			List<com.photon.phresco.configuration.Configuration> configurations = pUtil.getConfiguration(dotPhrescoDir, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);

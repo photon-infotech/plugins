@@ -78,7 +78,6 @@ public class PhrescoStop extends PhrescoAbstractMojo {
 			if (StringUtils.isNotEmpty(moduleName)) {
         		infoFile = baseDir + File.separator + moduleName + File.separator + Constants.STOP_INFO_FILE;
         	}
-			System.out.println("info file stop====> " + infoFile);
 			PhrescoPlugin plugin = getPlugin(getDependency(infoFile, STOP));
 			plugin.stopServer(getMavenProjectInfo(project, moduleName));
 		} catch (PhrescoException e) {

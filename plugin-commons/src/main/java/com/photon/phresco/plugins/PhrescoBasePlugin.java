@@ -170,9 +170,6 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
 				dotPhrescoDir = new File(baseDir.getParent() +  File.separatorChar + dotPhrescoDirName);
 			}
-			if (StringUtils.isNotEmpty(dotPhrescoDirName) && StringUtils.isNotEmpty(subModule)) {
-				dotPhrescoDir = new File(dotPhrescoDir.getParentFile().getPath() +  File.separatorChar + dotPhrescoDirName);
-			}
 			dotPhrescoDir = new File(dotPhrescoDir.getPath() + File.separatorChar + subModule);
 			String testDirName = processor.getProperty(Constants.POM_PROP_KEY_SPLIT_TEST_DIR);
 			String srcDirName = processor.getProperty(Constants.POM_PROP_KEY_SPLIT_SRC_DIR);
@@ -234,7 +231,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			String testAgainst = configValues.get(TEST_AGAINST);
 			String functionalTestDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
 			String funTestDirName = processor.getProperty(Constants.POM_PROP_KEY_SPLIT_TEST_DIR);
-			String srcDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_SRC_DIR);
+			String srcDirName = processor.getProperty(Constants.POM_PROP_KEY_SPLIT_SRC_DIR);
 			File funTestDir = workingDirectory;
 			if (StringUtils.isNotEmpty(funTestDirName)) {
 				funTestDir = new File(Utility.getProjectHome() + File.separatorChar + appDirName + File.separatorChar + funTestDirName + File.separatorChar + subModule);

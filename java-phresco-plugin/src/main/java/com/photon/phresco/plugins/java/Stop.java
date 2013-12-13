@@ -51,7 +51,7 @@ public class Stop implements PluginConstants {
 			workingDirectory = new File(baseDir + File.separator + subModule);
 		}
 		dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
-		dotPhrescoDir = baseDir;
+		dotPhrescoDir = workingDirectory;
 		if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
 			dotPhrescoDir = new File(baseDir.getParent() + File.separator + dotPhrescoDirName);
 		}

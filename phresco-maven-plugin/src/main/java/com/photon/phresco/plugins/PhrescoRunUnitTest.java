@@ -92,11 +92,9 @@ public class PhrescoRunUnitTest extends PhrescoAbstractMojo {
         	String mvnDependencyId = allValues.get(TEST_AGAINST);
         	Dependency dependency = getDependency(infoFile.getPath(), UNIT_TEST, mvnDependencyId);
     		if (infoFile.exists() && isGoalAvailable(infoFile.getPath(), UNIT_TEST) && dependency != null) {
-    		    System.out.println("inside if.......");
 				PhrescoPlugin plugin = getPlugin(dependency);
 		        plugin.runUnitTest(configuration, getMavenProjectInfo(project, moduleName));
 			} else {
-			    System.out.println("inside else.......");
 				PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());
 		        plugin.runUnitTest(configuration ,getMavenProjectInfo(project,moduleName));
 			}

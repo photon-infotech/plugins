@@ -21,13 +21,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
@@ -66,8 +64,6 @@ public class Deploy implements PluginConstants {
 	private boolean importSql;
 	private File buildFile;
 	private File tempDir;
-	private String context;
-	private Map<String, String> serverVersionMap = new HashMap<String, String>();
 	private Log log;
 	private String sqlPath;
 	private PluginUtils pUtil;
@@ -75,10 +71,11 @@ public class Deploy implements PluginConstants {
 	private File workingDirectory;
 	private File dependencyJarDir;
 	private String dependencyJars;
-//	private File pomFile;
-//	private File pomFile;
-	private String srcPomFileName;
 	private String packagingType;
+	private String dotPhrescoDirName;
+    private File dotPhrescoDir;
+    private File srcDirectory;
+    
 	public void deploy(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -91,16 +88,27 @@ public class Deploy implements PluginConstants {
 		sqlPath = configs.get(FETCH_SQL);
 		dependencyJars = configs.get("fetchDependency");
 		pUtil = new PluginUtils();
-		subModule = mavenProjectInfo.getModuleName();
-		if (StringUtils.isNotEmpty(subModule)) {
+		File pomFile = project.getFile();
+		workingDirectory = baseDir;
+		if (StringUtils.isNotEmpty(mavenProjectInfo.getModuleName())) {
+			subModule = mavenProjectInfo.getModuleName();
 			workingDirectory = new File(baseDir.getPath() + File.separator + subModule);
-		} else {
-			workingDirectory = new File(baseDir.getPath());
-		}
+			pomFile = new File(workingDirectory.getPath() + File.separatorChar + pomFile.getName());
+		} 
+		dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+        dotPhrescoDir = baseDir;
+        if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
+        	dotPhrescoDir = new File(baseDir.getParent() + File.separator + dotPhrescoDirName);
+        }
+        dotPhrescoDir = new File(dotPhrescoDir.getPath() + File.separatorChar + subModule);
+        File splitProjectDirectory = pUtil.getSplitProjectSrcDir(pomFile, dotPhrescoDir, subModule);
+    	srcDirectory = workingDirectory;
+    	if (splitProjectDirectory != null) {
+    		srcDirectory = splitProjectDirectory;
+    	}
 		try {
 			init();
 			initPomAndPackage();
-			//updateFinalName();
 			createDb();
 			extractBuild();
 			deployToServer();
@@ -112,17 +120,15 @@ public class Deploy implements PluginConstants {
 	}
 	
 	private void initPomAndPackage() throws PhrescoException {
-		ApplicationInfo appInfo = new PluginUtils().getAppInfo(workingDirectory);
-		srcPomFileName = project.getFile().getName();
+		ApplicationInfo appInfo = new PluginUtils().getAppInfo(dotPhrescoDir);
 		packagingType = project.getPackaging();
 		if(project.getFile().getName().equals(appInfo.getPhrescoPomFile())) {
 			try {
-				File srcPomFile = new File(workingDirectory.getPath() + File.separator + appInfo.getPomFile());
+				File srcPomFile = new File(srcDirectory.getPath() + File.separator + appInfo.getPomFile());
 				if(!srcPomFile.exists()) {
-					srcPomFile = new File(workingDirectory.getPath() + File.separator + "pom.xml");
+					srcPomFile = new File(srcDirectory.getPath() + File.separator + "pom.xml");
 				}
 				packagingType = new PomProcessor(srcPomFile).getModel().getPackaging();
-				srcPomFileName = srcPomFile.getName();
 			} catch (PhrescoPomException e) {
 				throw new PhrescoException(e);
 			}
@@ -158,36 +164,10 @@ public class Deploy implements PluginConstants {
 				"Invalid Usage. Please see the Usage of Deploy Goal");
 	}
 
-	private void updateFinalName() throws MojoExecutionException {
-		try {
-			File pom = project.getFile();
-			PomProcessor pomprocessor = new PomProcessor(pom);
-			List<com.photon.phresco.configuration.Configuration> configurations = pUtil
-					.getConfiguration(baseDir, environmentName,
-							Constants.SETTINGS_TEMPLATE_SERVER);
-			if (CollectionUtils.isEmpty(configurations)) {
-				throw new MojoExecutionException(
-						"Configuration is not available ");
-			}
-			for (com.photon.phresco.configuration.Configuration configuration : configurations) {
-				context = configuration.getProperties().getProperty(
-						Constants.SERVER_CONTEXT);
-				break;
-			}
-			pomprocessor.setFinalName(context);
-			pomprocessor.save();
-
-		} catch (PhrescoException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
-		} catch (PhrescoPomException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
-		}
-	}
-
 	private void createDb() throws MojoExecutionException {
 		DatabaseUtil util = new DatabaseUtil();
 		try {
-			util.fetchSqlConfiguration(sqlPath, importSql, workingDirectory, environmentName, workingDirectory);
+			util.fetchSqlConfiguration(sqlPath, importSql, srcDirectory, environmentName, dotPhrescoDir);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
@@ -204,7 +184,7 @@ public class Deploy implements PluginConstants {
 	private void deployToServer() throws MojoExecutionException,
 			PhrescoException {
 		try {
-			List<com.photon.phresco.configuration.Configuration> configurations = pUtil.getConfiguration(workingDirectory, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
+			List<com.photon.phresco.configuration.Configuration> configurations = pUtil.getConfiguration(dotPhrescoDir, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
 			for (com.photon.phresco.configuration.Configuration configuration : configurations) {
 				deploy(configuration);
 			}
@@ -280,14 +260,6 @@ public class Deploy implements PluginConstants {
 			}
 		}
 		return bundleFile;
-	}
-	
-	private File getPomFile() throws PhrescoException {
-		ApplicationInfo appInfo = pUtil.getAppInfo(workingDirectory);
-		String pomFileName = Utility.getPhrescoPomFromWorkingDirectory(appInfo, workingDirectory);
-		File pom = new File(workingDirectory.getPath() + File.separator + pomFileName);
-		
-		return pom;
 	}
 	
 	private void deployToServer(File bundleFile, String felixUrl, String username, String password)
