@@ -67,6 +67,7 @@ import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.Name.Value;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.PossibleValues;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Implementation;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Implementation.Dependency;
 import com.photon.phresco.plugins.util.MavenPluginArtifactResolver;
 import com.photon.phresco.plugins.util.MojoProcessor;
@@ -196,10 +197,26 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 	protected Dependency getDependency(String infoFile, String goal) throws PhrescoException {
 		MojoProcessor processor = new MojoProcessor(new File(infoFile));
 		if (processor.getImplementationDependency(goal) != null) {
-			return processor.getImplementationDependency(goal).getDependency();
+			return processor.getImplementationDependency(goal).getDependency().get(0);
 		}
 		return null;
 	}
+	
+	protected Dependency getDependency(String infoFile, String goal, String dependencyId) throws PhrescoException {
+        MojoProcessor processor = new MojoProcessor(new File(infoFile));
+        Implementation implementation = processor.getImplementationDependency(goal);
+        if (implementation != null) {
+            List<Dependency> listDependency = implementation.getDependency();
+            for (Dependency dependency : listDependency) {
+                if (dependencyId.equals(dependency.getId())) {
+                    return dependency;
+                }
+            }
+            return listDependency.get(0);
+        } else {
+            throw new PhrescoException("Dependecy not found");
+        }
+    }
 
 	protected boolean isGoalAvailable(String infoFile, String goal) throws PhrescoException {
 		MojoProcessor processor = new MojoProcessor(new File(infoFile));

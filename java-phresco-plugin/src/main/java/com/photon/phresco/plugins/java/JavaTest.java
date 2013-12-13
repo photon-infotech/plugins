@@ -67,25 +67,23 @@ public class JavaTest implements PluginConstants {
 			String goalPackBeforeTest = "";
 			PluginUtils pluginUtils = new PluginUtils();
 			PomProcessor processor = new PomProcessor(new File(workingDirectory, pomFile.getName()));
+			String reportDir = "";
 			if (testAgainst.equals(JAVA)) {
-				String reportDir = processor.getProperty("phresco.unitTest.java.report.dir");
-				File reportLoc = new File(workingDirectory.getPath() + File.separator  + reportDir);
-				if (reportLoc.exists()) {
-					pluginUtils.delete(reportLoc);
-				}
+			    reportDir = processor.getProperty("phresco.unitTest.java.report.dir");
+				
 			} else if (testAgainst.equals(JS)) {
-				String reportJsDir = processor.getProperty("phresco.unitTest.js.report.dir");
-				File reportJsLoc = new File(workingDirectory.getPath() + File.separator  + reportJsDir);
-				if (reportJsLoc.exists()) {
-					pluginUtils.delete(reportJsLoc);
-				}
+				reportDir = processor.getProperty("phresco.unitTest.js.report.dir");
+                ApplicationInfo appInfo = pluginUtils.getAppInfo(workingDirectory);
+                String techId = appInfo.getTechInfo().getId();
+                if (environment != null && webSeviceName != null) {
+                    copyUnitInfoFile(environment, webSeviceName, techId);
+                }
+                goalPackBeforeTest = getGoalPackBeforeTest(workingDirectory);
 			}
-			if (testAgainst.equals(JS)) {
-				ApplicationInfo appInfo = pluginUtils.getAppInfo(workingDirectory);
-				String techId = appInfo.getTechInfo().getId();
-				copyUnitInfoFile(environment, webSeviceName, techId);
-				goalPackBeforeTest = getGoalPackBeforeTest(workingDirectory);
-			}
+			File reportLoc = new File(workingDirectory.getPath() + File.separator  + reportDir);
+            if (reportLoc.exists()) {
+                pluginUtils.delete(reportLoc);
+            }
 			buildCommand(configuration, testAgainst, goalPackBeforeTest, subModule);
 		} catch (Exception e) {
 			throw new PhrescoException(e); 
@@ -107,8 +105,7 @@ public class JavaTest implements PluginConstants {
 				testConfigFile = new File(Utility.getProjectHome() + File.separatorChar + appDirName + File.separatorChar + source + File.separatorChar + subModule);
 			}
 			testConfigPath = new File(testConfigFile + File.separator + testSourcePath);
-			System.out.println();
-			if (!techId.equals(TechnologyTypes.JAVA_STANDALONE) && !techId.equals(TechnologyTypes.JAVA_WEBSERVICE) ) {
+			if (!techId.equals(TechnologyTypes.JAVA_STANDALONE) && !techId.equals(TechnologyTypes.JAVA_WEBSERVICE)) {
 				String fullPathNoEndSeparator = FilenameUtils.getFullPathNoEndSeparator(testConfigPath.getAbsolutePath());
 				File fullPathNoEndSeparatorFile = new File(fullPathNoEndSeparator);
 				fullPathNoEndSeparatorFile.mkdirs();

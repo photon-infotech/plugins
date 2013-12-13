@@ -18,6 +18,7 @@
 package com.photon.phresco.plugins;
 
 import java.io.File;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -27,7 +28,9 @@ import org.apache.maven.project.MavenProject;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Implementation.Dependency;
 import com.photon.phresco.plugins.util.MojoProcessor;
+import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.Constants;
 
 /**
@@ -39,7 +42,7 @@ import com.photon.phresco.util.Constants;
 public class PhrescoRunUnitTest extends PhrescoAbstractMojo {
 
 	private static final String UNIT_TEST = Constants.PHASE_UNIT_TEST;
-	
+	private static final String TEST_AGAINST = "testAgainst";
 	/**
      * The Maven project.
      * 
@@ -82,13 +85,18 @@ public class PhrescoRunUnitTest extends PhrescoAbstractMojo {
         	} 
     		MojoProcessor processor = new MojoProcessor(infoFile);
         	Configuration configuration = processor.getConfiguration(UNIT_TEST);
-        	if(interactive) {
+        	if (interactive) {
         		configuration = getInteractiveConfiguration(configuration, processor, project,UNIT_TEST);
-        	} 
-    		if (infoFile.exists() && isGoalAvailable(infoFile.getPath(), UNIT_TEST) && getDependency(infoFile.getPath(), UNIT_TEST) != null) {
-				PhrescoPlugin plugin = getPlugin(getDependency(infoFile.getPath(), UNIT_TEST));
+        	}
+        	Map<String, String> allValues = MojoUtil.getAllValues(configuration);
+        	String mvnDependencyId = allValues.get(TEST_AGAINST);
+        	Dependency dependency = getDependency(infoFile.getPath(), UNIT_TEST, mvnDependencyId);
+    		if (infoFile.exists() && isGoalAvailable(infoFile.getPath(), UNIT_TEST) && dependency != null) {
+    		    System.out.println("inside if.......");
+				PhrescoPlugin plugin = getPlugin(dependency);
 		        plugin.runUnitTest(configuration, getMavenProjectInfo(project, moduleName));
 			} else {
+			    System.out.println("inside else.......");
 				PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());
 		        plugin.runUnitTest(configuration ,getMavenProjectInfo(project,moduleName));
 			}
