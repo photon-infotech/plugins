@@ -139,7 +139,8 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
 			if (techId.equals(TechnologyTypes.HTML5_JQUERY_MOBILE_WIDGET) || techId.equals(TechnologyTypes.HTML5_MULTICHANNEL_JQUERY_WIDGET) ||
 						techId.equals(TechnologyTypes.HTML5_MOBILE_WIDGET) || techId.equals(TechnologyTypes.HTML5_WIDGET) || techId.equals(TechnologyTypes.HTML5)  ) {
 					try {
-						PomProcessor processor = new PomProcessor(new File(workingDirectory.getPath() + File.separator + getPomFile(workingDirectory).getName()));
+						String pomXml = project.getFile().getName();
+						PomProcessor processor = new PomProcessor(new File(workingDirectory.getPath() + File.separator + pomXml));
 						String testSourcePath = processor.getProperty("phresco.env.test.config.xml");
 						if (!techId.equals(TechnologyTypes.JAVA_STANDALONE) && !techId.equals(TechnologyTypes.JAVA_WEBSERVICE) ) {
 							testConfigPath = new File(srcDirectory + File.separator + testSourcePath);
@@ -163,16 +164,7 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
 			throw new MojoExecutionException(e.getMessage(), e);
 		} 
 	}
-	
 
-	private File getPomFile(File workingDirectory) throws PhrescoException {
-		PluginUtils pUtils = new PluginUtils();
-		ApplicationInfo appInfo = pUtils.getAppInfo(workingDirectory);
-		String pomFileName = Utility.getPhrescoPomFromWorkingDirectory(appInfo, workingDirectory);
-		File pom = new File(workingDirectory.getPath() + File.separator + pomFileName);
-		
-		return pom;
-	}
 	
 	private void pluginValidate(String infoFile) throws PhrescoException {
 		if (isGoalAvailable(infoFile, VALIDATE_CODE) && getDependency(infoFile, VALIDATE_CODE) != null) {
