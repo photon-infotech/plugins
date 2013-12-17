@@ -208,13 +208,11 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
         if (implementation != null) {
             List<Dependency> listDependency = implementation.getDependency();
             for (Dependency dependency : listDependency) {
-                if (dependencyId.equals(dependency.getId())) {
+                if (dependencyId != null && dependencyId.equals(dependency.getId())) {
                     return dependency;
                 }
             }
             return listDependency.get(0);
-        } else {
-            throw new PhrescoException("Dependecy not found");
         }
     }
 

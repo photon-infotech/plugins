@@ -365,6 +365,7 @@ public interface PluginConstants {
 	 String MAC							= "mac";
 	 String DEVICE						= "device";
 	 String DEVICE_IPAD					= "ipad";
+	 String SRC 						= "src";
 	 
 	 //Constants for Android
 	 
