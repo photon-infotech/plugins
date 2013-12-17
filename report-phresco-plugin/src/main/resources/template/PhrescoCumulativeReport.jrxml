@@ -548,7 +548,7 @@ $P{componentTestReports} != null || $P{functionalTestReports} != null || !$P{per
 			</staticText>
 		</band>
 		<band height="60">
-			<printWhenExpression><![CDATA[((($P{unitTestReports} == null ? Boolean.FALSE : Boolean.TRUE) || (($P{multiModuleUnitTestReports} == null ? Boolean.FALSE : Boolean.TRUE) && !$P{multiModuleUnitTestReports}.isEmpty()) ) || $P{componentTestReports} != null || $P{functionalTestReports} != null || !$P{performanceTestReports}.isEmpty() || !$P{loadTestReports}.isEmpty() || !$P{sonarReport}.isEmpty() || !$P{manualTestReports}.isEmpty())]]></printWhenExpression>
+			<printWhenExpression><![CDATA[((($P{unitTestReports} == null ? Boolean.FALSE : Boolean.TRUE) || (($P{multiModuleUnitTestReports} == null ? Boolean.FALSE : Boolean.TRUE) && !$P{multiModuleUnitTestReports}.isEmpty()) ) || $P{componentTestReports} != null || $P{functionalTestReports} != null || !$P{performanceTestReports}.isEmpty() || !$P{loadTestReports}.isEmpty() || !$P{manualTestReports}.isEmpty() || !$P{sonarReport}.isEmpty())]]></printWhenExpression>
 			<frame>
 				<reportElement positionType="Float" x="0" y="1" width="555" height="59" isRemoveLineWhenBlank="true">
 					<printWhenExpression><![CDATA[$P{reportsDataType}.equals("detail")]]></printWhenExpression>

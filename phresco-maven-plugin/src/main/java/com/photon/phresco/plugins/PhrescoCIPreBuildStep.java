@@ -43,6 +43,7 @@ import org.sonatype.aether.util.StringUtils;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugins.api.CIPlugin;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Implementation.Dependency;
 import com.photon.phresco.util.Constants;
 
 /**
@@ -135,12 +136,16 @@ public class PhrescoCIPreBuildStep extends PhrescoAbstractMojo {
         	if (StringUtils.isEmpty(jobName)) {
         		throw new MojoExecutionException("job name is empty. Pass job name.");
         	}
-        	
-            PhrescoPlugin plugin = getPlugin(getDependency(infoFile, PRE_BUILD_STEP));
-            if(plugin instanceof CIPlugin) {
-            	CIPlugin ciPlugin = (CIPlugin) plugin;
-            	ciPlugin.performCIPreBuildStep(jobName, goal, phase, creationType, id, continuousDeliveryName, moduleName, getMavenProjectInfo(project));
-			}
+        	Dependency dependency = getDependency(infoFile, PRE_BUILD_STEP);
+        	if (dependency != null) {
+	            PhrescoPlugin plugin = getPlugin(dependency);
+	            if(plugin instanceof CIPlugin) {
+	            	CIPlugin ciPlugin = (CIPlugin) plugin;
+	            	ciPlugin.performCIPreBuildStep(jobName, goal, phase, creationType, id, continuousDeliveryName, moduleName, getMavenProjectInfo(project));
+				}
+        	} else {
+        		getLog().info("No dependecy found!!!");
+        	}
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
