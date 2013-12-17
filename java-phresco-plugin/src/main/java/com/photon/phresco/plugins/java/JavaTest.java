@@ -62,7 +62,6 @@ public class JavaTest implements PluginConstants {
                 subModule = mavenProjectInfo.getModuleName();
             }
             project = mavenProjectInfo.getProject();
-            pomFile = project.getFile();
             workingDirectory = new File(baseDir.getPath() + File.separator + subModule);
             Map<String, String> configs = MojoUtil.getAllValues(configuration);
             String testAgainst = configs.get(TEST_AGAINST);
@@ -76,6 +75,7 @@ public class JavaTest implements PluginConstants {
                 dotPhrescoDir = new File(baseDir.getParent() + File.separator + dotPhrescoDirName);
             }
             dotPhrescoDir = new File(dotPhrescoDir.getPath() + File.separatorChar + subModule);
+            pomFile = pluginUtils.getPomFile(dotPhrescoDir, workingDirectory);
             File splitProjectDirectory = pluginUtils.getSplitProjectSrcDir(pomFile, dotPhrescoDir, subModule);
             srcDirectory = workingDirectory;
             if (splitProjectDirectory != null) {
@@ -107,7 +107,7 @@ public class JavaTest implements PluginConstants {
 
     private void copyUnitInfoFile(String environment, String techId, String projectModule) throws PhrescoException {
         try {
-            PomProcessor processor = new PomProcessor( new File(workingDirectory.getPath() + File.separator + pomFile));
+            PomProcessor processor = new PomProcessor( new File(workingDirectory.getPath() + File.separator + pomFile.getName()));
             String testSourcePath = processor.getProperty("phresco.env.test.config.xml");
             testConfigPath = new File(srcDirectory + File.separator + testSourcePath);
             if (!techId.equals(TechnologyTypes.JAVA_STANDALONE) && !techId.equals(TechnologyTypes.JAVA_WEBSERVICE) ) {
@@ -161,7 +161,7 @@ public class JavaTest implements PluginConstants {
             sb.append(STR_SPACE);
             sb.append(Constants.HYPHEN_F);
             sb.append(STR_SPACE); 
-            sb.append(project.getFile().getName());
+            sb.append(pomFile.getName());
             System.out.println("COMMAND IS  " + sb.toString());
             boolean status = Utility.executeStreamconsumer(sb.toString(), workingDirectory.getPath(), workingDirectory.getPath(), UNIT);
             if(!status) {

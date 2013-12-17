@@ -37,7 +37,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -210,6 +209,14 @@ public class PluginUtils {
 			throw new PhrescoException(e);
 		}
 		return null;
+	}
+	
+	public File getPomFile(File dotPhrescoDir, File workingDir) throws PhrescoException {
+		PluginUtils pUtil = new PluginUtils();
+		ApplicationInfo appInfo = pUtil.getAppInfo(dotPhrescoDir);
+		String pomFileName = Utility.getPhrescoPomFromWorkingDirectory(appInfo, workingDir);
+		File pom = new File(workingDir.getPath() + File.separator + pomFileName);
+		return pom;
 	}
 	
 	private void writeXml(String encrStr, String fileName) throws PhrescoException  {

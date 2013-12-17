@@ -214,6 +214,7 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
             }
             return listDependency.get(0);
         }
+        return null;
     }
 
 	protected boolean isGoalAvailable(String infoFile, String goal) throws PhrescoException {

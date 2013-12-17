@@ -88,9 +88,12 @@ public class PhrescoRunUnitTest extends PhrescoAbstractMojo {
         	if (interactive) {
         		configuration = getInteractiveConfiguration(configuration, processor, project,UNIT_TEST);
         	}
-        	Map<String, String> allValues = MojoUtil.getAllValues(configuration);
-        	String mvnDependencyId = allValues.get(TEST_AGAINST);
-        	Dependency dependency = getDependency(infoFile.getPath(), UNIT_TEST, mvnDependencyId);
+        	Dependency dependency = null;
+        	if(configuration != null) {
+	        	Map<String, String> allValues = MojoUtil.getAllValues(configuration);
+	        	String mvnDependencyId = allValues.get(TEST_AGAINST);
+	        	dependency = getDependency(infoFile.getPath(), UNIT_TEST, mvnDependencyId);
+        	}
     		if (infoFile.exists() && isGoalAvailable(infoFile.getPath(), UNIT_TEST) && dependency != null) {
 				PhrescoPlugin plugin = getPlugin(dependency);
 		        plugin.runUnitTest(configuration, getMavenProjectInfo(project, moduleName));
