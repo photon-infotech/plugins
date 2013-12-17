@@ -39,6 +39,7 @@ import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Implementation.Dependency;
 import com.photon.phresco.plugins.util.MojoProcessor;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.Constants;
@@ -169,7 +170,7 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
 	private void pluginValidate(String infoFile) throws PhrescoException {
 		Map<String, String> allValues = MojoUtil.getAllValues(config);
 		String mvnDependencyId = allValues.get(SRC);
-        Dependency dependency = getDependency(infoFile.getPath(), VALIDATE_CODE, mvnDependencyId);
+        Dependency dependency = getDependency(infoFile, VALIDATE_CODE, mvnDependencyId);
 
 		if (isGoalAvailable(infoFile, VALIDATE_CODE) && dependency != null) {
 			PhrescoPlugin plugin = getPlugin(dependency);
