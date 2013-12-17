@@ -68,6 +68,7 @@ public class DefaultSeleniumPlugin implements SeleniumPlugin {
 
 	public ExecutionStatus startHub(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		File baseDir = mavenProjectInfo.getBaseDir();
+		MavenProject project = mavenProjectInfo.getProject();
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
 		String subModule = mavenProjectInfo.getModuleName();
 		File workingDir = baseDir;
@@ -122,16 +123,15 @@ public class DefaultSeleniumPlugin implements SeleniumPlugin {
 			hubConfig.setTimeout(timeout);
 			hubConfig.setBrowserTimeout(browserTimeout);
 			hubConfig.setMaxSession(maxSession);
-			String pomXml = mavenProjectInfo.getProject().getFile().getName();
-			File pomFile = new File(workingDir.getPath() + File.separatorChar + pomXml);
-			PomProcessor processor = new PomProcessor(pomFile);
 			
-			String dotPhrescoDirName = processor.getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+			String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
 			File dotPhrescoDir = baseDir;
 			if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
 				dotPhrescoDir = new File(baseDir.getParent() +  File.separatorChar + dotPhrescoDirName);
 			}
 			dotPhrescoDir = new File(dotPhrescoDir.getPath() + File.separatorChar + subModule);
+			File pomFile = pluginUtils.getPomFile(dotPhrescoDir, workingDir);
+			PomProcessor processor = new PomProcessor(pomFile);
 			String testDirName = processor.getProperty(Constants.POM_PROP_KEY_SPLIT_TEST_DIR);
 			String srcDirName = processor.getProperty(Constants.POM_PROP_KEY_SPLIT_SRC_DIR);
 			ApplicationInfo appInfo = pluginUtils.getAppInfo(dotPhrescoDir);
@@ -157,24 +157,24 @@ public class DefaultSeleniumPlugin implements SeleniumPlugin {
 	public ExecutionStatus stopHub(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		try {
 			File baseDir = mavenProjectInfo.getBaseDir();
+			MavenProject project = mavenProjectInfo.getProject();
 			String subModule = mavenProjectInfo.getModuleName();
+			PluginUtils pluginutil = new PluginUtils();
 			File workingDir = baseDir;
 			if (StringUtils.isNotEmpty(subModule)) {
 				workingDir = new File(baseDir + File.separator + subModule);
 			}
-			String pomXml = mavenProjectInfo.getProject().getFile().getName();
-			File pomFile = new File(workingDir.getPath() + File.separatorChar + pomXml);
-			PomProcessor processor = new PomProcessor(pomFile);
-			String funcDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
-			String dotPhrescoDirName = processor.getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+			String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
 			File dotPhrescoDir = baseDir;
 			if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
 				dotPhrescoDir = new File(baseDir.getParent() +  File.separatorChar + dotPhrescoDirName);
 			}
 			dotPhrescoDir = new File(dotPhrescoDir.getPath() + File.separatorChar + subModule);
+			File pomFile = pluginutil.getPomFile(dotPhrescoDir, workingDir);
+			PomProcessor processor = new PomProcessor(pomFile);
+			String funcDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
 			String testDirName = processor.getProperty(Constants.POM_PROP_KEY_SPLIT_TEST_DIR);
 			String srcDirName = processor.getProperty(Constants.POM_PROP_KEY_SPLIT_SRC_DIR);
-			PluginUtils pluginutil = new PluginUtils();
 			ApplicationInfo appInfo = pluginutil.getAppInfo(dotPhrescoDir);
 			String appDirName = appInfo.getAppDirName();
 			File testDir = workingDir;
@@ -201,6 +201,8 @@ public class DefaultSeleniumPlugin implements SeleniumPlugin {
 	public ExecutionStatus startNode(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		File baseDir = mavenProjectInfo.getBaseDir();
 		String subModule = mavenProjectInfo.getModuleName();
+		MavenProject project = mavenProjectInfo.getProject();
+		PluginUtils pluginutil = new PluginUtils();
 		File workingDir = baseDir;
 		if (StringUtils.isNotEmpty(subModule)) {
 			workingDir = new File(baseDir + File.separator + subModule);
@@ -262,19 +264,17 @@ public class DefaultSeleniumPlugin implements SeleniumPlugin {
 			nodeConfig.setHubPort(hubPort);
 			nodeConfig.setHubHost(hubHost);
 			nodeConfiguration.setConfiguration(nodeConfig);
-			String pomXml = mavenProjectInfo.getProject().getFile().getName();
-			File pomFile = new File(workingDir.getPath() + File.separatorChar + pomXml);
-			PomProcessor processor = new PomProcessor(pomFile);
-			String funcDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
-			String dotPhrescoDirName = processor.getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+			String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
 			File dotPhrescoDir = baseDir;
 			if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
 				dotPhrescoDir = new File(baseDir.getParent() +  File.separatorChar + dotPhrescoDirName);
 			}
 			dotPhrescoDir = new File(dotPhrescoDir.getPath() + File.separatorChar + subModule);
+			File pomFile = pluginutil.getPomFile(dotPhrescoDir, workingDir);
+			PomProcessor processor = new PomProcessor(pomFile);
+			String funcDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
 			String testDirName = processor.getProperty(Constants.POM_PROP_KEY_SPLIT_TEST_DIR);
 			String srcDirName = processor.getProperty(Constants.POM_PROP_KEY_SPLIT_SRC_DIR);
-			PluginUtils pluginutil = new PluginUtils();
 			ApplicationInfo appInfo = pluginutil.getAppInfo(dotPhrescoDir);
 			String appDirName = appInfo.getAppDirName();
 			File testDir = workingDir;
@@ -298,23 +298,23 @@ public class DefaultSeleniumPlugin implements SeleniumPlugin {
 		try {
 			File baseDir = mavenProjectInfo.getBaseDir();
 			String subModule = mavenProjectInfo.getModuleName();
+			MavenProject project = mavenProjectInfo.getProject();
+			PluginUtils pluginutil = new PluginUtils();
 			File workingDir = baseDir;
 			if (StringUtils.isNotEmpty(subModule)) {
 				workingDir = new File(baseDir + File.separator + subModule);
 			}
-			String pomXml = mavenProjectInfo.getProject().getFile().getName();
-			File pomFile = new File(workingDir.getPath() + File.separatorChar + pomXml);
-			PomProcessor processor = new PomProcessor(pomFile);
-			String funcDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
-			String dotPhrescoDirName = processor.getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+			String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
 			File dotPhrescoDir = baseDir;
 			if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
 				dotPhrescoDir = new File(baseDir.getParent() +  File.separatorChar + dotPhrescoDirName);
 			}
 			dotPhrescoDir = new File(dotPhrescoDir.getPath() + File.separatorChar + subModule);
+			File pomFile = pluginutil.getPomFile(dotPhrescoDir, workingDir);
+			PomProcessor processor = new PomProcessor(pomFile);
+			String funcDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
 			String testDirName = processor.getProperty(Constants.POM_PROP_KEY_SPLIT_TEST_DIR);
 			String srcDirName = processor.getProperty(Constants.POM_PROP_KEY_SPLIT_SRC_DIR);
-			PluginUtils pluginutil = new PluginUtils();
 			ApplicationInfo appInfo = pluginutil.getAppInfo(dotPhrescoDir);
 			String appDirName = appInfo.getAppDirName();
 			File testDir = workingDir;

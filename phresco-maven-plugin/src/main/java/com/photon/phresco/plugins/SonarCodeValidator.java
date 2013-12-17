@@ -139,8 +139,8 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
 			if (techId.equals(TechnologyTypes.HTML5_JQUERY_MOBILE_WIDGET) || techId.equals(TechnologyTypes.HTML5_MULTICHANNEL_JQUERY_WIDGET) ||
 						techId.equals(TechnologyTypes.HTML5_MOBILE_WIDGET) || techId.equals(TechnologyTypes.HTML5_WIDGET) || techId.equals(TechnologyTypes.HTML5)  ) {
 					try {
-						String pomXml = project.getFile().getName();
-						PomProcessor processor = new PomProcessor(new File(workingDirectory.getPath() + File.separator + pomXml));
+						File pomFile = utils.getPomFile(dotPhrescoDir, workingDirectory);
+						PomProcessor processor = new PomProcessor(pomFile);
 						String testSourcePath = processor.getProperty("phresco.env.test.config.xml");
 						if (!techId.equals(TechnologyTypes.JAVA_STANDALONE) && !techId.equals(TechnologyTypes.JAVA_WEBSERVICE) ) {
 							testConfigPath = new File(srcDirectory + File.separator + testSourcePath);
