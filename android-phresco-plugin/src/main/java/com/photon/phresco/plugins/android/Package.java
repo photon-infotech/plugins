@@ -17,7 +17,10 @@
  */
 package com.photon.phresco.plugins.android;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,8 +35,15 @@ import org.apache.maven.project.MavenProject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.google.gson.Gson;
+import com.photon.phresco.api.ConfigManager;
 import com.photon.phresco.commons.FrameworkConstants;
+import com.photon.phresco.commons.model.ApplicationInfo;
+import com.photon.phresco.commons.model.ProjectInfo;
+import com.photon.phresco.configuration.Environment;
+import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
@@ -41,12 +51,15 @@ import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Para
 import com.photon.phresco.plugins.util.MojoProcessor;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.TechnologyTypes;
 import com.photon.phresco.util.Utility;
 import com.phresco.pom.android.AndroidProfile;
+import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.model.Plugin;
 import com.phresco.pom.model.PluginExecution;
 import com.phresco.pom.model.PluginExecution.Goals;
 import com.phresco.pom.util.AndroidPomProcessor;
+import com.phresco.pom.util.PomProcessor;
 
 public class Package implements PluginConstants {
 	private Log log;
@@ -61,10 +74,12 @@ public class Package implements PluginConstants {
 	private String testDirName ;
 	private String currentDir ;
 	private File base;
+	private String moduleName = "";
 	public void pack(com.photon.phresco.plugins.model.Mojos.Mojo.Configuration config, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir().getPath();
 		project = mavenProjectInfo.getProject();
+		moduleName = mavenProjectInfo.getModuleName();
 		pomFile = project.getFile().getName();
 		
 		Map<String, String> configs = MojoUtil.getAllValues(config);
@@ -84,116 +99,131 @@ public class Package implements PluginConstants {
 		String alias = configs.get(ALIAS);
 		String zipAlign = configs.get(ZIP_ALIGN);
 				
-		if (StringUtils.isEmpty(environmentName)) {
-			System.out.println("Environment Name is empty . ");
-			throw new PhrescoException("Environment Name is empty . ");
-		}
-		
-		if (StringUtils.isEmpty(sdkVersion)) {
-			System.out.println("sdkVersion is empty . ");
-			throw new PhrescoException("sdkVersion is empty . ");
-		}
-		dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
-		sourceDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SOURCE_DIR);
-		testDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_TEST_DIR);
-		
-		if(dotPhrescoDirName!=null){
-			baseDir = mavenProjectInfo.getBaseDir().getParentFile()+ File.separator + dotPhrescoDirName;
-		}
-		
-		PluginUtils.checkForConfigurations(new File(baseDir), environmentName);
-		
-		Boolean isZipAlign = Boolean.valueOf(zipAlign);
-		log.info("isZipAlign . " +isZipAlign);
-		Boolean isSigning = Boolean.valueOf(signing);
-  	    log.info("isSigning . " + isSigning);
-		Boolean isSkipTest = Boolean.valueOf(skipTest);
-		log.info("isSkipTest . " +isSkipTest);
-		Boolean isUnitCodeCoverage = Boolean.valueOf(unitCodeCoverage);
-		log.info("isUntCodeCoverage . " +isUnitCodeCoverage);
-		
-		if(isZipAlign) {						
-			isSigning = true;
-		}
-		
-		if (isSigning) {			
-			updateAllPOMWithProfile(keystore, storepass, keypass, alias);
-		}
-		
-		updateDotPhrescoInfoFiles(baseDir ,isSigning, mavenProjectInfo);
-		
-		
-		log.info("Project is Building...");
-		StringBuilder sb = new StringBuilder();
-		sb.append(ANDROID_BUILD_COMMAND);
-		
-		sb.append(STR_SPACE);
-		sb.append(HYPHEN_D + ANDROID_VERSION + EQUAL + sdkVersion);
-		
-		if (StringUtils.isNotEmpty(buildName)) {
+		StringBuilder sb;
+		try {
+			ProjectInfo projectInfo = Utility.getProjectInfo(baseDir, moduleName);
+			ApplicationInfo applicationInfo = projectInfo.getAppInfos().get(0);
+			String techId = applicationInfo.getTechInfo().getId();
+			System.out.println("tech id..."+techId);
+			if (StringUtils.isEmpty(environmentName)) {
+				System.out.println("Environment Name is empty . ");
+				throw new PhrescoException("Environment Name is empty . ");
+			}
+			
+			
+			if (StringUtils.isEmpty(sdkVersion)) {
+				System.out.println("sdkVersion is empty . ");
+				throw new PhrescoException("sdkVersion is empty . ");
+			}
+			dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+			sourceDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SOURCE_DIR);
+			testDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_TEST_DIR);
+			
+			if(dotPhrescoDirName!=null){
+				baseDir = mavenProjectInfo.getBaseDir().getParentFile()+ File.separator + dotPhrescoDirName;
+			}
+			
+			PluginUtils.checkForConfigurations(new File(baseDir), environmentName);
+			
+			if (TechnologyTypes.ANDROID_HYBRID.equals(techId)) {
+				writeConfigJson(mavenProjectInfo, new File(baseDir), environmentName);
+			}	
+			
+			Boolean isZipAlign = Boolean.valueOf(zipAlign);
+			log.info("isZipAlign . " +isZipAlign);
+			Boolean isSigning = Boolean.valueOf(signing);
+			log.info("isSigning . " + isSigning);
+			Boolean isSkipTest = Boolean.valueOf(skipTest);
+			log.info("isSkipTest . " +isSkipTest);
+			Boolean isUnitCodeCoverage = Boolean.valueOf(unitCodeCoverage);
+			log.info("isUntCodeCoverage . " +isUnitCodeCoverage);
+			
+			if(isZipAlign) {						
+				isSigning = true;
+			}
+			
+			if (isSigning) {			
+				updateAllPOMWithProfile(keystore, storepass, keypass, alias);
+			}
+			
+			updateDotPhrescoInfoFiles(baseDir ,isSigning, mavenProjectInfo);
+			
+			
+			log.info("Project is Building...");
+			sb = new StringBuilder();
+			sb.append(ANDROID_BUILD_COMMAND);
+			
 			sb.append(STR_SPACE);
-			sb.append(HYPHEN_D + BUILD_NAME + EQUAL + buildName);
-		}
-		
-		if (StringUtils.isNotEmpty(buildNumber)) {
-			sb.append(STR_SPACE);
-			sb.append(HYPHEN_D + BUILD_NUMBER + EQUAL + buildNumber);
-		}
-		
-		sb.append(STR_SPACE);
-		sb.append(HYPHEN_D + ENVIRONMENT_NAME + EQUAL + environmentName);
-		
-		if (StringUtils.isNotEmpty(proguard)) {
-			sb.append(STR_SPACE);
-			boolean proguradVal = Boolean.valueOf(proguard);
-			sb.append(HYPHEN_D + PROGUARD_SKIP + EQUAL + !proguradVal);
-		}else{
-			sb.append(STR_SPACE);
-			sb.append(HYPHEN_D + PROGUARD_SKIP + EQUAL + TRUE);
-		}
-		//zip Align 
-		if(StringUtils.isNotEmpty(zipAlign)) {			
-			sb.append(STR_SPACE);
-			boolean zipAlignVal = Boolean.valueOf(zipAlign);
-			sb.append(HYPHEN_D + ZIP_ALIGN_SKIP + EQUAL + !zipAlignVal);
-		}else{
-			sb.append(STR_SPACE);
-			sb.append(HYPHEN_D + ZIP_ALIGN_SKIP + EQUAL + TRUE);
-		}
-		//run unit test 
-		if ((isSkipTest==false && isUnitCodeCoverage==false)||(isSkipTest==false && unitCodeCoverage.isEmpty())){
-					sb.append(STR_SPACE);
-					sb.append(PRUNUNIT);
-		 }
-		//run code coverage
-		 if (isUnitCodeCoverage){
+			sb.append(HYPHEN_D + ANDROID_VERSION + EQUAL + sdkVersion);
+			
+			if (StringUtils.isNotEmpty(buildName)) {
 				sb.append(STR_SPACE);
-				sb.append(PCOVERAGE);
-		}
-		//signing
-		if (isSigning) {
+				sb.append(HYPHEN_D + BUILD_NAME + EQUAL + buildName);
+			}
+			
+			if (StringUtils.isNotEmpty(buildNumber)) {
+				sb.append(STR_SPACE);
+				sb.append(HYPHEN_D + BUILD_NUMBER + EQUAL + buildNumber);
+			}
+			
 			sb.append(STR_SPACE);
-			sb.append(PSIGN);
-		}
-				
-		/*List<Parameter> parameters = config.getParameters().getParameter();
-		for (Parameter parameter : parameters) {
-			if(parameter.getPluginParameter() != null && parameter.getMavenCommands() != null) {
-				List<MavenCommand> mavenCommands = parameter.getMavenCommands().getMavenCommand();
-				for (MavenCommand mavenCommand : mavenCommands) {
-					if(parameter.getValue().equals(mavenCommand.getKey())) {						
+			sb.append(HYPHEN_D + ENVIRONMENT_NAME + EQUAL + environmentName);
+			
+			if (StringUtils.isNotEmpty(proguard)) {
+				sb.append(STR_SPACE);
+				boolean proguradVal = Boolean.valueOf(proguard);
+				sb.append(HYPHEN_D + PROGUARD_SKIP + EQUAL + !proguradVal);
+			}else{
+				sb.append(STR_SPACE);
+				sb.append(HYPHEN_D + PROGUARD_SKIP + EQUAL + TRUE);
+			}
+			//zip Align 
+			if(StringUtils.isNotEmpty(zipAlign)) {			
+				sb.append(STR_SPACE);
+				boolean zipAlignVal = Boolean.valueOf(zipAlign);
+				sb.append(HYPHEN_D + ZIP_ALIGN_SKIP + EQUAL + !zipAlignVal);
+			}else{
+				sb.append(STR_SPACE);
+				sb.append(HYPHEN_D + ZIP_ALIGN_SKIP + EQUAL + TRUE);
+			}
+			//run unit test 
+			if ((isSkipTest==false && isUnitCodeCoverage==false)||(isSkipTest==false && unitCodeCoverage.isEmpty())){
 						sb.append(STR_SPACE);
-						sb.append(mavenCommand.getValue());
+						sb.append(PRUNUNIT);
+			 }
+			//run code coverage
+			 if (isUnitCodeCoverage){
+					sb.append(STR_SPACE);
+					sb.append(PCOVERAGE);
+			}
+			//signing
+			if (isSigning) {
+				sb.append(STR_SPACE);
+				sb.append(PSIGN);
+			}
+					
+			/*List<Parameter> parameters = config.getParameters().getParameter();
+			for (Parameter parameter : parameters) {
+				if(parameter.getPluginParameter() != null && parameter.getMavenCommands() != null) {
+					List<MavenCommand> mavenCommands = parameter.getMavenCommands().getMavenCommand();
+					for (MavenCommand mavenCommand : mavenCommands) {
+						if(parameter.getValue().equals(mavenCommand.getKey())) {						
+							sb.append(STR_SPACE);
+							sb.append(mavenCommand.getValue());
+						}
 					}
-				}
-			}			
-		}	*/	
-		
-		if(!Constants.POM_NAME.equals(pomFile)) {
-			sb.append(STR_SPACE);
-			sb.append(Constants.HYPHEN_F);
-			sb.append(STR_SPACE);
-			sb.append(pomFile);
+				}			
+			}	*/	
+			
+			if(!Constants.POM_NAME.equals(pomFile)) {
+				sb.append(STR_SPACE);
+				sb.append(Constants.HYPHEN_F);
+				sb.append(STR_SPACE);
+				sb.append(pomFile);
+			}
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			throw new PhrescoException(e1);
 		}
 		log.info("Command " + sb.toString());
 		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir, baseDir, FrameworkConstants.PACKAGE);
@@ -201,6 +231,66 @@ public class Package implements PluginConstants {
 			try {
 				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
 			} catch (MojoExecutionException e) {
+				throw new PhrescoException(e);
+			}
+		}
+	}
+
+	private void writeConfigJson(MavenProjectInfo mavenProjectInfo, File dotPhrecoDir,  String environmentName) throws PhrescoException {
+		PluginUtils pu = new PluginUtils();
+		String customerId = pu.readCustomerId(dotPhrecoDir);
+		File configFile = new File(new File(baseDir).getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE);
+		File settingsFile = new File(Utility.getProjectHome()+ customerId + PluginConstants.SETTINGS_FILE);
+		FileWriter fstream = null;
+		BufferedWriter out = null;
+		try {
+			Environment obtainedEnv = null;
+			ConfigManager configManager = null;
+
+			if (settingsFile.exists()) {
+				configManager = PhrescoFrameworkFactory.getConfigManager(settingsFile);
+				obtainedEnv = configManager.getEnvironment(environmentName);
+			}
+			configManager = PhrescoFrameworkFactory.getConfigManager(configFile);
+			if (configManager != null && obtainedEnv == null) {
+				obtainedEnv = configManager.getEnvironment(environmentName);
+			}
+
+			if (obtainedEnv != null) {
+				Gson gson = new Gson();
+				String envJson = gson.toJson(obtainedEnv);
+				PomProcessor pomProcessor = Utility.getPomProcessor(mavenProjectInfo.getBaseDir().getPath(), moduleName);
+				String configJsonPath = pomProcessor.getProperty(Constants.POM_PROP_KEY_CONFIG_JSON_PATH);
+				if (StringUtils.isNotEmpty(configJsonPath)) {
+					StringBuilder path = new StringBuilder(mavenProjectInfo.getBaseDir().getPath());
+					if (StringUtils.isNotEmpty(moduleName)) {
+						path.append(File.separator).append(moduleName);
+					}
+					path.append(configJsonPath).append(File.separator).append(Constants.CONFIG_JSON);
+					File configJsonFile = new File(path.toString());
+					if (!configJsonFile.exists()) {
+						configJsonFile.createNewFile();
+					}
+					fstream = new FileWriter(configJsonFile.getPath());
+					out = new BufferedWriter(fstream);
+					out.write(envJson);
+				}
+			}
+		} catch (ConfigurationException e1) {
+			throw new PhrescoException(e1);
+		} catch (PhrescoPomException e) {
+			throw new PhrescoException(e);
+		} catch (IOException e) {
+			throw new PhrescoException(e);
+		} finally {
+			try {
+				if (out != null) {
+					out.close();
+				}
+				if (fstream != null) {
+					fstream.close();
+				}
+			} catch (IOException e) {
 				throw new PhrescoException(e);
 			}
 		}
