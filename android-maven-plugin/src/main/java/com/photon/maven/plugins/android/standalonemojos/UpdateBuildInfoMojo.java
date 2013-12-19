@@ -110,7 +110,7 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 		try {
 			
 			dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
-			testDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_TEST_DIR);
+			testDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_TEST_DIR);
 			
 			 buildInfoList = new ArrayList<BuildInfo>(); // initialization
 			// srcDir = new File(baseDir.getPath() + File.separator +
