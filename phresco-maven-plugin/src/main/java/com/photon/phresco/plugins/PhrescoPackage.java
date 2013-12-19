@@ -117,7 +117,6 @@ public class PhrescoPackage extends PhrescoAbstractMojo {
         getLog().info(baseDir.getPath());
         Configuration configuration = null;
         try {
-        	System.out.println("baseDir=====> " + baseDir);
         	String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
         	if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
         		baseDir = new File(baseDir.getParent() +  File.separatorChar + dotPhrescoDirName);

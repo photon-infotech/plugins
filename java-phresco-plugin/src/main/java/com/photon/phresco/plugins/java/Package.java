@@ -486,12 +486,12 @@ public class Package implements PluginConstants {
 		sb.append(MVN_PHASE_CLEAN);
 		sb.append(STR_SPACE);
 		sb.append(MVN_PHASE_INSTALL);
-		/*sb.append(STR_SPACE);
+		sb.append(STR_SPACE);
 		sb.append(Constants.HYPHEN_F);
 		sb.append(STR_SPACE);
 		sb.append(pomFile.getName());
 		sb.append(STR_SPACE);
-		sb.append(builder.toString());*/
+		sb.append(builder.toString());
 //		if (StringUtils.isNotEmpty(subModule)) {
 //			sb.append(HYPHEN_AM_HYPHEN_PL + subModule);
 //		}
@@ -503,8 +503,9 @@ public class Package implements PluginConstants {
 		if(CollectionUtils.isEmpty(buildModules) && CollectionUtils.isNotEmpty(getModules())) {
 			buildModules = getModules();
 		}
+		String baseCommand = sb.toString();
+		executeCommand(baseCommand, baseDir,"");
 		if(CollectionUtils.isNotEmpty(buildModules)) {
-//			executeCommand(command, baseDir, "");
 			for (String module : buildModules) {
 				File dir = new File(baseDir, module);
 				File subPomFile = pu.getPomFile(new File(dotPhrescoRoot, module), dir);
@@ -518,16 +519,7 @@ public class Package implements PluginConstants {
 				String command = stringBuilder.toString();
 				executeCommand(command, dir, module);
 			}
-			return;
 		}
-		sb.append(STR_SPACE);
-		sb.append(Constants.HYPHEN_F);
-		sb.append(STR_SPACE);
-		sb.append(pomFile.getName());
-		sb.append(STR_SPACE);
-		sb.append(builder.toString());
-		String command = sb.toString();
-		executeCommand(command, baseDir,"");
 	}
 	
 	private void installArtifact(File currentDir, String module) throws PhrescoException {
@@ -536,10 +528,15 @@ public class Package implements PluginConstants {
     		String appDirName = appInfo.getAppDirName();
 			currentDir = new File(Utility.getProjectHome() + File.separatorChar + appDirName + File.separatorChar + srcDir + File.separatorChar + module);
 		}
-		File pomFile = new File(currentDir, project.getProperties().getProperty("source.pom"));
 		try { 
+			File phrescoPom = pu.getPomFile(new File(dotPhrescoRoot.getPath() + File.separatorChar + module), new File(baseDir.getPath() + File.separatorChar + module));
+			PomProcessor phrescoPomProcessor = new PomProcessor(phrescoPom);
+			File pomFile = new File(currentDir, phrescoPomProcessor.getProperty("source.pom"));
 			PomProcessor processor = new PomProcessor(pomFile);
 			String packagingSrcPOm = processor.getModel().getPackaging();
+			if(StringUtils.isEmpty(packagingSrcPOm)) {
+				packagingSrcPOm = "jar";
+			}
 			Plugin plugin = new Plugin();
 			plugin.setGroupId("org.apache.maven.plugins");
 			plugin.setArtifactId("maven-install-plugin");
@@ -568,9 +565,7 @@ public class Package implements PluginConstants {
 			Xpp3Dom file = new Xpp3Dom("file");
 			String finalName = "";
 			String buildDir = "";
-			File phrescoPom = pu.getPomFile(new File(dotPhrescoRoot.getPath() + File.separatorChar + module), new File(baseDir.getPath() + File.separatorChar + module));
 			if(phrescoPom.exists()) {
-				PomProcessor phrescoPomProcessor = new PomProcessor(phrescoPom);
 				finalName = phrescoPomProcessor.getFinalName();
 				if(StringUtils.isEmpty(finalName)) {
 					finalName = project.getBuild().getFinalName();
@@ -592,7 +587,7 @@ public class Package implements PluginConstants {
 			}
 			fileString.append(buildDir).append("/").append(finalName).append(".").append(packagingSrcPOm);
 			fileConfig = fileString.toString();
-			if(packagingSrcPOm.equals("pom")) {
+			if("pom".equals(packagingSrcPOm)) {
 				fileConfig = project.getProperties().getProperty("source.pom");
 			}
 			file.setValue(fileConfig);
