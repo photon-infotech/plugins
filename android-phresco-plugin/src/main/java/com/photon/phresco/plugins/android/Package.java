@@ -116,7 +116,7 @@ public class Package implements PluginConstants {
 				throw new PhrescoException("sdkVersion is empty . ");
 			}
 			dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
-			sourceDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_SOURCE_DIR);
+			sourceDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_SRC_DIR);
 			testDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_TEST_DIR);
 			
 			if(dotPhrescoDirName!=null){

@@ -1683,6 +1683,9 @@ public class GenerateReport implements PluginConstants {
 	}
 
 	private static String getValue(Cell cell) {
+		if(cell == null) {
+			return null;
+		}
 		if (Cell.CELL_TYPE_STRING == cell.getCellType()) {
 			return cell.getStringCellValue();
 		}
