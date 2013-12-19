@@ -489,7 +489,8 @@ public class Package implements PluginConstants {
 		sb.append(STR_SPACE);
 		sb.append(Constants.HYPHEN_F);
 		sb.append(STR_SPACE);
-		sb.append(pomFile.getName());
+		File rootPomFile = pu.getPomFile(dotPhrescoRoot, baseDir);
+		sb.append(rootPomFile.getName());
 		sb.append(STR_SPACE);
 		sb.append(builder.toString());
 //		if (StringUtils.isNotEmpty(subModule)) {
@@ -509,7 +510,12 @@ public class Package implements PluginConstants {
 			for (String module : buildModules) {
 				File dir = new File(baseDir, module);
 				File subPomFile = pu.getPomFile(new File(dotPhrescoRoot, module), dir);
-				StringBuilder stringBuilder = new StringBuilder(sb.toString()); 
+				StringBuilder stringBuilder = new StringBuilder(); 
+				stringBuilder.append(MVN_CMD);
+				stringBuilder.append(STR_SPACE);
+				stringBuilder.append(MVN_PHASE_CLEAN);
+				stringBuilder.append(STR_SPACE);
+				stringBuilder.append(MVN_PHASE_INSTALL);
 				stringBuilder.append(STR_SPACE);
 				stringBuilder.append(Constants.HYPHEN_F);
 				stringBuilder.append(STR_SPACE);
