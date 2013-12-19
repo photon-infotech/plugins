@@ -65,6 +65,7 @@ public class PerformanceTest implements PluginConstants {
 			sb.append(HYPHEN_D + DEVICES_LIST + EQUAL + deviceList);
 			
 			String workingDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR);
+			String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
 			WorkingFile = new File(baseDir + workingDir + File.separator + project.getFile().getName());
 			File baseDirFile =new File(baseDir);
 			if(!WorkingFile.exists()){
@@ -76,10 +77,12 @@ public class PerformanceTest implements PluginConstants {
 				sb.append(STR_SPACE);
 				sb.append(project.getFile().getName());
 			}
-			System.out.println("Command " + sb.toString());
+			
 			Commandline commandline = new Commandline(sb.toString());
-			if (StringUtils.isNotEmpty(workingDir)) {
+			if (StringUtils.isNotEmpty(workingDir)&& StringUtils.isNotEmpty(dotPhrescoDirName)) {
 				commandline.setWorkingDirectory(baseDirFile.getParentFile().getParentFile() + workingDir);
+			}else{
+				commandline.setWorkingDirectory(baseDirFile.getAbsoluteFile()+File.separator+ workingDir);
 			}
 			
 			Process pb = commandline.execute();

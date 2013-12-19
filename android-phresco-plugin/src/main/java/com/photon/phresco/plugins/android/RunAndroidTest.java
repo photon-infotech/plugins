@@ -59,7 +59,7 @@ public class RunAndroidTest implements PluginConstants {
 			Map<String, String> configs = MojoUtil.getAllValues(configuration);
 			
 			dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
-		    testDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_TEST_DIR);
+		    testDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_TEST_DIR);
 		    String seleniumToolType = project.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_SELENIUM_TOOL);
 			if(dotPhrescoDirName!=null && testDirName!=null){
 		    	
