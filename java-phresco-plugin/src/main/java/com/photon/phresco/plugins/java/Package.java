@@ -702,7 +702,7 @@ public class Package implements PluginConstants {
 
 	private void createPackage() throws MojoExecutionException {
 		if(StringUtils.isEmpty(packagingType)) {
-			return;
+			packagingType = PACKAGING_TYPE_JAR;
 		}
 		try {
 			zipName = util.createPackage(buildName, buildNumber, nextBuildNo, currentDate);
