@@ -17,23 +17,18 @@
  */
 package net.awired.jstest.runner;
 
-import net.awired.jstest.executor.Executor;
-import net.awired.jstest.executor.PhantomJsExecutor;
-import net.awired.jstest.executor.RunnerExecutor;
 
 public enum TestType {
-    JASMINE(new RunnerExecutor(), "jasmineManager.js", "jasmine.js", "jasmine-html.js", "jasmine.css"), //
-    QUNIT(new PhantomJsExecutor(), "qunitManager.js", "qunit.js", "qunit.css"), //
-    YUITEST(new RunnerExecutor(), "yuiTestManager.js", "lib/yui/build/yui/yui-min.js", ""),
-    ;
+	JASMINE("jasmineManager.js", "jasmine.js", "jasmine-html.js", "jasmine.css"), //
+	QUNIT("qunitManager.js", "qunit.js", "qunit.css"), //
+	YUITEST("yuiTestManager.js", "lib/yui/build/yui/yui-min.js", ""),
+	;
 
     private String[] testerResources;
     private String testerManager;
-    private Executor executor;
 
-    private TestType(Executor executor, String testerManager, String... testerResources) {
+    private TestType(String testerManager, String... testerResources) {
         this.testerResources = testerResources;
-        this.executor = executor;
         this.testerManager = testerManager;
     }
 
@@ -51,9 +46,5 @@ public enum TestType {
 
     public void setTesterResources(String[] testerResources) {
         this.testerResources = testerResources;
-    }
-
-    public Executor getExecutor() {
-        return executor;
     }
 }

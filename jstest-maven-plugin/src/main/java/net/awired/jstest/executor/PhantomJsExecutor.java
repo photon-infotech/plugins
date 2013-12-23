@@ -12,26 +12,37 @@ import java.io.SequenceInputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
+import net.awired.jstest.common.TestPluginConstants;
+
 import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.util.cli.Commandline;
 
-public class PhantomJsExecutor implements Executor {
+public class PhantomJsExecutor implements Executor, TestPluginConstants {
 
-    private static final String RUN_QUNIT_JS = "/run-qunit.js";
-    private static final String RUNNER_RESOURCE = "runnerResource"+RUN_QUNIT_JS;
+	private static final String RUN_QUNIT_JS = "/run-qunit.js";
+    private static final String RUN_JASMINE_JS = "/run-jasmine.js";
+    private static String JS_ENGINE = "";
+    private static final String RUNNER_RESOURCE = "runnerResource";
     private StringBuilder CMD = new StringBuilder("phantomjs "); 
     private Process process = null;
     private File targetSrcDir = null;
     private Log log = null;
 
-    public PhantomJsExecutor() {
+    public PhantomJsExecutor(String runnerType) {
+    	
+    	 if (JASMINE.equalsIgnoreCase(runnerType)) {
+     		JS_ENGINE = RUN_JASMINE_JS;
+     	} else  {
+    		JS_ENGINE = RUN_QUNIT_JS;
+    	} 
     }
 
     public void execute(String runnerUrl) throws Exception {
         copyTestRunner(runnerUrl);
         
-        CMD.append("\""+targetSrcDir.getCanonicalPath() + RUN_QUNIT_JS+"\" ");
+        CMD.append("\""+targetSrcDir.getCanonicalPath() + JS_ENGINE+"\" ");
         CMD.append(runnerUrl+"?emulator=true");
+        log.info("Running PhantomJsExecutor");
         log.info("command " + CMD);
         
         Commandline cl = new Commandline(CMD.toString());
@@ -76,8 +87,8 @@ public class PhantomJsExecutor implements Executor {
 
     private void copyTestRunner(String url) throws Exception {
         try {
-            URL runnerUrl = new URL(url+RUNNER_RESOURCE);
-            File testRunnerFile = new File(targetSrcDir, RUN_QUNIT_JS);
+            URL runnerUrl = new URL(url.concat(RUNNER_RESOURCE).concat(JS_ENGINE));
+            File testRunnerFile = new File(targetSrcDir, JS_ENGINE);
             if (!targetSrcDir.exists()) { 
                 targetSrcDir.mkdirs();
             }
@@ -86,7 +97,6 @@ public class PhantomJsExecutor implements Executor {
             }
             URLConnection connection = runnerUrl.openConnection();
 //            InputStream is = new FileInputStream(connection.); //PhantomJsExecutor.class.getResourceAsStream(RUNNER_RESOURCE);
-
             BufferedInputStream bis = new BufferedInputStream(connection.getInputStream());
             try {
                 BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(testRunnerFile));
@@ -102,10 +112,8 @@ public class PhantomJsExecutor implements Executor {
                 bis.close();
             }
         } catch (IOException e) {
-           log.error("Unable to copy " + RUN_QUNIT_JS + " : " + e.toString());
+           log.error(UNABLE_TO_COPY + JS_ENGINE + " : " + e.toString());
             e.printStackTrace();
-            /*throw new Exception(
-                    "Unable to copy " + RUN_QUNIT_JS + " : " + e.toString());*/
         }
     }
 

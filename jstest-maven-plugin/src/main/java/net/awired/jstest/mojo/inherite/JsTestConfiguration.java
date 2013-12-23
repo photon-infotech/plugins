@@ -124,6 +124,12 @@ public abstract class JsTestConfiguration extends AbstractMojo {
      * @parameter expression="${testType}"
      */
     private TestType testType;
+    
+    /**
+     * @parameter expression="${executorType}"
+     */
+    private String executorType;
+
 
     /**
      * @parameter expression="${runnerTemplate}"
@@ -380,5 +386,13 @@ public abstract class JsTestConfiguration extends AbstractMojo {
 
 	public void setAddOverlaysToSourceMap(boolean addOverlaysToSourceMap) {
 		this.addOverlaysToSourceMap = addOverlaysToSourceMap;
+	}
+
+	public void setExecutorType(String executorType) {
+		this.executorType = executorType;
+	}
+
+	public String getExecutorType() {
+		return executorType;
 	}
 }

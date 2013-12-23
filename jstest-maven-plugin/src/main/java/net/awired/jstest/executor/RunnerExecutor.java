@@ -87,6 +87,7 @@ public class RunnerExecutor implements Executor {
 
     public void execute(String runnerUrl) {
         try {
+        	log.info("Running RunnerExecutor");
         	System.out.println("########## runnerUrl " + runnerUrl+"?emulator=true");
             driver.get(runnerUrl+"?emulator=true");
         } catch (Exception e) {
