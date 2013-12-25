@@ -215,8 +215,8 @@ public class PreBuildStep  implements PluginConstants {
 		log.info("getPhrescoPluginInfoFileInJenkins method called ... ");
 		try {
 			StringBuilder builder = new StringBuilder(baseDir.getPath());
-	        builder.append(File.separator);
-	        builder.append(name);
+//	        builder.append(File.separator);
+//	        builder.append(name);
 	        builder.append(File.separator);
 	        if(StringUtils.isNotEmpty(moduleName)) {
 	        	builder.append(moduleName);
