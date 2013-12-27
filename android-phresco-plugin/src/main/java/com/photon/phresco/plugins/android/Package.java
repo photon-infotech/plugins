@@ -226,7 +226,7 @@ public class Package implements PluginConstants {
 			throw new PhrescoException(e1);
 		}
 		log.info("Command " + sb.toString());
-		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir, baseDir, FrameworkConstants.PACKAGE);
+		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir, baseDir, Constants.KILLPROCESS_BUILD);
 		if(!status) {
 			try {
 				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);

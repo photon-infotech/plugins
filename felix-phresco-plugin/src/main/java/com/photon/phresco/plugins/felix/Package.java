@@ -316,7 +316,7 @@ public class Package implements PluginConstants {
 		String processName = ManagementFactory.getRuntimeMXBean().getName();
 		String[] split = processName.split("@");
 		String processId = split[0].toString();
-		Utility.writeProcessid(workingDirectory.getPath(), "package", processId);
+		Utility.writeProcessid(workingDirectory.getPath(), Constants.KILLPROCESS_BUILD, processId);
 		
 		String command = sb.toString();
 		List<String> buildModules = getBuildModules(subModule);
