@@ -105,7 +105,7 @@ public class JavaTest implements PluginConstants {
         }
     }
 
-    private void copyUnitInfoFile(String environment, String techId, String projectModule) throws PhrescoException {
+    private void copyUnitInfoFile(String environment, String webSeviceName, String techId) throws PhrescoException {
         try {
             PomProcessor processor = new PomProcessor( new File(workingDirectory.getPath() + File.separator + pomFile.getName()));
             String testSourcePath = processor.getProperty("phresco.env.test.config.xml");
@@ -115,7 +115,7 @@ public class JavaTest implements PluginConstants {
                 String fullPathNoEndSeparator = FilenameUtils.getFullPathNoEndSeparator(testConfigPath.getAbsolutePath());
                 File fullPathNoEndSeparatorFile = new File(fullPathNoEndSeparator);
                 fullPathNoEndSeparatorFile.mkdirs();
-                utils.executeUtil(environment, dotPhrescoDir.getPath(), testConfigPath);
+                utils.executeUtil(environment, webSeviceName, dotPhrescoDir.getPath(), testConfigPath);
             }
         } catch (PhrescoPomException e) {
             throw new  PhrescoException(e);

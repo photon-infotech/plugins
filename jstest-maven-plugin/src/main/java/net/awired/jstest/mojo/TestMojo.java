@@ -60,7 +60,7 @@ public class TestMojo extends AbstractJsTestMojo implements TestPluginConstants 
         try {
         	List<String> runnerTypesList = new ArrayList<String>();
         	runnerTypesList.add(REQUIREJS);
-        	runnerTypesList.add(ALMOND);
+//        	runnerTypesList.add(ALMOND);
         	runnerTypesList.add(JASMINE);
 			String testSourceDir = buildTestResourceDirectory().getDirectory().getPath();
         	File testSourcedir = new File(testSourceDir);
