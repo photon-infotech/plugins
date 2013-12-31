@@ -133,6 +133,9 @@ public class PhrescoCIPreBuildStep extends PhrescoAbstractMojo {
         try {
 //        	String infoFile = baseDir + File.separator + Constants.CI_INFO_FILE;
         	String infoFile = baseDir + File.separator + ".phresco" + File.separator +"phresco-ci-" + phase + "-info.xml";
+        	if (!StringUtils.isEmpty(moduleName)) {
+        		infoFile = baseDir + File.separator + moduleName + File.separator + ".phresco" + File.separator +"phresco-ci-" + phase + "-info.xml";
+        	}
         	if (StringUtils.isEmpty(jobName)) {
         		throw new MojoExecutionException("job name is empty. Pass job name.");
         	}
