@@ -70,9 +70,10 @@ public class DefaultSeleniumPlugin implements SeleniumPlugin {
 		File baseDir = mavenProjectInfo.getBaseDir();
 		MavenProject project = mavenProjectInfo.getProject();
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
-		String subModule = mavenProjectInfo.getModuleName();
+		String subModule = "";
 		File workingDir = baseDir;
-		if (StringUtils.isNotEmpty(subModule)) {
+		if (StringUtils.isNotEmpty(mavenProjectInfo.getModuleName())) {
+			subModule = mavenProjectInfo.getModuleName();
 			workingDir = new File(baseDir + File.separator + subModule);
 		}
 		Integer port = Integer.parseInt(configs.get("port"));
@@ -158,10 +159,11 @@ public class DefaultSeleniumPlugin implements SeleniumPlugin {
 		try {
 			File baseDir = mavenProjectInfo.getBaseDir();
 			MavenProject project = mavenProjectInfo.getProject();
-			String subModule = mavenProjectInfo.getModuleName();
+			String subModule = "";
 			PluginUtils pluginutil = new PluginUtils();
 			File workingDir = baseDir;
-			if (StringUtils.isNotEmpty(subModule)) {
+			if (StringUtils.isNotEmpty(mavenProjectInfo.getModuleName())) {
+				subModule = mavenProjectInfo.getModuleName();
 				workingDir = new File(baseDir + File.separator + subModule);
 			}
 			String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
@@ -200,11 +202,12 @@ public class DefaultSeleniumPlugin implements SeleniumPlugin {
 
 	public ExecutionStatus startNode(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		File baseDir = mavenProjectInfo.getBaseDir();
-		String subModule = mavenProjectInfo.getModuleName();
+		String subModule = "";
 		MavenProject project = mavenProjectInfo.getProject();
 		PluginUtils pluginutil = new PluginUtils();
 		File workingDir = baseDir;
-		if (StringUtils.isNotEmpty(subModule)) {
+		if (StringUtils.isNotEmpty(mavenProjectInfo.getModuleName())) {
+			subModule = mavenProjectInfo.getModuleName();
 			workingDir = new File(baseDir + File.separator + subModule);
 		}
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
@@ -297,11 +300,12 @@ public class DefaultSeleniumPlugin implements SeleniumPlugin {
 	public ExecutionStatus stopNode(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		try {
 			File baseDir = mavenProjectInfo.getBaseDir();
-			String subModule = mavenProjectInfo.getModuleName();
+			String subModule = "";
 			MavenProject project = mavenProjectInfo.getProject();
 			PluginUtils pluginutil = new PluginUtils();
 			File workingDir = baseDir;
-			if (StringUtils.isNotEmpty(subModule)) {
+			if (StringUtils.isNotEmpty(mavenProjectInfo.getModuleName())) {
+				subModule = mavenProjectInfo.getModuleName();
 				workingDir = new File(baseDir + File.separator + subModule);
 			}
 			String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
