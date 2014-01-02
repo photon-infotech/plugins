@@ -81,12 +81,6 @@ public class PhrescoRelease extends AbstractMojo {
     private BuildPluginManager pluginManager;
     
     /**
-     * @parameter expression="${sourceRepoURL}"
-     * @readonly
-     */
-    protected String sourceRepoURL;
-    
-    /**
      * @parameter expression="${branchName}"
      * @readonly
      */
@@ -156,8 +150,10 @@ public class PhrescoRelease extends AbstractMojo {
     private File sourcePomFile;
     private File dotPhrescoPomFile;
     private File testPomFile;
+    private String sourceRepoURL;
     
 	public void execute() throws MojoExecutionException, MojoFailureException {
+		sourceRepoURL = project.getScm().getDeveloperConnection();
 		checkoutApplication();
 		prepareRelease();
 	}
