@@ -35,7 +35,7 @@
 					<printWhenExpression><![CDATA[($P{testType}.equals("unit") && CollectionUtils.isNotEmpty($F{testSuites})) || ($P{testType}.equals("unit") && CollectionUtils.isNotEmpty($F{allTestSuites}))]]></printWhenExpression>
 				</reportElement>
 				<staticText>
-					<reportElement x="5" y="4" width="283" height="18" forecolor="#333333" backcolor="#FFFFFF"/>
+					<reportElement x="5" y="4" width="283" height="18" forecolor="#FFFFFF" backcolor="#FFFFFF"/>
 					<textElement>
 						<font fontName="Times New Roman" size="12" isBold="true"/>
 					</textElement>

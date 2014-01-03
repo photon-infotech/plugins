@@ -29,7 +29,7 @@
 			<frame>
 				<reportElement style="UCRHeading" mode="Opaque" x="0" y="0" width="555" height="24"/>
 				<staticText>
-					<reportElement x="5" y="4" width="283" height="18" forecolor="#333333" backcolor="#FFFFFF"/>
+					<reportElement x="5" y="4" width="283" height="18" forecolor="#FFFFFF" backcolor="#FFFFFF"/>
 					<textElement>
 						<font fontName="Times New Roman" size="12" isBold="true"/>
 					</textElement>

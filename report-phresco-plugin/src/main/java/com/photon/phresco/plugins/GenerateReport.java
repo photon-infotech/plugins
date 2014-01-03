@@ -183,7 +183,9 @@ public class GenerateReport implements PluginConstants {
 	private File srcDirectory;
 	private File srcRootDir;
 	private File dotPhrescoDir;
+	private File dotPhrescoRoot;
 	private File testDir;
+	private File testDirRoot;
 	private String testDirName;
 	private String srcDirName;
 
@@ -1150,11 +1152,12 @@ public class GenerateReport implements PluginConstants {
 		for(String testResultsType : testResultsTypes) {
 			String reportDir = "";
 			String reportExtension = "";
+			PomProcessor pom = new PomProcessor(mavenProject.getFile());
 			if (PERFORMACE.equals(testType)) {
-				reportDir = testDir + mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_RPT_DIR);
+				reportDir = testDir + pom.getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_RPT_DIR);
 				reportExtension = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_RESULT_EXTENSION);
 			} else if (LOAD.equals(testType)) {
-				reportDir = testDir + mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_LOADTEST_RPT_DIR);
+				reportDir = testDir + pom.getProperty(Constants.POM_PROP_KEY_LOADTEST_RPT_DIR);
 				reportExtension = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_LOADTEST_RESULT_EXTENSION);
 			}
 
@@ -2679,9 +2682,9 @@ public class GenerateReport implements PluginConstants {
 		String pomVersion = mavenProject.getVersion();
 		// Multi module handling
 		if (StringUtils.isNotEmpty(moduleName)) {
-			dotPhrescoDir = new File(dotPhrescoDir, moduleName);
-			testDir = new File(testDir, moduleName);
-			srcDirectory = new File(srcDirectory, moduleName);
+			dotPhrescoDir = new File(dotPhrescoRoot, moduleName);
+			testDir = new File(testDirRoot, moduleName);
+			srcDirectory = new File(srcRootDir, moduleName);
 			baseDir = new File(rootDir, moduleName);
 			pomFile = getPomFile();
 			org.apache.maven.model.Model project = new org.apache.maven.model.Model();
@@ -2915,9 +2918,9 @@ public class GenerateReport implements PluginConstants {
 		rootModuleReport.setLogo(logo);
 
 		// set Report objects on rootModuleReport
-		getTestReport(rootModuleReport);
+		//getTestReport(rootModuleReport);
 		// add the each application or module object here
-		multiModuleReports.add(rootModuleReport);
+		//multiModuleReports.add(rootModuleReport);
 		// multi module object
 		if (CollectionUtils.isNotEmpty(modules)) {
 			for (String module : modules) {
@@ -3027,16 +3030,17 @@ public class GenerateReport implements PluginConstants {
 			if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
 				dotPhrescoDir = new File(baseDir.getParent() + File.separator + dotPhrescoDirName);
 			}
+			dotPhrescoRoot = dotPhrescoDir;
 			srcDirectory = baseDir;
 			if (StringUtils.isNotEmpty(srcDirName)) {
 				srcDirectory = new File(baseDir.getParent() + File.separator + srcDirName);
-				srcRootDir = new File(baseDir.getParent() + File.separator + srcDirName);
 			}
+			srcRootDir = srcDirectory;
 			testDir = baseDir;
 			if (StringUtils.isNotEmpty(testDirName)) {
 				testDir = new File(baseDir.getParent() + File.separator + testDirName);
 			}
-			
+			testDirRoot = testDir;
 			// set pdf basic config values
 			setConfigurationValues(config);
 
@@ -3223,11 +3227,12 @@ public class GenerateReport implements PluginConstants {
 				titleLabelColor = theme.get("headerBackGroundcolorTop");
 				headingForeColor = theme.get("headerBackGroundcolorTop");
 				//				headingRowBackColor = theme.get("headerBackGroundcolorTop");
+				headingBackColor = theme.get("headerBackGroundcolorTop");
 				copyRightBackColor = theme.get("headerBackGroundcolorTop");
 				copyRightPageNumberBackColor = theme.get("headerBackGroundcolorTop");
 			}
 			if(StringUtils.isNotEmpty(theme.get("pageTitleBackGroundTop"))){
-				headingBackColor = theme.get("pageTitleBackGroundTop");
+				//headingBackColor = theme.get("pageTitleBackGroundTop");
 				headingRowTextBackColor = theme.get("pageTitleBackGroundTop");
 				headingRowBackColor = theme.get("headerBackGroundcolorTop");
 			}
