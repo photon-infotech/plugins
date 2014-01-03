@@ -111,11 +111,13 @@ public class JavaTest implements PluginConstants {
             String testSourcePath = processor.getProperty("phresco.env.test.config.xml");
             testConfigPath = new File(srcDirectory + File.separator + testSourcePath);
             if (!techId.equals(TechnologyTypes.JAVA_STANDALONE) && !techId.equals(TechnologyTypes.JAVA_WEBSERVICE) ) {
-                PluginUtils utils = new PluginUtils();
-                String fullPathNoEndSeparator = FilenameUtils.getFullPathNoEndSeparator(testConfigPath.getAbsolutePath());
-                File fullPathNoEndSeparatorFile = new File(fullPathNoEndSeparator);
-                fullPathNoEndSeparatorFile.mkdirs();
-                utils.executeUtil(environment, webSeviceName, dotPhrescoDir.getPath(), testConfigPath);
+                if(StringUtils.isNotEmpty(testSourcePath)){
+	            	PluginUtils utils = new PluginUtils();
+	                String fullPathNoEndSeparator = FilenameUtils.getFullPathNoEndSeparator(testConfigPath.getAbsolutePath());
+	                File fullPathNoEndSeparatorFile = new File(fullPathNoEndSeparator);
+	                fullPathNoEndSeparatorFile.mkdirs();
+	                utils.executeUtil(environment, webSeviceName, dotPhrescoDir.getPath(), testConfigPath);
+                } 
             }
         } catch (PhrescoPomException e) {
             throw new  PhrescoException(e);

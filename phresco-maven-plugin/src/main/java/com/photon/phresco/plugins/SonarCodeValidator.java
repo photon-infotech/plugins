@@ -144,11 +144,13 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
 						PomProcessor processor = new PomProcessor(pomFile);
 						String testSourcePath = processor.getProperty("phresco.env.test.config.xml");
 						if (!techId.equals(TechnologyTypes.JAVA_STANDALONE) && !techId.equals(TechnologyTypes.JAVA_WEBSERVICE) ) {
-							testConfigPath = new File(srcDirectory + File.separator + testSourcePath);
-							String fullPathNoEndSeparator = FilenameUtils.getFullPathNoEndSeparator(testConfigPath.getAbsolutePath());
-							File fullPathNoEndSeparatorFile = new File(fullPathNoEndSeparator);
-							fullPathNoEndSeparatorFile.mkdirs();
-							utils.executeUtil(environmentName, dotPhrescoDir.getPath(), testConfigPath);
+							if(StringUtils.isNotEmpty(testSourcePath)){
+								testConfigPath = new File(srcDirectory + File.separator + testSourcePath);
+								String fullPathNoEndSeparator = FilenameUtils.getFullPathNoEndSeparator(testConfigPath.getAbsolutePath());
+								File fullPathNoEndSeparatorFile = new File(fullPathNoEndSeparator);
+								fullPathNoEndSeparatorFile.mkdirs();
+								utils.executeUtil(environmentName, dotPhrescoDir.getPath(), testConfigPath);
+							}	
 						}
 					} catch (PhrescoPomException e) {
 						throw new MojoExecutionException(e.getMessage(), e);
