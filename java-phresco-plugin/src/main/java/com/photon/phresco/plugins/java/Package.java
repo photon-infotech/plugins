@@ -60,6 +60,7 @@ import org.w3c.dom.Element;
 
 import com.photon.phresco.api.ConfigManager;
 import com.photon.phresco.commons.model.ApplicationInfo;
+import com.photon.phresco.commons.model.ModuleInfo;
 import com.photon.phresco.configuration.Environment;
 import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
@@ -122,6 +123,9 @@ public class Package implements PluginConstants {
     private File dotPhrescoDir;
     private File srcDirectory;
     private File dotPhrescoRoot;
+    private ApplicationInfo appInfoRoot;
+    private List<String> depModuleList = new ArrayList<String>();
+    
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
@@ -201,6 +205,7 @@ public class Package implements PluginConstants {
 	
 	private void initPomAndPackage() throws PhrescoException {
 		appInfo = pu.getAppInfo(dotPhrescoDir);
+		appInfoRoot = pu.getAppInfo(dotPhrescoRoot);
 		srcPomFileName = project.getFile().getName();
 		try {
 			File srcPomFile = new File(srcDirectory.getPath() + File.separator + appInfo.getPomFile());
@@ -500,9 +505,9 @@ public class Package implements PluginConstants {
 		String[] split = processName.split("@");
 		String processId = split[0].toString();
 		Utility.writeProcessid(workingDirectory.getPath(), Constants.KILLPROCESS_BUILD, processId);
-		List<String> buildModules = getBuildModules(subModule);
-		if(CollectionUtils.isEmpty(buildModules) && CollectionUtils.isNotEmpty(getModules())) {
-			buildModules = getModules();
+		List<String> buildModules = getBuildModules(appInfoRoot, subModule);
+		if (StringUtils.isNotEmpty(subModule)) {
+			buildModules.add(subModule);
 		}
 		String baseCommand = sb.toString();
 		executeCommand(baseCommand, baseDir,"");
@@ -645,6 +650,27 @@ public class Package implements PluginConstants {
 		}
 	}
 	
+	private List<String> getBuildModules(ApplicationInfo appInfo, String moduleName) {
+		List<ModuleInfo> modules = appInfo.getModules();
+		if (CollectionUtils.isNotEmpty(modules)) {
+			for (ModuleInfo moduleInfo : modules) {
+				if (moduleName.equals(moduleInfo.getCode())) {
+					List<String> dependentModules = moduleInfo.getDependentModules();
+					if (CollectionUtils.isNotEmpty(dependentModules)) {
+						for (String dependentModule : dependentModules) {
+							getBuildModules(appInfo, dependentModule);
+							if (!depModuleList.contains(dependentModule)) {
+								depModuleList.add(dependentModule);
+							}
+						}
+					}
+				}
+			}
+		}
+		return depModuleList;
+		
+	}
+	 
 	private List<String> getBuildModules(String module) throws PhrescoException {
 		List<String> buildModules = new ArrayList<String>();
 		List<String> modules = getModules();
