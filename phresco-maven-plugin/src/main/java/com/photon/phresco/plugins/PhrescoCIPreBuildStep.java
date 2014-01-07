@@ -41,6 +41,7 @@ import org.apache.maven.project.MavenProject;
 import org.sonatype.aether.util.StringUtils;
 
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugins.api.CIPlugin;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Implementation.Dependency;
@@ -131,6 +132,11 @@ public class PhrescoCIPreBuildStep extends PhrescoAbstractMojo {
         getLog().info("continuousDeliveryName " + continuousDeliveryName);
         getLog().info("moduleName " + moduleName);
         try {
+        	String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+	        if (!StringUtils.isEmpty(dotPhrescoDirName)) {
+	        	baseDir = new File(baseDir.getParent() + File.separator + dotPhrescoDirName);
+	        }
+	        getLog().info("baseDir in phrescoCIPreBuildStep" + baseDir);
 //        	String infoFile = baseDir + File.separator + Constants.CI_INFO_FILE;
         	String infoFile = baseDir + File.separator + ".phresco" + File.separator +"phresco-ci-" + phase + "-info.xml";
         	if (!StringUtils.isEmpty(moduleName)) {

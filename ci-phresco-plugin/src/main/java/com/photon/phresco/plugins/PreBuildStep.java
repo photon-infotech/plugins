@@ -61,6 +61,8 @@ public class PreBuildStep  implements PluginConstants {
     private String pom;
     private String pomFileName;
     private File pomFile;
+    private File dotPhrescoDir;
+    private String dotPhrescoDirName;
     
     private File getPomFile() throws PhrescoException {
     	PluginUtils pu = new PluginUtils();
@@ -79,26 +81,30 @@ public class PreBuildStep  implements PluginConstants {
 	        this.log = log;
 	        baseDir = mavenProjectInfo.getBaseDir();
 	        project = mavenProjectInfo.getProject();
-	        
+	        dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+	        log.info("dotPhrescoDirName ::> "+dotPhrescoDirName);
+	        if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
+	        	baseDir = new File(baseDir.getParent() + File.separator + dotPhrescoDirName);
+	        }
 	        // module name
 	        String pomVersion = mavenProjectInfo.getProject().getVersion();
-	        
 			// get projects plugin info file path
 			File rootProjectInfo = new File(baseDir, DOT_PHRESCO_FOLDER + File.separator + PROJECT_INFO_FILE);
 			if (!rootProjectInfo.exists()) {
 				throw new MojoExecutionException("Project info file is not found in jenkins workspace dir " + baseDir.getCanonicalPath());
 			}
 			log.info("projectInfo path ... " + rootProjectInfo.getCanonicalPath());
-			ApplicationInfo rootAppInfo = getApplicationInfo(rootProjectInfo);
-			String rootAppDirName = rootAppInfo.getAppDirName();
+//			ApplicationInfo rootAppInfo = getApplicationInfo(rootProjectInfo);
+//			String rootAppDirName = rootAppInfo.getAppDirName();
 	     // Multi module handling
 	        if (StringUtils.isNotEmpty(moduleName)) {
 	        	baseDir = new File(baseDir, moduleName);
 	        }
+	        log.info("baseDir after module append >"+baseDir);
 	        pomFile = getPomFile();
 	        pom = project.getFile().getName();
 	        
-	        System.out.println("pomFile > " + pomFile.getPath());
+	        log.info("pomFile > " + pomFile.getPath());
 	        org.apache.maven.model.Model project = new org.apache.maven.model.Model();
 	        PomProcessor pp = new PomProcessor(pomFile);
 	        com.phresco.pom.model.Model.Properties modelProperties = pp.getModel().getProperties();
@@ -140,7 +146,6 @@ public class PreBuildStep  implements PluginConstants {
 			if (job == null) {
 				throw new PhrescoException("Job object is empty ");
 			}
-			
 			
 			File phrescoPluginInfoFile = getPhrescoPluginInfoFileInJenkins(name, phase, moduleName);
 			log.info("phresco Plugin Info File in phresco projects workspace ... " + phrescoPluginInfoFile.getPath());
