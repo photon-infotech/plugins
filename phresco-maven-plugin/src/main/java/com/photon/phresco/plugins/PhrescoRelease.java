@@ -1,13 +1,14 @@
 package com.photon.phresco.plugins;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.UUID;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
-import org.apache.maven.model.Model;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.DeploymentRepository;
+import org.apache.maven.model.DistributionManagement;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -19,9 +20,12 @@ import org.apache.maven.scm.manager.NoSuchScmProviderException;
 import org.apache.maven.scm.manager.ScmManager;
 import org.apache.maven.scm.repository.ScmRepository;
 import org.apache.maven.scm.repository.ScmRepositoryException;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.apache.maven.settings.Server;
+import org.apache.maven.settings.Settings;
+import org.apache.maven.settings.io.SettingsWriter;
 
 import com.photon.phresco.commons.FrameworkConstants;
+import com.photon.phresco.commons.model.ProjectInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
@@ -91,10 +95,37 @@ public class PhrescoRelease extends AbstractMojo {
      */
     protected String appDirName;
     
+    /**
+     * @parameter expression="${repoUserName}"
+     * @readonly
+     */
+    protected String repoUserName;
+    
+    
+    /**
+     * @parameter expression="${repoPassword}"
+     * @readonly
+     */
+    protected String repoPassword;
+    
     /** SCM Manager component to be injected.
      * @component
      */
     private ScmManager scmManager;
+    
+    /** SettingsWriter component to be injected.
+     * @component
+     */
+    private SettingsWriter settingsWriter;
+    
+    /**
+     * The current Maven session.
+     *
+     * @parameter default-value="${session}"
+     * @parameter required
+     * @readonly
+     */
+    private MavenSession mavenSession;
     
     private File sourceCheckOutDir;
     private File phresoCheckOutDir;
@@ -106,9 +137,12 @@ public class PhrescoRelease extends AbstractMojo {
     private String testRepoURL;
     private File sourcePomFile;
     private String dotPhrescoRepoURL;
+    private String projectName;
     
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
+		ProjectInfo projectInfo = Utility.getProjectInfo(Utility.getProjectHome().concat(appDirName), "");
+		projectName = projectInfo.getName();
 		sourcePomFile = Utility.getPomFileLocation(Utility.getProjectHome().concat(appDirName), "");
 		checkoutApplication();
 		prepareRelease(sourcePomFile);
@@ -201,19 +235,43 @@ public class PhrescoRelease extends AbstractMojo {
 	}
 	
 	private void perFormRelease() throws MojoExecutionException {
-		Utility.executeStreamconsumer(createPerformCommand(sourcePomFile.getName()), sourceCheckOutDir.getPath(), "", "");
+		Utility.executeStreamconsumer(createPerformCommand("pom.xml"), sourceCheckOutDir.getPath(), "", "");
 	}
 	
-	private String createPerformCommand(String pomName) {
+	private String createPerformCommand(String pomName) throws MojoExecutionException {
 		StringBuilder command = new StringBuilder("mvn org.apache.maven.plugins:maven-release-plugin:2.4:perform ");
 		command.append("-DpomFileName=").append(pomName).append(" ");
 		command.append("-f ").append(pomName);
+		File settingsFile = new File(Utility.getPhrescoTemp(), "settings-" + projectName);
+		try {
+			String repoId = "";
+			Server server = new Server();
+			DistributionManagement distributionManagement = project.getDistributionManagement();
+			if(distributionManagement != null) {
+				DeploymentRepository repository = distributionManagement.getRepository();
+				if(repository != null) {
+					repoId = repository.getId();
+					server.setId(repoId);
+					server.setUsername(repoUserName);
+					byte[] decodeBase64 = Base64.decodeBase64(repoPassword);
+					server.setPassword(new String(decodeBase64));
+					Settings settings = mavenSession.getSettings();
+					settings.addServer(server);
+					settingsWriter.write(settingsFile, null, settings);
+				}
+			}
+			if(settingsFile.exists()) {
+				command.append(" ").append("-s").append("\"").append(settingsFile.getPath()).append("\"");
+			}
+		} catch (IOException e) {
+			throw new MojoExecutionException(e.getMessage());
+		}
 		return command.toString();
 	}
 	
 	private void prepareRelease(File pomFile) throws MojoExecutionException {
 		boolean performFlag =  false;
-		performFlag = Utility.executeStreamconsumer(createPrepareCommand(pomFile.getName()), sourceCheckOutDir.getPath(), "", "");
+		performFlag = Utility.executeStreamconsumer(createPrepareCommand("pom.xml"), sourceCheckOutDir.getPath(), "", "");
 		if(isSplittedProject && hasSplitSource) {
 			Utility.executeStreamconsumer(createPrepareCommand("phresco-pom.xml"), phresoCheckOutDir.getPath(), "", "");
 		}
