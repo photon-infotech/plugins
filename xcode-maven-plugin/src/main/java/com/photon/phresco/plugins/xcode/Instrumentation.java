@@ -214,17 +214,25 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 						getLog().error("Application should not be empty");
 					}
 					if(StringUtils.isNotBlank(script)) {
+						System.out.println("script is not empty");
 						pb.command().add("-e");
 						pb.command().add("UIASCRIPT");
+						
 						String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_TEST_DIR);
-						String scriptPath = project.getBasedir().getParentFile()+File.separator+dotPhrescoDirName+File.separator+script;
+						String scriptPath=null;
+						if(dotPhrescoDirName!=null){
+					      scriptPath = project.getBasedir().getParentFile()+File.separator+dotPhrescoDirName+File.separator+script;
+						}else{
+							 scriptPath = project.getBasedir()+File.separator+script;
+						}
 						pb.command().add(scriptPath);
+						
 					} else {
 						getLog().error("script is empty");
 					}
 					
 					pb.command().add("-e");
-					pb.command().add("UIARESULTSPATH");					
+					pb.command().add("UIARESULTSPATH");		
 					pb.command().add(outputFolder);
 					
 					// Include errors in output
