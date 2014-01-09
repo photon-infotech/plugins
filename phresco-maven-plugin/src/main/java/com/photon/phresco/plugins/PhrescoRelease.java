@@ -21,6 +21,7 @@ import org.apache.maven.scm.repository.ScmRepository;
 import org.apache.maven.scm.repository.ScmRepositoryException;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
+import com.photon.phresco.commons.FrameworkConstants;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
@@ -98,18 +99,16 @@ public class PhrescoRelease extends AbstractMojo {
     private File sourceCheckOutDir;
     private File phresoCheckOutDir;
     private File testCheckOutDir;
-    private MavenProject mavenProject;
     private boolean isSplittedProject;
     private boolean hasSplitSource;
     private boolean hasSplitTest;
     private String sourceRepoUrl;
     private String testRepoURL;
     private File sourcePomFile;
-    private String phrescoRepoURL;
+    private String dotPhrescoRepoURL;
     
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
-		phrescoRepoURL = project.getScm().getDeveloperConnection();
 		sourcePomFile = Utility.getPomFileLocation(Utility.getProjectHome().concat(appDirName), "");
 		checkoutApplication();
 		prepareRelease(sourcePomFile);
@@ -119,16 +118,15 @@ public class PhrescoRelease extends AbstractMojo {
 	}
 	
 	private void checkoutApplication() throws MojoExecutionException {
+		isSplitted();
 		String phrescoTemp = Utility.getPhrescoTemp();
 		sourceCheckOutDir = new File(phrescoTemp, UUID.randomUUID().toString());
 		sourceCheckOutDir.mkdirs();
-		checkout(phrescoRepoURL, sourceCheckOutDir);
-			initMavenProject(sourcePomFile);
-			isSplitted();
+		checkout(sourceRepoUrl, sourceCheckOutDir);
 		if(isSplittedProject && hasSplitSource) {
 			phresoCheckOutDir = new File(phrescoTemp, UUID.randomUUID().toString());
 			phresoCheckOutDir.mkdirs();
-			checkout(sourceRepoUrl, phresoCheckOutDir);
+			checkout(dotPhrescoRepoURL, phresoCheckOutDir);
 		}
 		if(isSplittedProject && hasSplitTest) {
 			testCheckOutDir = new File(phrescoTemp, UUID.randomUUID().toString());
@@ -139,8 +137,9 @@ public class PhrescoRelease extends AbstractMojo {
 
 	private void checkout(String repoURL, File checkOutdir) throws MojoExecutionException {
 		ScmRepository scmRepository;
+		String urlWithScm = createScmURL(repoURL);
 		try {
-			scmRepository = scmManager.makeScmRepository(repoURL);
+			scmRepository = scmManager.makeScmRepository(urlWithScm);
 			scmManager.checkOut(scmRepository, new ScmFileSet(checkOutdir), getScmVersion());
 		} catch (ScmRepositoryException e) {
 			throw new MojoExecutionException(e.getMessage());
@@ -151,31 +150,29 @@ public class PhrescoRelease extends AbstractMojo {
 		}
 	}
 	
-	private MavenProject initMavenProject(File pomFile) throws MojoExecutionException {
-    	MavenXpp3Reader mavenreader = new MavenXpp3Reader();
-    	Model model;
-		try {
-			FileReader reader = new FileReader(pomFile);
-			model = mavenreader.read(reader);
-			model.setPomFile(pomFile);
-		} catch (IOException e) {
-			throw new MojoExecutionException(e.getMessage());
-		} catch (XmlPullParserException e) {
-			throw new MojoExecutionException(e.getMessage());
+	private String createScmURL(String repoUrl) {
+		String repoType = "";
+		if (repoUrl.startsWith("bk")) {
+			repoType = FrameworkConstants.BITKEEPER;
+		} else if (repoUrl.endsWith(".git") || repoUrl.contains("gerrit") || repoUrl.startsWith("ssh")) {
+			repoType = FrameworkConstants.GIT;
+		} else if (repoUrl.contains("svn")) {
+			repoType = FrameworkConstants.SVN;
 		}
-		return mavenProject = new MavenProject(model);
+		return "scm:".concat(repoType).concat(":").concat(repoUrl);
 	}
 	
 	private void isSplitted() {
-		sourceRepoUrl = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_SRC_REPO_URL);
-		if(StringUtils.isNotEmpty(sourceRepoUrl)) {
-			isSplittedProject = true;
-			hasSplitSource = true;
-		}
-		testRepoURL = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_TEST_REPO_URL);
+		dotPhrescoRepoURL = project.getProperties().getProperty(Constants.POM_PROP_KEY_PHRESCO_REPO_URL);
+		testRepoURL = project.getProperties().getProperty(Constants.POM_PROP_KEY_TEST_REPO_URL);
+		sourceRepoUrl = project.getProperties().getProperty(Constants.POM_PROP_KEY_SRC_REPO_URL);
 		if(StringUtils.isNotEmpty(testRepoURL)) {
 			isSplittedProject = true;
 			hasSplitTest = true;
+		}
+		if(StringUtils.isNotEmpty(dotPhrescoRepoURL)) {
+			isSplittedProject = true;
+			hasSplitSource = true;
 		}
 	}
 	
@@ -204,11 +201,7 @@ public class PhrescoRelease extends AbstractMojo {
 	}
 	
 	private void perFormRelease() throws MojoExecutionException {
-		if(isSplittedProject && hasSplitSource) {
-		 Utility.executeStreamconsumer(createPerformCommand("pom.xml"), phresoCheckOutDir.getPath(), "", "");
-		} else {
-			 Utility.executeStreamconsumer(createPerformCommand("pom.xml"), sourceCheckOutDir.getPath(), "", "");
-		}
+		Utility.executeStreamconsumer(createPerformCommand(sourcePomFile.getName()), sourceCheckOutDir.getPath(), "", "");
 	}
 	
 	private String createPerformCommand(String pomName) {
@@ -222,7 +215,7 @@ public class PhrescoRelease extends AbstractMojo {
 		boolean performFlag =  false;
 		performFlag = Utility.executeStreamconsumer(createPrepareCommand(pomFile.getName()), sourceCheckOutDir.getPath(), "", "");
 		if(isSplittedProject && hasSplitSource) {
-			performFlag = Utility.executeStreamconsumer(createPrepareCommand("pom.xml"), phresoCheckOutDir.getPath(), "", "");
+			Utility.executeStreamconsumer(createPrepareCommand("phresco-pom.xml"), phresoCheckOutDir.getPath(), "", "");
 		}
 		if(isSplittedProject && hasSplitTest) {
 			Utility.executeCommand(createPrepareCommand("pom.xml"), testCheckOutDir.getPath());
