@@ -1,7 +1,6 @@
 package com.photon.phresco.plugins;
 
 import java.io.File;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -12,11 +11,14 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.maven.AbstractMavenLifecycleParticipant;
 import org.apache.maven.MavenExecutionException;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.Model;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.Profile;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+import org.apache.maven.project.DefaultProjectBuilderConfiguration;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.ProjectBuilderConfiguration;
+import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.aether.repository.RemoteRepository;
 
 import com.photon.phresco.commons.model.ApplicationInfo;
@@ -26,8 +28,12 @@ import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
 
+@Component(role = AbstractMavenLifecycleParticipant.class)
 public class Configurer extends AbstractMavenLifecycleParticipant {
-
+	
+	@Requirement
+    private MavenProjectBuilder mavenProjectBuilder;
+	
 	@Override
 	public void afterProjectsRead(MavenSession session)
 			throws MavenExecutionException {
@@ -36,7 +42,7 @@ public class Configurer extends AbstractMavenLifecycleParticipant {
 			if(mavenProject.getFile().getName().equals("phresco-pom.xml")) {
 				MavenProject sourceProject;
 				try {
-					sourceProject = getSourceProject(mavenProject);
+					sourceProject = getSourceProject(mavenProject,session);
 					Properties properties = sourceProject.getProperties();
 					Set<Object> keySet = properties.keySet();
 					//Made properties available in phresco-pom.xml
@@ -92,13 +98,12 @@ public class Configurer extends AbstractMavenLifecycleParticipant {
 		super.afterProjectsRead(session);
 	}
 	
-	 private MavenProject getSourceProject(MavenProject phrescoProject) throws PhrescoException {
-    	Model model = null;
-    	FileReader reader = null;
-    	MavenXpp3Reader mavenreader = new MavenXpp3Reader();
+	 private MavenProject getSourceProject(MavenProject phrescoProject, MavenSession session) throws PhrescoException {
+    	File pomFile = null;
+    	MavenProject sourceProject;
     	try {
     		File baseDir = phrescoProject.getBasedir();
-    		File pomFile = new File(baseDir, phrescoProject.getProperties().getProperty("source.pom"));
+    		pomFile = new File(baseDir, phrescoProject.getProperties().getProperty("source.pom"));
     		String source = phrescoProject.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_SRC_DIR);
     		if (StringUtils.isNotEmpty(source)) {
     			PluginUtils pluginUtils = new PluginUtils();
@@ -111,14 +116,14 @@ public class Configurer extends AbstractMavenLifecycleParticipant {
         		}
     			pomFile = new File(Utility.getProjectHome() + File.separatorChar + appDirName + File.separatorChar + source + File.separatorChar + code, phrescoProject.getProperties().getProperty("source.pom"));
     		}
-    		reader = new FileReader(pomFile);
-    	    model = mavenreader.read(reader);
-    	    model.setPomFile(pomFile);
+    		ProjectBuilderConfiguration config = new DefaultProjectBuilderConfiguration();
+	   		config.setUserProperties(session.getUserProperties());
+	   		config.setLocalRepository(session.getLocalRepository());
+	   		sourceProject = mavenProjectBuilder.build(pomFile, config);
     	}catch(Exception ex){
     		throw new PhrescoException(ex);
     	}
-    	MavenProject project = new MavenProject(model);
-    	return project;
+    	return sourceProject;
 	 }
 	 
 	 private void removePlugins(MavenProject project, String packagingType) {

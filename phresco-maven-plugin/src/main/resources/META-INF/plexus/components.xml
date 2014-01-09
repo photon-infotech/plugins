@@ -5,9 +5,15 @@
 		<component>
 			<role>org.apache.maven.AbstractMavenLifecycleParticipant</role>
 			<role-hint>phresco</role-hint>
-			<implementation>com.photon.phresco.plugins.Configurer
-			</implementation>
-			
+			<implementation>com.photon.phresco.plugins.Configurer</implementation>
+			<isolated-realm>false</isolated-realm>
+			<requirements>
+				<requirement>
+					<role>org.apache.maven.project.MavenProjectBuilder</role>
+						<role-hint />
+					<field-name>mavenProjectBuilder</field-name>
+				</requirement>
+			</requirements>
 		</component>
 
 		<component>
