@@ -63,13 +63,28 @@ public class PreBuildStep  implements PluginConstants {
     private File pomFile;
     private File dotPhrescoDir;
     private String dotPhrescoDirName;
+    private File tempBaseDir;
     
     private File getPomFile() throws PhrescoException {
     	PluginUtils pu = new PluginUtils();
     	ApplicationInfo appInfo = pu.getAppInfo(baseDir);
     	pomFileName = Utility.getPhrescoPomFromWorkingDirectory(appInfo, baseDir);
     	pom = pomFileName;
-    	File pom = new File(baseDir.getPath() + File.separator + pomFileName);
+		String phrescoPath = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+//		String testPath = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_TEST_DIR);
+		String srcPath = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_SRC_DIR);
+		String newPath = tempBaseDir.getPath();
+		log.info("tempBaseDir ===========>"+tempBaseDir.getParent());
+		
+		if (StringUtils.isNotEmpty(phrescoPath) && !"pom.xml".equals(pom)){
+			newPath = tempBaseDir.getParent() + File.separator + phrescoPath;
+		}
+		
+		if (StringUtils.isNotEmpty(srcPath) && "pom.xml".equals(pom)){
+			newPath = tempBaseDir.getParent() + File.separator + srcPath;
+		}
+		 newPath = newPath + File.separator + pom;
+    	File pom = new File(newPath);
     	return pom;
     }
 
@@ -81,15 +96,19 @@ public class PreBuildStep  implements PluginConstants {
 	        this.log = log;
 	        baseDir = mavenProjectInfo.getBaseDir();
 	        project = mavenProjectInfo.getProject();
+	        tempBaseDir = baseDir;
+	        log.info("tempBaseDir ::> "+tempBaseDir);
 	        dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
 	        log.info("dotPhrescoDirName ::> "+dotPhrescoDirName);
 	        if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
 	        	baseDir = new File(baseDir.getParent() + File.separator + dotPhrescoDirName);
 	        }
+	        log.info("baseDir in preBuildStep ::> "+baseDir);
 	        // module name
 	        String pomVersion = mavenProjectInfo.getProject().getVersion();
 			// get projects plugin info file path
 			File rootProjectInfo = new File(baseDir, DOT_PHRESCO_FOLDER + File.separator + PROJECT_INFO_FILE);
+			 log.info("rootProjectInfo in preBuildStep ::> "+rootProjectInfo.getCanonicalPath());
 			if (!rootProjectInfo.exists()) {
 				throw new MojoExecutionException("Project info file is not found in jenkins workspace dir " + baseDir.getCanonicalPath());
 			}

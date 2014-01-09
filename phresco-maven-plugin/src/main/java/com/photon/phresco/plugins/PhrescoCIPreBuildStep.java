@@ -131,6 +131,7 @@ public class PhrescoCIPreBuildStep extends PhrescoAbstractMojo {
         getLog().info("id " + id);
         getLog().info("continuousDeliveryName " + continuousDeliveryName);
         getLog().info("moduleName " + moduleName);
+        getLog().info("baseDir ===>" + baseDir);
         try {
         	String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
 	        if (!StringUtils.isEmpty(dotPhrescoDirName)) {
@@ -142,6 +143,7 @@ public class PhrescoCIPreBuildStep extends PhrescoAbstractMojo {
         	if (!StringUtils.isEmpty(moduleName)) {
         		infoFile = baseDir + File.separator + moduleName + File.separator + ".phresco" + File.separator +"phresco-ci-" + phase + "-info.xml";
         	}
+        	 getLog().info("infoFile in phrescoCIPreBuildStep" + infoFile);
         	if (StringUtils.isEmpty(jobName)) {
         		throw new MojoExecutionException("job name is empty. Pass job name.");
         	}
