@@ -19,6 +19,7 @@ package com.photon.phresco.plugins.felix;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Arrays;
@@ -209,6 +210,7 @@ public class Deploy implements PluginConstants {
 				Constants.SERVER_ADMIN_PASSWORD);
 		String context = configuration.getProperties().getProperty(
 				Constants.SERVER_CONTEXT);
+		String certificatePath = configuration.getProperties().getProperty(Constants.CERTIFICATE);
 
 		StringBuilder felixUrl = new StringBuilder();
 		felixUrl.append(serverprotocol);
@@ -229,14 +231,17 @@ public class Deploy implements PluginConstants {
 				if (bundleFile.exists()) {
 					log.info("Deploying Dependency Bundle "+ nextFile +" ...");
 					deployToServer(bundleFile, felixUrl.toString(),
-							serverusername, serverpassword);
+							serverusername, serverpassword, serverprotocol, certificatePath);
 				}
 			}
 		}
 		bundleFile = getBundleFile();
+		log.info("============================================");
 		log.info("Deploying Bundle "+ bundleFile +" ...");
+		log.info("============================================");
 		deployToServer(bundleFile, felixUrl.toString(), serverusername,
-				serverpassword);
+				serverpassword, serverprotocol, certificatePath);
+		log.info("+++++++++++++++++++++++++++++++++++++++++++++++");
 	}
 
 	private File getBundleFile() {
@@ -262,11 +267,13 @@ public class Deploy implements PluginConstants {
 		return bundleFile;
 	}
 	
-	private void deployToServer(File bundleFile, String felixUrl, String username, String password)
+	private void deployToServer(File bundleFile, String felixUrl, String username, String password, String serverprotocol, String certificatePath)
 			throws MojoExecutionException {
+
 		BufferedReader bufferedReader = null;
 		boolean errorParam = false;
 		try {
+			log.info("Inside deployToServer");
 				StringBuilder sb = new StringBuilder();
 				sb.append(MVN_CMD);
 				sb.append(STR_SPACE);
@@ -289,6 +296,20 @@ public class Deploy implements PluginConstants {
 				sb.append(Constants.HYPHEN_F);
 				sb.append(STR_SPACE);
 				sb.append(project.getFile().getName());
+				log.info(" Before IF sb == "+ sb);
+				if (serverprotocol.equals(HTTPS) && certificatePath != null) {
+					File certificateFile = null;
+					if (new File(certificatePath).exists()) {
+						certificateFile = new File(certificatePath);
+						log.info("IF certificatePath == "+ certificatePath);
+						log.info("IF certificateFile == "+ certificateFile);
+						sb.append(STR_SPACE);
+						sb.append(JAVAX_TRUSTSTORE);
+						sb.append(certificateFile.getPath());
+					} else {
+						throw new FileNotFoundException();
+					}
+				}
 				bufferedReader = Utility.executeCommand(sb.toString(), workingDirectory.getPath());
 				String line = null;
 				

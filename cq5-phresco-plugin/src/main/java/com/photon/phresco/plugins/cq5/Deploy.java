@@ -19,6 +19,7 @@ package com.photon.phresco.plugins.cq5;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.List;
@@ -125,6 +126,8 @@ public class Deploy implements PluginConstants {
 		String serverusername = configuration.getProperties().getProperty(Constants.SERVER_ADMIN_USERNAME);
 		String serverpassword = configuration.getProperties().getProperty(Constants.SERVER_ADMIN_PASSWORD);
 		String context = configuration.getProperties().getProperty(Constants.SERVER_CONTEXT);
+		String certificatePath = configuration.getProperties().getProperty(Constants.CERTIFICATE);
+
 		
 		StringBuilder cq5Url = new StringBuilder();
 		cq5Url.append(serverprotocol);
@@ -136,7 +139,7 @@ public class Deploy implements PluginConstants {
 		cq5Url.append(context);
 		
 		File cq5File = getCq5File();
-		deployToServer(cq5File, cq5Url.toString(), serverusername, serverpassword);
+		deployToServer(cq5File, cq5Url.toString(), serverusername, serverpassword, serverprotocol, certificatePath);
 	}
 
 	private File getCq5File() throws PhrescoException {
@@ -153,7 +156,7 @@ public class Deploy implements PluginConstants {
 		return null;
 	}
 	
-	private void deployToServer(File cq5File, String cq5Url, String username, String password) throws MojoExecutionException {
+	private void deployToServer(File cq5File, String cq5Url, String username, String password, String serverprotocol, String certificatePath) throws MojoExecutionException {
 		BufferedReader bufferedReader = null;
 		boolean errorParam = false;
 		try {
@@ -175,7 +178,6 @@ public class Deploy implements PluginConstants {
 			sb.append(PACKAGE_FILE+"="+"\""+cq5File+"\"");
 			sb.append(STR_SPACE);
 			sb.append(SKIP_TESTS);
-			
 
 //			sb.append("org.apache.cq5:maven-cq5-plugin:install-file");
 //			
@@ -201,8 +203,19 @@ public class Deploy implements PluginConstants {
 				sb.append(STR_SPACE);
 				sb.append(pomFile);
 			}
-
-			
+			if (serverprotocol.equals(HTTPS) && certificatePath != null) {
+				File certificateFile = null;
+				if (new File(certificatePath).exists()) {
+					certificateFile = new File(certificatePath);
+					log.info("IF certificatePath == "+ certificatePath);
+					log.info("IF certificateFile == "+ certificateFile);
+					sb.append(STR_SPACE);
+					sb.append(JAVAX_TRUSTSTORE);
+					sb.append(certificateFile.getPath());
+				} else {
+					throw new FileNotFoundException();
+				}
+			}
 			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 			String line = null;
 			
