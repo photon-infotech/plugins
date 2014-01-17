@@ -4,13 +4,13 @@
 	<parent>
         <groupId>com.photon.phresco.plugins</groupId>
         <artifactId>phresco-plugins-root</artifactId>
-        <version>3.2.0.9002-SNAPSHOT</version>
+        <version>3.2.0.10001-SNAPSHOT</version>
         <relativePath>../</relativePath>
     </parent>
     
   <groupId>com.photon.phresco.plugins</groupId>
   <artifactId>felix-phresco-plugin</artifactId>
-  <version>3.2.0.9002-SNAPSHOT</version>
+  <version>3.2.0.10001-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>java-phresco-plugin</name>
