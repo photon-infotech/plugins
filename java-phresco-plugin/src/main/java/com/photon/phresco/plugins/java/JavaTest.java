@@ -101,6 +101,7 @@ public class JavaTest implements PluginConstants {
 
             buildCommand(configuration, testAgainst, goalPackBeforeTest, subModule);
         } catch (Exception e) {
+			e.printStackTrace();
             throw new PhrescoException(e); 
         }
     }
