@@ -1480,4 +1480,63 @@ public class PluginUtils {
 			file.delete();
 		}
 	}
+	
+	public void checkout(String connectionUrl, String currentBranch,
+			String phrescoTemp, String uuid, boolean checkoutPomAlone, String username, String password) throws IOException {
+		StringBuilder sb = new StringBuilder();
+		String repoType = getRepoType(connectionUrl);
+		//Construct command for checkout
+		sb.append(Constants.MVN_COMMAND)
+		.append(Constants.STR_BLANK_SPACE)
+		.append(Constants.SCM)
+		.append(Constants.STR_COLON)
+		.append(Constants.SCM_CHECKOUT)
+		.append(Constants.STR_BLANK_SPACE)
+		.append(Constants.SCM_HYPHEN_D).append(Constants.SCM_CONNECTION_URL).append(Constants.STR_EQUALS)
+		.append(Constants.SCM).append(Constants.STR_COLON)
+		.append(repoType).append(Constants.STR_COLON).append(connectionUrl)
+		.append(Constants.STR_BLANK_SPACE)
+		.append(Constants.SCM_HYPHEN_D).append(Constants.SCM_CHECKOUT_DIRECTORY)
+		.append(Constants.STR_EQUALS).append(uuid)
+		.append(Constants.STR_BLANK_SPACE)
+		.append(Constants.SCM_HYPHEN_D).append(Constants.SCM_USERNAME)
+		.append(Constants.STR_EQUALS).append(username)
+		.append(Constants.STR_BLANK_SPACE)
+		.append(Constants.SCM_HYPHEN_D).append(Constants.SCM_PASSWORD)
+		.append(Constants.STR_EQUALS).append(password);
+		if ("git".equals(repoType)) {
+			sb.append(Constants.STR_BLANK_SPACE)
+			.append(Constants.SCM_HYPHEN_D).append(Constants.SCM_VERSION_TYPE)
+			.append(Constants.STR_EQUALS).append(Constants.SCM_BRANCH)
+			.append(Constants.STR_BLANK_SPACE)
+			.append(Constants.SCM_HYPHEN_D).append(Constants.SCM_VERSION)
+			.append(Constants.STR_EQUALS).append(currentBranch);
+		}
+		if (checkoutPomAlone) {
+			sb.append(Constants.STR_BLANK_SPACE)
+			.append(Constants.SCM_HYPHEN_D).append(Constants.SCM_INCLUDES)
+			.append(Constants.STR_EQUALS).append(Constants.POM_NAME);
+		}
+		System.out.println("checkout command====> " + sb.toString());
+		Utility.executeStreamconsumer(sb.toString(), phrescoTemp, "", "");
+	  }
+	
+	/**
+	 * Gets the repo type.
+	 *
+	 * @param repoUrl the repo url
+	 * @return the repo type
+	 */
+	private String getRepoType(String repoUrl) {
+		String repoType = "";
+		if (repoUrl.startsWith("bk")) {
+			repoType = FrameworkConstants.BITKEEPER;
+		} else if (repoUrl.endsWith(".git") || repoUrl.contains("gerrit") || repoUrl.startsWith("ssh")) {
+			repoType = FrameworkConstants.GIT;
+		} else if (repoUrl.contains("svn")) {
+			repoType = FrameworkConstants.SVN;
+		}
+		return repoType;
+	}
+	
 }
