@@ -1517,7 +1517,6 @@ public class PluginUtils {
 			.append(Constants.SCM_HYPHEN_D).append(Constants.SCM_INCLUDES)
 			.append(Constants.STR_EQUALS).append(Constants.POM_NAME);
 		}
-		System.out.println("checkout command====> " + sb.toString());
 		Utility.executeStreamconsumer(sb.toString(), phrescoTemp, "", "");
 	  }
 	
