@@ -122,8 +122,6 @@ public class PhrescoCreateBranch extends AbstractMojo {
 					String encryptedPassword = credential.get(FrameworkConstants.REQ_PASSWORD);
 					password = FrameworkUtil.getdecryptedPassword(encryptedPassword);
 				}
-				System.out.println("username=====> " + username);
-				System.out.println("password======> " + password);
 				String uuid = UUID.randomUUID().toString();
 				String workingDir = phrescoTemp + uuid;
 				workingDirList.add(workingDir);
@@ -160,8 +158,6 @@ public class PhrescoCreateBranch extends AbstractMojo {
 					builder.append(Constants.STR_BLANK_SPACE)
 					.append(Constants.HYPHEN_F).append(Constants.STR_BLANK_SPACE).append(FrameworkConstants.PHR_POM_XML);
 				}
-				System.out.println("working dir====> " + workingDir);
-				System.out.println("plugin branch command====> " + builder.toString());
 				Utility.executeStreamconsumer(builder.toString(), workingDir, "", "");
 				// copy into workspace
 				if (downloadOption) {
