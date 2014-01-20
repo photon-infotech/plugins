@@ -103,6 +103,13 @@ public class PhrescoRelease extends AbstractMojo {
     
     
     /**
+     * @parameter expression="${jobName}"
+     * @readonly
+     */
+    protected String jobName;
+    
+    
+    /**
      * @parameter expression="${repoPassword}"
      * @readonly
      */
@@ -138,12 +145,18 @@ public class PhrescoRelease extends AbstractMojo {
     private File sourcePomFile;
     private String dotPhrescoRepoURL;
     private String projectName;
+    private String projHome;
     
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
-		ProjectInfo projectInfo = Utility.getProjectInfo(Utility.getProjectHome().concat(appDirName), "");
+			if (StringUtils.isNotEmpty(jobName)) {
+				projHome = Utility.getJenkinsHome().concat(FrameworkConstants.WORKSPACE_DIR).concat(File.separator).concat(jobName).concat("###").concat(appDirName);
+			} else {
+				projHome = Utility.getProjectHome().concat(appDirName);
+			}
+		ProjectInfo projectInfo = Utility.getProjectInfo(projHome, "");
 		projectName = projectInfo.getName();
-		sourcePomFile = Utility.getPomFileLocation(Utility.getProjectHome().concat(appDirName), "");
+		sourcePomFile = Utility.getPomFileLocation(projHome, "");
 		checkoutApplication();
 		prepareRelease(sourcePomFile);
 		} catch (PhrescoException e) {
