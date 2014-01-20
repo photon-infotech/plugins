@@ -39,13 +39,13 @@
 	<pageHeader>
 		<band height="27">
 			<frame>
-				<reportElement style="PPCRHeading" mode="Opaque" x="0" y="0" width="555" height="24"/>
+				<reportElement style="PPCRHeading" mode="Opaque" x="0" y="0" width="555" height="24" forecolor="#FFFFFF"/>
 				<textField>
 					<reportElement x="2" y="3" width="344" height="20" forecolor="#FFFFFF"/>
 					<textElement>
 						<font fontName="Times New Roman" size="15" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["LOAD TEST REPORT"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Load Test Report"]]></textFieldExpression>
 					<anchorNameExpression><![CDATA["Load Test Report"]]></anchorNameExpression>
 				</textField>
 			</frame>

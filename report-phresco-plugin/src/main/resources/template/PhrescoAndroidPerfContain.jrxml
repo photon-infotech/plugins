@@ -140,11 +140,11 @@
 				<reportElement style="PAPCTitleRectLogo" x="0" y="128" width="554" height="23"/>
 			</rectangle>
 			<textField>
-				<reportElement x="4" y="128" width="388" height="23" forecolor="#FFFFFF"/>
+				<reportElement x="4" y="128" width="536" height="23" forecolor="#FFFFFF"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="Times New Roman" size="15" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{testType}.toUpperCase() + " TEST REPORT"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[Character.toUpperCase($P{testType}.charAt(0)) + $P{testType}.substring(1) + " Test Report"]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>

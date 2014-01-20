@@ -1390,8 +1390,8 @@ public class GenerateReport implements PluginConstants {
 		} else if (FUNCTIONAL.equals(testType)){
 			String reportFilePath = testDir.getAbsolutePath();
 			String functionalTestDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_RPT_DIR);
-			String unitTestSuitePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_TESTSUITE_XPATH);
-			String unitTestCasePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_TESTCASE_PATH);
+			String functionalTestSuitePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_TESTSUITE_XPATH);
+			String functionalTestCasePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_TESTCASE_PATH);
 			String reportPath = "";
 			if (StringUtils.isNotEmpty(functionalTestDir)) {
 				reportPath = reportFilePath + functionalTestDir;
@@ -1401,7 +1401,7 @@ public class GenerateReport implements PluginConstants {
 			}
 			List<File> testResultFiles = getTestResultFilesAsList(reportPath);
 			for (File testResultFile : testResultFiles) {
-				reportDirWithTestSuitePath.put(testResultFile.getPath(), unitTestSuitePath + "," + unitTestCasePath);
+				reportDirWithTestSuitePath.put(testResultFile.getPath(), functionalTestSuitePath + "," + functionalTestCasePath);
 			}
 		} else if (COMPONENT.equals(testType)) {
 			String reportFilePath = testDir.getAbsolutePath();
@@ -1506,7 +1506,7 @@ public class GenerateReport implements PluginConstants {
 					errorTestSuites = errorTestSuites + errors;
 					successTestSuites = (int) (successTestSuites + success);
 					String rstValues = tests + "," + success + "," + failures + "," + errors;
-
+					
 					AllTestSuite allTestSuiteDetail = new AllTestSuite(testSuite.getName(), tests, success, failures, errors);
 
 

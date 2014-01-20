@@ -146,11 +146,11 @@
 				<reportElement style="PPCTitleRectLogo" x="0" y="127" width="554" height="23"/>
 			</rectangle>
 			<textField>
-				<reportElement x="4" y="130" width="344" height="20" forecolor="#FFFFFF"/>
+				<reportElement x="4" y="130" width="498" height="20" forecolor="#FFFFFF"/>
 				<textElement>
 					<font fontName="Times New Roman" size="15" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{testType} + " TEST REPORT"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{testType}.substring(0, 1).toUpperCase() + $P{testType}.substring(1).toLowerCase() + " Test Report"]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>

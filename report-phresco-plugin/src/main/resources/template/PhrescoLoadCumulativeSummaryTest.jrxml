@@ -32,7 +32,7 @@
 					<textElement>
 						<font fontName="Times New Roman" size="15" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["LOAD TEST REPORT"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Load Test Report"]]></textFieldExpression>
 				</textField>
 			</frame>
 		</band>

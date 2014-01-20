@@ -149,11 +149,11 @@
 				<reportElement style="PSFRTitleRectLogo" x="0" y="128" width="555" height="20"/>
 			</rectangle>
 			<textField>
-				<reportElement x="4" y="128" width="356" height="20" forecolor="#FFFFFF"/>
+				<reportElement x="4" y="128" width="529" height="20" forecolor="#FFFFFF"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="Times New Roman" size="14" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{testType}.toUpperCase() + " TEST REPORT"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[Character.toUpperCase($P{testType}.charAt(0)) + $P{testType}.substring(1)+ " Test Report"]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
