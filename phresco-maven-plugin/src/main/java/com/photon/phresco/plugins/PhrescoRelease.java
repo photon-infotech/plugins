@@ -304,7 +304,7 @@ public class PhrescoRelease extends AbstractMojo {
 		command.append("-DdevelopmentVersion=").append(developmentVersion).append(" ");
 		command.append("-Dusername=").append(username).append(" ");
 		command.append("-Dpassword=").append(password).append(" ");
-		command.append("-DscmCommentPrefix=").append(message).append(" ");
+		command.append("-DscmCommentPrefix=").append("\"").append(message).append("\"").append(" ");
 		command.append("-DpomFileName=").append(pomName).append(" ");
 		command.append("-f ").append(pomName);
 		return command.toString();
