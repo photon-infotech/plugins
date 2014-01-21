@@ -1979,14 +1979,14 @@ public class GenerateReport implements PluginConstants {
 		} else {
 			List<String> unitTestTechs = Arrays.asList(unitTestDir.split(","));
 			for (String unitTestTech : unitTestTechs) {
-				unitTestDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_RPT_DIR_START + unitTestTech + Constants.POM_PROP_KEY_UNITTEST_RPT_DIR_END);
-				String unitTestSuitePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_RPT_DIR_START + unitTestTech + Constants.POM_PROP_KEY_UNITTEST_TESTSUITE_XPATH_END);
-				String unitTestCasePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_RPT_DIR_START + unitTestTech + Constants.POM_PROP_KEY_UNITTEST_TESTCASE_PATH_END);
+				unitTestDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_RPT_DIR_START + unitTestTech.toLowerCase() + Constants.POM_PROP_KEY_UNITTEST_RPT_DIR_END);
+				String unitTestSuitePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_RPT_DIR_START + unitTestTech.toLowerCase() + Constants.POM_PROP_KEY_UNITTEST_TESTSUITE_XPATH_END);
+				String unitTestCasePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_RPT_DIR_START + unitTestTech.toLowerCase() + Constants.POM_PROP_KEY_UNITTEST_TESTCASE_PATH_END);
 				if (StringUtils.isNotEmpty(unitTestDir)) {
 					String reportPath = reportFilePath + unitTestDir;
 					List<File> testResultFiles = getTestResultFilesAsList(reportPath);
 					for (File testResultFile : testResultFiles) {
-						reportDirWithTestSuitePath.put(testResultFile.getPath(), unitTestSuitePath + "," + unitTestCasePath + "#SEP#" + unitTestTech);
+						reportDirWithTestSuitePath.put(testResultFile.getPath(), unitTestSuitePath + "," + unitTestCasePath + "#SEP#" + unitTestTech.toLowerCase());
 					}
 				}
 			}
