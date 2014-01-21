@@ -12,7 +12,6 @@ import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugins.PhrescoBasePlugin;
 import com.photon.phresco.plugins.api.ExecutionStatus;
 import com.photon.phresco.plugins.impl.DefaultExecutionStatus;
-import com.photon.phresco.plugins.atg.Package;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 
 public class AtgPlugin extends PhrescoBasePlugin {
@@ -38,6 +37,13 @@ public class AtgPlugin extends PhrescoBasePlugin {
 		} catch (IOException e) {
 			throw new PhrescoException(e);
 		}
+		return new DefaultExecutionStatus();
+	}
+	
+	@Override
+	public ExecutionStatus deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		Deploy deploy = new Deploy();
+		deploy.deploy(configuration, mavenProjectInfo, log);
 		return new DefaultExecutionStatus();
 	}
 }
