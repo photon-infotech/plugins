@@ -116,8 +116,6 @@ public class Deploy implements PluginConstants, AtgConstants {
 			boolean errorParam = false;
 			ApplicationInfo appInfo = pUtil.getAppInfo(dotPhrescoDir);
 			String homeDirectory = atgPath + File.separator + ATG_HOME + File.separator + ATG_BIN;
-			String[] defaultModulesList = defaultModules.split(COMMA);
-			String[] otherModulesList = otherModules.split(COMMA);
 			StringBuilder sb = new StringBuilder();
 			sb.append(RUN_ASSEMBLER);
 			sb.append(OVERWRITE);
@@ -127,13 +125,19 @@ public class Deploy implements PluginConstants, AtgConstants {
 			sb.append(jbossDeployPath);
 			sb.append(WHITESPACE);
 			sb.append(MODULES);
-			for(String module : defaultModulesList) {
-				sb.append(module);
-				sb.append(WHITESPACE);
+			if(defaultModules != null) {
+				String[] defaultModulesList = defaultModules.split(COMMA);
+				for(String module : defaultModulesList) {
+					sb.append(module);
+					sb.append(WHITESPACE);
+				}
 			}
-			for(String module : otherModulesList) {
-				sb.append(module);
-				sb.append(WHITESPACE);
+			if(otherModules != null) {
+				String[] otherModulesList = otherModules.split(COMMA);
+				for(String module : otherModulesList) {
+					sb.append(module);
+					sb.append(WHITESPACE);
+				}
 			}
 			sb.append(appInfo.getAppDirName());
 			bufferedReader = Utility.executeCommand(sb.toString(), homeDirectory);
