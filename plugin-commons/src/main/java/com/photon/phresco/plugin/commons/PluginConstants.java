@@ -416,6 +416,8 @@ public interface PluginConstants {
 	 String PHRESCO_TEST_PACKAGE		= "phresco.test.package";
 	 String TEST_FOLDER 				= "test";
 	 String FUNCTIONAL_TEST_FOLDER      = "functional";
+	 String START_HUB = "startHub";
+	 String START_NODE = "startNode";
 	 String DEVICE_LIST_ID_PROPERTY     = "device.list.id";
 	 String MVN_ANT_PLUGIN_GRP_ID		= "org.apache.maven.plugins";
 	 String MVN_ANT_PLUGIN_ARTF_ID		= "maven-antrun-plugin";

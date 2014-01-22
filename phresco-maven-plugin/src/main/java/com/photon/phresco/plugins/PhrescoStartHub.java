@@ -18,6 +18,7 @@
 package com.photon.phresco.plugins;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -25,8 +26,10 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugins.api.SeleniumPlugin;
 import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.Utility;
 
 
 /**
@@ -77,6 +80,14 @@ public class PhrescoStartHub extends PhrescoAbstractMojo {
         	if (StringUtils.isNotEmpty(moduleName)) {
         		infoFile = baseDir + File.separator + moduleName + File.separator + Constants.START_HUB_INFO_FILE;
         	}
+        	
+        	String processName = ManagementFactory.getRuntimeMXBean().getName();
+     		String[] split = processName.split("@");
+     		String processId = split[0].toString();
+     		
+     		Utility.writeProcessid(baseDir.getPath(), PluginConstants.START_HUB, processId);
+     		getLog().info("Writing Process Id...");
+     		
         	SeleniumPlugin plugin = new DefaultSeleniumPlugin(getLog());
 			plugin.startHub(getConfiguration(infoFile, Constants.PHASE_START_HUB),getMavenProjectInfo(project, moduleName));
         } catch (PhrescoException e) {

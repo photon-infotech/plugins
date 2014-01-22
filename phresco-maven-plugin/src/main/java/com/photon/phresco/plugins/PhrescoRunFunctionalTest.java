@@ -18,6 +18,7 @@
 package com.photon.phresco.plugins;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -86,6 +87,14 @@ public class PhrescoRunFunctionalTest extends PhrescoAbstractMojo implements Plu
 			PomProcessor processor = new PomProcessor(pomPath);
 			String property = processor.getProperty(FUNCTIONAL_TEST_SELENIUM_TYPE);
 			String goal = "";
+			
+			String processName = ManagementFactory.getRuntimeMXBean().getName();
+     		String[] split = processName.split("@");
+     		String processId = split[0].toString();
+     		
+     		Utility.writeProcessid(baseDir.getPath(), PluginConstants.FUNCTIONAL, processId);
+     		getLog().info("Writing Process Id...");
+     		
 			if(StringUtils.isNotEmpty(property)) {
 				goal = FUNCTIONAL_TEST + HYPEN + property.trim();
 			}

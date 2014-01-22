@@ -327,7 +327,7 @@ PluginConstants {
 				builder.append("cucumber -f junit -o target -f html -o target/cuke.html");
 				Utility.executeStreamconsumer(builder.toString(), funTestDir
 						+ File.separator + functionalTestDir, project
-						.getBasedir().getPath(), FUNCTIONAL);
+						.getBasedir().getPath(), "");
 				return new DefaultExecutionStatus();
 			}
 			generateMavenCommand(mavenProjectInfo, funTestDir
@@ -816,7 +816,7 @@ PluginConstants {
 		sb.append(TEST_COMMAND).append(STR_SPACE)
 		.append("-Denvironment=" + environment);
 		Utility.executeStreamconsumer(sb.toString(), workingDirectory,
-				workingDirectory, Constants.PHASE_INTEGRATION_TEST);
+				workingDirectory, "");
 		return new DefaultExecutionStatus();
 	}
 
@@ -897,7 +897,7 @@ PluginConstants {
 		}
 		boolean status = Utility.executeStreamconsumer(sb.toString(),
 				workingDirectory.getPath(), workingDirectory.getPath(),
-				CODE_VALIDATE);
+				"");
 		if (!status) {
 			try {
 				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
@@ -937,7 +937,7 @@ PluginConstants {
 					+ mavenProjectInfo.getModuleName());
 		}
 		boolean status = Utility.executeStreamconsumer(sb.toString(),
-				workingDirectory, baseDir.getPath(), actionType);
+				workingDirectory, baseDir.getPath(), "");
 		if (!status) {
 			throw new PhrescoException(Constants.MOJO_ERROR_MESSAGE);
 		}

@@ -288,10 +288,6 @@ public class Package implements PluginConstants {
 		sb.append(STR_SPACE);
 		sb.append(builder.toString());
 		String line ="";
-		String processName = ManagementFactory.getRuntimeMXBean().getName();
-		String[] split = processName.split("@");
-		String processId = split[0].toString();
-		Utility.writeProcessid(baseDir.getPath(), Constants.KILLPROCESS_BUILD, processId);
 		bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 		while ((line = bufferedReader.readLine()) != null) {
 				System.out.println(line); //do not use getLog() here as this line already contains the log type.

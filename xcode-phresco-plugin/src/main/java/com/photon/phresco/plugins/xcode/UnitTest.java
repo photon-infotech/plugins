@@ -96,7 +96,7 @@ public class UnitTest implements PluginConstants {
 			sb.append(pomFile);
 		}
 		System.out.println("UnitTest Command " + sb.toString());
-		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir, baseDir, UNIT);
+		boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir, baseDir, "");
 		if(!status) {
 			try {
 				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);

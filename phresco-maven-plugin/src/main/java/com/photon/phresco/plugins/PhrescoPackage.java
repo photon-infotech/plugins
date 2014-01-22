@@ -34,6 +34,7 @@ package com.photon.phresco.plugins;
  */
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -48,6 +49,7 @@ import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoProcessor;
 import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.Utility;
 
 /**
  * Phresco Maven Plugin for executing package command of the plugins
@@ -134,6 +136,13 @@ public class PhrescoPackage extends PhrescoAbstractMojo {
         	if(interactive) {
         		configuration = getInteractiveConfiguration(configuration, processor, project, PACKAGE);
         	} 
+        	
+        	String processName = ManagementFactory.getRuntimeMXBean().getName();
+    		String[] split = processName.split("@");
+    		String processId = split[0].toString();
+    		
+    		Utility.writeProcessid(baseDir.getPath(), Constants.KILLPROCESS_BUILD, processId);
+    		getLog().info("Writing Process Id...");
             plugin.pack(configuration, getMavenProjectInfo(project, moduleName, mavenSession, pluginManager, localRepository));
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);

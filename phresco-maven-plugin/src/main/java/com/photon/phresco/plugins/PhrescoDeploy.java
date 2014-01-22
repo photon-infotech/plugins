@@ -18,16 +18,19 @@
 package com.photon.phresco.plugins;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 
+import com.photon.phresco.commons.FrameworkConstants;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoProcessor;
 import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.Utility;
 
 import fr.opensagres.xdocreport.utils.StringUtils;
 
@@ -95,6 +98,13 @@ public class PhrescoDeploy extends PhrescoAbstractMojo {
         		configuration = getInteractiveConfiguration(configuration, processor, project,DEPLOY);
         	} 
             PhrescoPlugin plugin = getPlugin(getDependency(infoFile, DEPLOY));
+            
+            String processName = ManagementFactory.getRuntimeMXBean().getName();
+    		String[] split = processName.split("@");
+    		String processId = split[0].toString();
+    		
+    		Utility.writeProcessid(baseDir.getPath(), FrameworkConstants.DEPLOY, processId);
+    		getLog().info("Writing Process Id...");
             plugin.deploy(configuration, getMavenProjectInfo(project, moduleName));
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);

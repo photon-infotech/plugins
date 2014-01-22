@@ -310,13 +310,6 @@ public class Package implements PluginConstants {
 		sb.append(project.getFile().getName());
 		sb.append(STR_SPACE);
 		sb.append(builder.toString());
-//		if (StringUtils.isNotEmpty(subModule)) {
-//			sb.append(HYPHEN_AM_HYPHEN_PL + subModule);
-//		}
-		String processName = ManagementFactory.getRuntimeMXBean().getName();
-		String[] split = processName.split("@");
-		String processId = split[0].toString();
-		Utility.writeProcessid(workingDirectory.getPath(), Constants.KILLPROCESS_BUILD, processId);
 		
 		String command = sb.toString();
 		List<String> buildModules = getBuildModules(subModule);

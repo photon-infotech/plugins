@@ -90,7 +90,7 @@ public class Deploy implements PluginConstants {
 		}
 		log.info("Project is Deploying...");
 		log.info("Command " + sb.toString());
-		boolean status = Utility.executeStreamconsumer(sb.toString(), workingDir, workingDir, FrameworkConstants.DEPLOY);
+		boolean status = Utility.executeStreamconsumer(sb.toString(), workingDir, workingDir, "");
 		if(!status) {
 			throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
 		}

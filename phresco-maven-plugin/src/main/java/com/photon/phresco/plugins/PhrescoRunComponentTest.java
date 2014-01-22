@@ -18,6 +18,7 @@
 package com.photon.phresco.plugins;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -25,8 +26,10 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.Utility;
 
 /**
  * 
@@ -72,6 +75,14 @@ public class PhrescoRunComponentTest extends PhrescoAbstractMojo {
     		if (StringUtils.isNotEmpty(moduleName)) {
         		infoFile = new File(baseDir + File.separator + moduleName + File.separator + Constants.COMPONENT_TEST_INFO_FILE);
         	} 
+    		
+    		String processName = ManagementFactory.getRuntimeMXBean().getName();
+     		String[] split = processName.split("@");
+     		String processId = split[0].toString();
+     		
+     		Utility.writeProcessid(baseDir.getPath(), PluginConstants.COMPONENT, processId);
+     		getLog().info("Writing Process Id...");
+     		
     		if (infoFile.exists() && isGoalAvailable(infoFile.getPath(), COMPONENT_TEST) && getDependency(infoFile.getPath(), COMPONENT_TEST) != null) {
 				PhrescoPlugin plugin = getPlugin(getDependency(infoFile.getPath(), COMPONENT_TEST));
 		        plugin.runComponentTest(getConfiguration(infoFile.getPath(), COMPONENT_TEST), getMavenProjectInfo(project, moduleName));

@@ -114,7 +114,7 @@ public class Deploy implements PluginConstants {
 			}
 			System.out.println("Command " + sb.toString());
 			
-			boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(), FrameworkConstants.DEPLOY);
+			boolean status = Utility.executeStreamconsumer(sb.toString(), baseDir.getPath(), baseDir.getPath(), "");
 			if(!status) {
 				try {
 					throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
@@ -137,7 +137,7 @@ public class Deploy implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append("--args -AppCommandLineArg");
 			System.out.println("command : " + sb.toString());
-			Utility.executeStreamconsumer(sb.toString(), appPath, baseDir, FrameworkConstants.DEPLOY);
+			Utility.executeStreamconsumer(sb.toString(), appPath, baseDir, "");
 		} catch (MojoExecutionException e) {
 			throw new PhrescoException(e);
 		}
