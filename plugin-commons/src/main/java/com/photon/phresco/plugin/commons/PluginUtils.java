@@ -1247,7 +1247,8 @@ public class PluginUtils {
 		ConfigManager configManager = null;
 		try {
 			String customerId = readCustomerId(baseDir);
-			File settingsFile = new File(Utility.getProjectHome() + customerId + Constants.SETTINGS_XML);
+			String projCode = readProjectCode(baseDir);
+			File settingsFile = new File(Utility.getProjectHome() + projCode + Constants.SETTINGS_XML);
 			if (settingsFile.exists()) {
 				configManager = new ConfigManagerImpl(settingsFile);
 				List<com.photon.phresco.configuration.Configuration> settingsconfig = configManager.getConfigurations(

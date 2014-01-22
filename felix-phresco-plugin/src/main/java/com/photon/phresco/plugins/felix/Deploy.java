@@ -298,17 +298,16 @@ public class Deploy implements PluginConstants {
 				sb.append(project.getFile().getName());
 				log.info(" Before IF sb == "+ sb);
 				if (serverprotocol.equals(HTTPS) && certificatePath != null) {
+
 					File certificateFile = null;
-					if (new File(certificatePath).exists()) {
+					if (new File(baseDir.getPath(), certificatePath).exists()) {
 						certificateFile = new File(certificatePath);
-						log.info("IF certificatePath == "+ certificatePath);
-						log.info("IF certificateFile == "+ certificateFile);
-						sb.append(STR_SPACE);
-						sb.append(JAVAX_TRUSTSTORE);
-						sb.append(certificateFile.getPath());
 					} else {
-						throw new FileNotFoundException();
+						certificateFile = new File("../" + certificatePath);
 					}
+					sb.append(STR_SPACE);
+					sb.append(JAVAX_TRUSTSTORE);
+					sb.append("\""+certificateFile.getPath()+"\"");
 				}
 				bufferedReader = Utility.executeCommand(sb.toString(), workingDirectory.getPath());
 				String line = null;

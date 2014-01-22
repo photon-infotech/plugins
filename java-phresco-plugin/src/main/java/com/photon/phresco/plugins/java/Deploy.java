@@ -371,8 +371,8 @@ public class Deploy implements PluginConstants {
 				}
 				sb.append(STR_SPACE);
 				sb.append(JAVAX_TRUSTSTORE);
-				sb.append(certificateFile.getPath());
-				sb.append(STR_SPACE);
+				sb.append("\""+certificateFile.getPath()+"\"");
+				/*sb.append(STR_SPACE);
 				sb.append(JAVAX_TRUSTSTORE_PWD);
 				sb.append(DEFAULT_PWD);
 				sb.append(STR_SPACE);
@@ -380,9 +380,8 @@ public class Deploy implements PluginConstants {
 				sb.append(certificateFile.getPath());
 				sb.append(STR_SPACE);
 				sb.append(JAVAX_KEYSTORE_PWD);
-				sb.append(DEFAULT_PWD);
+				sb.append(DEFAULT_PWD);*/
 			}
-
 			bufferedReader = Utility.executeCommand(sb.toString(), workingDirectory.getPath());
 			String line = null;
 			if(!servertype.equalsIgnoreCase("Jetty")) {
