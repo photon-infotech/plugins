@@ -1136,10 +1136,20 @@ public class PluginUtils {
 	public static void checkForConfigurations(File baseDir, String environmentName) throws PhrescoException {
 		ConfigManager configManager = null;
 		PluginUtils pu = new PluginUtils();
+		ProjectInfo Projectinfo = null;
 		try {
-			String customerId = pu.readCustomerId(baseDir);
+//			String customerId = pu.readCustomerId(baseDir);
+			File projectInfoPath = new File(baseDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER
+					+ File.separator + Constants.PROJECT_INFO_FILE);
+			if (projectInfoPath.exists()) {
+				BufferedReader bufferedReader = new BufferedReader(new FileReader(projectInfoPath));
+				Gson gson = new Gson();
+				Type type = new TypeToken<ProjectInfo>() {
+				}.getType();
+				Projectinfo = gson.fromJson(bufferedReader, type);
+			}
 			File configFile = new File(baseDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE);
-			File settingsFile = new File(Utility.getProjectHome()+ customerId + PluginConstants.SETTINGS_FILE);
+			File settingsFile = new File(Utility.getProjectHome()+ Projectinfo.getProjectCode() + PluginConstants.SETTINGS_FILE);
 			List<String> selectedEnvs = pu.csvToList(environmentName);
 			List<String> selectedConfigTypeList = pu.getSelectedConfigTypeList(baseDir);
 			List<String> nullConfig = new ArrayList<String>();
@@ -1180,6 +1190,8 @@ public class PluginUtils {
 		} catch (PhrescoException e) {
 			throw new PhrescoException(e);
 		} catch (ConfigurationException e) {
+			throw new PhrescoException(e);
+		} catch (FileNotFoundException e) {
 			throw new PhrescoException(e);
 		}
 	}
