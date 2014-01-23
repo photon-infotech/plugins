@@ -344,7 +344,6 @@ public class Package implements PluginConstants {
 
 	private void updateFinalName() throws MojoExecutionException {
 		try {
-//			File pom = project.getFile();
 			PomProcessor pomprocessor = new PomProcessor(pomFile);
 			if(isJarProject(project)) {
 				context = jarName;
@@ -378,24 +377,10 @@ public class Package implements PluginConstants {
 	}
 
 	private boolean isJarProject(MavenProject project) throws PhrescoPomException, PhrescoException {
-		boolean jarProject = true;
-		List<String> modules = PluginUtils.getProjectModules(project);
-		if(CollectionUtils.isEmpty(modules)) {
-			if(project.getModel().getPackaging().equals(PACKAGING_TYPE_WAR)) {
-				jarProject = false;
-			}
-		}
-		if(CollectionUtils.isNotEmpty(modules)) {
-			for (String mavenProject : modules) {
-				File pomFile = new File(project.getBasedir(), File.separator
-						+ mavenProject + File.separator + srcPomFileName);
-				if (pomFile.exists()) {
-					PomProcessor processor = new PomProcessor(pomFile);
-					if (processor.getPackage().equals(PACKAGING_TYPE_WAR)) {
-						jarProject = false;
-						break;
-					}
-				}
+		boolean jarProject = false;
+		if(StringUtils.isNotEmpty(packagingType)) {
+			if(packagingType.equals(PACKAGING_TYPE_JAR)) {
+				jarProject = true;
 			}
 		}
 		return jarProject;
@@ -406,11 +391,11 @@ public class Package implements PluginConstants {
 		String defaultEnvName = "";
 		ConfigManager configManager = null;
 		try {
-			String customerId = pu.readCustomerId(dotPhrescoDir);
-			File settingsXml = new File(Utility.getProjectHome() + customerId + Constants.SETTINGS_XML);
+//			String customerId = pu.readCustomerId(dotPhrescoDir);
+			String readProjectCode = pu.readProjectCode(baseDir);
+			File settingsXml = new File(Utility.getProjectHome() + readProjectCode + Constants.SETTINGS_XML);
 			if (settingsXml.exists()) {
-				configManager = new ConfigManagerImpl(new File(Utility.getProjectHome() + customerId
-						+ Constants.SETTINGS_XML));
+				configManager = new ConfigManagerImpl(settingsXml);
 				List<Environment> settingsEnvironments = configManager.getEnvironments(envList);
 				for (Environment environment : settingsEnvironments) {
 					defaultEnv = environment.isDefaultEnv();
