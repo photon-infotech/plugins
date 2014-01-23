@@ -108,11 +108,11 @@ public class PluginUtils {
 
 	public void executeUtil(String environmentType, String basedir, File sourceConfigXML) throws PhrescoException {
 		try {
-			String customerId = readCustomerId(new File(basedir));
+			String projectCode = readProjectCode(new File(basedir));
 			File currentDirectory = new File(basedir);
 			File configXML = new File(currentDirectory + File.separator + 
 			PluginConstants.DOT_PHRESCO_FOLDER + File.separator + PluginConstants.CONFIG_FILE);
-			File settingsXML = new File(Utility.getProjectHome() + customerId + Constants.SETTINGS_XML);
+			File settingsXML = new File(Utility.getProjectHome() + projectCode + Constants.SETTINGS_XML);
 			ConfigReader reader = new ConfigReader(configXML);
 			ConfigWriter writer = new ConfigWriter(reader, true);
 			writer.saveXml(sourceConfigXML, environmentType);
