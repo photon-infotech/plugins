@@ -150,8 +150,10 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
 								String fullPathNoEndSeparator = FilenameUtils.getFullPathNoEndSeparator(testConfigPath.getAbsolutePath());
 								File fullPathNoEndSeparatorFile = new File(fullPathNoEndSeparator);
 								fullPathNoEndSeparatorFile.mkdirs();
+							if (StringUtils.isNotEmpty(environmentName)) {
 								utils.executeUtil(environmentName, dotPhrescoDir.getPath(), testConfigPath);
-							}	
+							}
+						}
 						}
 					} catch (PhrescoPomException e) {
 						throw new MojoExecutionException(e.getMessage(), e);
