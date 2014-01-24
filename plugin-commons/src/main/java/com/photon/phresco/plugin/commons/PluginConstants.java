@@ -616,4 +616,9 @@ public interface PluginConstants {
     String REPOID = "repositoryId";
     String SETTINGS_ARG = "-s";
     String MAVEN_DEF_SETTINGS = "settings.xml";
+    
+    String DEPLOY_FROM_NEXUS = "deployFromNexus";
+    String REMOTE_REPOS      = "remoteRepos";
+    String REPO_SYSTEM		 = "repoSystem";
+    String REPO_SESSION		 = "repoSession";
 }

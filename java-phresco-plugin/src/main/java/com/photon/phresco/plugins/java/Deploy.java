@@ -21,6 +21,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,8 +33,12 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
+import org.sonatype.aether.RepositorySystem;
+import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.util.artifact.DefaultArtifact;
 
-import com.photon.phresco.commons.model.ApplicationInfo;
 import com.photon.phresco.commons.model.BuildInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.DatabaseUtil;
@@ -41,6 +46,7 @@ import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+import com.photon.phresco.plugins.util.MavenPluginArtifactResolver;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.ArchiveUtil;
 import com.photon.phresco.util.ArchiveUtil.ArchiveType;
@@ -74,6 +80,9 @@ public class Deploy implements PluginConstants {
 	private String dotPhrescoDirName;
     private File dotPhrescoDir;
     private File srcDirectory;
+    private Boolean isDeployFromNexus;
+    private PomProcessor pomprocessor;
+    
 	public void deploy(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
@@ -96,10 +105,17 @@ public class Deploy implements PluginConstants {
         }
         pomFile = pUtil.getPomFile(dotPhrescoDir, workingDirectory);
 		try {
+			pomprocessor = new PomProcessor(pomFile);
 			File splitProjectDirectory = pUtil.getSplitProjectSrcDir(pomFile, dotPhrescoDir, "");
 	    	srcDirectory = workingDirectory;
 	    	if (splitProjectDirectory != null) {
 	    		srcDirectory = splitProjectDirectory;
+	    	}
+	    	Map<String, Object> keyValues = mavenProjectInfo.getKeyValues();
+	    	String deployFromNexus = (String) keyValues.get(DEPLOY_FROM_NEXUS);
+	    	isDeployFromNexus = Boolean.valueOf(deployFromNexus);
+	    	if (isDeployFromNexus) {
+	    		downloadWarFromNexus(mavenProjectInfo);
 	    	}
 			init();
 			initMap();
@@ -110,6 +126,8 @@ public class Deploy implements PluginConstants {
 			cleanUp();
 		} catch (MojoExecutionException e) {
 			throw new PhrescoException(e);
+		} catch (PhrescoPomException e) {
+			throw new PhrescoException(e);
 		}
 		
 	}
@@ -118,6 +136,12 @@ public class Deploy implements PluginConstants {
 		try {
 			if (StringUtils.isEmpty(buildNumber) || StringUtils.isEmpty(environmentName)) {
 				callUsage();
+			}
+			if (isDeployFromNexus) {
+				buildDir = new File(workingDirectory.getPath() + PluginConstants.BUILD_DIRECTORY);// build dir
+				tempDir = new File(buildDir.getPath() + TEMP_DIR);// temp dir
+				tempDir.mkdirs();
+				return;
 			}
 			BuildInfo buildInfo = pUtil.getBuildInfo(Integer.parseInt(buildNumber), workingDirectory.getPath());
 			buildDir = new File(workingDirectory.getPath() + PluginConstants.BUILD_DIRECTORY);// build dir
@@ -160,7 +184,7 @@ public class Deploy implements PluginConstants {
 	
 	private void updateFinalName() throws MojoExecutionException {
 		try {
-			PomProcessor pomprocessor = new PomProcessor(pomFile);
+			pomprocessor = new PomProcessor(pomFile);
 			List<com.photon.phresco.configuration.Configuration> configurations = pUtil.getConfiguration(dotPhrescoDir, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
 			if (CollectionUtils.isEmpty(configurations)) {
 				throw new MojoExecutionException("Configuration is not available ");
@@ -190,9 +214,25 @@ public class Deploy implements PluginConstants {
 
 	private void extractBuild() throws MojoExecutionException {
 		try {
+			if (isDeployFromNexus) {
+				StringBuilder builder = getRepoWarFilePath();
+				builder.append(pomprocessor.getVersion())
+				.append(File.separatorChar)
+				.append(pomprocessor.getArtifactId())
+				.append(Constants.STR_HYPHEN)
+				.append(pomprocessor.getVersion())
+				.append(".war");
+				File warFile = new File(builder.toString());
+				if (warFile.exists()) {
+					FileUtils.copyFileToDirectory(warFile, tempDir);
+				}
+				return;
+			}
 			ArchiveUtil.extractArchive(buildFile.getPath(), tempDir.getPath(), ArchiveType.ZIP);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getErrorMessage(), e);
+		} catch (IOException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
 
@@ -206,13 +246,6 @@ public class Deploy implements PluginConstants {
 			throw new MojoExecutionException(e.getErrorMessage(), e);
 		}
 	}
-	
-	/*private File getPomFile() throws PhrescoException {
-		ApplicationInfo appInfo = pUtil.getAppInfo(dotPhrescoDir);
-		String pomFileName = Utility.getPhrescoPomFromWorkingDirectory(appInfo, dotPhrescoDir);
-		File pom = new File(workingDirectory.getPath() + File.separator + pomFileName);
-		return pom;
-	}*/
 	
 	private void deploy(com.photon.phresco.configuration.Configuration configuration) throws MojoExecutionException, PhrescoException {
 		if (configuration == null) {
@@ -258,17 +291,17 @@ public class Deploy implements PluginConstants {
 
 	private void addCargoDependency(String version) throws PhrescoException {
 		try {
-			PomProcessor processor = new PomProcessor(pomFile);
-			processor.deletePluginDependency(CODEHAUS_CARGO_PLUGIN, CARGO_MAVEN2_PLUGIN);
+			pomprocessor = new PomProcessor(pomFile);
+			pomprocessor.deletePluginDependency(CODEHAUS_CARGO_PLUGIN, CARGO_MAVEN2_PLUGIN);
 			
 			//For Jboss4 dependency is not needed
 			if (version.startsWith("5.") || version.startsWith("6.")) {
-				addJBoss5xDependency(processor);
+				addJBoss5xDependency(pomprocessor);
 			} else if (version.startsWith("7.")) {
-				addJBoss7xDependency(processor);
+				addJBoss7xDependency(pomprocessor);
 			}
 			
-			processor.save();
+			pomprocessor.save();
 		} catch (Exception e) {
 			throw new PhrescoException(e);
 		}
@@ -302,9 +335,9 @@ public class Deploy implements PluginConstants {
 
 	private void removeCargoDependency() throws PhrescoException {
 		try {
-			PomProcessor processor = new PomProcessor(pomFile);
-			processor.deletePluginDependency(CODEHAUS_CARGO_PLUGIN, CARGO_MAVEN2_PLUGIN);
-			processor.save();
+			pomprocessor = new PomProcessor(pomFile);
+			pomprocessor.deletePluginDependency(CODEHAUS_CARGO_PLUGIN, CARGO_MAVEN2_PLUGIN);
+			pomprocessor.save();
 		} catch (PhrescoPomException e) {
 			throw new PhrescoException(e);
 		}
@@ -504,6 +537,35 @@ public class Deploy implements PluginConstants {
 		}
 	}
 	
+	private void downloadWarFromNexus(MavenProjectInfo mavenProjectInfo) throws MojoExecutionException {
+		try {
+			Map<String, Object> keyValues = mavenProjectInfo.getKeyValues();
+			pomprocessor = new PomProcessor(pomFile);
+			Artifact artifact = new DefaultArtifact(pomprocessor.getGroupId(), pomprocessor.getArtifactId(), PluginConstants.PACKAGING_TYPE_WAR, pomprocessor.getVersion());
+			List<Artifact> artifactList = Collections.singletonList(artifact);
+			List<RemoteRepository> remoteRepos = (List<RemoteRepository>) keyValues.get(REMOTE_REPOS);
+			RepositorySystem repoSystem = (RepositorySystem) keyValues.get(REPO_SYSTEM);
+			RepositorySystemSession repoSession = (RepositorySystemSession) keyValues.get(REPO_SESSION);
+			MavenPluginArtifactResolver.resolve(remoteRepos.get(0), artifactList, repoSystem, repoSession);
+		} catch (Exception e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		}
+	}
+	
+	private StringBuilder getRepoWarFilePath () {
+		String localRepoPath = Utility.getLocalRepoPath();
+		StringBuilder builder = new StringBuilder(localRepoPath);
+		String groupId = pomprocessor.getGroupId();
+		String[] splits = groupId.split("\\.");
+		for (String split : splits) {
+			builder.append(split)
+			.append(File.separatorChar);
+		}
+		builder.append(pomprocessor.getArtifactId())
+		.append(File.separatorChar);
+		return builder;
+	}
+	
 	public class PhrescoDirFilter implements FilenameFilter {
 
         public boolean accept(File dir, String name) {
@@ -514,6 +576,7 @@ public class Deploy implements PluginConstants {
 	private void cleanUp() throws MojoExecutionException {
 		try {
 			FileUtils.deleteDirectory(tempDir);
+			FileUtils.deleteDirectory(new File(getRepoWarFilePath().toString()));
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}

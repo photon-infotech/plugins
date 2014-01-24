@@ -19,6 +19,8 @@ package com.photon.phresco.plugins;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -26,6 +28,7 @@ import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.commons.FrameworkConstants;
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoProcessor;
@@ -77,6 +80,35 @@ public class PhrescoDeploy extends PhrescoAbstractMojo {
      */
     protected String moduleName;
     
+    /**
+     * @parameter expression="${deployFromNexus}"
+     * @readonly
+     */
+    protected String deployFromNexus;
+    
+    /**
+	 * The project's remote repositories to use for the resolution of project dependencies.
+	 * 
+	 * @parameter default-value="${project.remoteProjectRepositories}"
+	 * @readonly
+	 *//*
+    protected List<RemoteRepository> remoteRepos;
+	
+	*//**
+	 * The entry point to Aether, i.e. the component doing all the work.
+	 * 
+	 * @component
+	 *//*
+    protected RepositorySystem repoSystem;
+
+	*//**
+	 * The current repository/network configuration of Maven.
+	 * 
+	 * @parameter default-value="${repositorySystemSession}"
+	 * @readonly
+	 *//*
+    protected RepositorySystemSession repoSession;*/
+	
 	public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().info(baseDir.getPath());
         try {
@@ -94,18 +126,20 @@ public class PhrescoDeploy extends PhrescoAbstractMojo {
         	Configuration configuration = null;
         	MojoProcessor processor = new MojoProcessor(new File(infoFile));
         	configuration = processor.getConfiguration(DEPLOY);
+        	Map<String, Object> keyValues = new HashMap<String, Object>();
+        	keyValues.put(PluginConstants.DEPLOY_FROM_NEXUS, deployFromNexus);
+        	
         	if(interactive) {
         		configuration = getInteractiveConfiguration(configuration, processor, project,DEPLOY);
         	} 
             PhrescoPlugin plugin = getPlugin(getDependency(infoFile, DEPLOY));
-            
             String processName = ManagementFactory.getRuntimeMXBean().getName();
     		String[] split = processName.split("@");
     		String processId = split[0].toString();
     		
     		Utility.writeProcessid(baseDir.getPath(), FrameworkConstants.DEPLOY, processId);
     		getLog().info("Writing Process Id...");
-            plugin.deploy(configuration, getMavenProjectInfo(project, moduleName));
+            plugin.deploy(configuration, getMavenProjectInfo(project, moduleName, keyValues));
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }

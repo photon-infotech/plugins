@@ -181,6 +181,15 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
         return mavenProjectInfo;
     }
 	
+	protected MavenProjectInfo getMavenProjectInfo(MavenProject project, String subModule, Map<String, Object> keyValues) {
+		MavenProjectInfo mavenProjectInfo = getMavenProjectInfo(project, subModule);
+		keyValues.put(PluginConstants.REMOTE_REPOS, projectRepos);
+    	keyValues.put(PluginConstants.REPO_SYSTEM, repoSystem);
+    	keyValues.put(PluginConstants.REPO_SESSION, repoSession);
+		mavenProjectInfo.setKeyValues(keyValues);
+		return mavenProjectInfo;
+	}
+	
 	protected MavenProjectInfo getMavenProjectInfo(MavenProject project, String subModule, MavenSession mavenSession, 
 			BuildPluginManager pluginManager,ArtifactRepository localRepository) {
         MavenProjectInfo mavenProjectInfo = new MavenProjectInfo();

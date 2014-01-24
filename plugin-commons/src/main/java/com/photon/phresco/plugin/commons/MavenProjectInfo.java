@@ -18,6 +18,7 @@
 package com.photon.phresco.plugin.commons;
 
 import java.io.File;
+import java.util.Map;
 
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.execution.MavenSession;
@@ -33,7 +34,16 @@ public class MavenProjectInfo {
     private MavenSession mavenSession;
     private BuildPluginManager pluginManager;
     private ArtifactRepository localRepository;
+    private Map<String, Object> keyValues;
     
+	public Map<String, Object> getKeyValues() {
+		return keyValues;
+	}
+
+	public void setKeyValues(Map<String, Object> keyValues) {
+		this.keyValues = keyValues;
+	}
+
 	public String getProjectCode() {
 		return projectCode;
 	}
