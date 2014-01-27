@@ -62,7 +62,7 @@
 			<printWhenExpression><![CDATA[CollectionUtils.isNotEmpty($F{testSuites})]]></printWhenExpression>
 			<frame>
 				<reportElement positionType="Float" x="0" y="5" width="555" height="50" isRemoveLineWhenBlank="true">
-					<printWhenExpression><![CDATA[$P{testType}.contains("unit") && CollectionUtils.isNotEmpty($F{testSuites})]]></printWhenExpression>
+					<printWhenExpression><![CDATA[CollectionUtils.isNotEmpty($F{testSuites})]]></printWhenExpression>
 				</reportElement>
 				<subreport>
 					<reportElement x="0" y="0" width="555" height="50" isRemoveLineWhenBlank="true">
@@ -82,29 +82,29 @@
 				</subreport>
 			</frame>
 		</band>
-		<band height="50">
+		<band height="54">
 			<printWhenExpression><![CDATA[CollectionUtils.isNotEmpty($F{jsTestSuites})]]></printWhenExpression>
 			<frame>
-				<reportElement positionType="Float" x="0" y="0" width="555" height="50" isRemoveLineWhenBlank="true">
+				<reportElement positionType="Float" x="0" y="0" width="555" height="53" isRemoveLineWhenBlank="true">
 					<printWhenExpression><![CDATA[$P{testType}.contains("unit") && CollectionUtils.isNotEmpty($F{jsTestSuites})]]></printWhenExpression>
 				</reportElement>
+				<subreport>
+					<reportElement x="0" y="0" width="555" height="50" isRemoveLineWhenBlank="true">
+						<printWhenExpression><![CDATA[$P{reportsDataType}.equals("detail")]]></printWhenExpression>
+					</reportElement>
+					<subreportParameter name="testType">
+						<subreportParameterExpression><![CDATA[$P{testType}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="reportsDataType">
+						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="isClassEmpty">
+						<subreportParameterExpression><![CDATA[$P{isClassEmpty}]]></subreportParameterExpression>
+					</subreportParameter>
+					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{jsTestSuites})]]></dataSourceExpression>
+					<subreportExpression><![CDATA["PhrescoSureFireDetailJSReport.jasper"]]></subreportExpression>
+				</subreport>
 			</frame>
-			<subreport>
-				<reportElement x="0" y="0" width="555" height="50" isRemoveLineWhenBlank="true">
-					<printWhenExpression><![CDATA[$P{reportsDataType}.equals("detail")]]></printWhenExpression>
-				</reportElement>
-				<subreportParameter name="testType">
-					<subreportParameterExpression><![CDATA[$P{testType}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="reportsDataType">
-					<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="isClassEmpty">
-					<subreportParameterExpression><![CDATA[$P{isClassEmpty}]]></subreportParameterExpression>
-				</subreportParameter>
-				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{jsTestSuites})]]></dataSourceExpression>
-				<subreportExpression><![CDATA["PhrescoSureFireDetailJSReport.jasper"]]></subreportExpression>
-			</subreport>
 		</band>
 	</detail>
 </jasperReport>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="PhrescoTestSuiteReport" pageWidth="555" pageHeight="802" columnWidth="535" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="PSFDRTitle"/>
+	<style name="PSFDRTitleRect"/>
+	<style name="PSFDRTitleRectLogo"/>
+	<style name="PSFDRTitleRectDetail"/>
+	<style name="PSFDRTitleLabel"/>
+	<style name="PSFDRTitleLabelValue"/>
+	<style name="PSFDRHeading"/>
+	<style name="PSFDRHeadingLabel"/>
+	<style name="PSFDRHeadingLabelValue"/>
+	<style name="PSFDRTHeadingRow"/>
+	<style name="PSFDRTHeadingRowLabel"/>
+	<style name="PSFDRTHeadingRowLabelValue"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["/Users/kaleeswaran/work/master-plugin/report-phresco-plugin/src/main/resources/"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="testType" class="java.lang.String"/>
+	<parameter name="isClassEmpty" class="java.lang.Boolean"/>
+	<field name="name" class="java.lang.String"/>
+	<field name="file" class="java.lang.String"/>
+	<field name="assertions" class="java.lang.String"/>
+	<field name="tests" class="java.lang.Float"/>
+	<field name="failures" class="java.lang.Float"/>
+	<field name="errors" class="java.lang.Float"/>
+	<field name="time" class="java.lang.String"/>
+	<field name="testCases" class="java.util.List"/>
+	<variable name="NoOfSuccess" class="java.lang.Integer" calculation="Count"/>
+	<variable name="NoOfFailure" class="java.lang.Integer" calculation="Count"/>
+	<variable name="NoOfError" class="java.lang.Integer" calculation="Count"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<detail>
+		<band height="320" splitType="Stretch">
+			<frame>
+				<reportElement mode="Opaque" x="0" y="0" width="555" height="48" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
+				<staticText>
+					<reportElement x="8" y="3" width="169" height="18"/>
+					<textElement>
+						<font fontName="Times New Roman" size="14" isBold="true" isItalic="false" isUnderline="true"/>
+					</textElement>
+					<text><![CDATA[Detailed Report]]></text>
+				</staticText>
+				<rectangle radius="10">
+					<reportElement style="PSFDRTHeadingRow" x="0" y="23" width="555" height="20"/>
+					<graphicElement>
+						<pen lineColor="#999999"/>
+					</graphicElement>
+				</rectangle>
+				<staticText>
+					<reportElement style="PSFDRTHeadingRowLabel" x="10" y="25" width="91" height="15"/>
+					<textElement>
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Testsuite Name :]]></text>
+				</staticText>
+				<textField>
+					<reportElement style="PSFDRTHeadingRowLabelValue" x="101" y="25" width="441" height="15"/>
+					<textElement>
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement x="0" y="48" width="555" height="272" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[!$F{testCases}.isEmpty()]]></printWhenExpression>
+				</reportElement>
+				<subreport>
+					<reportElement x="0" y="0" width="555" height="272" isRemoveLineWhenBlank="true"/>
+					<subreportParameter name="testType">
+						<subreportParameterExpression><![CDATA[$P{testType}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="testCases">
+						<subreportParameterExpression><![CDATA[$F{testCases}]]></subreportParameterExpression>
+					</subreportParameter>
+					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.JREmptyDataSource()]]></dataSourceExpression>
+					<subreportExpression><![CDATA["MultiModuleSureFireDetailReport_subreport1.jasper"]]></subreportExpression>
+				</subreport>
+			</frame>
+		</band>
+	</detail>
+</jasperReport>

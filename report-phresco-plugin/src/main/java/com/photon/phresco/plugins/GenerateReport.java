@@ -282,27 +282,43 @@ public class GenerateReport implements PluginConstants {
 		try {
 			// Report generation for unit and functional
 			if (UNIT.equals(testType) || FUNCTIONAL.equals(testType) || COMPONENT.equals(testType) || MANUAL.equals(testType)) {
-				List<String> modules = PluginUtils.getProjectModules(mavenProject);
+				//List<String> modules = PluginUtils.getProjectModules(mavenProject);
+				List<String> modules = new ArrayList<String>();
+				StringBuilder builder = new StringBuilder(baseDir.getAbsolutePath());
+				builder.append(File.separator);
+				builder.append("..");
+				builder.append(File.separator);
+				builder.append(POM_XML);
+				
+				File pomPath = new File(builder.toString());
+				if(pomPath.exists()) {
+					PomProcessor processor = new PomProcessor(pomPath);
+					Modules pomModule = processor.getPomModule();
+					modules = pomModule.getModule();
+				}
+				
 				boolean isMultiModuleProject = false;
 				if (CollectionUtils.isNotEmpty(modules)) {
 					isMultiModuleProject = true;
 				}
-
 				//crisp and detail view report generation
 				if (isMultiModuleProject) {
 					// multi module project....
 					List<ModuleSureFireReport> moduleWiseReports = new ArrayList<ModuleSureFireReport>();
 					for (String module : modules) {
-						ModuleSureFireReport msr = new ModuleSureFireReport();
-						SureFireReport sureFireReports = sureFireReports(module);
+						if(module.equals(moduleName)) {
+							ModuleSureFireReport msr = new ModuleSureFireReport();
+							SureFireReport sureFireReports = sureFireReports(module);
 
-						List<TestSuite> testSuites = sureFireReports.getTestSuites();
-						if (CollectionUtils.isNotEmpty(testSuites)) {
-							msr.setModuleOrTechName(module);
-							msr.setModuleOrTechLabel(MODULE_NAME);
-							msr.setSureFireReport(Arrays.asList(sureFireReports));
-							moduleWiseReports.add(msr);
+							List<TestSuite> testSuites = sureFireReports.getTestSuites();
+							if (CollectionUtils.isNotEmpty(testSuites)) {
+								msr.setModuleOrTechName(module);
+								msr.setModuleOrTechLabel(MODULE_NAME);
+								msr.setSureFireReport(Arrays.asList(sureFireReports));
+								moduleWiseReports.add(msr);
+							}
 						}
+						
 					}
 					generateUnitAndFunctionalReport(moduleWiseReports);
 				} else {
@@ -343,26 +359,42 @@ public class GenerateReport implements PluginConstants {
 			testType = UNIT;
 
 			boolean isMultiModuleProject = false;
-			List<String> modules = PluginUtils.getProjectModules(mavenProject);
+			//List<String> modules = PluginUtils.getProjectModules(mavenProject);
+			
+			List<String> modules = new ArrayList<String>();
+			StringBuilder builder = new StringBuilder(baseDir.getAbsolutePath());
+			builder.append(File.separator);
+			builder.append("..");
+			builder.append(File.separator);
+			builder.append(POM_XML);
+			
+			File modulePomPath = new File(builder.toString());
+			if(modulePomPath.exists()) {
+				PomProcessor processor = new PomProcessor(modulePomPath);
+				Modules pomModule = processor.getPomModule();
+				modules = pomModule.getModule();
+			}
+			
 			if (CollectionUtils.isNotEmpty(modules)) {
 				isMultiModuleProject = true;
 			}
-
 			//crisp and detail view report generation
 			ModuleSureFireReport msr = null;
 			if (isMultiModuleProject) {
 				// multi module project....
 				List<ModuleSureFireReport> moduleWiseReports = new ArrayList<ModuleSureFireReport>();
 				for (String module : modules) {
-					msr = new ModuleSureFireReport();
-					SureFireReport sureFireReports = sureFireReports(module);
+					if(module.equals(moduleName)) {
+						msr = new ModuleSureFireReport();
+						SureFireReport sureFireReports = sureFireReports(module);
 
-					List<TestSuite> testSuites = sureFireReports.getTestSuites();
-					if (CollectionUtils.isNotEmpty(testSuites)) {
-						msr.setModuleOrTechName(module);
-						msr.setModuleOrTechLabel(MODULE_NAME);
-						msr.setSureFireReport(Arrays.asList(sureFireReports));
-						moduleWiseReports.add(msr);
+						List<TestSuite> testSuites = sureFireReports.getTestSuites();
+						if (CollectionUtils.isNotEmpty(testSuites)) {
+							msr.setModuleOrTechName(module);
+							msr.setModuleOrTechLabel(MODULE_NAME);
+							msr.setSureFireReport(Arrays.asList(sureFireReports));
+							moduleWiseReports.add(msr);
+						}
 					}
 				}
 				cumulativeReportparams.put(IS_MULTI_MODULE_PROJECT, true);
@@ -513,7 +545,7 @@ public class GenerateReport implements PluginConstants {
 			} else {
 				outFileNamePDF = baseDir + File.separator + "do_not_checkin" + File.separator + ARCHIVES + File.separator + CUMULATIVE + File.separator + fileName + DOT + PDF;
 			}
-
+			
 			new File(outFileNamePDF).getParentFile().mkdirs();
 			String jasperFile = "PhrescoCumulativeReport.jasper";
 			reportStream = this.getClass().getClassLoader().getResourceAsStream(REPORTS_JASPER + jasperFile);
@@ -1362,9 +1394,9 @@ public class GenerateReport implements PluginConstants {
 		// testsuitePath,testcasePath>
 		if (UNIT.equals(testType)) {
 			String reportFilePath = baseDir.getAbsolutePath();
-			if (StringUtils.isNotEmpty(module)) {
-				reportFilePath = reportFilePath + File.separatorChar + module;
-			}
+//			if (StringUtils.isNotEmpty(module)) {
+//				reportFilePath = reportFilePath + File.separatorChar + module;
+//			}
 			String unitTestDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_DIR);
 			if (StringUtils.isNotEmpty(testDirName) && StringUtils.isNotEmpty(unitTestDir)) {
 				reportFilePath = testDir.getPath();
@@ -1372,7 +1404,6 @@ public class GenerateReport implements PluginConstants {
 				reportFilePath = srcDirectory.getPath();
 			}
 			getUnitTestXmlFilesAndXpaths(reportFilePath, reportDirWithTestSuitePath);
-
 		} else if (MANUAL.equals(testType)) {
 			String reportFilePath = testDir.getAbsolutePath();
 			String manualTestReportDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_MANUALTEST_RPT_DIR);
@@ -1393,11 +1424,13 @@ public class GenerateReport implements PluginConstants {
 			String functionalTestSuitePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_TESTSUITE_XPATH);
 			String functionalTestCasePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_TESTCASE_PATH);
 			String reportPath = "";
-			if (StringUtils.isNotEmpty(functionalTestDir)) {
+			if (StringUtils.isNotEmpty(functionalTestDir) && StringUtils.isEmpty(module)) {
+				functionalTestDir = functionalTestDir.replace(baseDir.getAbsolutePath(), "");
 				reportPath = reportFilePath + functionalTestDir;
 			}
-			if (StringUtils.isNotEmpty(module)) {
-				reportFilePath = reportFilePath + File.separatorChar + module;
+			if (StringUtils.isNotEmpty(moduleName) || StringUtils.isNotEmpty(module)) {
+				functionalTestDir = functionalTestDir.replace(PROJECT_BASEDIR, "");
+				reportPath = reportFilePath + functionalTestDir;
 			}
 			List<File> testResultFiles = getTestResultFilesAsList(reportPath);
 			for (File testResultFile : testResultFiles) {
@@ -1412,7 +1445,6 @@ public class GenerateReport implements PluginConstants {
 			if (StringUtils.isNotEmpty(componentTestDir)) {
 				reportPath = reportFilePath + componentTestDir;
 			}
-
 			List<File> testResultFiles = getTestResultFilesAsList(reportPath);
 			for (File testResultFile : testResultFiles) {
 				reportDirWithTestSuitePath.put(testResultFile.getPath(), componentTestSuitePath + "," + componentTestCasePath);
@@ -1473,6 +1505,7 @@ public class GenerateReport implements PluginConstants {
 					int tests = 0;
 					int failures = 0;
 					int errors = 0;
+					boolean hasTrue = false;
 					failures = getNoOfTstSuiteFailures();
 					errors = getNoOfTstSuiteErrors();
 					tests = getNoOfTstSuiteTests();
@@ -1511,6 +1544,14 @@ public class GenerateReport implements PluginConstants {
 
 
 					testSuite.setTestCases(testCases);
+					for (TestCase testCase : testCases) {
+						if(testCase.isStepsAvailable()) {
+							hasTrue = true;
+						}
+					}
+					if(hasTrue) {
+						testSuite.setFile("true");
+					}
 					if(type.equalsIgnoreCase("js")) {
 						jsTestSuiteWithTestCase.add(testSuite);
 						allJsTestSuiteDetails.add(allTestSuiteDetail);
@@ -2195,13 +2236,14 @@ public class GenerateReport implements PluginConstants {
 
 			int failureTestCases = 0;
 			int errorTestCases = 0;
+			boolean isAvailable = false;
 
 			for (int i = 0; i < nodelist.getLength(); i++) {
 				Node node = nodelist.item(i);
 				NodeList childNodes = node.getChildNodes();
 				NamedNodeMap nameNodeMap = node.getAttributes();
 				TestCase testCase = new TestCase();
-
+				List<TestStep> testSteps = new ArrayList<TestStep>();
 				//For Error Failure
 				if (childNodes != null && childNodes.getLength() > 0) {
 
@@ -2223,9 +2265,37 @@ public class GenerateReport implements PluginConstants {
 								testCase.setTestCaseError(error);
 							}
 						}
+						
+						//To Calculate teststep if it present
+						if (ELEMENT_TESTSTEPS.equals(childNode.getNodeName())) {
+							TestStep testStep = new TestStep();
+							Node testStepNode = childNode;
+							NamedNodeMap testStepAttributes = testStepNode.getAttributes();
+							if (testStepAttributes != null && testStepAttributes.getLength() > 0) {
+								for (int k = 0; k < testStepAttributes.getLength(); k++) {
+									Node attribute = testStepAttributes.item(k);
+									String attributeName = attribute.getNodeName();
+									String attributeValue = attribute.getNodeValue();
+									if (ATTR_NAME.equals(attributeName)) {
+										testStep.setName(attributeValue);
+									} else if (ATTR_ACTION.equals(attributeName)) {
+										testStep.setAction(attributeValue);
+									} else if (ATTR_TIME.equals(attributeName)) {
+										testStep.setTime(attributeValue);
+									}
+								}
+								testSteps.add(testStep);
+								isAvailable = true;
+							}
+						}
+
+						
 					}
 				}
-
+				testCase.setSteps(testSteps);
+				if(isAvailable) {
+					testCase.setStepsAvailable(isAvailable);
+				}
 				for (int k = 0; k < nameNodeMap.getLength(); k++) {
 					Node attribute = nameNodeMap.item(k);
 					String attributeName = attribute.getNodeName();
@@ -2787,7 +2857,7 @@ public class GenerateReport implements PluginConstants {
 		testType = FUNCTIONAL;
 		boolean isClassEmpty = true;
 		List<TestSuite> testSuitesFunctional = null;
-		SureFireReport functionalSureFireReports = sureFireReports(null);
+		SureFireReport functionalSureFireReports = sureFireReports(appendTestReport.getApplicationName());
 		List<AllTestSuite> allTestSuitesFunctional = functionalSureFireReports.getAllTestSuites();
 		testSuitesFunctional = functionalSureFireReports.getTestSuites();
 		if (CollectionUtils.isNotEmpty(testSuitesFunctional) || CollectionUtils.isNotEmpty(allTestSuitesFunctional)) {
@@ -2892,7 +2962,6 @@ public class GenerateReport implements PluginConstants {
 		} else {
 			modules = PluginUtils.getProjectModules(mavenProject);
 		}
-
 		Map<String, Object> reportParams = new HashMap<String,Object>();
 		reportParams.put(COPY_RIGHTS, copyRights);
 		reportParams.put(REPORTS_TYPE, reportType);
@@ -3051,7 +3120,6 @@ public class GenerateReport implements PluginConstants {
 			if (StringUtils.isEmpty(testType)) {
 				throw new PhrescoException("Test Type is empty ");
 			}
-
 			// Report generation part
 			if (isMultiModuleProject() && StringUtils.isEmpty(moduleName) && "All".equalsIgnoreCase(testType)) {
 				multiModulereport(config);

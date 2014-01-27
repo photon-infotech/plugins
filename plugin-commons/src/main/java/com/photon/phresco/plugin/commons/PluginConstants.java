@@ -24,6 +24,7 @@ public interface PluginConstants {
 	 String PROJECT_FOLDER 				= "source";
 	 String DO_NOT_CHECKIN_FOLDER  		= "/do_not_checkin";
 	 String BUILD_DIRECTORY				= DO_NOT_CHECKIN_FOLDER + "/build";
+	 String PROJECT_BASEDIR				= "${project.basedir}";
 	 String BUILD_INFO_FILE 			= "/build.info";
      String TEMP_DIR		 			= "/temp";
      String PROJECT_CODE	 			= "PHR";
@@ -437,6 +438,7 @@ public interface PluginConstants {
 	 String ATTR_ASSERTIONS 			= "assertions";
 	 String ATTR_CLASS 					= "class";
 	 String ATTR_CLASSNAME 				= "classname";
+	 String ATTR_ACTION					= "action";
 	 String ATTR_LINE 					= "line";
 	 String ATTR_TYPE 					= "type";
 	 String ATTR_RESULT 				= "result";
@@ -459,6 +461,7 @@ public interface PluginConstants {
 	 String INTEGRATION					= "integration";
      String ELEMENT_FAILURE 			= "failure";
      String ELEMENT_ERROR 				= "error";
+     String ELEMENT_TESTSTEPS 			= "teststep";
      String NAME_FILTER_PREFIX 			= "[@name='";
      String NAME_FILTER_SUFIX 			= "']";
 //	 String REPORTS_JASPER 				= "reports/jasper/";

@@ -3,6 +3,7 @@
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+    <import value="org.apache.commons.collections.CollectionUtils"/>
 	<style name="PSFTCRTitle"/>
 	<style name="PSFTCRTitleRect"/>
 	<style name="PSFTCRTitleRectLogo"/>
@@ -53,6 +54,7 @@
 		<field name="actualResult" class="java.lang.String"/>
 		<field name="testCaseId" class="java.lang.String"/>
 		<field name="featureId" class="java.lang.String"/>
+		<field name="steps" class="java.util.List"/>
 		<variable name="NoOfSuccess" class="java.lang.Integer" calculation="Count">
 			<variableExpression><![CDATA[((($F{testCaseFailure} == null) && ($F{testCaseError} == null))? "" : null )]]></variableExpression>
 		</variable>
@@ -76,6 +78,7 @@
 	<parameter name="isClassEmpty" class="java.lang.Boolean"/>
 	<parameter name="techName" class="java.lang.String"/>
 	<parameter name="testType" class="java.lang.String"/>
+	<field name="steps" class="java.util.List"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -84,7 +87,7 @@
 			<printWhenExpression><![CDATA[$P{testType}.equals("functional")]]></printWhenExpression>
 			<frame>
 				<reportElement x="0" y="0" width="555" height="55" isRemoveLineWhenBlank="true">
-					<printWhenExpression><![CDATA[$P{isClassEmpty}.equals(false) || $P{isClassEmpty}.equals(null) || $P{isClassEmpty}.equals("null")]]></printWhenExpression>
+					<printWhenExpression><![CDATA[($P{isClassEmpty}.equals(false) || $P{isClassEmpty}.equals(null) || $P{isClassEmpty}.equals("null"))&& CollectionUtils.isEmpty($F{steps})]]></printWhenExpression>
 				</reportElement>
 				<componentElement>
 					<reportElement key="table" style="table" x="0" y="0" width="555" height="55"/>

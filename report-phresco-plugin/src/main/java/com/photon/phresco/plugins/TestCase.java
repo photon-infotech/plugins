@@ -1,10 +1,13 @@
 package com.photon.phresco.plugins;
 
+import java.util.List;
+
 public class TestCase {
 
 	private String name = "";
 	private String testClass = "";
-	private String file = "";;
+	private String file = "";
+	private boolean isStepsAvailable;
 	private String featureId = "";
 	private String testCaseId = "";
 	private String expectedResult = "";
@@ -16,6 +19,7 @@ public class TestCase {
 	private TestCaseFailure testCaseFailure;
 	private TestCaseError testCaseError;
 	private String bugComment = "";
+	private List<TestStep> steps;
 
 	public TestCase() {
 
@@ -143,4 +147,19 @@ public class TestCase {
 		this.bugComment = bugComment;
 	}
 
+	public List<TestStep> getSteps() {
+		return steps;
+	}
+
+	public void setSteps(List<TestStep> steps) {
+		this.steps = steps;
+	}
+
+	public boolean isStepsAvailable() {
+		return isStepsAvailable;
+	}
+
+	public void setStepsAvailable(boolean isStepsAvailable) {
+		this.isStepsAvailable = isStepsAvailable;
+	}
 }

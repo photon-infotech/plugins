@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="PhrescoSureFireDetailReport_subreport2" pageWidth="555" pageHeight="802" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="org.apache.commons.collections.CollectionUtils"/>
+	<style name="PSFTCRTitle"/>
+	<style name="PSFTCRTitleRect"/>
+	<style name="PSFTCRTitleRectLogo"/>
+	<style name="PSFTCRTitleRectDetail"/>
+	<style name="PSFTCRTitleLabel"/>
+	<style name="PSFTCRTitleLabelValue"/>
+	<style name="PSFTCRHeading"/>
+	<style name="PSFTCRHeadingLabel"/>
+	<style name="PSFTCRHeadingLabelValue"/>
+	<style name="PSFTCRTHeadingRow"/>
+	<style name="PSFTCRTHeadingRowLabel"/>
+	<style name="PSFTCRTHeadingRowLabelValue"/>
+	<style name="PSFDRTHeadingRowLabelValue"/>
+	<style name="PSFDRTHeadingRowLabel"/>
+	<style name="table" fontName="Times New Roman" fontSize="12">
+		<box>
+			<pen lineWidth="1.0" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TH" mode="Opaque" fontName="Times New Roman" fontSize="12">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_CH" mode="Opaque" fontName="Times New Roman" fontSize="12">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TD" mode="Opaque" fontName="Times New Roman" fontSize="12">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TH_Label"/>
+	<style name="table_CH_Label"/>
+	<style name="table_TD_Label"/>
+	<parameter name="testCases" class="java.util.List"/>
+	<parameter name="isClassEmpty" class="java.lang.Boolean"/>
+	<parameter name="techName" class="java.lang.String"/>
+	<parameter name="testType" class="java.lang.String"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["D:\\work\\plugins\\report-phresco-plugin\\src\\main\\resources\\template\\"]]></defaultValueExpression>
+	</parameter>
+	<field name="name" class="java.lang.String"/>
+	<field name="testClass" class="java.lang.String"/>
+	<field name="file" class="java.lang.String"/>
+	<field name="line" class="java.lang.String"/>
+	<field name="assertions" class="java.lang.String"/>
+	<field name="time" class="java.lang.String"/>
+	<field name="testCaseFailure" class="java.lang.Object"/>
+	<field name="testCaseError" class="java.lang.Object"/>
+	<field name="steps" class="java.util.List"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<detail>
+		<band height="143">
+			<printWhenExpression><![CDATA[CollectionUtils.isNotEmpty($F{steps})]]></printWhenExpression>
+			<frame>
+				<reportElement x="0" y="29" width="555" height="66"/>
+				<rectangle>
+					<reportElement x="0" y="0" width="555" height="27"/>
+				</rectangle>
+				<rectangle>
+					<reportElement x="0" y="27" width="555" height="39"/>
+				</rectangle>
+				<textField>
+					<reportElement x="182" y="29" width="147" height="37"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<textFieldExpression><![CDATA[$F{testClass}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="330" y="29" width="109" height="37"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<textFieldExpression><![CDATA[$F{time}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="439" y="29" width="116" height="37"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<textFieldExpression><![CDATA[($F{testCaseFailure} != null ? "Failure" : ($F{testCaseError} != null ? "Error" : "Success"))]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="0" y="29" width="181" height="37"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
+				</textField>
+				<rectangle>
+					<reportElement style="PSFTCRTHeadingRow" x="0" y="0" width="555" height="28"/>
+				</rectangle>
+				<staticText>
+					<reportElement x="0" y="1" width="181" height="28" forecolor="#FFFFFF"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Name]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="182" y="1" width="147" height="28" forecolor="#FFFFFF"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Class]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="330" y="1" width="109" height="28" forecolor="#FFFFFF"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Time]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="440" y="1" width="115" height="27" forecolor="#FFFFFF"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Status]]></text>
+				</staticText>
+			</frame>
+			<frame>
+				<reportElement x="0" y="95" width="555" height="47"/>
+				<rectangle radius="10">
+					<reportElement style="PSFTCRTHeadingRow" x="0" y="15" width="555" height="20"/>
+				</rectangle>
+				<staticText>
+					<reportElement x="28" y="15" width="122" height="20" forecolor="#FFFFFF"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[TestSteps]]></text>
+				</staticText>
+			</frame>
+			<line>
+				<reportElement x="439" y="29" width="1" height="34"/>
+			</line>
+			<line>
+				<reportElement x="181" y="29" width="1" height="34"/>
+			</line>
+			<line>
+				<reportElement x="329" y="29" width="1" height="34"/>
+			</line>
+			<line>
+				<reportElement x="181" y="61" width="1" height="34"/>
+			</line>
+			<line>
+				<reportElement x="329" y="61" width="1" height="34"/>
+			</line>
+			<line>
+				<reportElement x="439" y="61" width="1" height="34"/>
+			</line>
+			<rectangle radius="10">
+				<reportElement style="PSFTCRTHeadingRow" x="0" y="0" width="555" height="20"/>
+			</rectangle>
+			<staticText>
+				<reportElement x="28" y="0" width="122" height="20" forecolor="#FFFFFF"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="12" isBold="true" isUnderline="false"/>
+				</textElement>
+				<text><![CDATA[TestCase]]></text>
+			</staticText>
+		</band>
+		<band height="70">
+			<frame>
+				<reportElement x="0" y="0" width="555" height="69"/>
+				<subreport>
+					<reportElement x="0" y="1" width="555" height="68" forecolor="#000000"/>
+					<subreportParameter name="steps">
+						<subreportParameterExpression><![CDATA[$F{steps}]]></subreportParameterExpression>
+					</subreportParameter>
+					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{steps})]]></dataSourceExpression>
+					<subreportExpression><![CDATA["PhrescoSureFireDetailReport_subreport2_subreport1.jasper"]]></subreportExpression>
+				</subreport>
+			</frame>
+		</band>
+	</detail>
+</jasperReport>
