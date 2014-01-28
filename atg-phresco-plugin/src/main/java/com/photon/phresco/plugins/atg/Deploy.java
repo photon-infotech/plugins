@@ -1,5 +1,5 @@
 /**
- * java-phresco-plugin
+ * atg-phresco-plugin
  *
  * Copyright (C) 1999-2013 Photon Infotech Inc.
  *

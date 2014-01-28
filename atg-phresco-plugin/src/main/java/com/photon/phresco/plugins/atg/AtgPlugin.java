@@ -46,4 +46,18 @@ public class AtgPlugin extends PhrescoBasePlugin {
 		deploy.deploy(configuration, mavenProjectInfo, log);
 		return new DefaultExecutionStatus();
 	}
+	
+	@Override
+	public ExecutionStatus startServer(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		Start start = new Start();
+		start.start(configuration, mavenProjectInfo, log);
+		return new DefaultExecutionStatus();
+	}
+
+	@Override
+	public ExecutionStatus stopServer(MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		Stop stop = new Stop();
+		stop.stop(mavenProjectInfo, log);
+		return new DefaultExecutionStatus();
+	}
 }

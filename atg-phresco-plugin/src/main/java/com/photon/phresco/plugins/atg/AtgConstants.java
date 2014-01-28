@@ -16,4 +16,10 @@ public interface AtgConstants {
 	String DEFAULT_MODULES = "defaultModules";
 	String OTHER_MODULES = "otherModules";
 	String COMMA = ",";
+	String START_DYNAMO_ON_JBOSS = "startDynamoOnJBOSS.bat";
+	String ATG_SERVER_NAME = "atgServer";
+	String SERVER_FLAG = "-c ";
+	String JBOSS_SERVER_NAME = "jbossServer";
+	String ADD_FLAG = "-f ";
+	String RUN_IN_PLACE = "-run-in-place";
 }
