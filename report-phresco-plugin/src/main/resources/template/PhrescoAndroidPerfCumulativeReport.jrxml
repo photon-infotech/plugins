@@ -63,7 +63,7 @@
 					</graphicElement>
 				</rectangle>
 				<staticText>
-					<reportElement style="PAPCRHeadingRowLabel" x="15" y="8" width="70" height="15"/>
+					<reportElement style="PAPCRHeadingRowLabel" x="15" y="8" width="70" height="15" forecolor="#FFFFFF"/>
 					<textElement>
 						<font fontName="Times New Roman" size="12" isBold="true"/>
 					</textElement>
@@ -81,7 +81,7 @@
 					<subreportExpression><![CDATA["PhrescoAndroidPerfFiles.jasper"]]></subreportExpression>
 				</subreport>
 				<textField>
-					<reportElement style="PAPCRHeadingRowLabelValue" x="85" y="8" width="462" height="15"/>
+					<reportElement style="PAPCRHeadingRowLabelValue" x="85" y="8" width="462" height="15" forecolor="#FFFFFF"/>
 					<textElement>
 						<font fontName="Times New Roman" size="12" isBold="true"/>
 					</textElement>
