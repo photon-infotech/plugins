@@ -203,6 +203,10 @@ public class GenerateReport implements PluginConstants {
 
 	String REPORTS_JASPER  = "";
 
+	private int setFailureTestCases;
+	private int errorTestCases;
+	private int nodeLength;
+	
 	// custom theme color
 	private static String titleColor = "#969696"; // TitleRectLogo
 	private static String titleLabelColor = "#333333"; // TitleRectDetail
@@ -1476,6 +1480,8 @@ public class GenerateReport implements PluginConstants {
 
 		// Iterate over each file
 		// testsuite path and testcase path
+		List<TestSuite> testSuitesList = new ArrayList<TestSuite>();
+		List<TestSuite> testSuits = new ArrayList<TestSuite>();
 		for (Map.Entry entry : reportDirWithTestSuitePath.entrySet()) {
 			String mapKey = (String) entry.getKey(); // file
 			String mapValue = (String) entry.getValue(); // /testSuite,/testcase	
@@ -1498,17 +1504,27 @@ public class GenerateReport implements PluginConstants {
 				// bytes.
 				continue;
 			}
-
 			List<TestSuite> testSuites = getTestSuite(doc, testSuitePath);
 			// crisp info
-			int totalTestSuites = 0;
-			int successTestSuites = 0;
-			int failureTestSuites = 0;
-			int errorTestSuites = 0;
-
+			
 			if(CollectionUtils.isNotEmpty(testSuites)) {
-				for (TestSuite testSuite : testSuites) { // test suite ll have graph details
+				for (TestSuite testSuite : testSuites) { 
+					
 					List<TestCase> testCases = getTestCases(doc, testSuite.getName(), testSuitePath, testCasePath);
+					testSuite.setTestCases(testCases);
+				}
+			}
+			testSuitesList.addAll(testSuites);
+		}
+		testSuits = calculateTesuites(testSuitesList);
+		int totalTestSuites = 0;
+		int successTestSuites = 0;
+		int failureTestSuites = 0;
+		int errorTestSuites = 0;
+			if(CollectionUtils.isNotEmpty(testSuits)) {
+				for (TestSuite testSuite : testSuits) { 
+					
+					List<TestCase> testCases = testSuite.getTestCases();
 					int tests = 0;
 					int failures = 0;
 					int errors = 0;
@@ -1580,11 +1596,95 @@ public class GenerateReport implements PluginConstants {
 					sureFireReport.setAllTestSuites(allTestSuiteDetails);
 				}
 			}
-		}
 
 		return sureFireReport;
 	}
+	
+	private List<TestSuite> calculateTesuites(List<TestSuite> allTestSuites)  {
+		int indexOf = 0;
+		
+		List<TestSuite> allSuites = new ArrayList<TestSuite>();
+		List<TestCase> allTestCases = new ArrayList<TestCase>();
+		if (CollectionUtils.isNotEmpty(allTestSuites)) {
+			for (TestSuite tstSuite : allTestSuites) {
+				boolean entryAvailable = false;
+				// testsuite values are set before calling
+				// getTestCases value
+				float tests = 0;
+				float failures = 0;
+				float errors = 0;
+				float success = 0;
 
+				TestSuite suite = new TestSuite();
+				//To check for previous existance
+				if (CollectionUtils.isNotEmpty(allSuites)) {
+					int i = 0;
+					for (TestSuite allSuite : allSuites) {
+						if (allSuite.getName().equals(tstSuite.getName())) {
+							suite = allSuite;
+							entryAvailable = true;
+							indexOf = i;
+							break;
+						}
+						i++;
+					}
+				}
+				if (entryAvailable) {
+					tests = Math.round(suite.getTotal()) + Math.round(tstSuite.getTests());
+					failures = Math.round(suite.getFailures()) +  Math.round(tstSuite.getFailures());
+					errors = Math.round(suite.getErrors()) + Math.round(tstSuite.getErrors());
+				} else {
+					setNodeLength(Math.round(tstSuite.getTests()));
+					setSetFailureTestCases(Math.round(tstSuite.getFailures()));
+					setErrorTestCases(Math.round(tstSuite.getErrors()));
+					
+					tests = Float.parseFloat(String.valueOf(getNodeLength()));
+					failures = Float.parseFloat(String.valueOf(getSetFailureTestCases()));
+					errors = Float.parseFloat(String.valueOf(getErrorTestCases()));
+				}	
+
+				if (failures != 0 && errors == 0) {
+					if (failures > tests) {
+						success = failures - tests;
+					} else {
+						success = tests - failures;
+					}
+				} else if (failures == 0 && errors != 0) {
+					if (errors > tests) {
+						success = errors - tests;
+					} else {
+						success = tests - errors;
+					}
+				} else if (failures != 0 && errors != 0) {
+					float failTotal = (failures + errors);
+					if (failTotal > tests) {
+						success = failTotal - tests;
+					} else {
+						success = tests - failTotal;
+					}
+				} else {
+					success = tests;
+				}
+				suite.setName(tstSuite.getName());
+				suite.setSuccess(success);
+				suite.setErrors(errors);
+				suite.setFailures(failures);
+				suite.setTime(tstSuite.getTime());
+				suite.setTotal(tests);
+				suite.setTestCases(tstSuite.getTestCases());
+				if (entryAvailable) {
+					allSuites.remove(indexOf);
+					allTestCases.addAll(tstSuite.getTestCases());
+					suite.setTestCases(allTestCases);
+					allSuites.add(indexOf, suite);
+				} else {
+					allTestCases.addAll(tstSuite.getTestCases());
+					allSuites.add(suite);
+				}
+			}
+		}
+		return allSuites;
+	}
 	private List<AllTestSuite> readAllTestSuites(String filePath)  {
 		List<AllTestSuite> excels = new ArrayList<AllTestSuite>();
 		try {
@@ -3395,6 +3495,30 @@ public class GenerateReport implements PluginConstants {
 			//	        	jasperPrint.addStyle(styleList[j], true);
 			//		    }
 		}
+	}
+
+	public int getSetFailureTestCases() {
+		return setFailureTestCases;
+	}
+
+	public void setSetFailureTestCases(int setFailureTestCases) {
+		this.setFailureTestCases = setFailureTestCases;
+	}
+
+	public int getErrorTestCases() {
+		return errorTestCases;
+	}
+
+	public void setErrorTestCases(int errorTestCases) {
+		this.errorTestCases = errorTestCases;
+	}
+
+	public int getNodeLength() {
+		return nodeLength;
+	}
+
+	public void setNodeLength(int nodeLength) {
+		this.nodeLength = nodeLength;
 	}
 }
 
