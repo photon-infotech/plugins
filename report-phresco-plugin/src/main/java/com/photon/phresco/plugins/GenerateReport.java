@@ -1387,7 +1387,6 @@ public class GenerateReport implements PluginConstants {
 
 	// unit and functional test report
 	public SureFireReport sureFireReports(String module) throws Exception {
-
 		String type = "";
 		Map<String, String> reportDirWithTestSuitePath = new HashMap<String, String>(); // <file
 		// -
@@ -1425,12 +1424,20 @@ public class GenerateReport implements PluginConstants {
 			String functionalTestCasePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_TESTCASE_PATH);
 			String reportPath = "";
 			if (StringUtils.isNotEmpty(functionalTestDir) && StringUtils.isEmpty(module)) {
-				functionalTestDir = functionalTestDir.replace(baseDir.getAbsolutePath(), "");
-				reportPath = reportFilePath + functionalTestDir;
+				if (!functionalTestDir.contains(PROJECT_BASEDIR)) {
+					reportPath = functionalTestDir;
+				} else {
+					functionalTestDir = functionalTestDir.replace(baseDir.getAbsolutePath(), "");
+					reportPath = reportFilePath + functionalTestDir;
+				}
 			}
 			if (StringUtils.isNotEmpty(moduleName) || StringUtils.isNotEmpty(module)) {
-				functionalTestDir = functionalTestDir.replace(PROJECT_BASEDIR, "");
-				reportPath = reportFilePath + functionalTestDir;
+				if (!functionalTestDir.contains(PROJECT_BASEDIR)) {
+					reportPath = functionalTestDir;
+				} else {
+					functionalTestDir = functionalTestDir.replace(PROJECT_BASEDIR, "");
+					reportPath = reportFilePath + functionalTestDir;
+				}
 			}
 			List<File> testResultFiles = getTestResultFilesAsList(reportPath);
 			for (File testResultFile : testResultFiles) {
