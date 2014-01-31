@@ -153,11 +153,12 @@ public class PhrescoCreateBranch extends AbstractMojo {
 				.append(Constants.STR_BLANK_SPACE)
 				.append(Constants.SCM_HYPHEN_D).append(Constants.SCM_COMMENT_PREFIX).append(Constants.STR_EQUALS)
 				.append("\"" + comment + "\"");
-				File pom = new File(workingDir + File.separatorChar + FrameworkConstants.PHR_POM_XML);
-				if (pom.exists()) {
-					builder.append(Constants.STR_BLANK_SPACE)
-					.append(Constants.HYPHEN_F).append(Constants.STR_BLANK_SPACE).append(FrameworkConstants.PHR_POM_XML);
+				File pom = new File(workingDir + File.separatorChar + FrameworkConstants.POM_XML);
+				if (!pom.exists()) {
+					pom = new File(workingDir + File.separatorChar + FrameworkConstants.PHR_POM_XML);
 				}
+				builder.append(Constants.STR_BLANK_SPACE)
+				.append(Constants.HYPHEN_F).append(Constants.STR_BLANK_SPACE).append(pom.getName());
 				Utility.executeStreamconsumer(builder.toString(), workingDir, "", "");
 				// copy into workspace
 				if (downloadOption) {
