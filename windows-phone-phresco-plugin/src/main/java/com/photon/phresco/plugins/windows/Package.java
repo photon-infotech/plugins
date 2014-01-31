@@ -135,8 +135,11 @@ public class Package implements PluginConstants {
 			ApplicationInfo applicationInfo = info.getAppInfos().get(0);
 			String version = applicationInfo.getTechInfo().getVersion();
 			if (version.startsWith("8.x")) {
-				String property = System.getProperty("os.arch");
-				if (!property.contains("64")) {
+				  String arch = System.getenv("PROCESSOR_ARCHITECTURE");
+			      String wow64Arch = System.getenv("PROCESSOR_ARCHITEW6432");
+			      String realArch = arch.endsWith("64") || wow64Arch != null && wow64Arch.endsWith("64") ? "64" : "32";
+			      String property = System.getProperty("os.arch");
+				if (!realArch.contains("64") || !property.contains("64") ) {
 					throw new PhrescoException("Windows8 project require 64 bit version to build");
 				}
 			}
