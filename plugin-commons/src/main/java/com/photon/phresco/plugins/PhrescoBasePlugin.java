@@ -949,7 +949,14 @@ PluginConstants {
 		PluginUtils pu = new PluginUtils();
 		List<com.photon.phresco.configuration.Configuration> configurations = pu
 		.getConfiguration(new File(baseDir), envName,
-				Constants.SETTINGS_TEMPLATE_SERVER);
+				Constants.SETTINGS_TEMPLATE_WEBSERVICE);
+		List<com.photon.phresco.configuration.Configuration> configuration2 = pu.getConfiguration(new File(baseDir), envName,
+				Constants.SETTINGS_TEMPLATE_WEBSERVICE);
+		if (CollectionUtils.isNotEmpty(configuration2)) {
+			for (com.photon.phresco.configuration.Configuration configuration : configuration2) {
+				configurations.add(configuration);
+			}
+		}
 		String techId = getTechId(new File(baseDir));
 		if (CollectionUtils.isNotEmpty(configurations)) {
 			for (com.photon.phresco.configuration.Configuration configuration : configurations) {
