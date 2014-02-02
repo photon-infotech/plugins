@@ -60,6 +60,12 @@ public class PhrescoRelease extends AbstractMojo {
     protected String releaseVersion;
     
     /**
+     * @parameter expression="${skipTests}"
+     * @readonly
+     */
+    protected String skipTests;
+    
+    /**
      * @parameter expression="${tag}"
      * @readonly
      */
@@ -298,6 +304,7 @@ public class PhrescoRelease extends AbstractMojo {
 	}
 	
 	private String createPrepareCommand(String pomName) {
+		Boolean skip = Boolean.valueOf(skipTests);
 		StringBuilder command = new StringBuilder("mvn org.apache.maven.plugins:maven-release-plugin:2.4:prepare ");
 		command.append("-DreleaseVersion=").append(releaseVersion).append(" ");
 		command.append("-Dtag=").append(tag).append(" ");
@@ -306,6 +313,10 @@ public class PhrescoRelease extends AbstractMojo {
 		command.append("-Dpassword=").append(password).append(" ");
 		command.append("-DscmCommentPrefix=").append("\"").append(message).append("\"").append(" ");
 		command.append("-DpomFileName=").append(pomName).append(" ");
+		command.append("-DignoreSnapshots=" + true).append(" ");
+		if (skip) {
+			command.append("-Darguments=-DskipTests").append(" ");
+		}
 		command.append("-f ").append(pomName);
 		return command.toString();
 	}
