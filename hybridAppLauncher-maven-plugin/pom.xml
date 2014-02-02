@@ -4,12 +4,12 @@
   <parent>
 	   <artifactId>phresco-plugins-root</artifactId>
 	   <groupId>com.photon.phresco.plugins</groupId>
-	   <version>3.2.0.12001-SNAPSHOT</version>
+	   <version>3.2.0.12002-SNAPSHOT</version>
 	   <relativePath>../</relativePath>
   </parent>
   <groupId>com.photon.phresco.plugins</groupId>
   <artifactId>hybridAppLauncher-maven-plugin</artifactId>
-   <version>3.2.0.12001-SNAPSHOT</version>
+   <version>3.2.0.12002-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
   <name>HybridAppLauncher-maven-plugin Maven Mojo</name>
   <url>http://maven.apache.org</url>
