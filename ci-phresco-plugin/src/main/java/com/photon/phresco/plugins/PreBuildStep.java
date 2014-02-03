@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -202,7 +203,12 @@ public class PreBuildStep  implements PluginConstants {
 						try {
 							log.info("Storing parameter Key " + parameter.getKey());
 							String paramValue = bu.getProperty(job, parameter.getKey());
-							log.info("Storing paramValue " + paramValue);
+							if (Boolean.parseBoolean(parameter.getMultiple()) && !"environmentName".equals(parameter.getKey())) {
+								log.info("is Multiple true");
+								List<String> property = (List<String>)PropertyUtils.getProperty(job, parameter.getKey());
+								paramValue = StringUtils.join(property.toArray(), ',');
+							} 
+							log.info("paramValue ===>"+paramValue);
 							parameter.setValue(paramValue);
 						} catch (Exception e) {
 							log.info("Key is missing ... " + parameter.getKey());
@@ -242,10 +248,10 @@ public class PreBuildStep  implements PluginConstants {
 //	        builder.append(File.separator);
 //	        builder.append(name);
 	        builder.append(File.separator);
-	        if(StringUtils.isNotEmpty(moduleName)) {
+	        /*if(StringUtils.isNotEmpty(moduleName)) {
 	        	builder.append(moduleName);
 	        	builder.append(File.separator);
-	        }
+	        }*/
 	        builder.append(DOT_PHRESCO_FOLDER);
 	        builder.append(File.separator);
 	        builder.append(PHRESCO_HYPEN);

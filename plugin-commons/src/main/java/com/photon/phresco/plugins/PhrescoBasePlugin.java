@@ -297,12 +297,12 @@ PluginConstants {
 				functionalTestDir = "";
 			}
 			String jarLocation = "";
-			if (testAgainst.equals(BUILD)) {
+			if (BUILD.equals(testAgainst)) {
 				environmentName = configValues.get(ENVIRONMENT_NAME);
 				jarLocation = getJarLocation(workingDirectory.getPath());
-			} else if (testAgainst.equals(SERVER)) {
+			} else if (SERVER.equals(testAgainst)) {
 				environmentName = configValues.get(ENVIRONMENT_NAME);
-			} else if (testAgainst.equals(JAR)) {
+			} else if (JAR.equals(testAgainst)) {
 				jarLocation = configValues.get(JAR_LOCATION);
 			}
 			if (StringUtils.isNotEmpty(jarLocation)) {
