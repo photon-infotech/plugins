@@ -93,11 +93,17 @@ public class Start implements PluginConstants {
 	}
 
 	private void configure() throws MojoExecutionException {
+		File ConfigFile = null;
 		try {
 			log.info("Configuring the project....");
 			PomProcessor pomProcessor = new PomProcessor(pomFile);
 			String sourceDir = pomProcessor.getProperty(POM_PROP_KEY_SOURCE_DIR);
-			File ConfigFile = new File(srcDirectory + sourceDir + FORWARD_SLASH +  CONFIG_FILE);
+			String configXml = pomProcessor.getProperty(POM_PROP_CONFIG_FILE);
+			if(StringUtils.isNotEmpty(configXml)) {
+				ConfigFile = new File(srcDirectory + configXml);
+			} else {
+				ConfigFile = new File(srcDirectory + sourceDir + FORWARD_SLASH +  CONFIG_FILE);
+			}
 			pUtil.executeUtil(environmentName, dotPhrescoDir.getPath(), ConfigFile);
 		} catch (PhrescoPomException e) {
 			throw new MojoExecutionException(e.getMessage());
