@@ -35,9 +35,14 @@ import java.io.StringWriter;
 import java.lang.reflect.Type;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -57,6 +62,22 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListTagCommand;
+import org.eclipse.jgit.api.ListBranchCommand.ListMode;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Ref;
+import org.tmatesoft.svn.core.SVNDirEntry;
+import org.tmatesoft.svn.core.SVNException;
+import org.tmatesoft.svn.core.SVNNodeKind;
+import org.tmatesoft.svn.core.SVNURL;
+import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
+import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
+import org.tmatesoft.svn.core.internal.wc.DefaultSVNOptions;
+import org.tmatesoft.svn.core.io.SVNRepository;
+import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
+import org.tmatesoft.svn.core.wc.SVNClientManager;
+import org.tmatesoft.svn.core.wc.SVNWCUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -1539,7 +1560,7 @@ public class PluginUtils {
 	 * @param repoUrl the repo url
 	 * @return the repo type
 	 */
-	private String getRepoType(String repoUrl) {
+	public String getRepoType(String repoUrl) {
 		String repoType = "";
 		if (repoUrl.startsWith("bk")) {
 			repoType = FrameworkConstants.BITKEEPER;
@@ -1551,4 +1572,89 @@ public class PluginUtils {
 		return repoType;
 	}
 	
+	public List<String> getGitBranchs(File sourceFolderLocation) throws PhrescoException {
+		try {
+			Git git = Git.open(sourceFolderLocation);
+			List<String> branchList = new ArrayList<String>();
+
+			List<Ref> remoteCall = git.branchList().setListMode(ListMode.REMOTE).call();
+			for (Ref ref : remoteCall) {
+				String branchName = ref.getName();
+				branchName = branchName.substring(branchName.lastIndexOf("/") + 1, branchName.length());
+				branchList.add(branchName);
+			}
+			return branchList;
+		} catch (IOException e) {
+			throw new PhrescoException(e);
+		} catch (GitAPIException e) {
+			throw new PhrescoException(e);
+		}
+	}
+	
+	public List<String> getGitTags(File sourceFolderLocation) throws PhrescoException {
+		try {
+			Git git = Git.open(sourceFolderLocation);
+			List<String> tagLists = new ArrayList<String>();
+			ListTagCommand tagList = git.tagList();
+			Map<String, Ref> tags = tagList.getRepository().getTags();
+			Set<Entry<String,Ref>> entrySet = tags.entrySet();
+			for (Entry<String, Ref> entry : entrySet) {
+				tagLists.add(entry.getKey());
+			}
+			return tagLists;
+		} catch (IOException e) {
+			throw new PhrescoException(e);
+		}
+	}
+	
+	public List<String> getSvnData(String url, String type, String username, String password) throws PhrescoException {
+		try {
+			if (url.endsWith(FrameworkConstants.TRUNK) || url.endsWith(FrameworkConstants.TRUNK + FrameworkConstants.FORWARD_SLASH)) {
+				url = url.substring(0, url.lastIndexOf(FrameworkConstants.TRUNK));
+			}
+			url = url + type;
+			List<String> data = new ArrayList<String>();
+			getSVNClientManager(username, password);
+			SVNRepository repository = SVNRepositoryFactory.create(SVNURL.parseURIEncoded(url));
+			ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(username, password);
+			repository.setAuthenticationManager(authManager);
+			SVNNodeKind nodeKind = repository.checkPath("", -1);
+			if (nodeKind == SVNNodeKind.NONE) {
+				return data;
+			}
+			Collection entries = repository.getDir("", -1, null, (Collection) null);
+			SVNURL svnURL = getSVNURL(url);
+			Iterator iterator = entries.iterator();
+			if (entries.size() != 0) {
+				while (iterator.hasNext()) {
+					SVNDirEntry entry = (SVNDirEntry) iterator.next();
+					if ((entry.getKind() == SVNNodeKind.DIR)) {
+						SVNURL svnnewURL = svnURL.appendPath("/" + entry.getName(), true);
+						String urls = svnnewURL.toString();
+						String path = urls.substring(urls.lastIndexOf("/")+1, urls.length());
+						data.add(path);
+					}
+				}
+			}
+			return data;
+		} catch (SVNException e) {
+			throw new PhrescoException("url", url);
+		}
+	}
+	
+	private static SVNClientManager getSVNClientManager(String userName, String password) {
+		DAVRepositoryFactory.setup();
+		DefaultSVNOptions options = new DefaultSVNOptions();
+		return SVNClientManager.newInstance(options, userName, password);
+	}
+	
+	private static SVNURL getSVNURL(String repoURL) throws PhrescoException { 
+		SVNURL svnurl = null;
+		try {
+			svnurl = SVNURL.parseURIEncoded(repoURL);
+		} catch (SVNException e) {
+			throw new PhrescoException(e);
+		}
+		return svnurl;
+	}
 }

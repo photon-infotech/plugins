@@ -3,10 +3,8 @@ package com.photon.phresco.plugins;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -86,13 +84,13 @@ public class PhrescoCreateBranch extends AbstractMojo {
     
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		createBranch(appDirName, version, comment, currentBranch, branchName, downloadOption);
+		createBranch();
 	}
 	
-	public void createBranch(String appDirName, String version,  
-			String comment, String currentBranch, String branchName, boolean downloadOption) throws MojoExecutionException {
+	public void createBranch() throws MojoExecutionException {
 		String phrescoTemp = Utility.getPhrescoTemp();
 		List<String> workingDirList = new ArrayList<String>();
+		List<String> clearTempDir = new ArrayList<String>();
 		PluginUtils pluginUtils = new PluginUtils();
 		String username = "";
 		String password = "";
@@ -106,60 +104,34 @@ public class PhrescoCreateBranch extends AbstractMojo {
 			boolean hasSplit = false;
 			if (StringUtils.isNotEmpty(dotPhrescoRepoUrl)) {
 				hasSplit = true;
+				String uuid = UUID.randomUUID().toString();
+				String workingDir = phrescoTemp + uuid;
+				validateBranch(dotPhrescoRepoUrl, phrescoTemp, branchName, workingDir, uuid);
+				workingDirList.add(workingDir);
 				repoUrls.add(dotPhrescoRepoUrl);
 			} 
 			if (StringUtils.isNotEmpty(srcRepoUrl)) {
+				String uuid = UUID.randomUUID().toString();
+				String workingDir = phrescoTemp + uuid;
+				validateBranch(srcRepoUrl, phrescoTemp, branchName, workingDir, uuid);
+				workingDirList.add(workingDir);
 				repoUrls.add(srcRepoUrl);
 			} 
 			if (StringUtils.isNotEmpty(testRepoUrl)) {
 				hasSplit = true;
+				String uuid = UUID.randomUUID().toString();
+				String workingDir = phrescoTemp + uuid;
+				validateBranch(testRepoUrl, phrescoTemp, branchName, workingDir, uuid);
+				workingDirList.add(workingDir);
 				repoUrls.add(testRepoUrl);
 			}
 			for (String repoUrl : repoUrls) {
-				Map<String, String> credential = FrameworkUtil.getCredential(repoUrl);
-				if (MapUtils.isNotEmpty(credential)) {
-					username = credential.get(FrameworkConstants.REQ_USER_NAME);
-					String encryptedPassword = credential.get(FrameworkConstants.REQ_PASSWORD);
-					password = FrameworkUtil.getdecryptedPassword(encryptedPassword);
+				for (String workingDir : workingDirList) {
+					createBranch(repoUrl, workingDir);
+					workingDirList.remove(workingDir);
+					clearTempDir.add(workingDir);
+					break;
 				}
-				String uuid = UUID.randomUUID().toString();
-				String workingDir = phrescoTemp + uuid;
-				workingDirList.add(workingDir);
-				pluginUtils.checkout(repoUrl, currentBranch, phrescoTemp, uuid, false, username, password);
-				
-				// Construct command for branch
-				StringBuilder builder = new StringBuilder();
-				builder.append(Constants.MVN_COMMAND)
-				.append(Constants.STR_BLANK_SPACE)
-				.append(Constants.RELEASE_PLUGIN).append(Constants.STR_COLON).append(Constants.SCM_BRANCH)
-				.append(Constants.STR_BLANK_SPACE)
-				.append(Constants.SCM_HYPHEN_D).append(Constants.SCM_BRANCH_NAME)
-				.append(Constants.STR_EQUALS).append(branchName)
-				.append(Constants.STR_BLANK_SPACE)
-				.append(Constants.SCM_HYPHEN_D).append(Constants.SCM_USERNAME)
-				.append(Constants.STR_EQUALS).append(username)
-				.append(Constants.STR_BLANK_SPACE)
-				.append(Constants.SCM_HYPHEN_D).append(Constants.SCM_PASSWORD)
-				.append(Constants.STR_EQUALS).append(password)
-				.append(Constants.STR_BLANK_SPACE)
-				.append(Constants.SCM_HYPHEN_D)
-				.append(Constants.SCM_UPDATE_BRANCH_VERSIONS + Constants.STR_EQUALS + true)
-				.append(Constants.STR_BLANK_SPACE)
-				.append(Constants.SCM_HYPHEN_D)
-				.append(Constants.SCM_UPDATE_WORKING_COPY_VERSIONS + Constants.STR_EQUALS + false)
-				.append(Constants.STR_BLANK_SPACE)
-				.append(Constants.SCM_HYPHEN_D).append(Constants.SCM_RELEASE_VERSION).append(Constants.STR_EQUALS)
-				.append(version)
-				.append(Constants.STR_BLANK_SPACE)
-				.append(Constants.SCM_HYPHEN_D).append(Constants.SCM_COMMENT_PREFIX).append(Constants.STR_EQUALS)
-				.append("\"" + comment + "\"");
-				File pom = new File(workingDir + File.separatorChar + FrameworkConstants.POM_XML);
-				if (!pom.exists()) {
-					pom = new File(workingDir + File.separatorChar + FrameworkConstants.PHR_POM_XML);
-				}
-				builder.append(Constants.STR_BLANK_SPACE)
-				.append(Constants.HYPHEN_F).append(Constants.STR_BLANK_SPACE).append(pom.getName());
-				Utility.executeStreamconsumer(builder.toString(), workingDir, "", "");
 				// copy into workspace
 				if (downloadOption) {
 					String destDir =  appDirName + FrameworkConstants.HYPHEN + branchName;
@@ -210,8 +182,8 @@ public class PhrescoCreateBranch extends AbstractMojo {
 		}
 		finally {
 			try {
-				if (CollectionUtils.isNotEmpty(workingDirList)) {
-					for (String workingDir : workingDirList) {
+				if (CollectionUtils.isNotEmpty(clearTempDir)) {
+					for (String workingDir : clearTempDir) {
 						FileUtils.deleteDirectory(new File(workingDir));
 					}
 				}
@@ -220,4 +192,81 @@ public class PhrescoCreateBranch extends AbstractMojo {
 			}
 		}
 	}
+	
+	private void createBranch(String repoUrl, String workingDir) throws PhrescoException {
+		String username = "";
+		String password = "";
+		Map<String, String> credential = FrameworkUtil.getCredential(repoUrl);
+		if (MapUtils.isNotEmpty(credential)) {
+			username = credential.get(FrameworkConstants.REQ_USER_NAME);
+			String encryptedPassword = credential.get(FrameworkConstants.REQ_PASSWORD);
+			password = FrameworkUtil.getdecryptedPassword(encryptedPassword);
+		}
+		// Construct command for branch
+		StringBuilder builder = new StringBuilder();
+		builder.append(Constants.MVN_COMMAND)
+		.append(Constants.STR_BLANK_SPACE)
+		.append(Constants.RELEASE_PLUGIN).append(Constants.STR_COLON).append(Constants.SCM_BRANCH)
+		.append(Constants.STR_BLANK_SPACE)
+		.append(Constants.SCM_HYPHEN_D).append(Constants.SCM_BRANCH_NAME)
+		.append(Constants.STR_EQUALS).append(branchName)
+		.append(Constants.STR_BLANK_SPACE)
+		.append(Constants.SCM_HYPHEN_D).append(Constants.SCM_USERNAME)
+		.append(Constants.STR_EQUALS).append(username)
+		.append(Constants.STR_BLANK_SPACE)
+		.append(Constants.SCM_HYPHEN_D).append(Constants.SCM_PASSWORD)
+		.append(Constants.STR_EQUALS).append(password)
+		.append(Constants.STR_BLANK_SPACE)
+		.append(Constants.SCM_HYPHEN_D)
+		.append(Constants.SCM_UPDATE_BRANCH_VERSIONS + Constants.STR_EQUALS + true)
+		.append(Constants.STR_BLANK_SPACE)
+		.append(Constants.SCM_HYPHEN_D)
+		.append(Constants.SCM_UPDATE_WORKING_COPY_VERSIONS + Constants.STR_EQUALS + false)
+		.append(Constants.STR_BLANK_SPACE)
+		.append(Constants.SCM_HYPHEN_D).append(Constants.SCM_RELEASE_VERSION).append(Constants.STR_EQUALS)
+		.append(version)
+		.append(Constants.STR_BLANK_SPACE)
+		.append(Constants.SCM_HYPHEN_D).append(Constants.SCM_COMMENT_PREFIX).append(Constants.STR_EQUALS)
+		.append("\"" + comment + "\"");
+		File pom = new File(workingDir + File.separatorChar + FrameworkConstants.POM_XML);
+		if (!pom.exists()) {
+			pom = new File(workingDir + File.separatorChar + FrameworkConstants.PHR_POM_XML);
+		}
+		builder.append(Constants.STR_BLANK_SPACE)
+		.append(Constants.HYPHEN_F).append(Constants.STR_BLANK_SPACE).append(pom.getName());
+		Utility.executeStreamconsumer(builder.toString(), workingDir, "", "");
+	}
+	
+	private void validateBranch(String repoUrl, String phrescoTemp, String branchName, String workingDir, String uuid) throws PhrescoException {
+		try {
+			Map<String, String> credential = FrameworkUtil.getCredential(repoUrl);
+			String username = "";
+			String password = "";
+			if (MapUtils.isNotEmpty(credential)) {
+				username = credential.get(FrameworkConstants.REQ_USER_NAME);
+				String encryptedPassword = credential.get(FrameworkConstants.REQ_PASSWORD);
+				password = FrameworkUtil.getdecryptedPassword(encryptedPassword);
+			}
+			PluginUtils pluginUtils = new PluginUtils();
+			String repoType = pluginUtils.getRepoType(repoUrl);
+			List<String> branchList = new ArrayList<String>();
+			if (FrameworkConstants.SVN.equals(repoType)) {
+				branchList = pluginUtils.getSvnData(repoUrl, FrameworkConstants.BRANCHES, username, password);
+			}
+			if (CollectionUtils.isNotEmpty(branchList) && branchList.contains(branchName)) {
+				throw new PhrescoException("Branch " + branchName + " Already Exist");
+			}
+			pluginUtils.checkout(repoUrl, currentBranch, phrescoTemp, uuid, false, username, password);
+
+			if (FrameworkConstants.GIT.equals(repoType)) {
+				branchList = pluginUtils.getGitBranchs(new File(workingDir));
+			}
+			if (CollectionUtils.isNotEmpty(branchList) && branchList.contains(branchName)) {
+				throw new PhrescoException("Branch " + branchName + " Already Exist");
+			}
+		}  catch (IOException e) {
+			throw new PhrescoException(e);
+		}
+	}
+	
 }
