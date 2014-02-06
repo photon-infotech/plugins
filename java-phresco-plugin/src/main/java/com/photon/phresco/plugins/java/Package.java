@@ -58,6 +58,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.photon.phresco.api.ConfigManager;
+import com.photon.phresco.commons.FrameworkConstants;
 import com.photon.phresco.commons.model.ApplicationInfo;
 import com.photon.phresco.commons.model.ModuleInfo;
 import com.photon.phresco.configuration.Environment;
@@ -123,7 +124,6 @@ public class Package implements PluginConstants {
     private File srcDirectory;
     private File dotPhrescoRoot;
     private ApplicationInfo appInfoRoot;
-    private List<String> depModuleList = new ArrayList<String>();
     
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -216,32 +216,6 @@ public class Package implements PluginConstants {
 		} catch (PhrescoPomException e) {
 			throw new PhrescoException(e);
 		}
-	}
-	
-	private List<String> getModules() throws PhrescoException {
-		List<String> modules = new ArrayList<String>();
-		String sourcePom = project.getProperties().getProperty("source.pom");
-		if(StringUtils.isEmpty(sourcePom)) {
-			sourcePom = project.getFile().getName();
-		}
-		String srcDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_SRC_DIR);
-		String dir = baseDir.getPath();
-		if (StringUtils.isNotEmpty(srcDir)) {
-			String appDirName = appInfo.getAppDirName();
-			dir = Utility.getProjectHome() + File.separatorChar  + appDirName + File.separatorChar + srcDir;
-		}
-		File pomFile = new File(dir, sourcePom);
-		PomProcessor processor;
-		try {
-			processor = new PomProcessor(pomFile);
-			Modules pomModule = processor.getPomModule();
-			if(pomModule != null) {
-				modules = pomModule.getModule();
-			}
-		} catch (PhrescoPomException e) {
-			throw new PhrescoException(e);
-		}
-		return modules;
 	}
 	
 	private void setFileSetExcludes(WarConfigProcessor configProcessor, String FileSetId, List<String> exclues) throws PhrescoException {
@@ -482,6 +456,8 @@ public class Package implements PluginConstants {
 		sb.append(rootPomFile.getName());
 		sb.append(STR_SPACE);
 		sb.append(builder.toString());
+		sb.append(STR_SPACE);
+		sb.append(FrameworkConstants.HYPHEN_N);
 		List<String> buildModules = getBuildModules(appInfoRoot, subModule);
 		if (StringUtils.isNotEmpty(subModule)) {
 			buildModules.add(subModule);
@@ -628,6 +604,7 @@ public class Package implements PluginConstants {
 	}
 	
 	private List<String> getBuildModules(ApplicationInfo appInfo, String moduleName) {
+		List<String> depModuleList = new ArrayList<String>();
 		List<ModuleInfo> modules = appInfo.getModules();
 		if (CollectionUtils.isNotEmpty(modules)) {
 			for (ModuleInfo moduleInfo : modules) {
@@ -648,16 +625,6 @@ public class Package implements PluginConstants {
 		
 	}
 	 
-	private List<String> getBuildModules(String module) throws PhrescoException {
-		List<String> buildModules = new ArrayList<String>();
-		List<String> modules = getModules();
-		if(CollectionUtils.isNotEmpty(modules)) {
-			int intex = modules.indexOf(module);
-			buildModules = modules.subList(0, intex+ 1);
-		}
-		return buildModules;
-	}
-	
 	private boolean build() throws MojoExecutionException {
 		boolean isBuildSuccess = true;
 		try {
