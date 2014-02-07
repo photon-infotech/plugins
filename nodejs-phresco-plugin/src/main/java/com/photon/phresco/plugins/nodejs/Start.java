@@ -17,18 +17,11 @@
  */
 package com.photon.phresco.plugins.nodejs;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
@@ -122,51 +115,22 @@ public class Start implements PluginConstants {
 	}
 
 	private void startNodeJS() throws MojoExecutionException {
-		BufferedReader bufferedReader = null;
-		InputStreamReader isr = null;
-		FileWriter fileWriter = null;
-		String serverhost = null;
-		int serverport = 0;
-		String serverProtocol = null;
-		String serverContext = null;
+		FileOutputStream fos = null;
 		try {
-			boolean tempConnectionAlive = false;
 			StringBuilder sb = new StringBuilder();
 			sb.append(NODE_CMD);
 			sb.append(STR_SPACE);
 			sb.append(NODE_SERVER_FILE);
 			sb.append(STR_SPACE);
 			sb.append(environmentName);
-			bufferedReader = Utility.executeCommand(sb.toString(), srcDirectory.getPath() + File.separator + PROJECT_FOLDER);
-			fileWriter = new FileWriter(baseDir.getPath() + LOG_FILE_DIRECTORY + RUN_AGS_LOG_FILE, false);
-			LogWriter logWriter = new LogWriter();
-			List<com.photon.phresco.configuration.Configuration> configurations = pUtil.getConfiguration(dotPhrescoDir, environmentName, Constants.SETTINGS_TEMPLATE_SERVER);
-			if(CollectionUtils.isEmpty(configurations)) {
-				throw new PhrescoException("Configuration is Empty...");
-			}
-			for (com.photon.phresco.configuration.Configuration serverConfiguration : configurations) {
-				serverhost = serverConfiguration.getProperties().getProperty(Constants.SERVER_HOST);
-				serverport = Integer.parseInt(serverConfiguration.getProperties().getProperty(Constants.SERVER_PORT));
-				serverProtocol = serverConfiguration.getProperties().getProperty(Constants.SERVER_PROTOCOL);
-				serverContext = serverConfiguration.getProperties().getProperty(Constants.SERVER_CONTEXT);
-			}
-
-			tempConnectionAlive = isConnectionAlive(serverProtocol, serverhost, serverport);
-			if (tempConnectionAlive) {
-				log.info("server started");
-				log.info("Server running at " + serverProtocol + "://" + serverhost + ":" + serverport + "/"
-						+ serverContext);
-			} else {
-				throw new PhrescoException("Server startup failed");
-			}
-			logWriter.writeLog(bufferedReader, fileWriter);
+			File logFile = new File(baseDir.getPath() + LOG_FILE_DIRECTORY + RUN_AGS_LOG_FILE);
+			fos = new FileOutputStream(logFile, false);
+			Utility.executeStreamconsumerFOS(srcDirectory.getPath() + File.separator + PROJECT_FOLDER,sb.toString(), fos);
 		} catch (Exception e) {
 			log.error("Server startup failed");
 			throw new MojoExecutionException(e.getMessage());
 		} finally {
-			Utility.closeStream(bufferedReader);
-			Utility.closeStream(isr);
-			Utility.closeStream(fileWriter);
+			Utility.closeStream(fos);
 		}
 	}
 
@@ -192,18 +156,4 @@ public class Start implements PluginConstants {
 			}
 		}
 	}
-
-	private static boolean isConnectionAlive(String protocol, String host, int port) {
-		boolean isAlive = true;
-		try {
-			Thread.sleep(3000);
-			URL url = new URL(protocol, host, port, "");
-			URLConnection connection = url.openConnection();
-			connection.connect();
-		} catch (Exception e) {
-			isAlive = false;
-		}
-		return isAlive;
-	}
-
 }
