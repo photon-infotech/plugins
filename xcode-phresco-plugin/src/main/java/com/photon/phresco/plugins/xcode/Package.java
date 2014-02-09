@@ -23,10 +23,18 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -37,6 +45,7 @@ import org.apache.maven.project.MavenProject;
 import com.google.gson.Gson;
 import com.photon.phresco.commons.FrameworkConstants;
 import com.photon.phresco.commons.model.ApplicationInfo;
+import com.photon.phresco.commons.model.BuildInfo;
 import com.photon.phresco.commons.model.ProjectInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
@@ -184,8 +193,29 @@ public class Package implements PluginConstants {
 				} catch (MojoExecutionException e) {
 					throw new PhrescoException(e);
 				}
+			} else {
+				String appBuildName = "";
+				String deployLocation = "";
+				String appDirectory = baseDir.getPath();
+				String buildInfoFilePath = appDirectory.concat(BUILD_DIRECTORY).concat(File.separator).concat("build.info");
+				ApplicationManager applicationManager = PhrescoFrameworkFactory.getApplicationManager();
+				List<BuildInfo> buildInfos = applicationManager.getBuildInfos(new File(buildInfoFilePath));
+				if (CollectionUtils.isNotEmpty(buildInfos)) {
+					Collections.sort(buildInfos, new BuildComparator());
+					Map<String, Boolean> options = buildInfos.get(0).getOptions();
+					if (MapUtils.isNotEmpty(options) && options.get("canCreateIpa")) {
+					deployLocation = buildInfos.get(0).getDeployLocation();
+					String buildNameSubstring = deployLocation.substring(0, deployLocation.lastIndexOf( File.separator));
+					appBuildName = buildNameSubstring.substring(buildNameSubstring.lastIndexOf( File.separator) + 1);
+					String ipaFileName = applicationInfo.getName();
+					StringBuilder testFlightCmd = new StringBuilder("mvn xcode:ipaBuilder ");
+					testFlightCmd.append("-Dapplication.name=" + ipaFileName)
+					.append(" -Dapp.path=" + deployLocation)
+					.append(" -Dbuild.name=" + appBuildName);
+					Utility.executeStreamconsumer(testFlightCmd.toString(), baseDir.getPath(), baseDir.getPath(), "");
+					}
+				}
 			}
-			
 		} catch (FileNotFoundException e) {
 			throw new PhrescoException(e);
 		} finally {
@@ -278,4 +308,19 @@ public class Package implements PluginConstants {
         }
     }
 
+}
+
+class BuildComparator implements Comparator<BuildInfo> {
+	public int compare(BuildInfo buildInfo1, BuildInfo buildInfo2) {
+		DateFormat formatter = new SimpleDateFormat("dd/MMM/yyyy hh:mm:ss");
+		Date buildTime1 = new Date();
+		Date buildTime2 = new Date();
+		try {
+			buildTime1 = (Date)formatter.parse(buildInfo1.getTimeStamp());
+			buildTime2 = (Date)formatter.parse(buildInfo2.getTimeStamp());
+		} catch (ParseException e) {
+		}
+
+		return buildTime2.compareTo(buildTime1);
+	}
 }
