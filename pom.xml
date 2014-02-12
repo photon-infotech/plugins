@@ -42,6 +42,7 @@
         <module>cq5-phresco-plugin</module>
         <module>felix-phresco-plugin</module>
 		<module>atg-phresco-plugin</module>
+		<module>cpp-phresco-plugin</module>
   </modules>
     <build>
         <directory>do_not_checkin/target</directory>
