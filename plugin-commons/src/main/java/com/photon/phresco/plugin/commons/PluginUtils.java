@@ -961,53 +961,53 @@ public class PluginUtils {
 		}
 	}
 
-	public void startNode(File baseDir, String pomFile, String submodule) throws PhrescoException {
+	public void startNode(File testDir, String funcDir, File baseDir) throws PhrescoException {
 		FileOutputStream fos = null;
 		try {
 			File LogDir = new File(baseDir + File.separator + Constants.DO_NOT_CHECKIN_DIRY + File.separator + Constants.LOG_DIRECTORY);
 			if (!LogDir.exists()) {
 				LogDir.mkdirs();
 			}
-			File pomPath = new File(baseDir + File.separator + pomFile);
-            PomProcessor processor = new PomProcessor(pomPath);
-            String functionalTestDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
+//			File pomPath = new File(baseDir + File.separator + pomFile);
+//            PomProcessor processor = new PomProcessor(pomPath);
+//            String functionalTestDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
             StringBuilder builder = new StringBuilder()
-            .append(baseDir)
-            .append(functionalTestDir);
+            .append(testDir)
+            .append(funcDir);
             executeValidatePhase(builder.toString());
             
 			File logFile  = new File(LogDir + Constants.SLASH + Constants.NODE_LOG);
 			StringBuilder sb = new StringBuilder()
 			.append(PluginConstants.JAVA_DWEBDRIVER_CHROME_DRIVER);
-			 if(StringUtils.isNotEmpty(submodule)) {
-	        	sb.append(submodule);
-	        	sb.append("/");
-	        }
-			sb.append(functionalTestDir.substring(1, functionalTestDir.length()));
+//			 if(StringUtils.isNotEmpty(submodule)) {
+//	        	sb.append(submodule);
+//	        	sb.append("/");
+//	        }
+//			sb.append(funcDir.substring(1, funcDir.length()));
 			if (findPlatform().equals(Constants.WINDOWS)) {
 				sb.append(PluginConstants.CHROMEDRIVER_CHROMEDRIVER_EXE_JAR);
 			} else {
 				sb.append(PluginConstants.CHROMEDRIVER_CHROMEDRIVER_JAR);
 			}
 			
-			 if(StringUtils.isNotEmpty(submodule)) {
-		        	sb.append(submodule);
-		        	sb.append("/");
-		        }
-			sb.append(functionalTestDir.substring(1, functionalTestDir.length()))
-			.append(PluginConstants.LIB_SELENIUM_SERVER_STANDALONE)
+//			 if(StringUtils.isNotEmpty(submodule)) {
+//		        	sb.append(submodule);
+//		        	sb.append("/");
+//		        }
+//			sb.append(funcDir.substring(1, funcDir.length()))
+			sb.append(PluginConstants.LIB_SELENIUM_SERVER_STANDALONE)
 			.append(PluginConstants.HYPEN)
-			.append(getVersion(baseDir, pomFile))
+			.append(getVersion(testDir, funcDir))
 			.append(PluginConstants.DOT_JAR)
 			.append(PluginConstants.ROLE_NODE_NODE_CONFIG);
-			 if(StringUtils.isNotEmpty(submodule)) {
-	        	sb.append(submodule);
-	        	sb.append("/");
-	        }
-			sb.append(functionalTestDir.substring(1, functionalTestDir.length()))
-	        .append(PluginConstants.NODECONFIG_JSON);
+//			 if(StringUtils.isNotEmpty(submodule)) {
+//	        	sb.append(submodule);
+//	        	sb.append("/");
+//	        }
+//			sb.append(funcDir.substring(1, funcDir.length()))
+	       sb.append(PluginConstants.NODECONFIG_JSON);
 			fos = new FileOutputStream(logFile, false);
-			Utility.executeStreamconsumer(sb.toString(), fos);
+			 Utility.executeStreamconsumerFOS(builder.toString(), sb.toString(), fos);
 		} catch (FileNotFoundException e) {
 			throw new PhrescoException(e);
 		} catch (PhrescoPomException e) {
@@ -1015,26 +1015,25 @@ public class PluginUtils {
         }
 	}
 	
-	private String getVersion(File baseDir, String pom) throws PhrescoPomException {
-		File pomFile = new File(baseDir + File.separator + pom);
-		PomProcessor processor = new PomProcessor(pomFile);
-		String functionalDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
-		File funcPomFile = new File(baseDir + File.separator + functionalDir + File.separator + Constants.POM_NAME);
+	private String getVersion(File baseDir, String funcDir) throws PhrescoPomException {
+//		File pomFile = new File(baseDir + File.separator + pom);
+//		PomProcessor processor = new PomProcessor(pomFile);
+//		String functionalDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
+		File funcPomFile = new File(baseDir + File.separator + funcDir + File.separator + Constants.POM_NAME);
 		PomProcessor funPomProcessor = new PomProcessor(funcPomFile);
 		Dependency dependency = funPomProcessor.getDependency(PluginConstants.ORG_SELENIUMHQ_SELENIUM, PluginConstants.SELENIUM_SERVER_STANDALONE);
 		return dependency.getVersion();
 	}
 
-	public void startHub(File baseDir, String pomFile, String submodule) throws PhrescoException {
+	public void startHub(File testDir, String funcDir, File baseDir) throws PhrescoException {
 	    FileOutputStream fos = null;
 	    try {
-	        File pomPath = new File(baseDir + File.separator + pomFile);
-            PomProcessor processor = new PomProcessor(pomPath);
-            String functionalTestDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
+//	        File pomPath = new File(baseDir + File.separator + pomFile);
+//            PomProcessor processor = new PomProcessor(pomPath);
+//            String functionalTestDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
             StringBuilder builder = new StringBuilder()
-            .append(baseDir)
-            .append(functionalTestDir);
-            
+            .append(testDir)
+            .append(funcDir);
 	        executeValidatePhase(builder.toString());
 	        File LogDir = new File(baseDir + File.separator + Constants.DO_NOT_CHECKIN_DIRY + File.separator + Constants.LOG_DIRECTORY);
 	        if (!LogDir.exists()) {
@@ -1043,24 +1042,28 @@ public class PluginUtils {
 	        File logFile  = new File(LogDir + Constants.SLASH + Constants.HUB_LOG);
 	        StringBuilder sb = new StringBuilder()
 	        .append(PluginConstants.JAVA_JAR);
-	        if(StringUtils.isNotEmpty(submodule)) {
-	        	sb.append(submodule);
-	        	sb.append("/");
-	        }
-	       sb.append(functionalTestDir.substring(1, functionalTestDir.length()))
-	        .append(PluginConstants.LIB_SELENIUM_SERVER_STANDALONE)
+//	        if(StringUtils.isNotEmpty(submodule)) {
+//	        	sb.append(submodule);
+//	        	sb.append("/");
+//	        }
+//	        sb.append(testDir);
+//	        sb.append("/");
+//	       sb.append(funcDir.substring(1, funcDir.length()))
+	        sb.append(PluginConstants.LIB_SELENIUM_SERVER_STANDALONE)
 	        .append(PluginConstants.HYPEN)
-			.append(getVersion(baseDir, pomFile))
+			.append(getVersion(testDir, funcDir))
 			.append(PluginConstants.DOT_JAR)
 			.append(PluginConstants.ROLE_HUB_HUB_CONFIG);
-	         if(StringUtils.isNotEmpty(submodule)) {
-	        	sb.append(submodule);
-	        	sb.append("/");
-	        }
-	       sb.append(functionalTestDir.substring(1, functionalTestDir.length()))
-	        .append(PluginConstants.HUBCONFIG_JSON);
+//	         if(StringUtils.isNotEmpty(submodule)) {
+//	        	sb.append(submodule);
+//	        	sb.append("/");
+//	        }
+//	       sb.append(testDir);
+//	       sb.append("/");
+//	       sb.append(funcDir.substring(1, funcDir.length()))
+	       sb.append(PluginConstants.HUBCONFIG_JSON);
 	        fos = new FileOutputStream(logFile, false);
-	        Utility.executeStreamconsumer(sb.toString(), fos);
+	        Utility.executeStreamconsumerFOS(builder.toString(), sb.toString(), fos);
 	    } catch (FileNotFoundException e) {
 	        throw new PhrescoException(e);
 	    } catch (PhrescoPomException e) {
