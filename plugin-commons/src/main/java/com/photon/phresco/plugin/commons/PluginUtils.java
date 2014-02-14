@@ -1261,7 +1261,7 @@ public class PluginUtils {
 		}
 	}
 	
-	private String findPlatform() {
+	public String findPlatform() {
 		String osName = System.getProperty(Constants.OS_NAME);
 		if (osName.contains(Constants.WINDOWS)) {
 			osName = Constants.WINDOWS;
