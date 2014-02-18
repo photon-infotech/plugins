@@ -30,12 +30,18 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.parsers.DocumentBuilder;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import com.google.gson.Gson;
 import com.photon.phresco.api.ConfigManager;
@@ -55,6 +61,7 @@ import com.photon.phresco.plugins.util.PluginPackageUtil;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
 import com.phresco.pom.exception.PhrescoPomException;
+import com.phresco.pom.model.Plugin;
 import com.phresco.pom.util.PomProcessor;
 
 public class Package implements PluginConstants {
@@ -83,6 +90,7 @@ public class Package implements PluginConstants {
 	private File srcDirectory;
 	private String dotPhrescoDirName;
     private File dotPhrescoDir;
+	private String filters;
 	
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -96,6 +104,7 @@ public class Package implements PluginConstants {
         util = new PluginPackageUtil();
         pu = new PluginUtils();
         builder = new StringBuilder();
+        filters = configs.get(COMPONENTS);
         if(StringUtils.isNotEmpty(mavenProjectInfo.getModuleName())) {
         	moduleName = mavenProjectInfo.getModuleName();
         }
@@ -113,6 +122,7 @@ public class Package implements PluginConstants {
         	}
         	packagingType = getPackagingType();
 			init();
+			updatePluginFilters();
 			getMavenCommands(configuration); // -DskipTests cmd
 			adaptSourceConfig();
 			executeMvnPackage();
@@ -124,6 +134,40 @@ public class Package implements PluginConstants {
 		} catch (IOException e) {
 			throw new PhrescoException(e);
 		}	
+	}
+	
+	private void updatePluginFilters() throws PhrescoException {
+		List<String> filterList = pu.csvToList(filters);
+		try {
+			PomProcessor processor = new PomProcessor(pomFile);
+			DocumentBuilder documentBuilder = processor.getDocumentBuilder();
+			Document document = documentBuilder.newDocument();
+			Plugin plugin = processor.getPlugin("com.day.jcr.vault", "content-package-maven-plugin");
+			if (plugin != null) {
+				com.phresco.pom.model.Plugin.Configuration configuration = plugin.getConfiguration();
+				if (configuration == null) {
+					configuration = new com.phresco.pom.model.Plugin.Configuration();
+				}
+				List<Element> configElementList = configuration.getAny();
+				for (Element configElement : configElementList) {
+					if ("filters".equals(configElement.getTagName())) {
+						configElementList.remove(configElement);
+						break;
+					}
+				}
+				Element filtersElement = document.createElement("filters");
+				for (String filter : filterList) {
+					Node nodeFilter = filtersElement.appendChild(document.createElement("filter"));
+					Node nodeRoot = nodeFilter.appendChild(document.createElement("root"));
+					nodeRoot.setTextContent(filter);
+				}
+				configElementList.add(filtersElement);
+				plugin.setConfiguration(configuration);
+			}
+			processor.save();
+		} catch (PhrescoPomException e) {
+			throw new PhrescoException(e);
+		}
 	}
 	
 	private void adaptSourceConfig() throws MojoExecutionException {
