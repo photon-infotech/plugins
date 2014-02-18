@@ -146,7 +146,7 @@ public class DefaultSeleniumPlugin implements SeleniumPlugin {
 			String funcDir = processor.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
 			pluginUtils.updateHubConfigInfo(testDir, funcDir, hubConfig);
 			log.info("Starting the Hub...");
-			pluginUtils.startHub(workingDir, pomFile.getName(), subModule);
+			pluginUtils.startHub(testDir, funcDir, baseDir);
 		} catch (PhrescoPomException e) {
 			throw new PhrescoException(e);
 		} catch (UnknownHostException e) {
@@ -288,7 +288,7 @@ public class DefaultSeleniumPlugin implements SeleniumPlugin {
 			}
 			pluginutil.updateNodeConfigInfo(testDir, funcDir, nodeConfiguration);
 			log.info("Starting the Node...");
-			pluginutil.startNode(workingDir, pomFile.getName(),subModule);
+			pluginutil.startNode(testDir, funcDir,baseDir);
 		}  catch (PhrescoPomException e) {
 			throw new PhrescoException(e);
 		} catch (IOException e) {

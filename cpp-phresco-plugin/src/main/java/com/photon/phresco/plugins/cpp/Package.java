@@ -103,13 +103,13 @@ implements PluginConstants
 			File pomFile = new File(baseDir + File.separator + pomFileName);
 			PomProcessor processor = new PomProcessor(pomFile);
 			if (osName.contains(Constants.WINDOWS)) {
-				fileName = processor.getProperty(Constants.POM_PROP_KEY_PHRESCO_WINDOWS_CPP_FILE_NAME);
+				fileName = processor.getProperty("phresco.windows.cpp.file.name");
 				sb.append("tcc");
 				if (StringUtils.isNotEmpty(fileName))
 					sb.append(STR_SPACE).append(fileName).append(DOT).append("cpp");
 			}
 			if (osName.contains(FrameworkConstants.MAC)) {
-				fileName = processor.getProperty(Constants.POM_PROP_KEY_PHRESCO_MAC_CPP_FILE_NAME);
+				fileName = processor.getProperty("phresco.mac.cpp.file.name");
 				sb.append("g++ -o").append(STR_SPACE).
 				append(fileName).append(STR_SPACE).
 				append(fileName).append(DOT).append("cpp"); 

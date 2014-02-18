@@ -947,15 +947,12 @@ PluginConstants {
 			String browser, String resolution, String baseDir)
 	throws PhrescoException {
 		PluginUtils pu = new PluginUtils();
-		List<com.photon.phresco.configuration.Configuration> configurations = pu
-		.getConfiguration(new File(baseDir), envName,
+		List<com.photon.phresco.configuration.Configuration> configurations = pu.getConfiguration(new File(baseDir), envName,
+				Constants.SETTINGS_TEMPLATE_SERVER);
+		List<com.photon.phresco.configuration.Configuration> webserviceConfigurations = pu.getConfiguration(new File(baseDir), envName,
 				Constants.SETTINGS_TEMPLATE_WEBSERVICE);
-		List<com.photon.phresco.configuration.Configuration> configuration2 = pu.getConfiguration(new File(baseDir), envName,
-				Constants.SETTINGS_TEMPLATE_WEBSERVICE);
-		if (CollectionUtils.isNotEmpty(configuration2)) {
-			for (com.photon.phresco.configuration.Configuration configuration : configuration2) {
-				configurations.add(configuration);
-			}
+		if (CollectionUtils.isNotEmpty(webserviceConfigurations)) {
+			configurations.addAll(webserviceConfigurations);
 		}
 		String techId = getTechId(new File(baseDir));
 		if (CollectionUtils.isNotEmpty(configurations)) {

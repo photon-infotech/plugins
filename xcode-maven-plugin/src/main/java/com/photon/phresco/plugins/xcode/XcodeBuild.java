@@ -512,6 +512,8 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 	
 	private void executeAppCreateCommads() throws IOException, InterruptedException, MojoExecutionException {
 		Boolean isLogicalTest = unittest && !applicationTest ? true : false;
+		Boolean isApplicationTest = applicationTest ? true : false;
+			
 		String executeCreateCmdForXcode = executeCreateCmdForXcode();
 		boolean isXcodeLatestVersion = isXcodeLatestVersion(executeCreateCmdForXcode, "5.0");
 		String sdkVersion = getSDKVersion(sdk);
@@ -535,7 +537,7 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 		
 		if (StringUtils.isNotBlank(xcodeTarget)) {
 			// latest version xcode logical test command changes
-			if (isXcodeLatestVersion && isLogicalTest) {
+			if (isXcodeLatestVersion && (isLogicalTest || isApplicationTest)) {
 				commands.add(SCHEME);
 			} else {
 				// same for other operations
@@ -550,7 +552,7 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 		}
 		
 		
-		if (StringUtils.isNotBlank(sdkVersion.trim()) && isXcodeLatestVersion && isLogicalTest) {
+		if (StringUtils.isNotBlank(sdkVersion.trim()) && isXcodeLatestVersion && (isLogicalTest || isApplicationTest)) {
 			commands.add("-destination OS=" + sdkVersion.trim() + ",name=" + "\"" + "iPhone Retina (4-inch)" + "\"");
 		} else if (StringUtils.isNotBlank(configuration)) {
 			commands.add(CONFIGURATION);
@@ -558,16 +560,16 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 		}
 		
 		// if it is unit test, we have to set TEST_AFTER_BUILD=YES in build settings
-		if (unittest) {
-			commands.add(TEST_AFTER_BUILD_YES);
-		}
+		// if (unittest) {
+		//	commands.add(TEST_AFTER_BUILD_YES);
+		// }
 		
 		// if it is unit test and application test, we need to pass this command
-		if (unittest && applicationTest) {
-			commands.add(RUN_UNIT_TEST_WITH_IOS_SIM_YES);
-		}
+		// if (unittest && applicationTest) {
+		// 	commands.add(RUN_UNIT_TEST_WITH_IOS_SIM_YES);
+		// }
 		
-		if (StringUtils.isNotBlank(sdk) && !projectType.equals(MAC) && ((isXcodeLatestVersion && !isLogicalTest) || !isXcodeLatestVersion)) {
+		if (StringUtils.isNotBlank(sdk) && !projectType.equals(MAC) && ((isXcodeLatestVersion && !isLogicalTest && !isApplicationTest) || !isXcodeLatestVersion)) {
 			commands.add(SDK);
 			commands.add(sdk);
 		}
@@ -588,7 +590,7 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 			commands.add(CMD_CLEAN);
 		}
 		
-		if (isXcodeLatestVersion && isLogicalTest) {
+		if (isXcodeLatestVersion && (isLogicalTest || isApplicationTest)) {
 			commands.add(CMD_TEST);
 		} else {
 			commands.add(CMD_BUILD);
