@@ -46,15 +46,18 @@ implements PluginConstants
 	private String zipName;
 	private Date currentDate;
 	private String buildName;
+	private String targetDir;
 	private String buildNumber;
 	private PluginUtils pluginUtils;
 	private PluginPackageUtil util;
+
 	
 	public void pack(Configuration config, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.baseDir = mavenProjectInfo.getBaseDir().getPath();
 		this.project = mavenProjectInfo.getProject();
 		this.log = log;
-		workingDir = baseDir + File.separator + PROJECT_FOLDER;
+		 targetDir = baseDir + DO_NOT_CHECKIN_FOLDER + File.separator + TARGET;
+		 workingDir = baseDir + File.separator + PROJECT_FOLDER;
 		 Map<String, String> configs = MojoUtil.getAllValues(config);
 	     environmentName = configs.get(ENVIRONMENT_NAME);
 	     buildName = configs.get(BUILD_NAME);
@@ -74,6 +77,7 @@ implements PluginConstants
 	
 	private void init() throws MojoExecutionException {
 		try {
+			File target = new File(targetDir);
 			buildDir = new File(baseDir + PluginConstants.BUILD_DIRECTORY);
 			buildInfoFile = new File(baseDir + PluginConstants.BUILD_DIRECTORY + BUILD_INFO_FILE);
 			File buildInfoDir = new File(baseDir + PluginConstants.BUILD_DIRECTORY);
@@ -85,6 +89,10 @@ implements PluginConstants
 			if (!buildInfoDir.exists()) {
 				buildInfoDir.mkdirs();
 				log.info("Build directory created..." + buildDir.getPath());
+			}
+			if (!target.exists()) {
+				target.mkdirs();
+				log.info("target directory created..." + target.getPath());
 			}
 			nextBuildNo = util.generateNextBuildNo(buildInfoFile);
 			currentDate = Calendar.getInstance().getTime();
@@ -107,14 +115,16 @@ implements PluginConstants
 				sb.append("tcc");
 				if (StringUtils.isNotEmpty(fileName))
 					sb.append(STR_SPACE).append(fileName).append(DOT).append("cpp");
+				clearExe();
 			}
 			if (osName.contains(FrameworkConstants.MAC)) {
 				fileName = processor.getProperty("phresco.mac.cpp.file.name");
 				sb.append("g++ -o").append(STR_SPACE).
-				append(fileName).append(STR_SPACE).
+				append(targetDir+File.separator +fileName).append(STR_SPACE).
 				append(fileName).append(DOT).append("cpp"); 
+				clearTarget();
 			}
-			clearExe();
+			
 			log.info("WorkingDir : " + workingDir);
 			log.info("Command : " + sb.toString());
 			Utility.executeStreamconsumer(sb.toString(), workingDir, "", "");
@@ -123,7 +133,8 @@ implements PluginConstants
 			throw new PhrescoException(e);
 		}
 	}
-
+   
+	
 	private void clearExe () throws PhrescoException {
 		File exeFile = new File(workingDir + File.separatorChar + fileName + ".EXE");
 		File objFile = new File(workingDir + File.separatorChar + fileName + ".OBJ");
@@ -133,6 +144,14 @@ implements PluginConstants
 		if (objFile.exists()) {
 			FileUtil.delete(exeFile);
 		}
+	}
+	private void clearTarget () throws PhrescoException {
+		File exeFile = new File(targetDir + File.separatorChar + fileName);
+		
+		if (exeFile.exists()) {
+			FileUtil.delete(exeFile);
+		}
+		
 	}
 	
 	private boolean build() throws MojoExecutionException {
@@ -154,6 +173,9 @@ implements PluginConstants
 			String zipFilePath = buildDir.getPath() + File.separator + zipName;
 			String zipNameWithoutExt = zipName.substring(0, zipName.lastIndexOf('.'));
 			copyExeToPackage(zipNameWithoutExt);
+			if(osName.contains(FrameworkConstants.MAC)){
+			Utility.executeStreamconsumer("chmod 777 " +fileName , tempDir.getPath(), "", "");
+			}
 			ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getErrorMessage(), e);
@@ -162,14 +184,28 @@ implements PluginConstants
 	
 	private void copyExeToPackage(String zipNameWithoutExt) throws MojoExecutionException {
 		try {
-			File targetDir = new File(workingDir);
-			String[] list = targetDir.list(new ExeFileNameFilter());
-			if (list.length > 0) {
-				File jarFile = new File(targetDir.getPath() + File.separator + list[0]);
-				tempDir = new File(buildDir.getPath() + File.separator + zipNameWithoutExt);
-				tempDir.mkdir();
-				FileUtils.copyFileToDirectory(jarFile, tempDir);
-			}
+			File exeFile=null;
+			String[] list =null;
+			if(osName.contains(Constants.WINDOWS)){
+			     File exeFileLocation = new File(workingDir);
+			     list = exeFileLocation.list(new ExeFileNameFilter());
+			     if (list.length > 0) {
+				     exeFile = new File(exeFileLocation.getPath() + File.separator + list[0]);
+				      tempDir = new File(buildDir.getPath() + File.separator + zipNameWithoutExt);
+				      tempDir.mkdir();
+				      FileUtils.copyFileToDirectory(exeFile, tempDir);
+			      }
+			 }
+			if(osName.contains(FrameworkConstants.MAC)){
+				File exeFileLocation = new File(targetDir);
+			    list = exeFileLocation.list();
+			     if (list.length > 0) {
+				      exeFile = new File(exeFileLocation.getPath() + File.separator + list[0]);
+				      tempDir = new File(buildDir.getPath() + File.separator + zipNameWithoutExt);
+				      tempDir.mkdir();
+				      FileUtils.copyFileToDirectory(exeFile, tempDir);
+			      }
+			 }
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
