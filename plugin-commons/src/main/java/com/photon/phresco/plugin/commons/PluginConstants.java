@@ -368,6 +368,14 @@ public interface PluginConstants {
 	 String DEVICE_IPAD					= "ipad";
 	 String SRC 						= "src";
 	 
+	 
+	 //Constants for CPP
+	 String RELEASE	 				= "release";
+	 String DEBUG 					= "debug";
+	 String RELEASE_FOLDER_PATH     = "/out/Release";
+	 String DEBUG_FOLDER_PATH       = "/out/Debug";
+	 
+	 
 	 //Constants for Android
 	 
 	 String PROGUARD	 				= "proguard";
@@ -526,6 +534,7 @@ public interface PluginConstants {
 	 String PACK_MINIFIED_FILES			= "packMinifiedFiles";
 	 String EXCLUDE_FILE				= "excludeFile";
 	 String KEY_PASSWORD                = "keyPassword";
+	 
 	 
 	 //Constants for Time Formatter
 	 String TIME_STAMP_FOR_BUILD_NAME 	= "dd-MMM-yyyy-HH-mm-ss";
