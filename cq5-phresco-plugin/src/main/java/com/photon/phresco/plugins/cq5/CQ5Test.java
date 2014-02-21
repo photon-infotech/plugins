@@ -64,13 +64,13 @@ public class CQ5Test implements PluginConstants {
 			if (testAgainst.equals(JAVA)) {
 				String reportDir = processor.getProperty("phresco.unitTest.java.report.dir");
 				File reportLoc = new File(workingDirectory.getPath() + File.separator  + reportDir);
-				if (reportLoc.exists()) {
+				if (StringUtils.isNotEmpty(reportDir) && reportLoc.exists()) {
 					pluginUtils.delete(reportLoc);
 				}
 			} else if (testAgainst.equals(JS)) {
 				String reportJsDir = processor.getProperty("phresco.unitTest.js.report.dir");
 				File reportJsLoc = new File(workingDirectory.getPath() + File.separator  + reportJsDir);
-				if (reportJsLoc.exists()) {
+				if (StringUtils.isNotEmpty(reportJsDir) && reportJsLoc.exists()) {
 					pluginUtils.delete(reportJsLoc);
 				}
 			}

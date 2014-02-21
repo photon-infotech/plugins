@@ -66,7 +66,7 @@ import com.photon.phresco.util.IosSdkUtil.MacSdkType;
  * @phase compile
  */
 public class XcodeBuild extends AbstractMojo implements PluginConstants {
-
+	
 	private static final String RUN_UNIT_TEST_WITH_IOS_SIM_YES = "RUN_UNIT_TEST_WITH_IOS_SIM=YES";
 
 	private static final String TEST_AFTER_BUILD_YES = "TEST_AFTER_BUILD=YES";
@@ -253,6 +253,11 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 	 */
 	private String projectType;
 	
+	/**
+	 * @parameter
+	 */
+	private String ciBuild;
+	
 	protected int buildNo;
 	private File buildDirFile;
 	private File buildInfoFile;
@@ -263,6 +268,7 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 	private String dSYMFileName;
 	private String deliverable;
 	private Map<String, Object> sdkOptions;
+	private boolean isCiBuild;
 	
 	/**
 	 * Execute the xcode command line utility.
@@ -275,6 +281,7 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 		getLog().info("basedir xcode " + basedir);
 		getLog().info("baseDir Name Xcode" + baseDir.getName());
 
+		isCiBuild = Boolean.valueOf(ciBuild);
 		try {
 			if(!SdkVerifier.isAvailable(sdk) && !projectType.equals(MAC)) {
 					throw new MojoExecutionException("Selected version " +sdk +" is not available!");
@@ -289,7 +296,9 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 			init();
 			configure();
 			
-			executeAppCreateCommads();
+			if (!isCiBuild) {
+				executeAppCreateCommads();
+			}
 			// below statement is used to get the project type. if it produces .a file, it static lib or app project
 			String projectTypeIdentified = getProjectType();
 			if (StringUtils.isEmpty(projectTypeIdentified)) {
@@ -650,10 +659,12 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 		try {
 			//if it is application test, no need to delete target directory
 			// To Delete the buildDirectory if already exists
-			if (buildDirectory.exists() && !applicationTest) {
-				getLog().info("removing exisiting target folder ... ");
-				FileUtils.deleteQuietly(buildDirectory);
-				buildDirectory.mkdirs();
+			if (!isCiBuild) {
+				if (buildDirectory.exists() && !applicationTest) {
+					getLog().info("removing exisiting target folder ... ");
+					FileUtils.deleteQuietly(buildDirectory);
+					buildDirectory.mkdirs();
+				}
 			}
 
 			buildInfoList = new ArrayList<BuildInfo>(); // initialization

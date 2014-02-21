@@ -95,7 +95,7 @@ public class JavaTest implements PluginConstants {
                 goalPackBeforeTest = getGoalPackBeforeTest(workingDirectory);
             }
             File reportLoc = new File(workingDirectory.getPath() + File.separator  + reportDir);
-            if (reportLoc.exists()) {
+            if (StringUtils.isNotEmpty(reportDir) && reportLoc.exists()) {
                 pluginUtils.delete(reportLoc);
             }
 
