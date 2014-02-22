@@ -19,6 +19,8 @@ import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Para
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.PossibleValues.Value;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
+import com.phresco.pom.exception.PhrescoPomException;
+import com.phresco.pom.util.PomProcessor;
 
 public class DynamicTree implements DynamicParameter, Constants {
 
@@ -26,7 +28,10 @@ public class DynamicTree implements DynamicParameter, Constants {
 		PossibleValues possibleValues = new PossibleValues();
 		try {
 			ApplicationInfo applicationInfo = (ApplicationInfo) paramsMap.get(KEY_APP_INFO);
-			String browsePath = Utility.getProjectHome() + applicationInfo.getAppDirName() + File.separator + "src/main/content/jcr_root";
+			File pomFileLocation = Utility.getPomFileLocation(Utility.getProjectHome() + applicationInfo.getAppDirName(), "");
+			PomProcessor pomProcessor = new PomProcessor(pomFileLocation);
+			String jcrRootPathProp = pomProcessor.getProperty("jcr.root.path");
+			String browsePath = Utility.getProjectHome() + applicationInfo.getAppDirName() + File.separator + jcrRootPathProp;
 			DOMSource createXML = Utility.createXML(browsePath, "Folder");
 			StringWriter writer = new StringWriter();
 			StreamResult result = new StreamResult(writer);
@@ -44,6 +49,8 @@ public class DynamicTree implements DynamicParameter, Constants {
 		} catch (TransformerFactoryConfigurationError e) {
 			throw new PhrescoException(e);
 		} catch (TransformerException e) {
+			throw new PhrescoException(e);
+		} catch (PhrescoPomException e) {
 			throw new PhrescoException(e);
 		}
 		return possibleValues;

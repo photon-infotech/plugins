@@ -153,13 +153,23 @@ public class Package implements PluginConstants {
 					if ("filters".equals(configElement.getTagName())) {
 						configElementList.remove(configElement);
 						break;
+					} else if ("filterSource".equals(configElement.getTagName())) {
+						configElementList.remove(configElement);
+						break;
 					}
 				}
-				Element filtersElement = document.createElement("filters");
-				for (String filter : filterList) {
-					Node nodeFilter = filtersElement.appendChild(document.createElement("filter"));
-					Node nodeRoot = nodeFilter.appendChild(document.createElement("root"));
-					nodeRoot.setTextContent(filter);
+				Element filtersElement = null;
+				if (CollectionUtils.isNotEmpty(filterList)) {
+					filtersElement = document.createElement("filters");
+					for (String filter : filterList) {
+						Node nodeFilter = filtersElement.appendChild(document.createElement("filter"));
+						Node nodeRoot = nodeFilter.appendChild(document.createElement("root"));
+						nodeRoot.setTextContent(filter);
+					}
+				} else {
+					String filterXmlProp = processor.getProperty("vault.filter.xml.path");
+					filtersElement = document.createElement("filterSource");
+					filtersElement.setTextContent(filterXmlProp);
 				}
 				configElementList.add(filtersElement);
 				plugin.setConfiguration(configuration);
