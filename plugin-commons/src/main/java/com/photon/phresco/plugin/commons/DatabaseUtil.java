@@ -178,7 +178,7 @@ public class DatabaseUtil {
 	}
 
 	public void fetchSqlConfiguration(String sqlPath, Boolean importSql, File baseDir, String environmentName, File dotPhrescoDir) throws PhrescoException {
-		if (importSql) {
+		if (importSql != null && importSql) {
 			PluginUtils putil = new PluginUtils();
 			List<com.photon.phresco.configuration.Configuration> configuration = putil.getConfiguration(dotPhrescoDir, environmentName, Constants.SETTINGS_TEMPLATE_DB);
 			for (com.photon.phresco.configuration.Configuration config : configuration) {
