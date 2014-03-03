@@ -1571,9 +1571,7 @@ public class GenerateReport implements PluginConstants {
 					errorTestSuites = errorTestSuites + errors;
 					successTestSuites = (int) (successTestSuites + success);
 					String rstValues = tests + "," + success + "," + failures + "," + errors;
-					
-					AllTestSuite allTestSuiteDetail = new AllTestSuite(testSuite.getName(), tests, success, failures, errors);
-
+					AllTestSuite allTestSuiteDetail = new AllTestSuite(testSuite.getName(), testSuite.getTotal(), testSuite.getSuccess(), testSuite.getFailures(), testSuite.getErrors());
 
 					testSuite.setTestCases(testCases);
 					for (TestCase testCase : testCases) {
