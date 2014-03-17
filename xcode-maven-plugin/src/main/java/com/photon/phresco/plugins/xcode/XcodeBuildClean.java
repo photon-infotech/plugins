@@ -24,6 +24,7 @@ import java.io.InputStream;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.project.MavenProject;
 
 /**
  * Run the xcodebuild command line program
@@ -32,6 +33,15 @@ import org.apache.maven.plugin.MojoExecutionException;
  */
 public class XcodeBuildClean extends AbstractMojo {
 	
+	/**
+     * The Maven project.
+     * 
+     * @parameter expression="${project}"
+     * @required
+     * @readonly
+     */
+    protected MavenProject project;
+    
 	/**
 	 * Location of the xcodebuild executable.
 	 * @parameter expression="${xcodebuild}" default-value="/usr/bin/xcodebuild"
@@ -64,7 +74,8 @@ public class XcodeBuildClean extends AbstractMojo {
 			if(xcodeProject != null){
 				pb.command().add("-project " + xcodeProject);
 			}
-			pb.directory(new File(basedir,"source"));
+			String sourceDirectory = project.getBuild().getSourceDirectory();
+			pb.directory(new File(sourceDirectory));
 			getLog().info("Executing command : "+pb.command());
 			Process child = pb.start();
 			pb.redirectErrorStream(true);

@@ -464,6 +464,7 @@ public interface PluginConstants {
 	 String FUNCTIONAL 					= "functional";
 	 String UNIT 						= "unit";
 	 String COMPONENT 					= "component";
+	 String COMPONENTS 					= "components";
 	 String LOAD 						= "load";
 	 String PERFORMACE 					= "performance";
 	 String INTEGRATION					= "integration";
