@@ -20,6 +20,9 @@ package com.photon.phresco.plugins;
 import java.io.File;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -64,6 +67,35 @@ public class PhrescoStart extends PhrescoAbstractMojo {
      * @readonly
      */
     protected String moduleName;
+    
+    /**
+     * The current Maven session.
+     *
+     * @parameter default-value="${session}"
+     * @parameter required
+     * @readonly
+     */
+    private MavenSession mavenSession;
+
+    /**
+     * The Maven BuildPluginManager component.
+     *
+     * @component
+     * @required
+     */
+    private BuildPluginManager pluginManager;
+    
+    /**
+     * The Maven BuildPluginManager component.
+     *
+     * @component
+     * @required
+     */
+    
+    /**@parameter 
+     * default-value="${localRepository}" 
+     * */
+    private ArtifactRepository localRepository;
 	
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
@@ -80,7 +112,7 @@ public class PhrescoStart extends PhrescoAbstractMojo {
         		infoFile = baseDir + File.separator + moduleName + File.separator + Constants.START_INFO_FILE;
         	}
 			PhrescoPlugin plugin = getPlugin(getDependency(infoFile, START));
-			plugin.startServer(getConfiguration(infoFile, START), getMavenProjectInfo(project, moduleName));
+			plugin.startServer(getConfiguration(infoFile, START), getMavenProjectInfo(project, moduleName, mavenSession, pluginManager, localRepository));
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
