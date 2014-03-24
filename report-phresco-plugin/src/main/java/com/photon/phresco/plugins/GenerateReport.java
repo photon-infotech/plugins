@@ -179,6 +179,7 @@ public class GenerateReport implements PluginConstants {
 	private String sonarUrl = null;
 	private String pdfReportName = "";
 	private boolean isClangReport;
+	private boolean isSonarAvailable;
 	private boolean showDeviceReport;
 	private File srcDirectory;
 	private File srcRootDir;
@@ -371,8 +372,8 @@ public class GenerateReport implements PluginConstants {
 			builder.append("..");
 			builder.append(File.separator);
 			builder.append(POM_XML);
-			
 			File modulePomPath = new File(builder.toString());
+
 			if(modulePomPath.exists()) {
 				PomProcessor processor = new PomProcessor(modulePomPath);
 				Modules pomModule = processor.getPomModule();
@@ -404,6 +405,7 @@ public class GenerateReport implements PluginConstants {
 				cumulativeReportparams.put(IS_MULTI_MODULE_PROJECT, true);
 				cumulativeReportparams.put(MULTI_MODULE_UNIT_TEST_REPORTS, moduleWiseReports);
 			} else {
+
 				SureFireReport unitTestSureFireReports = null;
 				unitTestSureFireReports = sureFireReports(null);
 
@@ -496,7 +498,7 @@ public class GenerateReport implements PluginConstants {
 				cumulativeReportparams.put(LOAD_TEST_REPORTS, loadTestResults);
 			}
 
-			if (!isClangReport) {
+			if (isSonarAvailable) {
 				//Sonar details
 				List<SonarReport> sonarReports = new ArrayList<SonarReport>();
 				String pomPath =  baseDir + File.separator + mavenProject.getFile().getName();
@@ -522,6 +524,7 @@ public class GenerateReport implements PluginConstants {
 										}
 									}
 								}
+								
 							} else {
 								SonarReport srcSonarReport = generateSonarReport(sonarTechReport, null);
 								if(srcSonarReport != null) {
@@ -535,7 +538,9 @@ public class GenerateReport implements PluginConstants {
 					}
 				}
 			}
+			
 			generateCumulativeTestReport(cumulativeReportparams);
+			
 		} catch (Exception e) {
 			log.error("Report generation errorr ");
 			throw new PhrescoException(e);
@@ -544,6 +549,7 @@ public class GenerateReport implements PluginConstants {
 
 	//cumulative test report generation
 	public void generateCumulativeTestReport(Map<String, Object> cumulativeReportparams) throws PhrescoException {
+		
 		log.debug("Entering Method PhrescoReportGeneration.generateCumulativeTestReport()");
 		InputStream reportStream = null;
 		BufferedInputStream bufferedInputStream = null;
@@ -552,6 +558,8 @@ public class GenerateReport implements PluginConstants {
 		String semiPath = File.separator + baseDir.getName() + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
 		try {
 			if (isClangReport) { // iphone
+				
+				
 				outFileNamePDF = Utility.getPhrescoTemp() + uuid + semiPath;
 			} else {
 				outFileNamePDF = baseDir + File.separator + "do_not_checkin" + File.separator + ARCHIVES + File.separator + CUMULATIVE + File.separator + fileName + DOT + PDF;
@@ -1515,7 +1523,6 @@ public class GenerateReport implements PluginConstants {
 			}
 			List<TestSuite> testSuites = getTestSuite(doc, testSuitePath);
 			// crisp info
-			
 			if(CollectionUtils.isNotEmpty(testSuites)) {
 				for (TestSuite testSuite : testSuites) { 
 					
@@ -1532,7 +1539,6 @@ public class GenerateReport implements PluginConstants {
 		int errorTestSuites = 0;
 			if(CollectionUtils.isNotEmpty(testSuits)) {
 				for (TestSuite testSuite : testSuits) { 
-					
 					List<TestCase> testCases = testSuite.getTestCases();
 					int tests = 0;
 					int failures = 0;
@@ -2894,7 +2900,7 @@ public class GenerateReport implements PluginConstants {
 		String sonarUrl = configs.get("sonarUrl");
 		String appVersion = mavenProject.getVersion();
 		String pdfReportName = configs.get("reportName");
-
+        
 		logo = configs.get("logo");
 		// Default copyrights
 		this.copyRights = DEFAULT_COPYRIGHTS;
@@ -2945,7 +2951,14 @@ public class GenerateReport implements PluginConstants {
 			isClangReport = true;
 		}
 	}
-
+	
+	public void isSonarAvailable(){
+		
+		if (StringUtils.isNotEmpty(sonarUrl)) {
+			isSonarAvailable = true;
+		}
+	}
+	
 	public void getUnitTestReport(MultiModuleReports appendTestReport) throws Exception {
 		testType = UNIT;
 		SureFireReport unitTestSureFireReports = sureFireReports(null);
@@ -3030,7 +3043,7 @@ public class GenerateReport implements PluginConstants {
 	}
 
 	public void getCodeValidationReport(MultiModuleReports appendTestReport) throws Exception {
-		if (!isClangReport) {
+		if (isSonarAvailable) {
 			//Sonar details
 			List<SonarReport> sonarReports = new ArrayList<SonarReport>();
 			String pomPath =  baseDir + File.separator + mavenProject.getFile().getName();
@@ -3087,6 +3100,7 @@ public class GenerateReport implements PluginConstants {
 		ApplicationInfo rootAppInfo = getApplicationInfo(); // sets appName and ProjectName
 		setAppinfoConfigValues(rootAppInfo);
 		isClangReport(); // isClangReport check
+		isSonarAvailable(); // checking isSonar available or not 
 
 		MultiModuleReports rootModuleReport = new MultiModuleReports();
 		rootModuleReport.setIsRootModule(true);
@@ -3111,7 +3125,7 @@ public class GenerateReport implements PluginConstants {
 				ApplicationInfo appInfo = getApplicationInfo(); // sets appName and ProjectName
 				setAppinfoConfigValues(appInfo);
 				isClangReport(); // isClangReport check
-
+				isSonarAvailable(); // checking isSonar available or not 
 				MultiModuleReports multiModuleReport = new MultiModuleReports();
 				multiModuleReport.setIsRootModule(false);
 				multiModuleReport.setApplicationLabel("Module Name :");
@@ -3243,6 +3257,7 @@ public class GenerateReport implements PluginConstants {
 				setAppinfoConfigValues(appInfo);
 				setReportFileName();
 				isClangReport();
+				isSonarAvailable(); // checking isSonar available or not 
 
 				if ("All".equalsIgnoreCase(testType)) {
 					log.info("all report generation started ... "); // all report
