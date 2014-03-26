@@ -112,6 +112,8 @@ public class Package implements PluginConstants {
             String encrypt = configs.get(ENCRYPT);
             String plistFile = configs.get(PLIST_FILE);
             String projectType = configs.get(PROJECT_TYPE);
+            //////////////
+            String ciBuild = configs.get("ciBuild");
             PluginUtils.checkForConfigurations(dotPhrescoDir, environmentName);
             
 		    StringBuilder projectInfoFile = new StringBuilder(dotPhrescoDir.getPath())
@@ -166,6 +168,11 @@ public class Package implements PluginConstants {
 			if (StringUtils.isNotEmpty(buildNumber)) {
 				sb.append(STR_SPACE);
 				sb.append(HYPHEN_D + BUILD_NUMBER + EQUAL + buildNumber);
+			}
+			/////////////
+			if ((StringUtils.isNotEmpty(ciBuild))) {
+				sb.append(STR_SPACE);
+				sb.append(HYPHEN_D + "ciBuild" + EQUAL + ciBuild);
 			}
 			if(!Constants.POM_NAME.equals(pomFile)) {
 				sb.append(STR_SPACE);
