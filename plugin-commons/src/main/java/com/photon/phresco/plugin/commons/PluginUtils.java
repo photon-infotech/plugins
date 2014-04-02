@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.lang.management.ManagementFactory;
 import java.lang.reflect.Type;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -43,6 +44,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -62,6 +65,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.cli.CommandLineException;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.codehaus.plexus.util.cli.Commandline;
+import org.codehaus.plexus.util.cli.StreamConsumer;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListTagCommand;
 import org.eclipse.jgit.api.ListBranchCommand.ListMode;
@@ -92,6 +99,7 @@ import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.photon.phresco.api.ConfigManager;
+
 import com.photon.phresco.commons.FrameworkConstants;
 import com.photon.phresco.commons.model.ApplicationInfo;
 import com.photon.phresco.commons.model.BuildInfo;
@@ -126,6 +134,7 @@ public class PluginUtils {
 	private String serverContext = null;
 	private String performanceTestContext = null;
 	private String loadTestContext = null;
+	private static boolean status = false;
 
 	public void executeUtil(String environmentType, String basedir, File sourceConfigXML) throws PhrescoException {
 		try {
@@ -1554,7 +1563,7 @@ public class PluginUtils {
 			.append(Constants.SCM_HYPHEN_D).append(Constants.SCM_INCLUDES)
 			.append(Constants.STR_EQUALS).append(Constants.POM_NAME);
 		}
-		Utility.executeStreamconsumer(sb.toString(), phrescoTemp, "", "");
+		executeStreamconsumer(sb.toString(), phrescoTemp, "", "");
 	  }
 	
 	/**
@@ -1660,4 +1669,62 @@ public class PluginUtils {
 		}
 		return svnurl;
 	}
-}
+	
+	private static boolean executeStreamconsumer(String command,
+			String workingDir, String baseDir, String actionType) {
+		BufferedReader in = null;
+		Utility.fillErrorIdentifiers();
+		int ok = 0;
+		try {
+			final StringBuffer bufferErrBuffer = new StringBuffer();
+			final StringBuffer bufferOutBuffer = new StringBuffer();
+			Commandline commandLine = new Commandline(command);
+			commandLine.setWorkingDirectory(workingDir);
+			String processName = ManagementFactory.getRuntimeMXBean().getName();
+			String[] split = processName.split("@");
+			String processId = split[0].toString();
+			Utility.writeProcessid(baseDir, actionType, processId);
+			ok = CommandLineUtils.executeCommandLine(commandLine,
+					new StreamConsumer() {
+						public void consumeLine(String line) {
+							System.out.println(hidePassword(line));
+							status = true;
+							if (Utility.isError(line)) {
+								bufferErrBuffer.append(line);
+							}
+							if (line.startsWith("[ERROR]")) {
+								status = false;
+							}
+							bufferOutBuffer.append(line);
+						}
+					}, new StreamConsumer() {
+						public void consumeLine(String line) {
+							System.out.println(line);
+							bufferErrBuffer.append(line);
+						}
+					});
+		} catch (CommandLineException e) {
+			e.printStackTrace();
+		} finally {
+			if (ok != 0) {
+				status = false;
+			}
+			Utility.closeStream(in);
+		}
+		return status;
+	}
+	
+	/**
+	 * To hide password from the git-command while printing in console.
+	 */
+		private static String hidePassword(String line) {
+			Pattern pattern = Pattern
+					.compile("(.*)\"git(.*):(.*):(.*)@github.com(.*)");
+			Matcher matcher = pattern.matcher(line);
+			if (matcher.find()) {
+				line = line.replace(matcher.group(4), "********");
+				return (line);
+			}
+			return (line);
+		}
+	}
