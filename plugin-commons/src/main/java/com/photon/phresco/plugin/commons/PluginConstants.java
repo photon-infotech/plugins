@@ -53,6 +53,7 @@ public interface PluginConstants {
      String EQUAL						= "=";
      String TRUE 						= "true";
      String PDF 						= "pdf";
+     String ODS 						= "ods";
      String XLSX 						= "xlsx";
      String XLS 						= "xls";
      String XML 						= "xml";
