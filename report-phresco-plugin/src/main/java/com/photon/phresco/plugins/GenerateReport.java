@@ -1408,7 +1408,7 @@ public class GenerateReport implements PluginConstants {
 	public SureFireReport sureFireReports(String module) throws Exception {
 		String type = "";
 		Map<String, String> reportDirWithTestSuitePath = new HashMap<String, String>(); // <file
-		// -
+		PomProcessor pomProcessor = new PomProcessor(mavenProject.getFile());
 		// testsuitePath,testcasePath>
 		if (UNIT.equals(testType)) {
 			String reportFilePath = baseDir.getAbsolutePath();
@@ -1423,8 +1423,10 @@ public class GenerateReport implements PluginConstants {
 			}
 			getUnitTestXmlFilesAndXpaths(reportFilePath, reportDirWithTestSuitePath);
 		} else if (MANUAL.equals(testType)) {
+			String property = pomProcessor.getProperty(Constants.POM_PROP_KEY_MANUALTEST_RPT_DIR);
 			String reportFilePath = testDir.getAbsolutePath();
-			String manualTestReportDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_MANUALTEST_RPT_DIR);
+			//String manualTestReportDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_MANUALTEST_RPT_DIR);
+			String manualTestReportDir = property;
 			String reportPath = "";
 			if (StringUtils.isNotEmpty(manualTestReportDir)) {
 				reportPath = reportFilePath + manualTestReportDir;
