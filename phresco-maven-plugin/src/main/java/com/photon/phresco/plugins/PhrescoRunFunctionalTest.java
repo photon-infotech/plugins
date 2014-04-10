@@ -59,6 +59,8 @@ public class PhrescoRunFunctionalTest extends PhrescoAbstractMojo implements Plu
      */
     protected File baseDir;
     
+    protected File dotPhrescoDir;
+    
     /**
      * @parameter expression="${moduleName}"
      * @readonly
@@ -67,23 +69,29 @@ public class PhrescoRunFunctionalTest extends PhrescoAbstractMojo implements Plu
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
-			String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
-        	if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
-        		baseDir = new File(baseDir.getParent() +  File.separatorChar + dotPhrescoDirName);
+			
+		    String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+			if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
+        		dotPhrescoDir = new File(baseDir.getParentFile().getPath()+ File.separatorChar + dotPhrescoDirName);
+        		
+        	}else{
+        		dotPhrescoDir = baseDir;
         	}
         	if (StringUtils.isNotEmpty(dotPhrescoDirName) && StringUtils.isNotEmpty(moduleName)) {
+        		
         		baseDir = new File(baseDir.getParentFile().getPath() +  File.separatorChar + dotPhrescoDirName);
         	}
-			String infoFile = baseDir + File.separator+ Constants.FUNCTIONAL_TEST_INFO_FILE;
-			File workingDir = baseDir; 
+        	
+        	String infoFile = dotPhrescoDir.getAbsolutePath() + File.separator+ Constants.FUNCTIONAL_TEST_INFO_FILE;
 			if (StringUtils.isNotEmpty(moduleName)) {
 				infoFile = baseDir + File.separator + moduleName + File.separator + Constants.FUNCTIONAL_TEST_INFO_FILE;
-				workingDir = new File(baseDir + File.separator + moduleName);
+				dotPhrescoDir = new File(baseDir + File.separator + moduleName);
 			}
 			PluginUtils pu = new PluginUtils();
-			ApplicationInfo appInfo = pu.getAppInfo(workingDir);
-			String pomFileName = Utility.getPhrescoPomFromWorkingDirectory(appInfo, workingDir);
-			File pomPath = new File(workingDir + File.separator + pomFileName);
+			ApplicationInfo appInfo = pu.getAppInfo(dotPhrescoDir);
+			
+			String pomFileName = Utility.getPhrescoPomFromWorkingDirectory(appInfo, dotPhrescoDir);
+			File pomPath = new File(baseDir + File.separator + pomFileName);
 			PomProcessor processor = new PomProcessor(pomPath);
 			String property = processor.getProperty(FUNCTIONAL_TEST_SELENIUM_TYPE);
 			String goal = "";
