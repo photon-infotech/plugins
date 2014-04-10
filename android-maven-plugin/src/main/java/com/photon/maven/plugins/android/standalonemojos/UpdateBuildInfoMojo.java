@@ -44,12 +44,15 @@ import com.google.gson.reflect.TypeToken;
 import com.photon.maven.plugins.android.AbstractAndroidMojo;
 import com.photon.phresco.commons.model.BuildInfo;
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoProcessor;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.FileUtil;
+import com.phresco.pom.exception.PhrescoPomException;
+import com.phresco.pom.util.PomProcessor;
 
 /**
  * Creates the apk file. By default signs it with debug keystore.<br/>
@@ -88,7 +91,7 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 
 	private File buildDir;
 	private String finalBuildDir;
-
+	
 	private File buildInfoFile;
 	private List<BuildInfo> buildInfoList;
 	private int nextBuildNo;
@@ -99,6 +102,9 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 	private String testDirName;
 	private String dotPhrescoDirName;
     private File packageInfoFile;
+    private File rootPomFile;
+    private PomProcessor rootPomProcessor;
+    private String SplitedSourceDirName;
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		File outputFile = null, outputAlignedFile = null, destFile = null, destAlignedFile = null;
@@ -106,48 +112,55 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 		if(baseDir.getPath().endsWith("source")||baseDir.getPath().endsWith("unit")
 				|| baseDir.getPath().endsWith("functional")
 				|| baseDir.getPath().endsWith("performance") ){
-			
-		try {
-			
-			dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
-			testDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_TEST_DIR);
-			
-			 buildInfoList = new ArrayList<BuildInfo>(); // initialization
-			// srcDir = new File(baseDir.getPath() + File.separator +
-			// sourceDirectory);
+	     try {
+	    	  if (baseDir.getPath().endsWith("source")){
+			       rootPomFile = new File(baseDir.getParentFile().getPath()+File.separator +PluginConstants.POM_XML);
+			  }else{
+				   String rootDir = baseDir.getParentFile().getParentFile().getParentFile().getPath();
+				   SplitedSourceDirName = rootDir.substring(rootDir.lastIndexOf("\\")+1);
+				   rootPomFile = new File(baseDir.getParentFile().getParentFile().getParentFile().getPath()+File.separator
+						  +SplitedSourceDirName+File.separator+PluginConstants.POM_XML);
+		      }
+			  try  {
+		   		 
+		   		 if(rootPomFile.exists()){
+		   		    rootPomProcessor  = new PomProcessor(rootPomFile);
+				      if(StringUtils.isNotEmpty(rootPomProcessor.getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR))){
+				    	  	dotPhrescoDirName = rootPomProcessor.getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+				    	  	testDirName       = rootPomProcessor.getProperty(Constants.POM_PROP_KEY_SPLIT_TEST_DIR);
+				       }
+			 	  }
+			 } catch (PhrescoPomException e) {
+				e.printStackTrace();
+			 }
+			buildInfoList = new ArrayList<BuildInfo>(); // initialization
 			if(baseDir.getPath().endsWith("source")&& dotPhrescoDirName==null){
-				
 				buildDir = new File(baseDir.getParentFile().getPath() + buildDirectory);
-				packageInfoFile = new File(baseDir.getParentFile().getPath() + File.separator
-                        + ".phresco" + File.separator
-                        + "phresco-package-info.xml");
-			}else if (baseDir.getPath().endsWith("source")&& dotPhrescoDirName!=null){
+				packageInfoFile = new File(baseDir.getParentFile().getPath() + File.separator + ".phresco" + File.separator + "phresco-package-info.xml");
 				
+			}else if (baseDir.getPath().endsWith("source")&& dotPhrescoDirName!=null){
 				 // code for new archetype changes starts
 				 dotPhrescoDir = baseDir.getParentFile().getParentFile().getPath()+ File.separator + dotPhrescoDirName;
 				 File projectDir  = new File(baseDir.getParentFile().getParentFile().getPath());
-		         File[] filesInDir = projectDir.listFiles();
+				 File[] filesInDir = projectDir.listFiles();
 		         fileProcessor(filesInDir);
 		         //code for new archetype changes ends
-		         
-				 buildDir = new File(finalBuildDir+ File.separator + buildDirectory);
+		         buildDir = new File(finalBuildDir+ File.separator + buildDirectory);
 				 packageInfoFile = new File(dotPhrescoDir + File.separator
 							+ ".phresco" + File.separator
 							+ "phresco-package-info.xml");
-			}else if(dotPhrescoDirName!=null){
+				 
+				}else if(dotPhrescoDirName!=null){
+				   dotPhrescoDir = baseDir.getParentFile().getParentFile().getParentFile().getPath()+File.separator + dotPhrescoDirName;
+				   buildDir = new File(baseDir.getPath() + buildDirectory);
 				
-				dotPhrescoDir = baseDir.getParentFile().getParentFile().getParentFile().getPath()+ File.separator + dotPhrescoDirName;
-				buildDir = new File(baseDir.getPath() + buildDirectory);
-				
-			}else{
-				
-				buildDir = new File(baseDir.getPath() + buildDirectory);
-			}
+		        }else{
+				  buildDir = new File(baseDir.getPath() + buildDirectory);
+			    }
 			
 			if (!buildDir.exists()) {
 				buildDir.mkdir();
 			}
-			
 			buildInfoFile = new File(buildDir.getPath() + "/build.info");
 			
 	       if ((baseDir.getPath().endsWith("unit")|| baseDir.getPath().endsWith("functional")
@@ -157,9 +170,8 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 						+ "phresco-package-info.xml");
 			 }else if (baseDir.getPath().endsWith("unit")|| baseDir.getPath().endsWith("functional")
 					|| baseDir.getPath().endsWith("performance")){
-			   packageInfoFile = new File(baseDir.getParentFile().getParentFile()
-                         + File.separator + ".phresco" + File.separator
-                         + "phresco-package-info.xml");
+			   packageInfoFile = new File(baseDir.getParentFile().getParentFile()+ File.separator + ".phresco" 
+					   + File.separator+ "phresco-package-info.xml");
 			    buildDir = baseDir.getParentFile().getParentFile();
 				buildInfoFile = new File(baseDir.getPath() + buildDirectory+ "/build.info");
 			}

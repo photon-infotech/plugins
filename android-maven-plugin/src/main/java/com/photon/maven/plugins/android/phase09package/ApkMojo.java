@@ -261,7 +261,7 @@ public class ApkMojo extends AbstractAndroidMojo {
 			return;
 		}
         configure();
-	    generateIntermediateAp_();
+        generateIntermediateAp_();
 	    // Initialize apk build configuration
 		File outputFile = new File(project.getBuild().getDirectory(), project.getBuild().getFinalName() + '.' + APK);
 	
@@ -300,21 +300,30 @@ public class ApkMojo extends AbstractAndroidMojo {
 			
 			PomProcessor pomProcessor = new PomProcessor(project.getFile());
 			String configSourceDir = pomProcessor.getProperty(PluginConstants.POM_PROP_CONFIG_FILE);
-			
 			File srcConfigFile = null;
 			if(StringUtils.isNotEmpty(configSourceDir)) {
 				srcConfigFile  = new File(baseDir + configSourceDir);
 			 } else {
 				srcConfigFile = new File(sourceDirectory.getParent(), "/assets/phresco-env-config.xml");
 			}
-			String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
-			baseDir =new File(baseDir.getParentFile().getPath());
-			if(dotPhrescoDirName!=null){
-				baseDir = new File(baseDir.getParentFile().getPath()+ File.separator +dotPhrescoDirName);
+			File rootDir = new File(baseDir.getParentFile().getPath());
+			File rootPomFile = new File(rootDir.getPath()+File.separator +"pom.xml");
+			String dotPhrescoDirName=null;
+			if(rootPomFile.exists()){
 				
+				PomProcessor rootPomProcessor = new PomProcessor(rootPomFile);
+				dotPhrescoDirName = rootPomProcessor.getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+			}
+			
+			if(dotPhrescoDirName!=null && !dotPhrescoDirName.isEmpty()){
+				
+				baseDir = new File(baseDir.getParentFile().getParentFile().getPath()+ File.separator +dotPhrescoDirName);
+				
+			}else{
+				baseDir = new File(baseDir.getParentFile().getPath());
 			}
 			PluginUtils pu = new PluginUtils();
-		    pu.executeUtil(environmentName, baseDir.getPath() , srcConfigFile);
+			pu.executeUtil(environmentName, baseDir.getPath() , srcConfigFile);
 		    pu.setDefaultEnvironment(environmentName, srcConfigFile);
 	     } catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage()); 
