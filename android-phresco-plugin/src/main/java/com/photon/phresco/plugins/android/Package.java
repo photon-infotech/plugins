@@ -64,7 +64,9 @@ import com.phresco.pom.util.PomProcessor;
 public class Package implements PluginConstants {
 	private Log log;
 	private String baseDir;
+	private String dotPhrescoDir;
 	private String dotPhrescoDirName;
+	
 	private MavenProject project;
 	private String pomFile;
 	private String TRUE = "true";
@@ -98,13 +100,22 @@ public class Package implements PluginConstants {
 		String keypass = configs.get(KEYPASS);
 		String alias = configs.get(ALIAS);
 		String zipAlign = configs.get(ZIP_ALIGN);
-				
+		
 		StringBuilder sb;
 		try {
-			ProjectInfo projectInfo = Utility.getProjectInfo(baseDir, moduleName);
+			dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+			sourceDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_SRC_DIR);
+			testDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_TEST_DIR);
+			
+			if(dotPhrescoDirName!=null){
+				dotPhrescoDir = mavenProjectInfo.getBaseDir().getParentFile()+ File.separator + dotPhrescoDirName;
+			}else{
+				dotPhrescoDir = baseDir;
+			}
+			
+			ProjectInfo projectInfo = Utility.getProjectInfo(dotPhrescoDir, moduleName);
 			ApplicationInfo applicationInfo = projectInfo.getAppInfos().get(0);
 			String techId = applicationInfo.getTechInfo().getId();
-			System.out.println("tech id..."+techId);
 			if (StringUtils.isEmpty(environmentName)) {
 				System.out.println("Environment Name is empty . ");
 				throw new PhrescoException("Environment Name is empty . ");
@@ -115,18 +126,12 @@ public class Package implements PluginConstants {
 				System.out.println("sdkVersion is empty . ");
 				throw new PhrescoException("sdkVersion is empty . ");
 			}
-			dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
-			sourceDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_SRC_DIR);
-			testDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_TEST_DIR);
 			
-			if(dotPhrescoDirName!=null){
-				baseDir = mavenProjectInfo.getBaseDir().getParentFile()+ File.separator + dotPhrescoDirName;
-			}
 			
-			PluginUtils.checkForConfigurations(new File(baseDir), environmentName);
+			PluginUtils.checkForConfigurations(new File(dotPhrescoDir), environmentName);
 			
 			if (TechnologyTypes.ANDROID_HYBRID.equals(techId)) {
-				writeConfigJson(mavenProjectInfo, new File(baseDir), environmentName);
+				writeConfigJson(mavenProjectInfo, new File(dotPhrescoDir), environmentName);
 			}	
 			
 			Boolean isZipAlign = Boolean.valueOf(zipAlign);
@@ -146,7 +151,7 @@ public class Package implements PluginConstants {
 				updateAllPOMWithProfile(keystore, storepass, keypass, alias);
 			}
 			
-			updateDotPhrescoInfoFiles(baseDir ,isSigning, mavenProjectInfo);
+			updateDotPhrescoInfoFiles(dotPhrescoDir ,isSigning, mavenProjectInfo);
 			
 			
 			log.info("Project is Building...");
@@ -304,27 +309,13 @@ public class Package implements PluginConstants {
 	 * @param mavenProjectInfo
 	 */
 	private void updateDotPhrescoInfoFiles(String dotPhrescoLocation, Boolean isSigning, MavenProjectInfo mavenProjectInfo){
-		
-		
-			
-			String baseDir = dotPhrescoLocation;
-			
-//			log.info("updateDotPhrescoInfoFiles - baseDir = " + baseDir);
-//			log.info("updateDotPhrescoInfoFiles - isSigning = " + isSigning.toString());
-			
-			String unitXmlFile = baseDir + File.separator + DOT_PHRESCO_FOLDER + File.separator + UNIT_INFO_FILE;
+		    String baseDir = dotPhrescoLocation;
+            String unitXmlFile = baseDir + File.separator + DOT_PHRESCO_FOLDER + File.separator + UNIT_INFO_FILE;
 			String functionalXmlFile = baseDir + File.separator +DOT_PHRESCO_FOLDER + File.separator + FUNCTIONAL_INFO_FILE;
 			String performanceXmlFile = baseDir + File.separator +DOT_PHRESCO_FOLDER + File.separator + PERFORMANCE_INFO_FILE;
 			
-//			log.info("updateDotPhrescoInfoFiles - unitXmlFile = " + unitXmlFile);
-//			log.info("updateDotPhrescoInfoFiles - functionalXmlFile = " + functionalXmlFile);
-//			log.info("updateDotPhrescoInfoFiles - performanceXmlFile = " + performanceXmlFile);
-			
-			
-			
 			MojoProcessor mojoObj;
 			try {
-				
 				mojoObj = new MojoProcessor(new File(unitXmlFile));
 				Parameter unitSigningParameter = mojoObj.getParameter("unit-test", "signing");
 				if (unitSigningParameter != null) {

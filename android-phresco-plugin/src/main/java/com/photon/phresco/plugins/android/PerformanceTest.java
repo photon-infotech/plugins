@@ -32,9 +32,12 @@ import com.photon.phresco.util.Constants;
 
 public class PerformanceTest implements PluginConstants {
 	private File WorkingFile ;
+	private String workingDir;
+	private String dotPhrescoDirName;
+	private String splitTestDirName;
 	public void performanceTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		try {
-			System.out.println("@@@@@@@@@@@@@PerformanceTest @@@@@@@@@@@ ");
+			
 			Map<String, String> configs = MojoUtil.getAllValues(configuration);
 			String baseDir = mavenProjectInfo.getBaseDir().getPath();
 			String deviceList= configs.get(DEVICES_LIST);
@@ -63,13 +66,14 @@ public class PerformanceTest implements PluginConstants {
 			
 			sb.append(STR_SPACE);
 			sb.append(HYPHEN_D + DEVICES_LIST + EQUAL + deviceList);
-			
-			String workingDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR);
-			String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+		    workingDir = project.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_DIR);
+			dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+			splitTestDirName  = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_TEST_DIR);
 			WorkingFile = new File(baseDir + workingDir + File.separator + project.getFile().getName());
 			File baseDirFile =new File(baseDir);
-			if(!WorkingFile.exists()){
-				WorkingFile = new File(baseDirFile.getParentFile().getParentFile() + workingDir + File.separator + project.getFile().getName());
+			
+			if(!WorkingFile.exists()&& StringUtils.isNotEmpty(splitTestDirName)){
+				WorkingFile = new File(baseDirFile.getParentFile()+ File.separator + splitTestDirName +File.separator + workingDir + File.separator + project.getFile().getName());
 			}
 			if(WorkingFile.exists()) {
 				sb.append(STR_SPACE);
@@ -80,7 +84,7 @@ public class PerformanceTest implements PluginConstants {
 			
 			Commandline commandline = new Commandline(sb.toString());
 			if (StringUtils.isNotEmpty(workingDir)&& StringUtils.isNotEmpty(dotPhrescoDirName)) {
-				commandline.setWorkingDirectory(baseDirFile.getParentFile().getParentFile() + workingDir);
+				commandline.setWorkingDirectory(baseDirFile.getParentFile()+File.separator +splitTestDirName+ File.separator + workingDir);
 			}else{
 				commandline.setWorkingDirectory(baseDirFile.getAbsoluteFile()+File.separator+ workingDir);
 			}
