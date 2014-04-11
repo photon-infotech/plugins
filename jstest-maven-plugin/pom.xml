@@ -3,7 +3,7 @@
  <parent>
         <groupId>com.photon.phresco.plugins</groupId>
         <artifactId>phresco-plugins-root</artifactId>
-        <version>3.3.1.4002-SNAPSHOT</version>
+        <version>3.3.1.5001-SNAPSHOT</version>
         <relativePath>../</relativePath>
     </parent>
 
@@ -17,7 +17,7 @@
 	<artifactId>jstest-maven-plugin</artifactId>
 	<packaging>maven-plugin</packaging>
 	<name>JsTest Maven Plugin</name>
-	<version>3.3.1.4002-SNAPSHOT</version>
+	<version>3.3.1.5001-SNAPSHOT</version>
 
 	<licenses>
 		<license>
@@ -191,13 +191,13 @@
 		<dependency>
 			<groupId>com.photon.phresco.pom</groupId>
 			<artifactId>phresco-pom</artifactId>
-			<version>3.3.1.4002-SNAPSHOT</version>
+			<version>3.3.1.5001-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.photon.phresco</groupId>
 			<artifactId>plugin-commons</artifactId>
-			<version>3.3.1.4002-SNAPSHOT</version>
+			<version>3.3.1.5001-SNAPSHOT</version>
 		</dependency>
 		
 	</dependencies>
