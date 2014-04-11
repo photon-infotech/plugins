@@ -7,6 +7,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +21,11 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
 import com.photon.phresco.commons.model.ApplicationInfo;
+import com.photon.phresco.commons.model.ArtifactGroup;
+import com.photon.phresco.commons.model.ArtifactGroupInfo;
+import com.photon.phresco.commons.model.ArtifactInfo;
 import com.photon.phresco.commons.model.Customer;
+import com.photon.phresco.commons.model.DownloadInfo;
 import com.photon.phresco.commons.model.ProjectInfo;
 import com.photon.phresco.commons.model.Technology;
 import com.photon.phresco.commons.model.TechnologyInfo;
@@ -178,6 +184,7 @@ public class PhrescoCreate extends AbstractMojo {
 		return projectInfo;
 	}
 
+	
 	private void createInteractiveProjectInfo(ProjectInfo projectInfo) throws MojoExecutionException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		try {
@@ -210,6 +217,7 @@ public class PhrescoCreate extends AbstractMojo {
 			Technology tech = getSelectedTechnology(customerByName.getId());
 			techInfo.setName(tech.getName());
 			techInfo.setId(tech.getId());
+			
 			List<String> techVersions = tech.getTechVersions();
 			if (CollectionUtils.isNotEmpty(techVersions)) {
 				System.out.println("Select Technolog Version : " );
@@ -225,7 +233,76 @@ public class PhrescoCreate extends AbstractMojo {
 				int read = Integer.parseInt(br.readLine());
 				techInfo.setVersion(techVersions.get(read));
 			}
-				appInfo.setTechInfo(techInfo);
+			appInfo.setTechInfo(techInfo);
+			List<DownloadInfo> listdatabas=serviceManager.getDownloads(customerByName.getId(), tech.getId(), "DATABASE", getPlatForm());
+			if(CollectionUtils.isNotEmpty(listdatabas))
+			{
+				System.out.println("Do you want to add database to your Project?Y/N");
+				br = new BufferedReader(new InputStreamReader(System.in));
+				String DBYN=br.readLine();
+				if(DBYN.equalsIgnoreCase("Y"))
+				{
+					System.out.println("Select Database : " );
+					for (int i = 0; i < listdatabas.size(); i++) {				
+						System.out.println(i + " " + listdatabas.get(i).getName());	
+					}
+
+					try {
+						DownloadInfo downloadinfo = listdatabas.get(Integer.parseInt(br.readLine()));
+						ArtifactGroup selectedGroup = downloadinfo.getArtifactGroup();
+						List<ArtifactInfo> versioninfo = selectedGroup.getVersions();
+						System.out.println("Select Version :");
+						for (int i = 0; i < versioninfo.size(); i++) {
+							System.out.println(i + " "+ versioninfo.get(i).getVersion());
+						}
+						ArtifactInfo artifactInfo = versioninfo.get(Integer.parseInt(br.readLine()));
+						List<ArtifactGroupInfo> selectedDatabases = new ArrayList<ArtifactGroupInfo>();
+						ArtifactGroupInfo agi = new ArtifactGroupInfo();
+						agi.setArtifactGroupId(selectedGroup.getId());
+						agi.setArtifactInfoIds(Arrays.asList(artifactInfo.getId()));
+						selectedDatabases.add(agi);
+						appInfo.setSelectedDatabases(selectedDatabases);
+					} catch (Exception e) {
+						throw new MojoExecutionException(e.getMessage());
+					}
+
+				}
+			}
+			List<DownloadInfo> listserver=serviceManager.getDownloads(customerByName.getId(), tech.getId(), "SERVER", getPlatForm());
+			if(CollectionUtils.isNotEmpty(listserver))
+			{
+				System.out.println("Do you want to add server to your Project?Y/N");
+				br = new BufferedReader(new InputStreamReader(System.in));
+				String DBYN=br.readLine();
+				if(DBYN.equalsIgnoreCase("Y"))
+				{
+					System.out.println("Select Server : " );
+					for (int i = 0; i < listserver.size(); i++) {				
+						System.out.println(i + " " + listserver.get(i).getName());	
+					}
+
+					try {
+						DownloadInfo downloadinfo = listserver.get(Integer.parseInt(br.readLine()));
+						ArtifactGroup selectedGroup = downloadinfo.getArtifactGroup();
+						List<ArtifactInfo> versioninfo = selectedGroup.getVersions();
+						System.out.println("Select Version :");
+						for (int i = 0; i < versioninfo.size(); i++) {
+							System.out.println(i + " "+ versioninfo.get(i).getVersion());
+						}
+						ArtifactInfo artifactInfo = versioninfo.get(Integer.parseInt(br.readLine()));
+						List<ArtifactGroupInfo> selectedServers = new ArrayList<ArtifactGroupInfo>();
+						ArtifactGroupInfo agi = new ArtifactGroupInfo();
+						agi.setArtifactGroupId(selectedGroup.getId());
+						agi.setArtifactInfoIds(Arrays.asList(artifactInfo.getId()));
+						selectedServers.add(agi);
+						appInfo.setSelectedServers(selectedServers);
+					} catch (Exception e) {
+						throw new MojoExecutionException(e.getMessage());
+					}
+
+				}
+			}
+				
 				projectInfo.setAppInfos(Collections.singletonList(appInfo));
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage());
@@ -263,6 +340,20 @@ public class PhrescoCreate extends AbstractMojo {
 			throw new MojoExecutionException(e.getMessage());
 		}
 		return customerName;
+	}
+	
+	private String getPlatForm() {
+		String Osversion=System.getProperty("os.name");
+		String processor=System.getProperty("os.arch");
+		String processorbit=null;
+		if(Osversion.contains("Windows 8")){
+			Osversion="Windows";}
+		if(processor.contains("64")){
+			processorbit="64";}
+		else{
+			processorbit="86";}
+		String platform=Osversion+processorbit;
+		return platform;
 	}
 	
 	private Technology getSelectedTechnology(String customerId) throws MojoExecutionException {

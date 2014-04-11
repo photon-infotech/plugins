@@ -1,7 +1,7 @@
 /**
- * Phresco Maven Plugin
+f * Phresco Maven Plugin
  *
- * Copyright (C) 1999-2014 Photon Infotech Inc.
+ * Copyright (C) 1999-2013 Photon Infotech Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,6 +123,7 @@ public class PhrescoDeploy extends PhrescoAbstractMojo {
         	if (StringUtils.isNotEmpty(moduleName)) {
         		infoFile = baseDir + File.separator + moduleName + File.separator + Constants.DEPLOY_INFO_FILE;
         	} 
+        	
         	Configuration configuration = null;
         	MojoProcessor processor = new MojoProcessor(new File(infoFile));
         	configuration = processor.getConfiguration(DEPLOY);
@@ -130,7 +131,15 @@ public class PhrescoDeploy extends PhrescoAbstractMojo {
         	keyValues.put(PluginConstants.DEPLOY_FROM_NEXUS, deployFromNexus);
         	
         	if(interactive) {
+        		try
+        		{
+        			System.out.println(DEPLOY);
         		configuration = getInteractiveConfiguration(configuration, processor, project,DEPLOY);
+        		}
+        		catch (Exception e)
+        		{
+        			System.out.println("Error:"+e.toString());
+        		}
         	} 
             PhrescoPlugin plugin = getPlugin(getDependency(infoFile, DEPLOY));
             String processName = ManagementFactory.getRuntimeMXBean().getName();
@@ -139,8 +148,10 @@ public class PhrescoDeploy extends PhrescoAbstractMojo {
     		
     		Utility.writeProcessid(baseDir.getPath(), FrameworkConstants.DEPLOY, processId);
     		getLog().info("Writing Process Id...");
+    		
             plugin.deploy(configuration, getMavenProjectInfo(project, moduleName, keyValues));
-        } catch (PhrescoException e) {
+    		
+    		} catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
     }
