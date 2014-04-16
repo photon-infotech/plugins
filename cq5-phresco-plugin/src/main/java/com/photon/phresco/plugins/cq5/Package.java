@@ -1,7 +1,7 @@
 /**
  * java-phresco-plugin
  *
- * Copyright (C) 1999-2013 Photon Infotech Inc.
+ * Copyright (C) 1999-2014 Photon Infotech Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,11 +91,13 @@ public class Package implements PluginConstants {
 	private String dotPhrescoDirName;
     private File dotPhrescoDir;
 	private String filters;
+	private String buildVersion;
 	
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
         project = mavenProjectInfo.getProject();
+        buildVersion = mavenProjectInfo.getBuildVersion();
         pomFile = project.getFile();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
@@ -341,6 +343,8 @@ public class Package implements PluginConstants {
 		}
 		sb.append(STR_SPACE);
 		sb.append(builder.toString());
+		sb.append(STR_SPACE);
+		sb.append("-Dbuild.version=" + buildVersion);
 		String line ="";
 		bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 		while ((line = bufferedReader.readLine()) != null) {

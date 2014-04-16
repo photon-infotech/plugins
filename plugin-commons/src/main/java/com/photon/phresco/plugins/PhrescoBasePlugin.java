@@ -1,7 +1,7 @@
 /**
  * Phresco Plugin Commons
  *
- * Copyright (C) 1999-2013 Photon Infotech Inc.
+ * Copyright (C) 1999-2014 Photon Infotech Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,7 +95,9 @@ import com.phresco.pom.util.PomProcessor;
 
 public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements
 PluginConstants {
-
+	
+	private String buildVersion;
+	
 	public Log log;
 
 	public PhrescoBasePlugin(Log log) {
@@ -108,6 +110,7 @@ PluginConstants {
 
 	public ExecutionStatus runUnitTest(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		buildVersion = mavenProjectInfo.getBuildVersion();
 		File baseDir = mavenProjectInfo.getBaseDir();
 		MavenProject project = mavenProjectInfo.getProject();
 		String reportDir = "";
@@ -179,6 +182,7 @@ PluginConstants {
 	public ExecutionStatus runComponentTest(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		try {
+			buildVersion = mavenProjectInfo.getBuildVersion();
 			String subModule = "";
 			File baseDir = mavenProjectInfo.getBaseDir();
 			MavenProject project = mavenProjectInfo.getProject();
@@ -822,6 +826,7 @@ PluginConstants {
 
 	public ExecutionStatus validate(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		buildVersion = mavenProjectInfo.getBuildVersion();
 		StringBuilder sb = new StringBuilder();
 		sb.append(SONAR_COMMAND);
 		Map<String, String> config = MojoUtil.getAllValues(configuration);
@@ -895,6 +900,8 @@ PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(pomFile.getName());
 		}
+		sb.append(STR_SPACE);
+		sb.append("-Dbuild.version=" + buildVersion);
 		boolean status = Utility.executeStreamconsumer(sb.toString(),
 				workingDirectory.getPath(), workingDirectory.getPath(),
 				"");
@@ -931,6 +938,8 @@ PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(pomFile);
 		}
+		sb.append(STR_SPACE);
+		sb.append("-Dbuild.version=" + buildVersion);
 		File baseDir = mavenProjectInfo.getBaseDir();
 		if (StringUtils.isNotEmpty(mavenProjectInfo.getModuleName())) {
 			baseDir = new File(baseDir + File.separator

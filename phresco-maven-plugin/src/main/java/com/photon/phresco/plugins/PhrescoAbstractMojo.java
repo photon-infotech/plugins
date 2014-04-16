@@ -40,6 +40,7 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.sonatype.aether.RepositorySystem;
@@ -103,7 +104,15 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 	 * @readonly
 	 */
 	protected File baseDir;
-
+	
+	/**
+     * @parameter expression="${build.version}"
+     * @readonly
+     */
+    protected String buildVersion;
+	
+	//Value
+	String paramval="";
 	private Map<String, Boolean> depMap = new HashMap<String, Boolean>();
 
 	public PhrescoPlugin getPlugin(Dependency dependency) throws PhrescoException {
@@ -200,6 +209,7 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
         mavenProjectInfo.setPluginManager(pluginManager);
         mavenProjectInfo.setMavenSession(mavenSession);
         mavenProjectInfo.setLocalRepository(localRepository);
+        mavenProjectInfo.setBuildVersion(buildVersion);
         return mavenProjectInfo;
     }
 	
@@ -299,8 +309,10 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 				if (show) {
 					Value name = param.getName().getValue().get(0);
 					value = getValue(param, name, project, processor, goal);
-					valueList.add(value);
-					param.setValue(value);
+					if(!value.isEmpty()) {
+						valueList.add(value);
+						param.setValue(value);
+					}
 				}
 			}
 			processor.save();
@@ -315,10 +327,13 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 		String paramValue = "";
 		try {
 			if(parameter.getType().equalsIgnoreCase("Boolean") & ! parameter.getKey().equalsIgnoreCase("showSettings")) {
+				
 				System.out.println("Enter Value For " + value.getValue() + " (Y/N)");
 				String readValue = br.readLine();
 				paramValue = String.valueOf(true);
-				if(readValue.equalsIgnoreCase("F")) {
+				paramval="true";
+				if(readValue.equalsIgnoreCase("N")) {
+					paramval="false";
 					paramValue = String.valueOf(false);
 				}
 			}
@@ -337,8 +352,13 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 				String enteredValue = br.readLine();
 				paramValue = pMap.get(enteredValue);
 			}
-
+			
 			if(parameter.getType().equalsIgnoreCase("DynamicParameter")) {
+				if((value.getValue().equals("DataBase")||(value.getValue().equals("FetchSql"))) 
+						&& ( paramval.equalsIgnoreCase("false"))) {
+					return "";
+				}
+				
 				paramValue = getEnvironmentName(parameter, value, project, processor, goal);
 			}
 
@@ -383,19 +403,21 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 
 	private PossibleValues dynamicClassLoader(Parameter parameter, MavenProject project, MojoProcessor processor, String goal) throws PhrescoException {
 		try {
+			
 			File projectInfoFile = new File(project.getBasedir().getPath() + File.separatorChar + Constants.DOT_PHRESCO_FOLDER + File.separatorChar + Constants.PROJECT_INFO_FILE);
 			Gson gson = new Gson();
 			ProjectInfo projectInfo = gson.fromJson(new FileReader(projectInfoFile), ProjectInfo.class);
 			ApplicationInfo applicationInfo = projectInfo.getAppInfos().get(0);
 			String customerId = projectInfo.getCustomerIds().get(0);
 			String clazz = parameter.getDynamicParameter().getClazz();
+			
 			Class loadClass = getClassFromLocal(clazz);
 			Parameter buildNoParameter = processor.getParameter(goal, DynamicParameter.KEY_BUILD_NO);
 			String buildNo = "";
 			if (buildNoParameter != null) {
 				buildNo = buildNoParameter.getValue();
 			}
-			if(loadClass != null ) {
+			if(loadClass != null ) {				
 				DynamicParameter dynamicParameter = (DynamicParameter) loadClass.newInstance();
 				Map<String, Object> dynamicParameterMap = new HashMap<String, Object>();
 				dynamicParameterMap.put(DynamicParameter.KEY_APP_INFO, applicationInfo);
@@ -441,5 +463,10 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 		} catch (ClassNotFoundException e) {
 			return null;
 		}
+	}
+
+	public void execute() throws MojoExecutionException, MojoFailureException {
+		// TODO Auto-generated method stub
+		
 	}
 }

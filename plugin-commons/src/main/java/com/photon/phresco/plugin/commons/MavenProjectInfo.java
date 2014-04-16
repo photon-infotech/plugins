@@ -1,7 +1,7 @@
 /**
  * Phresco Plugin Commons
  *
- * Copyright (C) 1999-2013 Photon Infotech Inc.
+ * Copyright (C) 1999-2014 Photon Infotech Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ public class MavenProjectInfo {
     private BuildPluginManager pluginManager;
     private ArtifactRepository localRepository;
     private Map<String, Object> keyValues;
+    private String buildVersion;
     
 	public Map<String, Object> getKeyValues() {
 		return keyValues;
@@ -98,6 +99,14 @@ public class MavenProjectInfo {
 
 	public ArtifactRepository getLocalRepository() {
 		return localRepository;
+	}
+
+	public void setBuildVersion(String buildVersion) {
+		this.buildVersion = buildVersion;
+	}
+
+	public String getBuildVersion() {
+		return buildVersion;
 	}
     
 }
