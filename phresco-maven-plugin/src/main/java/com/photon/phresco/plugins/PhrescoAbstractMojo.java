@@ -19,6 +19,9 @@ package com.photon.phresco.plugins;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -30,6 +33,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -59,6 +63,7 @@ import com.photon.phresco.commons.model.ArtifactInfo;
 import com.photon.phresco.commons.model.ProjectInfo;
 import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
@@ -72,6 +77,9 @@ import com.photon.phresco.plugins.model.Mojos.Mojo.Implementation;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Implementation.Dependency;
 import com.photon.phresco.plugins.util.MavenPluginArtifactResolver;
 import com.photon.phresco.plugins.util.MojoProcessor;
+import com.photon.phresco.service.client.api.ServiceContext;
+import com.photon.phresco.service.client.api.ServiceManager;
+import com.photon.phresco.service.client.impl.ServiceManagerImpl;
 import com.photon.phresco.util.Constants;
 
 public abstract class PhrescoAbstractMojo extends AbstractMojo {
@@ -104,10 +112,13 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 	 * @readonly
 	 */
 	protected File baseDir;
-
-	
 	//Value
-	String paramval="";
+	String paramval="false";
+	protected Properties serverProperties;
+	protected Properties projectProperties;
+	private File serverFile;
+	private ServiceManager serviceManager;   
+	
 	private Map<String, Boolean> depMap = new HashMap<String, Boolean>();
 
 	public PhrescoPlugin getPlugin(Dependency dependency) throws PhrescoException {
@@ -130,7 +141,6 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 
 	private URLClassLoader getURLClassLoader(Dependency dependency) throws PhrescoException {
 		List<Artifact> artifacts = new ArrayList<Artifact>();
-
 		List<ArtifactGroup> plugins  = new ArrayList<ArtifactGroup>();
 		ArtifactGroup artifactGroup = new ArtifactGroup();
 		artifactGroup.setGroupId(dependency.getGroupId());
@@ -276,13 +286,125 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 			}
 		}
 	}
+	
+	protected void initProperty(String servicePropertyFile, String projectPropertyFile) throws MojoExecutionException {
+		try {
+			serverProperties = new Properties();
+			projectProperties = new Properties();
+			if(StringUtils.isEmpty(servicePropertyFile)) {
+				String servicePropertyPath = getValueFromConfigFile("server.properties");
+				serverFile = new File(servicePropertyPath);
+			} else {
+				serverFile = new File(servicePropertyFile);
+				if(!serverFile.exists()) {
+					serverFile = new File(baseDir, servicePropertyFile);
+					if(!serverFile.exists()) {
+						throw new MojoExecutionException("Server Property File Not Exists");
+					}
+				}
+			}
+			File projectPropFile = new File(projectPropertyFile);
+			if(StringUtils.isEmpty(servicePropertyFile)) {
+				String projectPropertyPath = getValueFromConfigFile("createproject.properties");
+				projectPropFile = new File(projectPropertyPath);
+			} else {
+				if(!projectPropFile.exists()) {
+					projectPropFile = new File(baseDir, projectPropertyFile);
+					if(!projectPropFile.exists()) {
+						throw new MojoExecutionException("Project Property File Not Exists");
+					}
+				}
+			}
+			projectProperties.load(new FileInputStream(projectPropFile));
+			serverProperties.load(new FileInputStream(serverFile));
+			if(StringUtils.isNotEmpty(servicePropertyFile) && StringUtils.isNotEmpty(projectPropertyFile)) {
+				saveConfigFiles(serverFile.getAbsolutePath(), projectPropFile.getAbsolutePath());
+			}
+		} catch (FileNotFoundException e) {
+			throw new MojoExecutionException(e.getMessage());
+		} catch (IOException e) {
+			throw new MojoExecutionException(e.getMessage());
+		}
+	}
+	
+	private void saveConfigFiles(String serverPropPath, String createProjectPath) throws MojoExecutionException {
+		String binDir = com.photon.phresco.util.Utility.getPhrescoHome() + "/bin";
+		File configFile = new File(binDir, "configfiles.properties");
+		Properties configProperties = new Properties();
+		try {
+			configProperties.put("server.properties", serverPropPath);
+			configProperties.put("createproject.properties", createProjectPath);
+			configProperties.save(new FileOutputStream(configFile), "");
+		} catch (FileNotFoundException e) {
+			throw new MojoExecutionException(e.getMessage());
+		} catch (IOException e) {
+			throw new MojoExecutionException(e.getMessage());
+		}
+	}
+	
+	private String getValueFromConfigFile(String key) throws MojoExecutionException {
+		String value = "";
+		String binDir = com.photon.phresco.util.Utility.getPhrescoHome() + "/bin";
+		File configFile = new File(binDir, "configfiles.properties");
+		Properties configProperties = new Properties();
+		try {
+			configProperties.load(new FileInputStream(configFile));
+			value = configProperties.getProperty(key);
+		} catch (FileNotFoundException e) {
+			throw new MojoExecutionException(e.getMessage());
+		} catch (IOException e) {
+			throw new MojoExecutionException(e.getMessage());
+		}
+		return value;
+	}
+	
+	protected ServiceManager getServiceManager() throws PhrescoException,
+		MojoExecutionException, FileNotFoundException, IOException {
+		String serverUrl = (String) serverProperties.get("phresco.service.url");
+		String authToken = (String) serverProperties.get("auth.token");
+		serviceManager = new ServiceManagerImpl(serverUrl, authToken);
+		boolean validToken = serviceManager.isValidToken();
+		if (!validToken) {
+			System.out.println("Enter Username : ");
+			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+			String userName = br.readLine();
+			System.out.println("Enter Password : ");
+			String password = br.readLine();
+			serviceManager = PhrescoFrameworkFactory.getServiceManager(getServiceContext(userName, password));
+			authToken = serviceManager.getUserInfo().getToken();
+			serverProperties.setProperty("auth.token", authToken);
+			FileOutputStream out = new FileOutputStream(serverFile);
+			serverProperties.store(out, "");
+		}
+		return serviceManager;
+	}
 
+	private ServiceContext getServiceContext(String userName, String password) throws MojoExecutionException {
+		ServiceContext serviceContext;
+		serviceContext = new ServiceContext();
+		serviceContext.put("phresco.service.url", serverProperties.get("phresco.service.url"));
+		serviceContext.put("phresco.service.username", userName);
+		serverProperties.put("phresco.service.username", userName);
+		serviceContext.put("phresco.service.password", password);
+		return serviceContext;
+	}
+	
 	protected Configuration getInteractiveConfiguration(Configuration configuration, MojoProcessor processor, MavenProject project, String goal) throws PhrescoException {
 		try {
-//		PhrescoCreate phrescoCreate = new PhrescoCreate();
-//		ServiceManager serviceManager = phrescoCreate.getServiceManager();
 		if (configuration == null) {
 			return null;
+		}
+		initProperty("", "");
+		String serverUrl = (String) serverProperties.get("phresco.service.url");
+		String authToken = (String) serverProperties.get("auth.token");
+		serviceManager = new ServiceManagerImpl(serverUrl, authToken);
+		boolean validToken = serviceManager.isValidToken();
+		if (!validToken) {
+			System.out.println("Session Expired  Enter Your Password : ");
+			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+			String password = br.readLine();
+			String userName = (String) serverProperties.get("phresco.service.username");
+			serviceManager = new ServiceManagerImpl(getServiceContext(userName, password));
 		}
 		Parameters parameters = configuration.getParameters();
 		List<Parameter> parameter = parameters.getParameter();
@@ -311,6 +433,8 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 			}
 			processor.save();
 		} catch (MojoExecutionException e) {
+			throw new PhrescoException(e);
+		} catch (IOException e) {
 			throw new PhrescoException(e);
 		}
 		return configuration;
@@ -348,7 +472,7 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 			}
 			
 			if(parameter.getType().equalsIgnoreCase("DynamicParameter")) {
-				if((value.getValue().equals("DataBase")||(value.getValue().equals("FetchSql"))) 
+				if((value.getValue().equals("DataBase")||value.getValue().equals("FetchSql"))
 						&& ( paramval.equalsIgnoreCase("false"))) {
 					return "";
 				}
@@ -397,14 +521,12 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 
 	private PossibleValues dynamicClassLoader(Parameter parameter, MavenProject project, MojoProcessor processor, String goal) throws PhrescoException {
 		try {
-			
 			File projectInfoFile = new File(project.getBasedir().getPath() + File.separatorChar + Constants.DOT_PHRESCO_FOLDER + File.separatorChar + Constants.PROJECT_INFO_FILE);
 			Gson gson = new Gson();
 			ProjectInfo projectInfo = gson.fromJson(new FileReader(projectInfoFile), ProjectInfo.class);
 			ApplicationInfo applicationInfo = projectInfo.getAppInfos().get(0);
 			String customerId = projectInfo.getCustomerIds().get(0);
 			String clazz = parameter.getDynamicParameter().getClazz();
-			
 			Class loadClass = getClassFromLocal(clazz);
 			Parameter buildNoParameter = processor.getParameter(goal, DynamicParameter.KEY_BUILD_NO);
 			String buildNo = "";
@@ -420,6 +542,7 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 				dynamicParameterMap.put(DynamicParameter.KEY_GOAL, goal);
 				dynamicParameterMap.put(DynamicParameter.KEY_MULTI_MODULE, false);
 				dynamicParameterMap.put(DynamicParameter.KEY_BUILD_NO, buildNo);
+				dynamicParameterMap.put(DynamicParameter.REQ_SERVICE_MANAGER, serviceManager);
 				return dynamicParameter.getValues(dynamicParameterMap);
 			}
 		} catch (JsonSyntaxException e) {

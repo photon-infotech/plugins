@@ -2,9 +2,7 @@ package com.photon.phresco.plugins;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -13,10 +11,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
@@ -33,15 +29,13 @@ import com.photon.phresco.commons.model.User;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.framework.PhrescoFrameworkFactory;
 import com.photon.phresco.framework.api.ProjectManager;
-import com.photon.phresco.service.client.api.ServiceContext;
 import com.photon.phresco.service.client.api.ServiceManager;
-import com.photon.phresco.service.client.impl.ServiceManagerImpl;
 
 /**
  * Phresco Maven Plugin for create project
  * @goal create
  */
-public class PhrescoCreate extends AbstractMojo {
+public class PhrescoCreate extends PhrescoAbstractMojo {
 	
     /**
      * @parameter expression="${project.basedir}" required="true"
@@ -68,19 +62,16 @@ public class PhrescoCreate extends AbstractMojo {
     private boolean interactive;
     
     private ServiceManager serviceManager;
-    private Properties serverProperties;
-    private Properties projectProperties;
-    private File serverFile;
     
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		initProperty();
+		if(servicePropertyFile == null) {
+			throw new MojoExecutionException("The Service Property File Or ProjectProperty File Should Not Be Empty ");
+		}
 		try {
-			getServiceManager();
+			initProperty(servicePropertyFile, projectPropertyFile);
+			serviceManager = getServiceManager();
 			ProjectManager projectManager = PhrescoFrameworkFactory.getProjectManager();
 			projectManager.create(createProjectInfo(), serviceManager);
-			System.out.println("[INFO]--------------------------------------------------------------------------");
-			System.out.println("[INFO]     PROJECT CREATED SUCESSFULLY                          ");
-			System.out.println("[INFO]--------------------------------------------------------------------------");
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage());
 		} catch (IOException e) {
@@ -88,80 +79,14 @@ public class PhrescoCreate extends AbstractMojo {
 		}
 	}
 
+
 	/**
 	 * @throws PhrescoException
 	 * @throws MojoExecutionException
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public ServiceManager getServiceManager() throws PhrescoException,
-			MojoExecutionException, FileNotFoundException, IOException {
-		initProperty();
-		String serverUrl = (String) serverProperties.get("phresco.service.url");
-		String authToken = (String) serverProperties.get("auth.token");
-		serviceManager = new ServiceManagerImpl(serverUrl, authToken);
-		boolean validToken = serviceManager.isValidToken();
-		if (!validToken) {
-			serviceManager = PhrescoFrameworkFactory.getServiceManager(getServiceContext());
-			authToken = serviceManager.getUserInfo().getToken();
-			serverProperties.setProperty("auth.token", authToken);
-			FileOutputStream out = new FileOutputStream(serverFile);
-			serverProperties.store(out, "");
-		}
-		return serviceManager;
-	}
 	
-	private ServiceContext getServiceContext() throws MojoExecutionException {
-		ServiceContext serviceContext;
-		try {
-			serviceContext = new ServiceContext();
-			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-			serviceContext.put("phresco.service.url", serverProperties.get("phresco.service.url"));
-			System.out.println("Enter Username : ");
-			String userName = br.readLine();
-			serviceContext.put("phresco.service.username", userName);
-			serverProperties.put("phresco.service.username", userName);
-			System.out.println("Enter Password : ");
-			String password = br.readLine();
-			serviceContext.put("phresco.service.password", password);
-		} catch (IOException e) {
-			throw new MojoExecutionException(e.getMessage());
-		}
-		return serviceContext;
-	}
-	
-	private void initProperty() throws MojoExecutionException {
-		try {
-			if(servicePropertyFile == null) {
-				throw new MojoExecutionException("The Service Property File Or ProjectProperty File Should Not Be Empty ");
-			}
-			serverProperties = new Properties();
-			projectProperties = new Properties();
-			serverFile = new File(servicePropertyFile);
-			if(!serverFile.exists()) {
-				serverFile = new File(baseDir, servicePropertyFile);
-				if(!serverFile.exists()) {
-					throw new MojoExecutionException("Server Property File Not Exists");
-				}
-			}
-			if(!interactive) {
-				File projectPropFile = new File(projectPropertyFile);
-				if(!projectPropFile.exists()) {
-					projectPropFile = new File(baseDir, projectPropertyFile);
-					if(!projectPropFile.exists()) {
-						throw new MojoExecutionException("Project Property File Not Exists");
-					}
-				}
-				projectProperties.load(new FileInputStream(projectPropFile));
-			}
-			serverProperties.load(new FileInputStream(serverFile));
-		} catch (FileNotFoundException e) {
-			throw new MojoExecutionException(e.getMessage());
-		} catch (IOException e) {
-			throw new MojoExecutionException(e.getMessage());
-		}
-	}
-
 	private ProjectInfo createProjectInfo() throws MojoExecutionException, PhrescoException {
 		ProjectInfo projectInfo = new ProjectInfo();
 		if(interactive) {
