@@ -110,6 +110,7 @@ public class Package implements PluginConstants {
     
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
+		System.out.println("InSIDE FELIX MAVEN PLUGIN   " + mavenProjectInfo.getBuildVersion());
 		baseDir = mavenProjectInfo.getBaseDir();
         project = mavenProjectInfo.getProject();
         mavenSession = mavenProjectInfo.getMavenSession();
@@ -306,10 +307,10 @@ public class Package implements PluginConstants {
 		sb.append(MVN_PHASE_CLEAN);
 		sb.append(STR_SPACE);
 		sb.append(MVN_PHASE_INSTALL);
-//		sb.append(STR_SPACE);
-//		sb.append(Constants.HYPHEN_F);
-//		sb.append(STR_SPACE);
-//		sb.append(project.getFile().getName());
+		sb.append(STR_SPACE);
+		sb.append(Constants.HYPHEN_F);
+		sb.append(STR_SPACE);
+		sb.append(project.getFile().getName());
 		sb.append(STR_SPACE);
 		sb.append("-Dpackage.version=" + buildVersion);
 		sb.append(STR_SPACE);

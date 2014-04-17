@@ -165,10 +165,11 @@ public class JavaTest implements PluginConstants {
 			//				sb.append(STR_SPACE).append("-pl "+ projectModule);
 			//			}
 			sb.append(STR_SPACE);
-//			sb.append(Constants.HYPHEN_F);
-//			sb.append(STR_SPACE); 
-//			sb.append(project.getFile().getName());
+			sb.append(Constants.HYPHEN_F);
+			sb.append(STR_SPACE); 
+			sb.append(project.getFile().getName());
 			sb.append("-Dpackage.version=" + buildVersion);
+			sb.append(STR_SPACE);
 			System.out.println("COMMAND IS  " + sb.toString());
 			boolean status = Utility.executeStreamconsumer(sb.toString(), workingDirectory.getPath(), workingDirectory.getPath(), UNIT);
 			if(!status) {

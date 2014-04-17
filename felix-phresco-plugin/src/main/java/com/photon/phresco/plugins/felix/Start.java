@@ -206,9 +206,10 @@ public class Start implements PluginConstants {
 				sb.append(SERVER_ENV);
 				sb.append(environmentName);
 				sb.append(STR_SPACE);
-//				sb.append(Constants.HYPHEN_F);
-//				sb.append(STR_SPACE);
-//				sb.append(pomFileName);
+				sb.append(Constants.HYPHEN_F);
+				sb.append(STR_SPACE);
+				sb.append(pomFileName);
+				sb.append(STR_SPACE);
 				sb.append("-Dpackage.version=" + buildVersion);
 				fos = new FileOutputStream(errorLog, false);
 				Utility.executeStreamconsumerFOS(workingDirectory.toString(),sb.toString(), fos);

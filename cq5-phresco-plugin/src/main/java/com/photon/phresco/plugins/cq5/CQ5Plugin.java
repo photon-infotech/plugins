@@ -1,7 +1,7 @@
 /**
  * java-phresco-plugin
  *
- * Copyright (C) 1999-2013 Photon Infotech Inc.
+ * Copyright (C) 1999-2014 Photon Infotech Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,9 @@ public class CQ5Plugin extends PhrescoBasePlugin {
 	@Override
 	public ExecutionStatus pack(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		try {
+			System.out.println("**************************************");
+			System.out.println("**************************************");
+			System.out.println("INSIDE CQ5  VERSIN IS   " + mavenProjectInfo.getBuildVersion());
 			File targetDir = new File(mavenProjectInfo.getBaseDir() + DO_NOT_CHECKIN_FOLDER + File.separator + TARGET);
 			if (targetDir.exists()) {
 				FileUtils.deleteDirectory(targetDir);

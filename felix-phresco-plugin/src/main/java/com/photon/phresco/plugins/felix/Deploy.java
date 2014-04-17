@@ -296,9 +296,10 @@ public class Deploy implements PluginConstants {
 				sb.append(SKIP_TESTS);
 				sb.append(STR_SPACE);
 				sb.append("-Dpackage.version=" + buildVersion);
-//				sb.append(Constants.HYPHEN_F);
-//				sb.append(STR_SPACE);
-//				sb.append(project.getFile().getName());
+				sb.append(STR_SPACE);
+				sb.append(Constants.HYPHEN_F);
+				sb.append(STR_SPACE);
+				sb.append(project.getFile().getName());
 				log.info(" Before IF sb == "+ sb);
 				if (serverprotocol.equals(HTTPS) && certificatePath != null) {
 
