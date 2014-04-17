@@ -363,7 +363,7 @@ public class Package implements PluginConstants {
 			configuration.addChild(groupId);
 			Xpp3Dom version = new Xpp3Dom("version");
 			String pomVersion = processor.getVersion();
-			if(StringUtils.isNotEmpty(buildVersion)) {
+			if(StringUtils.isNotEmpty(buildVersion) && processor.getVersion().contains("{package.version}")) {
 				pomVersion = buildVersion;
 			}
 			version.setValue(pomVersion);
