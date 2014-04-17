@@ -29,6 +29,8 @@ import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+import com.photon.phresco.plugins.util.MojoProcessor;
 import com.photon.phresco.util.Constants;
 
 /**
@@ -97,7 +99,12 @@ public class PhrescoStart extends PhrescoAbstractMojo {
      * */
     private ArtifactRepository localRepository;
 	
-
+    /**
+     * @parameter expression="${interactive}" required="true"
+     * @readonly
+     */
+    private boolean interactive;
+    
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
 			String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
@@ -112,7 +119,12 @@ public class PhrescoStart extends PhrescoAbstractMojo {
         		infoFile = baseDir + File.separator + moduleName + File.separator + Constants.START_INFO_FILE;
         	}
 			PhrescoPlugin plugin = getPlugin(getDependency(infoFile, START));
-			plugin.startServer(getConfiguration(infoFile, START), getMavenProjectInfo(project, moduleName, mavenSession, pluginManager, localRepository));
+			Configuration configuration = getConfiguration(infoFile, START);
+			MojoProcessor processor = new MojoProcessor(new File(infoFile));
+			if(interactive) {
+				configuration = getInteractiveConfiguration(configuration, processor, project, START);
+			}
+			plugin.startServer(configuration, getMavenProjectInfo(project, moduleName, mavenSession, pluginManager, localRepository));
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
