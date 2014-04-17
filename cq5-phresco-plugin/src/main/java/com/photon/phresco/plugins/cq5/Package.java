@@ -335,12 +335,12 @@ public class Package implements PluginConstants {
 		sb.append(MVN_PHASE_CLEAN);
 		sb.append(STR_SPACE);
 		sb.append(MVN_PHASE_PACKAGE);
-		if(!Constants.POM_NAME.equals(pomFile.getName())) {
-			sb.append(STR_SPACE);
-			sb.append(Constants.HYPHEN_F);
-			sb.append(STR_SPACE);
-			sb.append(pomFile.getName());
-		}
+//		if(!Constants.POM_NAME.equals(pomFile.getName())) {
+//			sb.append(STR_SPACE);
+//			sb.append(Constants.HYPHEN_F);
+//			sb.append(STR_SPACE);
+//			sb.append(pomFile.getName());
+//		}
 		sb.append(STR_SPACE);
 		sb.append(builder.toString());
 		sb.append(STR_SPACE);
