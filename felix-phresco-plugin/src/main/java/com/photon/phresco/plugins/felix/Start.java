@@ -1,7 +1,7 @@
 /**
  * java-phresco-plugin
  *
- * Copyright (C) 1999-2013 Photon Infotech Inc.
+ * Copyright (C) 1999-2014 Photon Infotech Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,9 +69,11 @@ public class Start implements PluginConstants {
 	private String dotPhrescoDirName;
 	private File dotPhrescoDir;
 	private File srcDirectory;
-
+	private String buildVersion;
+	
 	public void start(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
+		buildVersion = mavenProjectInfo.getBuildVersion();
 		baseDir = mavenProjectInfo.getBaseDir();
 		project = mavenProjectInfo.getProject();
 		pomFile = project.getFile();
@@ -204,9 +206,10 @@ public class Start implements PluginConstants {
 				sb.append(SERVER_ENV);
 				sb.append(environmentName);
 				sb.append(STR_SPACE);
-				sb.append(Constants.HYPHEN_F);
-				sb.append(STR_SPACE);
-				sb.append(pomFileName);
+//				sb.append(Constants.HYPHEN_F);
+//				sb.append(STR_SPACE);
+//				sb.append(pomFileName);
+				sb.append("-Dpackage.version=" + buildVersion);
 				fos = new FileOutputStream(errorLog, false);
 				Utility.executeStreamconsumerFOS(workingDirectory.toString(),sb.toString(), fos);
 			} catch (FileNotFoundException e) {

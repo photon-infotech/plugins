@@ -1,7 +1,7 @@
 /**
  * java-phresco-plugin
  *
- * Copyright (C) 1999-2013 Photon Infotech Inc.
+ * Copyright (C) 1999-2014 Photon Infotech Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,9 +54,11 @@ public class JavaTest implements PluginConstants {
 	private String dotPhrescoDirName;
 	private File dotPhrescoDir;
 	private File srcDirectory;
+	private String buildVersion;
 
 	public void runTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException{
 		try {
+			buildVersion = mavenProjectInfo.getBuildVersion();
 			baseDir = mavenProjectInfo.getBaseDir();
 			project = mavenProjectInfo.getProject();
 			pomFile = project.getFile();
@@ -163,9 +165,10 @@ public class JavaTest implements PluginConstants {
 			//				sb.append(STR_SPACE).append("-pl "+ projectModule);
 			//			}
 			sb.append(STR_SPACE);
-			sb.append(Constants.HYPHEN_F);
-			sb.append(STR_SPACE); 
-			sb.append(project.getFile().getName());
+//			sb.append(Constants.HYPHEN_F);
+//			sb.append(STR_SPACE); 
+//			sb.append(project.getFile().getName());
+			sb.append("-Dpackage.version=" + buildVersion);
 			System.out.println("COMMAND IS  " + sb.toString());
 			boolean status = Utility.executeStreamconsumer(sb.toString(), workingDirectory.getPath(), workingDirectory.getPath(), UNIT);
 			if(!status) {
