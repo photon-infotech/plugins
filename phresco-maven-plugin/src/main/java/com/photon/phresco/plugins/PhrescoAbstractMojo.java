@@ -106,7 +106,7 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 	protected File baseDir;
 	
 	/**
-     * @parameter expression="${build.version}"
+     * @parameter expression="${package.version}"
      * @readonly
      */
     protected String buildVersion;
