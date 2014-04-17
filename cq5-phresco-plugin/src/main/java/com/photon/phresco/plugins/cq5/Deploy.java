@@ -217,7 +217,7 @@ public class Deploy implements PluginConstants {
 				sb.append("\""+certificateFile.getPath()+"\"");
 			}
 			sb.append(STR_SPACE);
-			sb.append("-Dbuild.version=" + buildVersion);
+			sb.append("-Dpackage.version=" + buildVersion);
 			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 			String line = null;
 			

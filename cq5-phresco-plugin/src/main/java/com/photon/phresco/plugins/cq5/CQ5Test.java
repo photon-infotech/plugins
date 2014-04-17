@@ -124,7 +124,7 @@ public class CQ5Test implements PluginConstants {
 			sb.append(STR_SPACE); 
 			sb.append(project.getFile().getName());
 			sb.append(STR_SPACE);
-			sb.append("-Dbuild.version=" + buildVersion);
+			sb.append("-Dpackage.version=" + buildVersion);
 			System.out.println("COMMAND IS  " + sb.toString());
 			boolean status = Utility.executeStreamconsumer(sb.toString(), workingDirectory.getPath(), workingDirectory.getPath(), UNIT);
 			if(!status) {

@@ -344,7 +344,7 @@ public class Package implements PluginConstants {
 		sb.append(STR_SPACE);
 		sb.append(builder.toString());
 		sb.append(STR_SPACE);
-		sb.append("-Dbuild.version=" + buildVersion);
+		sb.append("-Dpackage.version=" + buildVersion);
 		String line ="";
 		bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 		while ((line = bufferedReader.readLine()) != null) {

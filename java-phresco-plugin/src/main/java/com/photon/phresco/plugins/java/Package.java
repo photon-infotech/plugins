@@ -461,7 +461,7 @@ public class Package implements PluginConstants {
 		sb.append(STR_SPACE);
 		sb.append(FrameworkConstants.HYPHEN_N);
 		sb.append(STR_SPACE);
-		sb.append("-Dbuild.version=" + buildVersion);
+		sb.append("-Dpackage.version=" + buildVersion);
 		List<String> buildModules = getBuildModules(appInfoRoot, subModule);
 		if (StringUtils.isNotEmpty(subModule)) {
 			buildModules.add(subModule);
@@ -485,7 +485,7 @@ public class Package implements PluginConstants {
 				stringBuilder.append(STR_SPACE);
 				stringBuilder.append(builder.toString());
 				sb.append(STR_SPACE);
-				sb.append("-Dbuild.version=" + buildVersion);
+				sb.append("-Dpackage.version=" + buildVersion);
 				String command = stringBuilder.toString();
 				executeCommand(command, dir, module);
 			}

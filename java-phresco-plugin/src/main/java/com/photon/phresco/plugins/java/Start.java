@@ -345,7 +345,7 @@ public class Start implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(pomFileName);
 			sb.append(STR_SPACE);
-			sb.append("-Dbuild.version=" + buildVersion);
+			sb.append("-Dpackage.version=" + buildVersion);
 			fos = new FileOutputStream(errorLog, false);
 			Utility.executeStreamconsumerFOS(workingDirectory.toString(),sb.toString(), fos);
 		} catch (FileNotFoundException e) {
