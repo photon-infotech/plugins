@@ -76,12 +76,14 @@ public class Deploy implements PluginConstants {
 	private String dotPhrescoDirName;
     private File dotPhrescoDir;
     private File srcDirectory;
+    private String buildVersion;
     
 	public void deploy(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
 		project = mavenProjectInfo.getProject();
+		buildVersion = mavenProjectInfo.getBuildVersion();
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
 		environmentName = configs.get(ENVIRONMENT_NAME);
 		buildNumber = configs.get(BUILD_NUMBER);
@@ -292,6 +294,8 @@ public class Deploy implements PluginConstants {
 				sb.append(PACKAGE_FILE+"=\""+bundleFile+"\"");
 				sb.append(STR_SPACE);
 				sb.append(SKIP_TESTS);
+				sb.append(STR_SPACE);
+				sb.append("-Dpackage.version=" + buildVersion);
 				sb.append(STR_SPACE);
 				sb.append(Constants.HYPHEN_F);
 				sb.append(STR_SPACE);

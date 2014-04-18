@@ -124,6 +124,7 @@ public class Package implements PluginConstants {
     private File srcDirectory;
     private File dotPhrescoRoot;
     private ApplicationInfo appInfoRoot;
+    private String buildVersion;
     
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -131,6 +132,7 @@ public class Package implements PluginConstants {
         project = mavenProjectInfo.getProject();
         mavenSession = mavenProjectInfo.getMavenSession();
         pluginManager = mavenProjectInfo.getPluginManager();
+        buildVersion = mavenProjectInfo.getBuildVersion();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
         buildName = configs.get(BUILD_NAME);
@@ -458,6 +460,8 @@ public class Package implements PluginConstants {
 		sb.append(builder.toString());
 		sb.append(STR_SPACE);
 		sb.append(FrameworkConstants.HYPHEN_N);
+		sb.append(STR_SPACE);
+		sb.append("-Dpackage.version=" + buildVersion);
 		List<String> buildModules = getBuildModules(appInfoRoot, subModule);
 		if (StringUtils.isNotEmpty(subModule)) {
 			buildModules.add(subModule);
@@ -480,6 +484,8 @@ public class Package implements PluginConstants {
 				stringBuilder.append(subPomFile.getName());
 				stringBuilder.append(STR_SPACE);
 				stringBuilder.append(builder.toString());
+				sb.append(STR_SPACE);
+				sb.append("-Dpackage.version=" + buildVersion);
 				String command = stringBuilder.toString();
 				executeCommand(command, dir, module);
 			}
@@ -521,7 +527,11 @@ public class Package implements PluginConstants {
 			groupId.setValue(processor.getGroupId());
 			configuration.addChild(groupId);
 			Xpp3Dom version = new Xpp3Dom("version");
-			version.setValue(processor.getVersion());
+			String projversion = processor.getVersion();
+			if(StringUtils.isNotEmpty(buildVersion)) {
+				projversion = buildVersion;
+			}
+			version.setValue(projversion);
 			configuration.addChild(version);
 			Xpp3Dom repositoryLayout = new Xpp3Dom("repositoryLayout");
 			repositoryLayout.setValue("default");

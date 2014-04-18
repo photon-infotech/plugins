@@ -39,6 +39,9 @@ public class CQ5Plugin extends PhrescoBasePlugin {
 	@Override
 	public ExecutionStatus pack(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		try {
+			System.out.println("**************************************");
+			System.out.println("**************************************");
+			System.out.println("INSIDE CQ5  VERSIN IS   " + mavenProjectInfo.getBuildVersion());
 			File targetDir = new File(mavenProjectInfo.getBaseDir() + DO_NOT_CHECKIN_FOLDER + File.separator + TARGET);
 			if (targetDir.exists()) {
 				FileUtils.deleteDirectory(targetDir);

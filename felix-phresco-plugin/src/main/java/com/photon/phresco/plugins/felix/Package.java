@@ -106,12 +106,15 @@ public class Package implements PluginConstants {
     private String dotPhrescoDirName;
     private File dotPhrescoDir;
     private File srcDirectory;
+    private String buildVersion;
     
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
+		System.out.println("InSIDE FELIX MAVEN PLUGIN   " + mavenProjectInfo.getBuildVersion());
 		baseDir = mavenProjectInfo.getBaseDir();
         project = mavenProjectInfo.getProject();
         mavenSession = mavenProjectInfo.getMavenSession();
+        buildVersion = mavenProjectInfo.getBuildVersion();
         pluginManager = mavenProjectInfo.getPluginManager();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
@@ -309,6 +312,8 @@ public class Package implements PluginConstants {
 		sb.append(STR_SPACE);
 		sb.append(project.getFile().getName());
 		sb.append(STR_SPACE);
+		sb.append("-Dpackage.version=" + buildVersion);
+		sb.append(STR_SPACE);
 		sb.append(builder.toString());
 		
 		String command = sb.toString();
@@ -357,7 +362,11 @@ public class Package implements PluginConstants {
 			groupId.setValue(processor.getGroupId());
 			configuration.addChild(groupId);
 			Xpp3Dom version = new Xpp3Dom("version");
-			version.setValue(processor.getVersion());
+			String pomVersion = processor.getVersion();
+			if(StringUtils.isNotEmpty(buildVersion) && processor.getVersion().contains("{package.version}")) {
+				pomVersion = buildVersion;
+			}
+			version.setValue(pomVersion);
 			configuration.addChild(version);
 			Xpp3Dom repositoryLayout = new Xpp3Dom("repositoryLayout");
 			repositoryLayout.setValue("default");

@@ -35,6 +35,7 @@ public class MavenProjectInfo {
     private BuildPluginManager pluginManager;
     private ArtifactRepository localRepository;
     private Map<String, Object> keyValues;
+    private String buildVersion;
     
 	public Map<String, Object> getKeyValues() {
 		return keyValues;
@@ -98,6 +99,14 @@ public class MavenProjectInfo {
 
 	public ArtifactRepository getLocalRepository() {
 		return localRepository;
+	}
+
+	public void setBuildVersion(String buildVersion) {
+		this.buildVersion = buildVersion;
+	}
+
+	public String getBuildVersion() {
+		return buildVersion;
 	}
     
 }

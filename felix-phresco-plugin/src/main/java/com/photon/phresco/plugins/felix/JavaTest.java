@@ -54,9 +54,11 @@ public class JavaTest implements PluginConstants {
 	private String dotPhrescoDirName;
 	private File dotPhrescoDir;
 	private File srcDirectory;
+	private String buildVersion;
 
 	public void runTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException{
 		try {
+			buildVersion = mavenProjectInfo.getBuildVersion();
 			baseDir = mavenProjectInfo.getBaseDir();
 			project = mavenProjectInfo.getProject();
 			pomFile = project.getFile();
@@ -166,6 +168,8 @@ public class JavaTest implements PluginConstants {
 			sb.append(Constants.HYPHEN_F);
 			sb.append(STR_SPACE); 
 			sb.append(project.getFile().getName());
+			sb.append("-Dpackage.version=" + buildVersion);
+			sb.append(STR_SPACE);
 			System.out.println("COMMAND IS  " + sb.toString());
 			boolean status = Utility.executeStreamconsumer(sb.toString(), workingDirectory.getPath(), workingDirectory.getPath(), UNIT);
 			if(!status) {

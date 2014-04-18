@@ -86,6 +86,7 @@ public class Start implements PluginConstants {
 	private ApplicationInfo appInfo;
 	private MavenSession mavenSession;
     private BuildPluginManager pluginManager;
+    private String buildVersion;
 	 
 	public void start(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
@@ -93,6 +94,7 @@ public class Start implements PluginConstants {
 		project = mavenProjectInfo.getProject();
 		mavenSession = mavenProjectInfo.getMavenSession();
 	    pluginManager = mavenProjectInfo.getPluginManager();
+	    buildVersion = mavenProjectInfo.getBuildVersion();
 		pomFile = project.getFile();
 		pomFileName = project.getFile().getName();
 		pu = new PluginUtils();
@@ -171,7 +173,11 @@ public class Start implements PluginConstants {
 			groupId.setValue(processor.getGroupId());
 			configuration.addChild(groupId);
 			Xpp3Dom version = new Xpp3Dom("version");
-			version.setValue(processor.getVersion());
+			String projversion = processor.getVersion();
+			if(StringUtils.isNotEmpty(buildVersion)) {
+				projversion = buildVersion;
+			}
+			version.setValue(projversion);
 			configuration.addChild(version);
 			Xpp3Dom repositoryLayout = new Xpp3Dom("repositoryLayout");
 			repositoryLayout.setValue("default");
@@ -338,6 +344,8 @@ public class Start implements PluginConstants {
 			sb.append(Constants.HYPHEN_F);
 			sb.append(STR_SPACE);
 			sb.append(pomFileName);
+			sb.append(STR_SPACE);
+			sb.append("-Dpackage.version=" + buildVersion);
 			fos = new FileOutputStream(errorLog, false);
 			Utility.executeStreamconsumerFOS(workingDirectory.toString(),sb.toString(), fos);
 		} catch (FileNotFoundException e) {

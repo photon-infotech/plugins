@@ -112,6 +112,13 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 	 * @readonly
 	 */
 	protected File baseDir;
+	
+	/**
+     * @parameter expression="${package.version}"
+     * @readonly
+     */
+    protected String buildVersion;
+	
 	//Value
 	String paramval="false";
 	protected Properties serverProperties;
@@ -214,6 +221,7 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
         mavenProjectInfo.setPluginManager(pluginManager);
         mavenProjectInfo.setMavenSession(mavenSession);
         mavenProjectInfo.setLocalRepository(localRepository);
+        mavenProjectInfo.setBuildVersion(buildVersion);
         return mavenProjectInfo;
     }
 	

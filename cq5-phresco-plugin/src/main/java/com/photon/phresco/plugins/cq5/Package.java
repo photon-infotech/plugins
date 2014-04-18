@@ -91,11 +91,13 @@ public class Package implements PluginConstants {
 	private String dotPhrescoDirName;
     private File dotPhrescoDir;
 	private String filters;
+	private String buildVersion;
 	
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
         project = mavenProjectInfo.getProject();
+        buildVersion = mavenProjectInfo.getBuildVersion();
         pomFile = project.getFile();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
@@ -341,6 +343,8 @@ public class Package implements PluginConstants {
 		}
 		sb.append(STR_SPACE);
 		sb.append(builder.toString());
+		sb.append(STR_SPACE);
+		sb.append("-Dpackage.version=" + buildVersion);
 		String line ="";
 		bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 		while ((line = bufferedReader.readLine()) != null) {
