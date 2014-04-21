@@ -155,6 +155,7 @@ public interface PluginConstants {
 	 String WEBLOGIC_GOAL 				= "com.oracle.weblogic:weblogic-maven-plugin:";
 	 String WEBLOGIC_REDEPLOY 			= ":redeploy";
 	 String JBOSS_GOAL					= "cargo:redeploy";
+	 String CONF_DIRECTORY				= "conf";
 	 //String T7_START_GOAL				= "t7:run-forked";
 	 //String T7_STOP_GOAL				= "t7:stop-forked";
 	 String SERVER_ENV					= "-Dserver.env=";
