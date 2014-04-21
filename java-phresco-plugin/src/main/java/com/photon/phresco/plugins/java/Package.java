@@ -153,10 +153,12 @@ public class Package implements PluginConstants {
         }
         dotPhrescoRoot = dotPhrescoDir;
         File warConfigFile = new File(dotPhrescoDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + WAR_CONFIG_FILE);
+        File warSourceConfigFile = new File(baseDir.getPath() + File.separator + CONF_DIRECTORY  + File.separator + WAR_CONFIG_FILE);
         if (StringUtils.isNotEmpty(mavenProjectInfo.getModuleName())) {
         	subModule = mavenProjectInfo.getModuleName();
         	warConfigFile = new File(dotPhrescoDir.getPath() + File.separator + subModule + File.separator + DOT_PHRESCO_FOLDER + File.separator + WAR_CONFIG_FILE);
         	workingDirectory = new File(baseDir.getPath() + File.separator + subModule);
+        	warSourceConfigFile = new File(workingDirectory + File.separator +  CONF_DIRECTORY + File.separator + WAR_CONFIG_FILE);
         	dotPhrescoDir = new File(dotPhrescoDir.getPath() + File.separatorChar + subModule);
         	pomFile = pu.getPomFile(dotPhrescoDir, workingDirectory);
         } 
@@ -164,7 +166,8 @@ public class Package implements PluginConstants {
     	srcDirectory = workingDirectory;
     	if (splitProjectDirectory != null) {
     		srcDirectory = splitProjectDirectory;
-    	}
+    		warSourceConfigFile = new File(srcDirectory+ File.separator +  CONF_DIRECTORY + File.separator + WAR_CONFIG_FILE);
+    	} 
         initPomAndPackage();
         PluginUtils.checkForConfigurations(dotPhrescoDir, environmentName);
         try { 
@@ -174,19 +177,8 @@ public class Package implements PluginConstants {
 				configure();
 			}
 			if(StringUtils.isNotEmpty(packMinifiedFilesValue)) {
-				boolean packMinifiedFiles = Boolean.parseBoolean(packMinifiedFilesValue);
-				WarConfigProcessor configProcessor = new WarConfigProcessor(warConfigFile);
-				emptyFileSetExclude(configProcessor, EXCLUDE_FILE);
-				if(!packMinifiedFiles) {
-					List<String> excludes = new ArrayList<String>();
-					excludes.add("/js/**/*-min.js");
-					excludes.add("/js/**/*.min.js");
-					excludes.add("/css/**/*-min.css");
-					excludes.add("/css/**/*.min.css");
-					setFileSetExcludes(configProcessor, EXCLUDE_FILE, excludes);
-				}
-				includeLibraryJsFiles(configProcessor);
-				configProcessor.save();
+				updateConfigFile(packMinifiedFilesValue, warConfigFile);
+				updateConfigFile(packMinifiedFilesValue, warSourceConfigFile);
 			}
 			getMavenCommands(configuration);
 			executeMvnPackage();
@@ -202,6 +194,24 @@ public class Package implements PluginConstants {
 		} catch (IOException e) {
 			throw new PhrescoException(e);
 		}	
+	}
+
+	private void updateConfigFile(String packMinifiedFilesValue,
+			File warConfigFile) throws JAXBException, IOException,
+			PhrescoException {
+		boolean packMinifiedFiles = Boolean.parseBoolean(packMinifiedFilesValue);
+		WarConfigProcessor configProcessor = new WarConfigProcessor(warConfigFile);
+		emptyFileSetExclude(configProcessor, EXCLUDE_FILE);
+		if(!packMinifiedFiles) {
+			List<String> excludes = new ArrayList<String>();
+			excludes.add("/js/**/*-min.js");
+			excludes.add("/js/**/*.min.js");
+			excludes.add("/css/**/*-min.css");
+			excludes.add("/css/**/*.min.css");
+			setFileSetExcludes(configProcessor, EXCLUDE_FILE, excludes);
+		}
+		includeLibraryJsFiles(configProcessor);
+		configProcessor.save();
 	}
 	
 	private void initPomAndPackage() throws PhrescoException {
