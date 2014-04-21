@@ -460,8 +460,10 @@ public class Package implements PluginConstants {
 		sb.append(builder.toString());
 		sb.append(STR_SPACE);
 		sb.append(FrameworkConstants.HYPHEN_N);
-		sb.append(STR_SPACE);
-		sb.append("-Dpackage.version=" + buildVersion);
+		if(StringUtils.isNotEmpty(buildVersion)) {
+			sb.append(STR_SPACE);
+			sb.append("-Dpackage.version=" + buildVersion);
+		}
 		List<String> buildModules = getBuildModules(appInfoRoot, subModule);
 		if (StringUtils.isNotEmpty(subModule)) {
 			buildModules.add(subModule);

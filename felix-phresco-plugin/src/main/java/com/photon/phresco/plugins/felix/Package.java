@@ -311,8 +311,10 @@ public class Package implements PluginConstants {
 		sb.append(Constants.HYPHEN_F);
 		sb.append(STR_SPACE);
 		sb.append(project.getFile().getName());
-		sb.append(STR_SPACE);
-		sb.append("-Dpackage.version=" + buildVersion);
+		if(StringUtils.isNotEmpty(buildVersion)) {
+			sb.append(STR_SPACE);
+			sb.append("-Dpackage.version=" + buildVersion);
+		}
 		sb.append(STR_SPACE);
 		sb.append(builder.toString());
 		
