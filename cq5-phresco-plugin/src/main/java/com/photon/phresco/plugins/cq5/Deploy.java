@@ -216,8 +216,10 @@ public class Deploy implements PluginConstants {
 				sb.append(JAVAX_TRUSTSTORE);
 				sb.append("\""+certificateFile.getPath()+"\"");
 			}
-			sb.append(STR_SPACE);
-			sb.append("-Dpackage.version=" + buildVersion);
+			if(org.apache.commons.lang.StringUtils.isNotEmpty(buildVersion)) {
+				sb.append(STR_SPACE);
+				sb.append("-Dpackage.version=" + buildVersion);
+			}
 			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 			String line = null;
 			

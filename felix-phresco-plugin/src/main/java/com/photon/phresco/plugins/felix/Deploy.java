@@ -294,8 +294,10 @@ public class Deploy implements PluginConstants {
 				sb.append(PACKAGE_FILE+"=\""+bundleFile+"\"");
 				sb.append(STR_SPACE);
 				sb.append(SKIP_TESTS);
-				sb.append(STR_SPACE);
-				sb.append("-Dpackage.version=" + buildVersion);
+				if(org.apache.commons.lang.StringUtils.isNotEmpty(buildVersion)) {
+					sb.append(STR_SPACE);
+					sb.append("-Dpackage.version=" + buildVersion);
+				}
 				sb.append(STR_SPACE);
 				sb.append(Constants.HYPHEN_F);
 				sb.append(STR_SPACE);
