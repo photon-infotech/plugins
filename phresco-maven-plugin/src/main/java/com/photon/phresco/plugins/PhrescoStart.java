@@ -1,7 +1,7 @@
 /**
  * Phresco Maven Plugin
  *
- * Copyright (C) 1999-2013 Photon Infotech Inc.
+ * Copyright (C) 1999-2014 Photon Infotech Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,18 @@ package com.photon.phresco.plugins;
 import java.io.File;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+import com.photon.phresco.plugins.util.MojoProcessor;
 import com.photon.phresco.util.Constants;
 
 /**
@@ -64,8 +70,48 @@ public class PhrescoStart extends PhrescoAbstractMojo {
      * @readonly
      */
     protected String moduleName;
-	
+    
+    /**
+     * The current Maven session.
+     *
+     * @parameter default-value="${session}"
+     * @parameter required
+     * @readonly
+     */
+    private MavenSession mavenSession;
 
+    /**
+     * The Maven BuildPluginManager component.
+     *
+     * @component
+     * @required
+     */
+    private BuildPluginManager pluginManager;
+    
+    /**
+     * The Maven BuildPluginManager component.
+     *
+     * @component
+     * @required
+     */
+    
+    /**@parameter 
+     * default-value="${localRepository}" 
+     * */
+    private ArtifactRepository localRepository;
+	
+    /**
+     * @parameter expression="${interactive}" required="true"
+     * @readonly
+     */
+    private boolean interactive;
+    
+    /**
+     * @parameter expression="${package.version}"
+     * @readonly
+     */
+    protected String buildVersion;
+    
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
 			String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
@@ -80,7 +126,15 @@ public class PhrescoStart extends PhrescoAbstractMojo {
         		infoFile = baseDir + File.separator + moduleName + File.separator + Constants.START_INFO_FILE;
         	}
 			PhrescoPlugin plugin = getPlugin(getDependency(infoFile, START));
-			plugin.startServer(getConfiguration(infoFile, START), getMavenProjectInfo(project, moduleName));
+			Configuration configuration = getConfiguration(infoFile, START);
+			MojoProcessor processor = new MojoProcessor(new File(infoFile));
+			if(interactive) {
+				configuration = getInteractiveConfiguration(configuration, processor, project, START);
+			}
+			MavenProjectInfo mavenProjectInfo = getMavenProjectInfo(project, moduleName, 
+					mavenSession, pluginManager, localRepository);
+			mavenProjectInfo.setBuildVersion(buildVersion);
+			plugin.startServer(configuration, mavenProjectInfo);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
