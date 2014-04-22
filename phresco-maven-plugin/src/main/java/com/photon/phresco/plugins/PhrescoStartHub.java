@@ -27,7 +27,10 @@ import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.PluginConstants;
+import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.api.SeleniumPlugin;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+import com.photon.phresco.plugins.util.MojoProcessor;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
 
@@ -66,6 +69,12 @@ public class PhrescoStartHub extends PhrescoAbstractMojo {
      */
     protected String moduleName;
     
+    /**
+     * @parameter expression="${interactive}" required="true"
+     * @readonly
+     */
+    private boolean interactive;
+    
 	public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().info(baseDir.getPath());
         try {
@@ -80,16 +89,19 @@ public class PhrescoStartHub extends PhrescoAbstractMojo {
         	if (StringUtils.isNotEmpty(moduleName)) {
         		infoFile = baseDir + File.separator + moduleName + File.separator + Constants.START_HUB_INFO_FILE;
         	}
-        	
         	String processName = ManagementFactory.getRuntimeMXBean().getName();
      		String[] split = processName.split("@");
      		String processId = split[0].toString();
      		
      		Utility.writeProcessid(baseDir.getPath(), PluginConstants.START_HUB, processId);
      		getLog().info("Writing Process Id...");
-     		
+			Configuration configuration = getConfiguration(infoFile, Constants.PHASE_START_HUB);
+			MojoProcessor processor = new MojoProcessor(new File(infoFile));
+			if(interactive) {
+				configuration = getInteractiveConfiguration(configuration, processor, project,  Constants.PHASE_START_HUB);
+			}
         	SeleniumPlugin plugin = new DefaultSeleniumPlugin(getLog());
-			plugin.startHub(getConfiguration(infoFile, Constants.PHASE_START_HUB),getMavenProjectInfo(project, moduleName));
+			plugin.startHub(configuration,getMavenProjectInfo(project, moduleName));
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }

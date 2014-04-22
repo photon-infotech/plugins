@@ -28,6 +28,8 @@ import org.apache.maven.project.MavenProject;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugins.api.SeleniumPlugin;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+import com.photon.phresco.plugins.util.MojoProcessor;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
 
@@ -66,6 +68,11 @@ public class PhrescoStartNode extends PhrescoAbstractMojo {
      */
     protected String moduleName;
     
+    /**
+     * @parameter expression="${interactive}" required="true"
+     * @readonly
+     */
+    private boolean interactive;
 	public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().info(baseDir.getPath());
         try {
@@ -87,8 +94,13 @@ public class PhrescoStartNode extends PhrescoAbstractMojo {
      		Utility.writeProcessid(baseDir.getPath(), PluginConstants.START_NODE, processId);
      		getLog().info("Writing Process Id...");
      		
+     		Configuration configuration = getConfiguration(infoFile, Constants.PHASE_START_NODE);
+     		MojoProcessor processor = new MojoProcessor(new File(infoFile));
+			if(interactive) {
+				configuration = getInteractiveConfiguration(configuration, processor, project,  Constants.PHASE_START_NODE);
+			}
         	SeleniumPlugin plugin = new DefaultSeleniumPlugin(getLog());
-            plugin.startNode(getConfiguration(infoFile, Constants.PHASE_START_NODE), getMavenProjectInfo(project, moduleName));
+            plugin.startNode(configuration, getMavenProjectInfo(project, moduleName));
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }

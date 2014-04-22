@@ -71,6 +71,8 @@ import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.Childs;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.Childs.Child;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.Name.Value;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.PossibleValues;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Implementation;
@@ -500,6 +502,9 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 			if(parameter.getType().equalsIgnoreCase("Hidden")) {
 				System.out.println("Enter value for " + value.getValue());
 				paramValue = br.readLine();
+			}
+			if(parameter.getType().equalsIgnoreCase("map")) {
+			paramValue = "";
 			}
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
