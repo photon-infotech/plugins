@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -41,7 +40,6 @@ import org.apache.maven.project.MavenProject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import com.google.gson.Gson;
 import com.photon.phresco.api.ConfigManager;
@@ -142,6 +140,7 @@ public class Package implements PluginConstants {
 		List<String> filterList = pu.csvToList(filters);
 		try {
 			PomProcessor processor = new PomProcessor(pomFile);
+			String jcrRootPathProp = processor.getProperty("jcr.root.path");
 			DocumentBuilder documentBuilder = processor.getDocumentBuilder();
 			Document document = documentBuilder.newDocument();
 			Plugin plugin = processor.getPlugin("com.day.jcr.vault", "content-package-maven-plugin");
@@ -162,11 +161,33 @@ public class Package implements PluginConstants {
 				}
 				Element filtersElement = null;
 				if (CollectionUtils.isNotEmpty(filterList)) {
+					File file = new File(baseDir, jcrRootPathProp);
+						File[] rootDirs = file.listFiles();
 					filtersElement = document.createElement("filters");
+					List<String> updatedFilters = new ArrayList<String>();
+					List<String> rootDirNames = new ArrayList<String>();
+					for (File rootDir : rootDirs) {
+						rootDirNames.add(File.separator + rootDir.getName());
+					}
 					for (String filter : filterList) {
+					if (CollectionUtils.isNotEmpty(rootDirNames)) {
+							if (rootDirNames.contains(filter)) {
+								File[] subFolders = new File(file, filter).listFiles();
+								for (File subFolder : subFolders) {
+									updatedFilters.add(filter + File.separator + subFolder.getName());
+								}
+								break;
+							} else {
+								updatedFilters.add(filter);
+							}
+						} else {
+							updatedFilters.add(filter);
+						}
+					}
+					for (String updatedFilter : updatedFilters) {
 						Node nodeFilter = filtersElement.appendChild(document.createElement("filter"));
 						Node nodeRoot = nodeFilter.appendChild(document.createElement("root"));
-						nodeRoot.setTextContent(filter);
+						nodeRoot.setTextContent(updatedFilter);
 					}
 				} else {
 					String filterXmlProp = processor.getProperty("vault.filter.xml.path");
