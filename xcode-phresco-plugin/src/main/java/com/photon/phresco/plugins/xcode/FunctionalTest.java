@@ -53,6 +53,9 @@ public class FunctionalTest implements PluginConstants {
 			builder.append("-f junit -o test-reports -f html -o test-reports/calabash.html");
 			Utility.executeStreamconsumer(builder.toString(), baseDir + File.separator + workingDir, baseDir, FUNCTIONAL);
 			return;
+		} else if(StringUtils.isNotEmpty((seleniumToolType)) && seleniumToolType.equals(APPIUM)) {
+			Utility.executeStreamconsumer(TEST_COMMAND, baseDir + File.separator + workingDir, baseDir, FUNCTIONAL);
+			return;
 		}
 		String buildNumber = configs.get(BUILD_NUMBER);
 		String deviceId = configs.get(DEVICE_ID);

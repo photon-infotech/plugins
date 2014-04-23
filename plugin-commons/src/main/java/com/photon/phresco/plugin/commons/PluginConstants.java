@@ -429,6 +429,7 @@ public interface PluginConstants {
 	 String FUNCTIONAL_TEST_FOLDER      = "functional";
 	 String START_HUB = "startHub";
 	 String START_NODE = "startNode";
+	 String START_APPIUM 				= "startAppium";
 	 String DEVICE_LIST_ID_PROPERTY     = "device.list.id";
 	 String MVN_ANT_PLUGIN_GRP_ID		= "org.apache.maven.plugins";
 	 String MVN_ANT_PLUGIN_ARTF_ID		= "maven-antrun-plugin";
@@ -609,6 +610,42 @@ public interface PluginConstants {
     String JAVA_DWEBDRIVER_CHROME_DRIVER = "java -Dwebdriver.chrome.driver=";
     String SELENIUM_SERVER_STANDALONE = "selenium-server-standalone";
     String ORG_SELENIUMHQ_SELENIUM = "org.seleniumhq.selenium";
+
+    // Functional Test - Appium
+    String APPIUM = "appium";
+	String HYPHEN_A = "-a";
+	String HYPHEN_P = "-p";
+	String HYPHEN_U = "-U";
+	String HYPHEN_APP = "--app";
+	String HYPHEN_IPA = "--ipa";
+	String FORCE_IPHONE = "--force-iphone";
+	String FORCE_IPAD = "--force-ipad";
+	String APP_PKG = "--app-pkg";
+	String APP_ACTIVITY = "--app-activity";
+	String HOST = "host";
+	String PORT = "port";
+	String IOS_DEVICE_TYPE = "iosDeviceType";
+	String DEVICE_UDID = "deviceId";
+	String APP_PATH = "appPath";
+	String ANDROID_PACKAGE = "appPackage";
+	String ANDROID_ACTIVITY = "appActivity";
+	String IPHONE_SIMULATOR = "iphoneSimulator";
+	String IPAD_SIMULATOR = "ipadSimulator";
+	String HTTP = "http";
+	String DO_NOT_CHECKIN = "do_not_checkin";
+	String BUILD_INFO = "build.info";
+	String DOT_APK = ".apk";
+	String DOT_IPA = ".ipa";
+	String APPIUM_ENV_NAME = "Production";
+	String APPIUM_ENV_DESC = "Production Environment is used for Development purpose only";
+	String APPIUM_CONFIG_NAME = "Server configuration";
+	String APPIUM_CONFIG_TYPE = "server";
+	String APPIUM_MSG_PORT_IN_USE = "Port is already in use";
+	String APPIUM_MSG_BUILD_INFO_NOT_FOUND = "Build info not found for build number ";
+	String APPIUM_MSG_HOME_NOT_FOUND = "appium.home property not found in pom.xml";
+	String APPIUM_MSG_STARTING = "Starting Appium";
+	String APPIUM_MSG_STOPPED = "Appium stopped successfully";
+	String APPIUM_MSG_IPA_NOT_FOUND = "IPA file not found for selected build";
     
   //Performance Test Parameter Keys
     String KEY_CONFIGURATION = "configurations";

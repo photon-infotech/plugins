@@ -81,6 +81,9 @@ public class RunAndroidTest implements PluginConstants {
 				builder.append("-f junit --out test-reports");
 				Utility.executeStreamconsumer(builder.toString(), project.getBasedir() + File.separator + workingDir, project.getBasedir().getPath(), FUNCTIONAL);
 				return;
+			} else if(fromTest.equals("functional") && StringUtils.isNotEmpty((seleniumToolType)) && seleniumToolType.equals(APPIUM)) {
+				Utility.executeStreamconsumer(TEST_COMMAND, currentWorkingDir, project.getBasedir().getPath(), FUNCTIONAL);
+				return;
 			}
 			StringBuilder sb = new StringBuilder();
 			sb.append(MVN_CMD);
