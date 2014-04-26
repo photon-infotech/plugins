@@ -72,6 +72,9 @@ public class PhrescoCreate extends PhrescoAbstractMojo {
 			serviceManager = getServiceManager();
 			ProjectManager projectManager = PhrescoFrameworkFactory.getProjectManager();
 			projectManager.create(createProjectInfo(), serviceManager);
+			System.out.println("------------------------------------------------");
+			System.out.println("[INFO] PROJECT CREATED SUCESSFULLY");
+			System.out.println("------------------------------------------------");
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage());
 		} catch (IOException e) {
