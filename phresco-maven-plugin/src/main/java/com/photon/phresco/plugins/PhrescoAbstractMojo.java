@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
+import java.io.Console;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -379,7 +379,9 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 			String userName = br.readLine();
 			System.out.println("Enter Password : ");
-			String password = br.readLine();
+			Console cons = System.console();
+			char[] pwd = cons.readPassword();
+			String password = new String(pwd);
 			serviceManager = PhrescoFrameworkFactory.getServiceManager(getServiceContext(userName, password));
 			authToken = serviceManager.getUserInfo().getToken();
 			serverProperties.setProperty("auth.token", authToken);
@@ -411,8 +413,10 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 		boolean validToken = serviceManager.isValidToken();
 		if (!validToken) {
 			System.out.println("Session Expired  Enter Your Password : ");
-			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-			String password = br.readLine();
+			//BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+			Console cons = System.console();
+			char[] pwd = cons.readPassword();
+			String password = new String(pwd);
 			String userName = (String) serverProperties.get("phresco.service.username");
 			serviceManager = new ServiceManagerImpl(getServiceContext(userName, password));
 		}
@@ -443,8 +447,6 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 			}
 			processor.save();
 		} catch (MojoExecutionException e) {
-			throw new PhrescoException(e);
-		} catch (IOException e) {
 			throw new PhrescoException(e);
 		}
 		return configuration;
