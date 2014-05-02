@@ -4,13 +4,13 @@
 	<parent>
 		<artifactId>phresco-plugins-root</artifactId>
 		<groupId>com.photon.phresco.plugins</groupId>
-		<version>3.3.1.7002-SNAPSHOT</version>
+		<version>3.3.1.8001-SNAPSHOT</version>
 		<relativePath>../</relativePath>
   </parent>
   
   <groupId>com.photon.phresco.plugins</groupId>
   <artifactId>php-phresco-plugin</artifactId>
-  <version>3.3.1.7002-SNAPSHOT</version>
+  <version>3.3.1.8001-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>php-phresco-plugin</name>
