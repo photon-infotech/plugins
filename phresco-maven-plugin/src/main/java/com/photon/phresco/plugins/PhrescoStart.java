@@ -118,6 +118,10 @@ public class PhrescoStart extends PhrescoAbstractMojo {
 			if (StringUtils.isNotEmpty(moduleName)) {
         		infoFile = baseDir + File.separator + moduleName + File.separator + Constants.START_INFO_FILE;
         	}
+			if(! new File(infoFile).exists()) {
+				System.out.println("RunAgainst Source Is Not Applicable For This Technology");
+				return;
+			}
 			PhrescoPlugin plugin = getPlugin(getDependency(infoFile, START));
 			Configuration configuration = getConfiguration(infoFile, START);
 			MojoProcessor processor = new MojoProcessor(new File(infoFile));
