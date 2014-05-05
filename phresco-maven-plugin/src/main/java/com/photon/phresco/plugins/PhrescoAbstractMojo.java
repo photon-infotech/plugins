@@ -29,12 +29,14 @@ import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.io.Console;
+
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -126,7 +128,8 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 	protected Properties serverProperties;
 	protected Properties projectProperties;
 	private File serverFile;
-	private ServiceManager serviceManager;   
+	private ServiceManager serviceManager;
+	List<String> excludedependency = new ArrayList<String>();
 	
 	private Map<String, Boolean> depMap = new HashMap<String, Boolean>();
 
@@ -455,6 +458,7 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 	private String getValue(Parameter parameter, Value value, MavenProject project, MojoProcessor processor, String goal) throws MojoExecutionException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		String paramValue = "";
+		
 		try {
 			if(parameter.getType().equalsIgnoreCase("Boolean") & ! parameter.getKey().equalsIgnoreCase("showSettings")) {
 				
@@ -465,10 +469,18 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 				if(readValue.equalsIgnoreCase("N")) {
 					paramval="false";
 					paramValue = String.valueOf(false);
+					String Dependencyvalue=parameter.getDependency();
+					if(StringUtils.isNotEmpty(Dependencyvalue))	{
+						String[] Dependencyvalues=Dependencyvalue.split(",");
+						for(String depvalue:Dependencyvalues)	{
+							excludedependency.add(depvalue.toLowerCase());
+						}
+					}
+				
 				}
 			}
 
-			if(parameter.getType().equalsIgnoreCase("List")) {
+			if(parameter.getType().equalsIgnoreCase("List") & !excludedependency.contains(value.getValue().toLowerCase())) {
 				Map<String, String> pMap = new HashMap<String, String>();
 				Map<String, com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.PossibleValues.Value> possibleValMap = new HashMap<String, com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.PossibleValues.Value>();
 				List<com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.
@@ -483,30 +495,32 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 				paramValue = pMap.get(enteredValue);
 			}
 			
-			if(parameter.getType().equalsIgnoreCase("DynamicParameter")) {
+			if(parameter.getType().equalsIgnoreCase("DynamicParameter") & !excludedependency.contains(value.getValue().toLowerCase())) {
 				if((value.getValue().equals("DataBase")||value.getValue().equals("FetchSql"))
 						&& ( paramval.equalsIgnoreCase("false"))) {
 					return "";
 				}
-				
 				paramValue = getEnvironmentName(parameter, value, project, processor, goal);
 			}
 
-			if(parameter.getType().equalsIgnoreCase("Number")) {
+			if(parameter.getType().equalsIgnoreCase("Number") & !excludedependency.contains(value.getValue().toLowerCase())) {
 				System.out.println("Enter value for " + value.getValue());
 				paramValue = br.readLine();
 			}
-
-			if(parameter.getType().equalsIgnoreCase("String")) {
+			if(parameter.getType().equalsIgnoreCase("String") & !excludedependency.contains(value.getValue().toLowerCase()) ) {
 				System.out.println("Enter value for " + value.getValue());
 				paramValue = br.readLine();
 			}
-			if(parameter.getType().equalsIgnoreCase("Hidden")) {
+			if(parameter.getType().equalsIgnoreCase("FileBrowse") & !excludedependency.contains(value.getValue().toLowerCase()) ) {
+				System.out.println("Enter File Path for " + value.getValue());
+				paramValue = br.readLine();
+			}
+			if(parameter.getType().equalsIgnoreCase("Hidden") & !excludedependency.contains(value.getValue().toLowerCase())) {
 				System.out.println("Enter value for " + value.getValue());
 				paramValue = br.readLine();
 			}
-			if(parameter.getType().equalsIgnoreCase("map")) {
-			paramValue = "";
+			if(parameter.getType().equalsIgnoreCase("map") & !excludedependency.contains(value.getValue().toLowerCase())) {
+			    paramValue = "";
 			}
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
