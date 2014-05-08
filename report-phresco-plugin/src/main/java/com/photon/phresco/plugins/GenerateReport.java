@@ -3423,10 +3423,10 @@ public class GenerateReport implements PluginConstants {
 		if (MapUtils.isNotEmpty(theme)) {
 			if(StringUtils.isNotEmpty(theme.get("headerBackGroundcolorTop"))){
 				titleColor = theme.get("headerBackGroundcolorTop");
-				titleLabelColor = theme.get("headerBackGroundcolorTop");
+				//titleLabelColor = theme.get("headerBackGroundcolorTop");
 				headingForeColor = theme.get("headerBackGroundcolorTop");
 				//				headingRowBackColor = theme.get("headerBackGroundcolorTop");
-				headingBackColor = theme.get("headerBackGroundcolorTop");
+				headingBackColor = theme.get("customerBaseColor");
 				copyRightBackColor = theme.get("headerBackGroundcolorTop");
 				copyRightPageNumberBackColor = theme.get("headerBackGroundcolorTop");
 			}
