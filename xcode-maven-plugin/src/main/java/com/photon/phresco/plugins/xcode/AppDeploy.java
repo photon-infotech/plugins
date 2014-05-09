@@ -201,7 +201,7 @@ public class AppDeploy extends AbstractMojo implements PluginConstants {
 			Thread t = new Thread(runnable, "iPhoneSimulator");
 			t.start();
 			try {
-				t.join(5000);
+				t.join(30000);
 			} catch (InterruptedException e1) {
 				getLog().error("Triggering simulator failed.");
 			}
@@ -253,7 +253,7 @@ public class AppDeploy extends AbstractMojo implements PluginConstants {
 			Thread t = new Thread(deployRunnable, "iPhoneSimulator");
 			t.start();
 			try {
-				t.join(5000);
+				t.join(30000);
 			} catch (InterruptedException e1) {
 				getLog().error("Triggering simulator failed.");
 			}
