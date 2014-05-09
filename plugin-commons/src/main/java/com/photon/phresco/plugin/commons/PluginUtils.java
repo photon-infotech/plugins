@@ -1472,7 +1472,7 @@ public class PluginUtils {
 	
 	private static void copyToDirectory(File projectBaseDir, String attribute, String source, File tempDir) throws MojoExecutionException {
 		if(StringUtils.isNotEmpty(attribute)) {
-			File cFile = new File(projectBaseDir, source);
+			File cFile = new File(source);
 			File newFile = new File(tempDir, attribute);
 			if(!cFile.exists()) {
 				newFile.mkdirs();
@@ -1495,7 +1495,7 @@ public class PluginUtils {
 
 	private static void copyFolders(File projectBaseDir, String folderToCopy, File tempDir) throws MojoExecutionException  {
 		if(StringUtils.isNotEmpty(folderToCopy)) {
-			File cFile = new File(projectBaseDir, folderToCopy);
+			File cFile = new File(folderToCopy);
 			if(!cFile.exists() && cFile.isDirectory()) {
 				File newFile = new File(tempDir, folderToCopy);
 				newFile.mkdirs();
