@@ -4,13 +4,13 @@
   <parent>
         <groupId>com.photon.phresco.plugins</groupId>
         <artifactId>phresco-plugins-root</artifactId>
-        <version>3.3.1.8001-SNAPSHOT</version>
+        <version>3.3.1.9001-SNAPSHOT</version>
         <relativePath>../</relativePath>
     </parent>
     
   <groupId>com.photon.phresco.plugins</groupId>
   <artifactId>android-phresco-plugin</artifactId>
-  <version>3.3.1.8001-SNAPSHOT</version>
+  <version>3.3.1.9001-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>android-phresco-plugin</name>
