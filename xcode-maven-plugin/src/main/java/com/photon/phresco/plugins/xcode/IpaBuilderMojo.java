@@ -121,7 +121,14 @@ public class IpaBuilderMojo extends AbstractXcodeMojo {
 		File deliverableZip = new File(baseDir + DO_NOT_CHECKIN_BUILD
 				+ File.separator + buildname, appName + ".app.dSYM.zip");
 		zipArchiver.setDestFile(deliverableZip);
+		
+		/* Building zip again with IPA */
+		ZipArchiver buildZipArchiver = new ZipArchiver();
+		buildZipArchiver.addDirectory(baseFolder);
+		File buildZip = new File(baseDir + DO_NOT_CHECKIN_BUILD + File.separator + buildname + ".zip");
+		buildZipArchiver.setDestFile(buildZip);
 		try {
+			buildZipArchiver.createArchive();
 			zipArchiver.createArchive();
 		} catch (ArchiverException e) {
 			getLog().error("Error in creating archive ", e);
