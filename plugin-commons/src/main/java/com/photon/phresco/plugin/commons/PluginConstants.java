@@ -369,7 +369,10 @@ public interface PluginConstants {
 	 String DEVICE						= "device";
 	 String DEVICE_IPAD					= "ipad";
 	 String SRC 						= "src";
-	 
+	 String IOS_SIM						= "ios-sim";
+	 String LAUNCH						= "launch";
+	 String HYPHEN_SDK					= "--sdk";
+	 String HYPHEN_FAMILY				= "--family";
 	 
 	 //Constants for CPP
 	 String RELEASE	 				= "release";
