@@ -28,6 +28,7 @@ import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.commons.FrameworkConstants;
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
@@ -85,6 +86,12 @@ public class PhrescoDeploy extends PhrescoAbstractMojo {
      * @readonly
      */
     protected String deployFromNexus;
+    
+    /**
+     * @parameter expression="${package.version}"
+     * @readonly
+     */
+    protected String buildVersion;
     
     /**
 	 * The project's remote repositories to use for the resolution of project dependencies.
@@ -148,8 +155,9 @@ public class PhrescoDeploy extends PhrescoAbstractMojo {
     		
     		Utility.writeProcessid(baseDir.getPath(), FrameworkConstants.DEPLOY, processId);
     		getLog().info("Writing Process Id...");
-    		
-            plugin.deploy(configuration, getMavenProjectInfo(project, moduleName, keyValues));
+    		MavenProjectInfo mavenProjectInfo = getMavenProjectInfo(project, moduleName, keyValues);
+    		mavenProjectInfo.setBuildVersion(buildVersion);
+            plugin.deploy(configuration, mavenProjectInfo);
     		
     		} catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);

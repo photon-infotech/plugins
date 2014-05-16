@@ -25,6 +25,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.util.Constants;
 
@@ -64,7 +65,13 @@ public class PhrescoStop extends PhrescoAbstractMojo {
      * @readonly
      */
     protected String moduleName;
-
+    
+    /**
+     * @parameter expression="${package.version}"
+     * @readonly
+     */
+    protected String buildVersion;
+    
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
 			String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
@@ -79,7 +86,9 @@ public class PhrescoStop extends PhrescoAbstractMojo {
         		infoFile = baseDir + File.separator + moduleName + File.separator + Constants.STOP_INFO_FILE;
         	}
 			PhrescoPlugin plugin = getPlugin(getDependency(infoFile, STOP));
-			plugin.stopServer(getMavenProjectInfo(project, moduleName));
+			MavenProjectInfo mavenProjectInfo = getMavenProjectInfo(project, moduleName);
+			mavenProjectInfo.setBuildVersion(buildVersion);
+			plugin.stopServer(mavenProjectInfo);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}

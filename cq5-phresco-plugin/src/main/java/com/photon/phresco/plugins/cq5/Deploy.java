@@ -180,7 +180,11 @@ public class Deploy implements PluginConstants {
 			sb.append(PACKAGE_FILE+"="+"\""+cq5File+"\"");
 			sb.append(STR_SPACE);
 			sb.append(SKIP_TESTS);
-
+			System.out.println("PACKAGE VERSION IS  " +buildVersion );
+			if(org.apache.commons.lang.StringUtils.isNotEmpty(buildVersion)) {
+				sb.append(STR_SPACE);
+				sb.append("-Dpackage.version=" + buildVersion);
+			}
 //			sb.append("org.apache.cq5:maven-cq5-plugin:install-file");
 //			
 //			sb.append(STR_SPACE);
@@ -216,8 +220,9 @@ public class Deploy implements PluginConstants {
 				sb.append(JAVAX_TRUSTSTORE);
 				sb.append("\""+certificateFile.getPath()+"\"");
 			}
-			sb.append(STR_SPACE);
-			sb.append("-Dpackage.version=" + buildVersion);
+			System.out.println("**************DEPLOY COMMAND*************");
+			System.out.println(sb.toString());
+			System.out.println("***************************");
 			bufferedReader = Utility.executeCommand(sb.toString(), baseDir.getPath());
 			String line = null;
 			

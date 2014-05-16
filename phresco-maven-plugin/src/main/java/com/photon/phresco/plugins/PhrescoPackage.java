@@ -130,6 +130,7 @@ public class PhrescoPackage extends PhrescoAbstractMojo {
         	if (StringUtils.isNotEmpty(moduleName)) {
         		infoFile = baseDir + File.separator + moduleName + File.separator + Constants.PACKAGE_INFO_FILE;
         	} 
+        	System.out.println("INFO FILE IS    " +infoFile);
         	PhrescoPlugin plugin = getPlugin(getDependency(infoFile, PACKAGE));
         	MojoProcessor processor = new MojoProcessor(new File(infoFile));
         	configuration = processor.getConfiguration(PACKAGE);

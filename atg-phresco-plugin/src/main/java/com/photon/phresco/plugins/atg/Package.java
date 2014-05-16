@@ -11,19 +11,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.JAXBException;
-
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.commons.model.ApplicationInfo;
-import com.photon.phresco.commons.model.ModuleInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
@@ -33,11 +27,10 @@ import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Para
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands.MavenCommand;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.plugins.util.PluginPackageUtil;
-import com.photon.phresco.plugins.util.WarConfigProcessor;
 import com.photon.phresco.util.ArchiveUtil;
+import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
-import com.photon.phresco.util.ArchiveUtil.ArchiveType;
 import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.util.PomProcessor;
 
@@ -68,11 +61,15 @@ public class Package implements PluginConstants, AtgConstants {
     private File dotPhrescoRoot;
     private ApplicationInfo appInfoRoot;
     private List<String> depModuleList = new ArrayList<String>();
+    private File targetDir;
+    private String packaging;
     
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
+		
         project = mavenProjectInfo.getProject();
+        packaging = project.getPackaging();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
         buildName = configs.get(BUILD_NAME);
@@ -125,6 +122,7 @@ public class Package implements PluginConstants, AtgConstants {
 	
 	private void init() throws MojoExecutionException {
 		try {
+			targetDir = new File(project.getBuild().getDirectory());
 			buildDir = new File(workingDirectory.getPath() + PluginConstants.BUILD_DIRECTORY);
 			buildInfoFile = new File(workingDirectory.getPath() + PluginConstants.BUILD_DIRECTORY + BUILD_INFO_FILE);
 			File buildInfoDir = new File(workingDirectory.getPath() + PluginConstants.BUILD_DIRECTORY);
@@ -218,79 +216,28 @@ public class Package implements PluginConstants, AtgConstants {
 		sb.append(STR_SPACE);
 		sb.append(MVN_PHASE_CLEAN);
 		sb.append(STR_SPACE);
-		sb.append(MVN_PHASE_INSTALL);
+		sb.append("antrun:run");
 		sb.append(STR_SPACE);
-		sb.append(Constants.HYPHEN_F);
-		sb.append(STR_SPACE);
-		File rootPomFile = pu.getPomFile(dotPhrescoRoot, baseDir);
-		sb.append(rootPomFile.getName());
+		sb.append("-Dtarget.name=package");
 		sb.append(STR_SPACE);
 		sb.append(builder.toString());
-//		if (StringUtils.isNotEmpty(subModule)) {
-//			sb.append(HYPHEN_AM_HYPHEN_PL + subModule);
-//		}
 		String processName = ManagementFactory.getRuntimeMXBean().getName();
 		String[] split = processName.split("@");
 		String processId = split[0].toString();
 		Utility.writeProcessid(workingDirectory.getPath(), Constants.KILLPROCESS_BUILD, processId);
-		List<String> buildModules = getBuildModules(appInfoRoot, subModule);
-		if (StringUtils.isNotEmpty(subModule)) {
-			buildModules.add(subModule);
-		}
 		String baseCommand = sb.toString();
+		System.out.println("COMMAND IS    " + baseCommand);
 		executeCommand(baseCommand, baseDir,"");
-		if(CollectionUtils.isNotEmpty(buildModules)) {
-			for (String module : buildModules) {
-				File dir = new File(baseDir, module);
-				File subPomFile = pu.getPomFile(new File(dotPhrescoRoot, module), dir);
-				StringBuilder stringBuilder = new StringBuilder(); 
-				stringBuilder.append(MVN_CMD);
-				stringBuilder.append(STR_SPACE);
-				stringBuilder.append(MVN_PHASE_CLEAN);
-				stringBuilder.append(STR_SPACE);
-				stringBuilder.append(MVN_PHASE_INSTALL);
-				stringBuilder.append(STR_SPACE);
-				stringBuilder.append(Constants.HYPHEN_F);
-				stringBuilder.append(STR_SPACE);
-				stringBuilder.append(subPomFile.getName());
-				stringBuilder.append(STR_SPACE);
-				stringBuilder.append(builder.toString());
-				String command = stringBuilder.toString();
-				executeCommand(command, dir, module);
-			}
-		}
 	}
 	
-	private List<String> getBuildModules(ApplicationInfo appInfo, String moduleName) {
-		List<ModuleInfo> modules = appInfo.getModules();
-		if (CollectionUtils.isNotEmpty(modules)) {
-			for (ModuleInfo moduleInfo : modules) {
-				if (moduleName.equals(moduleInfo.getCode())) {
-					List<String> dependentModules = moduleInfo.getDependentModules();
-					if (CollectionUtils.isNotEmpty(dependentModules)) {
-						for (String dependentModule : dependentModules) {
-							getBuildModules(appInfo, dependentModule);
-							if (!depModuleList.contains(dependentModule)) {
-								depModuleList.add(dependentModule);
-							}
-						}
-					}
-				}
-			}
-		}
-		return depModuleList;
-		
-	}
 	
 	private void executeCommand(String command, File workDir, String module) throws IOException, PhrescoException {
+		System.out.println("I AM EXECUTING *******************" + workDir.getPath());
 		String line ="";
 		BufferedReader bufferedReader = Utility.executeCommand(command, workDir.toString());
 		while ((line = bufferedReader.readLine()) != null) {
 			System.out.println(line); //do not use getLog() here as this line already contains the log type.
 		}
-//		if(project.getFile().getName().equals(appInfo.getPhrescoPomFile())) {
-//			installArtifact(workDir, module);
-//		}
 	}
 	
 	private boolean build() throws MojoExecutionException {
@@ -310,12 +257,84 @@ public class Package implements PluginConstants, AtgConstants {
 		try {
 			zipName = util.createPackage(buildName, buildNumber, nextBuildNo, currentDate);
 			String zipFilePath = buildDir.getPath() + File.separator + zipName;
-//			File packageInfoFile = new File(dotPhrescoDir.getPath() + File.separator + DOT_PHRESCO_FOLDER + File.separator + PHRESCO_PACKAGE_FILE);
-//			PluginUtils.createBuildResources(packageInfoFile, workingDirectory, tempDir);
 			tempDir = new File(buildDir.getPath() + File.separator + TEMP);
+			String zipNameWithoutExt = zipName.substring(0, zipName.lastIndexOf('.'));
+			System.out.println("EXTENSION IS  " + project.getPackaging());
+			if(packaging.equals("jar")) {
+				copyJarToPackage(zipNameWithoutExt);
+			}
+			if(packaging.equals("war")) {
+				copyWarToPackage(zipNameWithoutExt);
+			}
+			if(packaging.equals("pom")) {
+				copyEarToPackage(zipNameWithoutExt);
+			}
 			ArchiveUtil.createArchive(tempDir.getPath(), zipFilePath, ArchiveType.ZIP);
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getErrorMessage(), e);
+		}
+	}
+	
+	private void copyEarToPackage(String zipNameWithoutExt) throws MojoExecutionException {
+		tempDir = new File(buildDir.getPath() + File.separator + zipNameWithoutExt);
+		tempDir.mkdir();
+		System.out.println("TARGET DIR IS    " + targetDir.getPath());
+		File[] listFiles = targetDir.listFiles();
+		if(listFiles.length > 0) {
+			for (File file : listFiles) {
+				if(file.getName().endsWith("ear")) {
+					try {
+						FileUtils.copyDirectoryToDirectory(file, tempDir);
+					} catch (IOException e) {
+						throw new MojoExecutionException(e.getMessage());
+					}
+				}
+			}
+		}
+	}
+
+	private void copyWarToPackage(String zipNameWithoutExt) throws MojoExecutionException {
+		tempDir = new File(buildDir.getPath() + File.separator + zipNameWithoutExt);
+		tempDir.mkdir();
+		File j2eeApps = new File(baseDir, "j2ee-apps");
+		File[] listFiles = j2eeApps.listFiles();
+		if(listFiles.length > 0) {
+			for (File file : listFiles) {
+				if(file.isDirectory()) {
+					try {
+						FileUtils.copyDirectoryToDirectory(file, tempDir);
+					} catch (IOException e) {
+						throw new MojoExecutionException(e.getMessage());
+					}
+				}
+			}
+		}
+	}
+
+	private void copyJarToPackage(String zipNameWithoutExt) throws MojoExecutionException {
+		try {
+			File classesJarDir = new File(targetDir, "build/classes");
+			String[] list = classesJarDir.list(new JarFileNameFilter());
+			if (list.length > 0) {
+				tempDir = new File(buildDir.getPath() + File.separator + zipNameWithoutExt);
+				tempDir.mkdir();
+				for (String string : list) {
+					File jarFile = new File(classesJarDir, string);
+					FileUtils.copyFileToDirectory(jarFile, tempDir);
+				}
+			}
+			File configJarDir = new File(targetDir, "build/config");
+			String[] configlist = configJarDir.list(new JarFileNameFilter());
+			if (configlist.length > 0) {
+				tempDir = new File(buildDir.getPath() + File.separator + zipNameWithoutExt);
+				tempDir.mkdir();
+				for (String string : configlist) {
+					File jarFile = new File(configJarDir, string);
+					FileUtils.copyFileToDirectory(jarFile, tempDir);
+				}
+			} 
+		} catch (IOException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
 	
@@ -332,4 +351,12 @@ public class Package implements PluginConstants, AtgConstants {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
+}
+
+class JarFileNameFilter implements FilenameFilter {
+
+	public boolean accept(File dir, String name) {
+		return name.endsWith(".jar");
+	}
+
 }
