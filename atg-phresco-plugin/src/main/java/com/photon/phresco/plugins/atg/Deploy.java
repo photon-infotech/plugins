@@ -58,7 +58,6 @@ public class Deploy implements PluginConstants, AtgConstants {
 		project = mavenProjectInfo.getProject();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
-        System.out.println("ENV NAME IS   "+environmentName);
         buildNumber = configs.get(BUILD_NUMBER);
         pUtil = new PluginUtils();
         workingDirectory = new File(baseDir.getPath());

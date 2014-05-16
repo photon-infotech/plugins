@@ -226,13 +226,11 @@ public class Package implements PluginConstants, AtgConstants {
 		String processId = split[0].toString();
 		Utility.writeProcessid(workingDirectory.getPath(), Constants.KILLPROCESS_BUILD, processId);
 		String baseCommand = sb.toString();
-		System.out.println("COMMAND IS    " + baseCommand);
 		executeCommand(baseCommand, baseDir,"");
 	}
 	
 	
 	private void executeCommand(String command, File workDir, String module) throws IOException, PhrescoException {
-		System.out.println("I AM EXECUTING *******************" + workDir.getPath());
 		String line ="";
 		BufferedReader bufferedReader = Utility.executeCommand(command, workDir.toString());
 		while ((line = bufferedReader.readLine()) != null) {
@@ -259,7 +257,6 @@ public class Package implements PluginConstants, AtgConstants {
 			String zipFilePath = buildDir.getPath() + File.separator + zipName;
 			tempDir = new File(buildDir.getPath() + File.separator + TEMP);
 			String zipNameWithoutExt = zipName.substring(0, zipName.lastIndexOf('.'));
-			System.out.println("EXTENSION IS  " + project.getPackaging());
 			if(packaging.equals("jar")) {
 				copyJarToPackage(zipNameWithoutExt);
 			}
@@ -278,7 +275,6 @@ public class Package implements PluginConstants, AtgConstants {
 	private void copyEarToPackage(String zipNameWithoutExt) throws MojoExecutionException {
 		tempDir = new File(buildDir.getPath() + File.separator + zipNameWithoutExt);
 		tempDir.mkdir();
-		System.out.println("TARGET DIR IS    " + targetDir.getPath());
 		File[] listFiles = targetDir.listFiles();
 		if(listFiles.length > 0) {
 			for (File file : listFiles) {
