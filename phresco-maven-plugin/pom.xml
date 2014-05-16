@@ -1,99 +1,101 @@
-<?xml version="1.0" encoding="UTF-8"?><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <artifactId>phresco-plugins-root</artifactId>
-    <groupId>com.photon.phresco.plugins</groupId>
-    <version>3.3.1.9002-SNAPSHOT</version>
-	<relativePath>../</relativePath>
-  </parent>
-  <groupId>com.photon.phresco.plugins</groupId>
-  <artifactId>phresco-maven-plugin</artifactId>
-  <version>3.3.1.9002-SNAPSHOT</version>
-  <packaging>maven-plugin</packaging>
-  <name>Phresco Maven Plugin</name>
-  <url>http://phresco.com</url>
-  <organization>
-  	<name>Photon Infotech</name>
-  	<url>http://phresco.com</url>
-  </organization>
-  <dependencies>
-    <dependency>
-            <groupId>com.photon.phresco</groupId>
-            <artifactId>plugin-commons</artifactId>
-            <version>${phresco-commons-version}</version>
-    </dependency>
-    
-    <dependency>
-        <groupId>com.photon.phresco.framework</groupId>
-        <artifactId>phresco-framework-impl</artifactId>
-        <version>${phresco-commons-version}</version>
-        <exclusions>
-        	<exclusion>
-        		<groupId>com.ibm.icu</groupId>
-        		<artifactId>icu4j</artifactId>
-        	</exclusion>
-        </exclusions>
-    </dependency>
-    
-    <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-project</artifactId>
-        <version>2.2.1</version>
-    </dependency>    
-    <dependency>
-          <groupId>junit</groupId>
-          <artifactId>junit</artifactId>
-          <version>3.8.1</version>
-          <scope>test</scope>
-    </dependency>
-    
-    <dependency>
-        <groupId>org.codehaus.plexus</groupId>
-        <artifactId>plexus-utils</artifactId>
-        <version>${plexus-utils.version}</version>            
-    </dependency>
-    
-    <dependency>
-        <groupId>org.codehaus.plexus</groupId>
-        <artifactId>plexus-utils</artifactId>
-        <version>${plexus-utils.version}</version>            
-    </dependency>
-    
-    <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-artifact-manager</artifactId>
-        <version>2.2.1</version>
-        <scope>compile</scope>            
-    </dependency>
-    
-    <dependency>
-        <groupId>com.photon.phresco.plugins</groupId>
-        <artifactId>liquibase-phresco-plugin</artifactId>
-        <version>3.3.1.9002-SNAPSHOT</version>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.apache.maven.scm</groupId>
-      <artifactId>maven-scm-providers-standard</artifactId>
-      <version>1.4</version>
-      <type>pom</type>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.scm</groupId>
-      <artifactId>maven-scm-manager-plexus</artifactId>
-      <version>1.4</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.scm</groupId>
-      <artifactId>maven-scm-api</artifactId>
-      <version>1.4</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.scm</groupId>
-      <artifactId>maven-scm-provider-svn-commons</artifactId>
-      <version>1.4</version>
-    </dependency>     
-  </dependencies>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>phresco-plugins-root</artifactId>
+		<groupId>com.photon.phresco.plugins</groupId>
+		<version>3.3.1.9002-SNAPSHOT</version>
+		<relativePath>../</relativePath>
+	</parent>
+	<groupId>com.photon.phresco.plugins</groupId>
+	<artifactId>phresco-maven-plugin</artifactId>
+	<version>3.3.1.9002-SNAPSHOT</version>
+	<packaging>maven-plugin</packaging>
+	<name>Phresco Maven Plugin</name>
+	<url>http://phresco.com</url>
+	<organization>
+		<name>Photon Infotech</name>
+		<url>http://phresco.com</url>
+	</organization>
+	<dependencies>
+		<dependency>
+			<groupId>com.photon.phresco</groupId>
+			<artifactId>plugin-commons</artifactId>
+			<version>${phresco-commons-version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.photon.phresco.framework</groupId>
+			<artifactId>phresco-framework-impl</artifactId>
+			<version>${phresco-commons-version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-project</artifactId>
+			<version>2.2.1</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.codehaus.plexus</groupId>
+			<artifactId>plexus-utils</artifactId>
+			<version>${plexus-utils.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.codehaus.plexus</groupId>
+			<artifactId>plexus-utils</artifactId>
+			<version>${plexus-utils.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-artifact-manager</artifactId>
+			<version>2.2.1</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.photon.phresco.plugins</groupId>
+			<artifactId>liquibase-phresco-plugin</artifactId>
+			<version>3.3.1.8001-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.maven.scm</groupId>
+			<artifactId>maven-scm-providers-standard</artifactId>
+			<version>1.4</version>
+			<type>pom</type>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven.scm</groupId>
+			<artifactId>maven-scm-manager-plexus</artifactId>
+			<version>1.4</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven.scm</groupId>
+			<artifactId>maven-scm-api</artifactId>
+			<version>1.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven.scm</groupId>
+			<artifactId>maven-scm-provider-svn-commons</artifactId>
+			<version>1.4</version>
+		</dependency>
+		<dependency>
+			<groupId>com.photon.phresco.plugins</groupId>
+			<artifactId>zap-phresco-plugin</artifactId>
+			<version>${phresco-commons-version}</version>
+		</dependency>
+
+	</dependencies>
 </project>
