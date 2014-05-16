@@ -95,6 +95,12 @@
 			<groupId>com.photon.phresco.plugins</groupId>
 			<artifactId>zap-phresco-plugin</artifactId>
 			<version>${phresco-commons-version}</version>
+		<exclusions>
+        	<exclusion>
+        		<groupId>com.ibm.icu</groupId>
+        		<artifactId>icu4j</artifactId>
+        	</exclusion>
+        </exclusions>
 		</dependency>
 
 	</dependencies>
