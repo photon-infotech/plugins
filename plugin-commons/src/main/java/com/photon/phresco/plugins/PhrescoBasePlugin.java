@@ -268,10 +268,10 @@ PluginConstants {
 			if (StringUtils.isNotEmpty(dotPhrescoDirName)
 					&& StringUtils.isNotEmpty(subModule)) {
 				dotPhrescoDir = new File(dotPhrescoDir.getParentFile()
-						.getPath() + File.separatorChar + dotPhrescoDirName);
+						.getPath() + File.separatorChar + subModule + File.separatorChar + dotPhrescoDirName);
 			}
-			dotPhrescoDir = new File(dotPhrescoDir.getPath()
-					+ File.separatorChar + subModule);
+//			dotPhrescoDir = new File(dotPhrescoDir.getPath()
+//					+ File.separatorChar + subModule);
 			File pomFile = pluginUtils.getPomFile(dotPhrescoDir,
 					workingDirectory);
 			PomProcessor processor = new PomProcessor(pomFile);
@@ -321,7 +321,7 @@ PluginConstants {
 				File resultConfigXml = new File(funTestDir
 						+ resultConfigFileDir);
 				adaptTestConfig(resultConfigXml, environmentName, browserValue,
-						resolutionValue, dotPhrescoDir.getPath());
+						resolutionValue, workingDirectory.getPath());
 			}
 			String seleniumToolType = processor
 			.getProperty(Constants.POM_PROP_KEY_FUNCTEST_SELENIUM_TOOL);

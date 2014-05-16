@@ -92,6 +92,9 @@ public class PhrescoRunFunctionalTest extends PhrescoAbstractMojo implements Plu
 			
 			String pomFileName = Utility.getPhrescoPomFromWorkingDirectory(appInfo, dotPhrescoDir);
 			File pomPath = new File(baseDir + File.separator + pomFileName);
+			if (StringUtils.isNotEmpty(moduleName)) {
+				pomPath = new File(baseDir + File.separator + moduleName + File.separator + pomFileName);
+			}
 			PomProcessor processor = new PomProcessor(pomPath);
 			String property = processor.getProperty(FUNCTIONAL_TEST_SELENIUM_TYPE);
 			String goal = "";
