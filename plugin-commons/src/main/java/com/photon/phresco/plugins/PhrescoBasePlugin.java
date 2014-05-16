@@ -93,8 +93,7 @@ import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.model.Plugin;
 import com.phresco.pom.util.PomProcessor;
 
-public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements
-PluginConstants {
+public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginConstants {
 	
 	private String buildVersion;
 	

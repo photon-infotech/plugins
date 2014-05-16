@@ -26,9 +26,9 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoProcessor;
-import com.photon.phresco.plugins.zap.ZapStop;
 import com.photon.phresco.util.Constants;
 
 /**
@@ -91,10 +91,10 @@ public class PhrescoZapStop extends PhrescoAbstractMojo {
     		if (StringUtils.isNotEmpty(moduleName)) {
         		infoFile = new File(baseDir + File.separator + moduleName + File.separator + Constants.ZAP_START_INFO_XML);
         	} 
+    		PhrescoPlugin plugin = getPlugin(getDependency(infoFile.getPath(), Constants.PHASE_ZAP_START));
     		MojoProcessor processor = new MojoProcessor(infoFile);
         	Configuration configuration = processor.getConfiguration(Constants.PHASE_ZAP_START);
-			ZapStop zapStop = new ZapStop();
-			zapStop.zapStop(configuration, getMavenProjectInfo(project, moduleName), log);
+        	plugin.zapStop(configuration, getMavenProjectInfo(project, moduleName));
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage());
 		}

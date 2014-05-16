@@ -34,7 +34,7 @@ public class ZapAnalysis implements ZapConstants{
 	private String type;
 	private static Log log;
 
-	public void analysis(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException, InterruptedException {
+	public void analysis(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
