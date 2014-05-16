@@ -17,21 +17,27 @@ f * Phresco Maven Plugin
  */
 package com.photon.phresco.plugins;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.commons.FrameworkConstants;
+import com.photon.phresco.commons.model.BuildInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
 import com.photon.phresco.plugins.util.MojoProcessor;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
@@ -137,17 +143,33 @@ public class PhrescoDeploy extends PhrescoAbstractMojo {
         	Map<String, Object> keyValues = new HashMap<String, Object>();
         	keyValues.put(PluginConstants.DEPLOY_FROM_NEXUS, deployFromNexus);
         	
-        	if(interactive) {
-        		try
-        		{
-        			System.out.println(DEPLOY);
-        		configuration = getInteractiveConfiguration(configuration, processor, project,DEPLOY);
-        		}
-        		catch (Exception e)
-        		{
-        			System.out.println("Error:"+e.toString());
-        		}
-        	} 
+        	if (interactive) {
+				try {
+					Parameters parameters = configuration.getParameters();
+					List<Parameter> parameter = parameters.getParameter();
+					for (Parameter param : parameter) {
+						if (param.getName().getValue().get(0).getValue()
+								.equals("Build Number")) {
+							File file = new File(baseDir,
+									"do_not_checkin/build/build.info");
+							List<BuildInfo> buildfile = Utility
+									.getBuildInfos(file);
+							System.out.println("Select Build Number :");
+							for (BuildInfo buildInfo : buildfile) {
+								System.out.println(buildInfo.getBuildNo());
+							}
+							BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+							String buildvalue = br.readLine();
+							param.setValue(buildvalue);
+							processor.save();
+						}
+					}
+					configuration = getInteractiveConfiguration(configuration,
+							processor, project, DEPLOY);
+				} catch (Exception e) {
+					System.out.println("Error:" + e.toString());
+				}
+			}
             PhrescoPlugin plugin = getPlugin(getDependency(infoFile, DEPLOY));
             String processName = ManagementFactory.getRuntimeMXBean().getName();
     		String[] split = processName.split("@");

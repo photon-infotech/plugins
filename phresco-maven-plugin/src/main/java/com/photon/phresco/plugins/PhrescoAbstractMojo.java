@@ -428,6 +428,9 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 		setDependentMap(parameter);
 			List<String> valueList = new ArrayList<String>();
 			for (Parameter param : parameter) {
+				if(param.getType().equals("Hidden")) {
+					continue;
+				}
 				String value = "";
 				boolean show = false;
 				if (CollectionUtils.isNotEmpty(valueList)) {
