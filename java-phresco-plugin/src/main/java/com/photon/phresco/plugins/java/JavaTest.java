@@ -166,8 +166,10 @@ public class JavaTest implements PluginConstants {
             sb.append(Constants.HYPHEN_F);
             sb.append(STR_SPACE); 
             sb.append(pomFile.getName());
-            sb.append(STR_SPACE);
-			sb.append("-Dpackage.version=" + buildVersion);
+            if(org.apache.commons.lang.StringUtils.isNotEmpty(buildVersion)) {
+				sb.append(STR_SPACE);
+				sb.append("-Dpackage.version=" + buildVersion);
+			}
             System.out.println("COMMAND IS  " + sb.toString());
             boolean status = Utility.executeStreamconsumer(sb.toString(), workingDirectory.getPath(), workingDirectory.getPath(), UNIT);
             if(!status) {

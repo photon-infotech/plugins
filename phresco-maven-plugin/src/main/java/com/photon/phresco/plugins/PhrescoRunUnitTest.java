@@ -28,6 +28,7 @@ import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.commons.FrameworkConstants;
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
@@ -74,6 +75,12 @@ public class PhrescoRunUnitTest extends PhrescoAbstractMojo {
      */
     protected String moduleName;
     
+    /**
+     * @parameter expression="${package.version}"
+     * @readonly
+     */
+    protected String buildVersion;
+    
     public void execute() throws MojoExecutionException, MojoFailureException {
     	try {
     		String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
@@ -105,12 +112,14 @@ public class PhrescoRunUnitTest extends PhrescoAbstractMojo {
 	        	String mvnDependencyId = allValues.get(TEST_AGAINST);
 	        	dependency = getDependency(infoFile.getPath(), UNIT_TEST, mvnDependencyId);
         	}
+        	MavenProjectInfo mavenProjectInfo = getMavenProjectInfo(project, moduleName);
+        	mavenProjectInfo.setBuildVersion(buildVersion);
     		if (infoFile.exists() && isGoalAvailable(infoFile.getPath(), UNIT_TEST) && dependency != null) {
 				PhrescoPlugin plugin = getPlugin(dependency);
-		        plugin.runUnitTest(configuration, getMavenProjectInfo(project, moduleName));
+		        plugin.runUnitTest(configuration, mavenProjectInfo);
 			} else {
 				PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());
-		        plugin.runUnitTest(configuration ,getMavenProjectInfo(project,moduleName));
+		        plugin.runUnitTest(configuration ,mavenProjectInfo);
 			}
     	} catch (PhrescoException e) {
     		throw new MojoExecutionException(e.getMessage(), e);
