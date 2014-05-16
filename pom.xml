@@ -11,6 +11,7 @@
     </scm>
 	<description>phresco-plugins-root</description>
     <modules>
+		<module>zap-phresco-plugin</module>
         <module>phresco-maven-plugin</module>
         <module>drupal-phresco-plugin</module>
         <module>php-phresco-plugin</module>
