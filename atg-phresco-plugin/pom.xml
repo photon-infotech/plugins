@@ -3,12 +3,12 @@
   <parent>
     <artifactId>phresco-plugins-root</artifactId>
     <groupId>com.photon.phresco.plugins</groupId>
-    <version>3.3.1.10001-SNAPSHOT</version>
+    <version>3.3.1.10002-SNAPSHOT</version>
     <relativePath>../</relativePath>
   </parent>
   <groupId>com.photon.phresco.plugins</groupId>
   <artifactId>atg-phresco-plugin</artifactId>
-  <version>3.3.1.10001-SNAPSHOT</version>
+  <version>3.3.1.10002-SNAPSHOT</version>
   <packaging>jar</packaging>
   
   <name>atg-phresco-plugin</name>
