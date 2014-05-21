@@ -106,7 +106,7 @@ public class PhrescoRunUnitTest extends PhrescoAbstractMojo {
      		
      		Utility.writeProcessid(baseDir.getPath(), PluginConstants.UNIT, processId);
      		getLog().info("Writing Process Id...");
-        	Dependency dependency = null;
+        	Dependency dependency = getDependency(infoFile.getPath(), UNIT_TEST);
         	if(configuration != null) {
 	        	Map<String, String> allValues = MojoUtil.getAllValues(configuration);
 	        	String mvnDependencyId = allValues.get(TEST_AGAINST);

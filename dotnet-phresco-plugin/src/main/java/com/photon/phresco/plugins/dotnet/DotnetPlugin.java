@@ -61,4 +61,10 @@ public class DotnetPlugin extends PhrescoBasePlugin {
 		deploy.deploy(configuration, mavenProjectInfo, log);
 		return new DefaultExecutionStatus();
 	}
+	@Override
+	public ExecutionStatus runUnitTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		DotnetTest unitTest = new DotnetTest();
+		unitTest.runTest(configuration, mavenProjectInfo);
+		return new DefaultExecutionStatus();
+	}
 }
