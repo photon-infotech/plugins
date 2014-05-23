@@ -87,14 +87,14 @@ public class PhrescoZapStart extends PhrescoAbstractMojo {
         	if (StringUtils.isNotEmpty(dotPhrescoDirName) && StringUtils.isNotEmpty(moduleName)) {
         		baseDir = new File(baseDir.getParentFile().getPath() +  File.separatorChar + dotPhrescoDirName);
         	}
-        	File infoFile = new File(baseDir + File.separator +  Constants.DOT_PHRESCO_FOLDER  + File.separator +  Constants.ZAP_START_INFO_XML);
+        	File infoFile = new File(baseDir + File.separator +  Constants.DOT_PHRESCO_FOLDER  + File.separator +  Constants.ZAP_INFO_XML);
     		if (StringUtils.isNotEmpty(moduleName)) {
-        		infoFile = new File(baseDir + File.separator + moduleName + File.separator + Constants.ZAP_START_INFO_XML);
+        		infoFile = new File(baseDir + File.separator + moduleName + File.separator + Constants.ZAP_INFO_XML);
         	} 
-    		PhrescoPlugin plugin = getPlugin(getDependency(infoFile.getPath(), Constants.PHASE_ZAP_START));
+    		PhrescoPlugin plugin = getPlugin(getDependency(infoFile.getPath(), Constants.PHASE_ZAP_TEST));
     		MojoProcessor processor = new MojoProcessor(infoFile);
-        	Configuration configuration = processor.getConfiguration(Constants.PHASE_ZAP_START);
-        	plugin.zapStart(configuration, getMavenProjectInfo(project, moduleName));
+        	Configuration configuration = processor.getConfiguration(Constants.PHASE_ZAP_TEST);
+        	plugin.zapTest(configuration, getMavenProjectInfo(project, moduleName));
 		} catch (PhrescoException e) {
 			throw new MojoExecutionException(e.getMessage());
 		}

@@ -141,15 +141,6 @@ public abstract class AbstractPhrescoPlugin implements PhrescoPlugin, CIPlugin {
 	}
 	
 	/**
-	 * ZAP-start
-	 */
-	
-	public ExecutionStatus zapStart(Configuration configuration,
-			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		return  new DefaultExecutionStatus();
-	}
-	
-	/**
 	 * ZAP-TEST
 	 */
 
@@ -158,13 +149,7 @@ public abstract class AbstractPhrescoPlugin implements PhrescoPlugin, CIPlugin {
 		return  new DefaultExecutionStatus();
 	}
 	
-	/**
-	 * ZAP-STOP
-	 */
 	
-	public ExecutionStatus zapStop(Configuration configuration,
-			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		return  new DefaultExecutionStatus();
-	}
+	
 
 }

@@ -19,19 +19,22 @@ import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.Utility;
 
-
 public class ZapStart implements ZapConstants{
 	private File baseDir;
 	private String environmentName;
 	private String zapDirectory;
 	private String port;
-	private Log log;
+	private String protocol;
+	private String host;
+	private String url;
+	private String type;
 
 	public void start(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
-		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
 		environmentName = configs.get(ENVIRONMENT_NAME);
+		type =  configs.get(TYPE);
+		url =  configs.get(URL);
 		File configPath = new File(baseDir + File.separator + DOT_PHRESCO_FOLDER + File.separator  + CONFIG_FILE);
 		if (!configPath.exists()) {
 			throw new PhrescoException(CONFIG_FILE_NOT_FOUND_ERROR);
@@ -44,11 +47,14 @@ public class ZapStart implements ZapConstants{
 				if (config != null) {
 					Properties properties = config.getProperties();
 					zapDirectory = (String) properties.get(ZAPDIR);
-					port = (String) properties.get(PORT);
+					protocol = (String) properties.get(PROTOCOL);
+					host = (String) properties.get(HOST);
+					port = (String) properties.get(ZAP_PORT);
 					validateZapDirectory(zapDirectory);
-					startDaemonProcess(baseDir.getPath(), port, zapDirectory);
+					startDaemonProcess(baseDir.getPath(), port, zapDirectory, url, type, log);
 				}
 			}
+				
 		} catch (ConfigurationException e) {
 			throw new PhrescoException(e);
 		}
@@ -66,7 +72,7 @@ public class ZapStart implements ZapConstants{
 		}
 	}
 	
-	private void startDaemonProcess(String path, String port, String zapDirectory) throws PhrescoException {
+	private void startDaemonProcess(String path, String port, String zapDirectory, String url, String type, Log log) throws PhrescoException {
 		BufferedReader reader = null;
 		String workingDir = path;
 		StringBuilder builder = new StringBuilder();
@@ -103,6 +109,8 @@ public class ZapStart implements ZapConstants{
 				log.info(line);
 				if (line.contains("BUILD SUCCESS")) {
 					log.info("Zap Started");	
+					ZapAnalysis  analysis = new ZapAnalysis();
+					analysis.attack(log, baseDir.getPath(), environmentName, protocol, host, port, type, url);
 				}
 			}
 		} catch (IOException e) {

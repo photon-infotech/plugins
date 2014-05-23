@@ -160,7 +160,7 @@ public interface PhrescoPlugin {
 	ExecutionStatus generateReport(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
 	
 	/**
-	 * @param zap Test
+	 * @param Zap Test
 	 * @param mavenProjectInfo customized Maven Project object
 	 * @return ExecutionStatus
 	 * 
@@ -170,23 +170,5 @@ public interface PhrescoPlugin {
 	ExecutionStatus zapTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
 
 
-	/**
-	 * @param zap Start
-	 * @param mavenProjectInfo customized Maven Project object
-	 * @return ExecutionStatus
-	 * 
-	 * @throws PhrescoException
-	 */
-	ExecutionStatus zapStart(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
-
-
-	/**
-	 * @param zap Stop
-	 * @param mavenProjectInfo customized Maven Project object
-	 * @return ExecutionStatus
-	 * 
-	 * @throws PhrescoException
-	 */
-	ExecutionStatus zapStop(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
 
 }

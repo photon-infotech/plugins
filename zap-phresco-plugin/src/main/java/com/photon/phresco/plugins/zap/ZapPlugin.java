@@ -16,23 +16,9 @@ public class ZapPlugin extends PhrescoBasePlugin {
 	}
 
 	@Override
-	public ExecutionStatus zapStart(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+	public ExecutionStatus zapTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		ZapStart start = new ZapStart();
 		start.start(configuration, mavenProjectInfo, log);
-		return new DefaultExecutionStatus();
-	}
-
-	@Override
-	public ExecutionStatus zapTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		ZapAnalysis analysis = new ZapAnalysis();
-		analysis.analysis(configuration, mavenProjectInfo, log);
-		return new DefaultExecutionStatus();
-	}
-
-	@Override
-	public ExecutionStatus zapStop(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
-		ZapStop zapStop = new ZapStop();
-		zapStop.zapStop(configuration, mavenProjectInfo, log);
 		return new DefaultExecutionStatus();
 	}
 
