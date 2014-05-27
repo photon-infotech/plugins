@@ -19,7 +19,7 @@
 	<field name="testSuites" class="java.util.List"/>
 	<field name="allTestSuites" class="java.util.List"/>
 	<field name="jsAllTestSuites" class="java.util.List"/>
-	<field name="jsTestSuites" class="java.lang.String"/>
+	<field name="jsTestSuites" class="java.util.List"/>
 	<variable name="count" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[$V{count} + new Integer(1)]]></variableExpression>
 		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
@@ -32,7 +32,7 @@
 			<printWhenExpression><![CDATA[$P{testType}.contains("unit")]]></printWhenExpression>
 			<frame>
 				<reportElement style="UCRHeading" mode="Opaque" x="0" y="0" width="555" height="24">
-					<printWhenExpression><![CDATA[($P{testType}.equals("unit") && CollectionUtils.isNotEmpty($F{testSuites})) || ($P{testType}.equals("unit") && CollectionUtils.isNotEmpty($F{allTestSuites}))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[($P{testType}.equals("unit") && CollectionUtils.isNotEmpty($F{testSuites})) || ($P{testType}.equals("unit") && CollectionUtils.isNotEmpty($F{allTestSuites})) || ($P{testType}.equals("unit") && CollectionUtils.isNotEmpty($F{jsAllTestSuites})) || ($P{testType}.equals("unit") && CollectionUtils.isNotEmpty($F{jsTestSuites}))]]></printWhenExpression>
 				</reportElement>
 				<staticText>
 					<reportElement x="5" y="4" width="283" height="18" forecolor="#FFFFFF" backcolor="#FFFFFF"/>
