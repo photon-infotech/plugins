@@ -60,7 +60,6 @@ public class Package implements PluginConstants, AtgConstants {
     private File srcDirectory;
     private File dotPhrescoRoot;
     private ApplicationInfo appInfoRoot;
-    private List<String> depModuleList = new ArrayList<String>();
     private File targetDir;
     private String packaging;
     
@@ -69,7 +68,6 @@ public class Package implements PluginConstants, AtgConstants {
 		baseDir = mavenProjectInfo.getBaseDir();
 		
         project = mavenProjectInfo.getProject();
-        packaging = project.getPackaging();
         Map<String, String> configs = MojoUtil.getAllValues(configuration);
         environmentName = configs.get(ENVIRONMENT_NAME);
         buildName = configs.get(BUILD_NAME);
@@ -123,6 +121,9 @@ public class Package implements PluginConstants, AtgConstants {
 	private void init() throws MojoExecutionException {
 		try {
 			targetDir = new File(project.getBuild().getDirectory());
+			if(StringUtils.isNotEmpty(subModule)) {
+				targetDir = new File(baseDir.getPath() + File.separator + subModule + DO_NOT_CHECKIN_FOLDER + File.separator + TARGET);
+			} 
 			buildDir = new File(workingDirectory.getPath() + PluginConstants.BUILD_DIRECTORY);
 			buildInfoFile = new File(workingDirectory.getPath() + PluginConstants.BUILD_DIRECTORY + BUILD_INFO_FILE);
 			File buildInfoDir = new File(workingDirectory.getPath() + PluginConstants.BUILD_DIRECTORY);
@@ -257,6 +258,7 @@ public class Package implements PluginConstants, AtgConstants {
 			String zipFilePath = buildDir.getPath() + File.separator + zipName;
 			tempDir = new File(buildDir.getPath() + File.separator + TEMP);
 			String zipNameWithoutExt = zipName.substring(0, zipName.lastIndexOf('.'));
+			packaging = getPackaging();
 			if(packaging.equals("jar")) {
 				copyJarToPackage(zipNameWithoutExt);
 			}
@@ -272,6 +274,17 @@ public class Package implements PluginConstants, AtgConstants {
 		}
 	}
 	
+	private String getPackaging() throws MojoExecutionException {
+		File pomFile = new File(workingDirectory, "pom.xml");
+		PomProcessor processor = null;
+		try {
+			processor = new PomProcessor(pomFile);
+		} catch (PhrescoPomException e) {
+			throw new MojoExecutionException(e.getMessage());
+		}
+		return processor.getPackage();
+	}
+
 	private void copyEarToPackage(String zipNameWithoutExt) throws MojoExecutionException {
 		tempDir = new File(buildDir.getPath() + File.separator + zipNameWithoutExt);
 		tempDir.mkdir();
@@ -292,7 +305,7 @@ public class Package implements PluginConstants, AtgConstants {
 	private void copyWarToPackage(String zipNameWithoutExt) throws MojoExecutionException {
 		tempDir = new File(buildDir.getPath() + File.separator + zipNameWithoutExt);
 		tempDir.mkdir();
-		File j2eeApps = new File(baseDir, "j2ee-apps");
+		File j2eeApps = new File(workingDirectory, "j2ee-apps");
 		File[] listFiles = j2eeApps.listFiles();
 		if(listFiles.length > 0) {
 			for (File file : listFiles) {
