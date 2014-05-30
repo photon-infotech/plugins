@@ -18,6 +18,7 @@
 package com.photon.phresco.plugins;
 
 import java.io.BufferedReader;
+import java.io.Console;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -26,16 +27,15 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.io.Console;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -49,11 +49,13 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
-import org.sonatype.aether.RepositorySystem;
-import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.artifact.Artifact;
-import org.sonatype.aether.repository.RemoteRepository;
-import org.sonatype.aether.util.artifact.DefaultArtifact;
+import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
+import org.codehaus.plexus.PlexusContainer;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.repository.LocalRepository;
 import org.xml.sax.SAXException;
 
 import com.google.gson.Gson;
@@ -73,44 +75,23 @@ import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
-import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.Childs;
-import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.Childs.Child;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.Name.Value;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.PossibleValues;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Implementation;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Implementation.Dependency;
+import com.photon.phresco.plugins.util.MavenEclipseAetherResolver;
 import com.photon.phresco.plugins.util.MavenPluginArtifactResolver;
+import com.photon.phresco.plugins.util.MavenSonatypeAetherResolver;
 import com.photon.phresco.plugins.util.MojoProcessor;
 import com.photon.phresco.service.client.api.ServiceContext;
 import com.photon.phresco.service.client.api.ServiceManager;
 import com.photon.phresco.service.client.impl.ServiceManagerImpl;
 import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.Utility;
 
 public abstract class PhrescoAbstractMojo extends AbstractMojo {
 
-	/**
-	 * The entry point to Aether, i.e. the component doing all the work.
-	 * 
-	 * @component
-	 */
-	private RepositorySystem repoSystem;
-
-	/**
-	 * The current repository/network configuration of Maven.
-	 * 
-	 * @parameter default-value="${repositorySystemSession}"
-	 * @readonly
-	 */
-	private RepositorySystemSession repoSession;
-
-	/**
-	 * The project's remote repositories to use for the resolution of project dependencies.
-	 * 
-	 * @parameter default-value="${project.remoteProjectRepositories}"
-	 * @readonly
-	 */
-	private List<RemoteRepository> projectRepos;
-
+	
 	/**
 	 * @parameter expression="${project.basedir}" required="true"
 	 * @readonly
@@ -130,11 +111,22 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 	private File serverFile;
 	private ServiceManager serviceManager;
 	List<String> excludedependency = new ArrayList<String>();
+	private MavenSession mavenSession;
+	private MavenProject mavenProject;
+	private PlexusContainer container;
 	
 	private Map<String, Boolean> depMap = new HashMap<String, Boolean>();
-
-	public PhrescoPlugin getPlugin(Dependency dependency) throws PhrescoException {
+	
+//	public PhrescoPlugin getPlugin(Dependency dependency) throws PhrescoException {
+//		//Caching not needed since it will be triggered as a new process every time from the maven
+//		return constructClass(dependency);
+//	}
+	
+	public PhrescoPlugin getPlugin(Dependency dependency, MavenSession mavenSession, MavenProject mavenProject, PlexusContainer container) throws PhrescoException {
 		//Caching not needed since it will be triggered as a new process every time from the maven
+		this.mavenSession = mavenSession;
+		this.mavenProject = mavenProject;
+		this.container = container;
 		return constructClass(dependency);
 	}
 
@@ -153,6 +145,7 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 
 	private URLClassLoader getURLClassLoader(Dependency dependency) throws PhrescoException {
 		List<Artifact> artifacts = new ArrayList<Artifact>();
+		List<org.sonatype.aether.artifact.Artifact> artifacts2 = new ArrayList<org.sonatype.aether.artifact.Artifact>();
 		List<ArtifactGroup> plugins  = new ArrayList<ArtifactGroup>();
 		ArtifactGroup artifactGroup = new ArtifactGroup();
 		artifactGroup.setGroupId(dependency.getGroupId());
@@ -170,13 +163,43 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 				artifacts.add(artifact);
 			}
 		}
-
-		URL[] artifactURLs;
-		try {
-			artifactURLs = MavenPluginArtifactResolver.resolve(projectRepos.get(0), artifacts, repoSystem, repoSession);
-		} catch (Exception e) {
-			throw new PhrescoException(e);
-		}
+		URL[] artifactURLs = null;
+				try {
+					if (container.hasComponent("org.sonatype.aether.RepositorySystem")) {
+						for (ArtifactGroup plugin : plugins) {
+							List<ArtifactInfo> versions = plugin.getVersions();
+							for (ArtifactInfo artifactInfo : versions) {
+								org.sonatype.aether.artifact.Artifact artifact = new org.sonatype.aether.util.artifact.DefaultArtifact(plugin.getGroupId(), plugin.getArtifactId(), PluginConstants.PACKAGING_TYPE_JAR, artifactInfo.getVersion());
+								artifacts2.add(artifact);
+							}
+						}
+					org.sonatype.aether.RepositorySystem system = container.lookup(org.sonatype.aether.RepositorySystem.class);
+					org.sonatype.aether.RepositorySystemSession session = mavenSession.getRepositorySession();
+					List<org.sonatype.aether.repository.RemoteRepository> repositories = mavenProject.getRemoteProjectRepositories();
+					artifactURLs = MavenSonatypeAetherResolver.resolve(repositories.get(0), artifacts2, system, session);
+				} else if (container.hasComponent("org.eclipse.aether.RepositorySystem")) {
+					org.eclipse.aether.RepositorySystem system = container.lookup(org.eclipse.aether.RepositorySystem.class);
+					DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
+			        LocalRepository localRepo = new LocalRepository( Utility.getLocalRepoPath());
+			        session.setLocalRepositoryManager( system.newLocalRepositoryManager( session, localRepo ) );
+			        List<?> repositories = mavenProject.getRemoteProjectRepositories();
+					artifactURLs = MavenEclipseAetherResolver.resolve(repositories.get(0), artifacts, system, session);
+				}
+				} catch (ComponentLookupException e) {
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					e.printStackTrace();
+				} catch (IllegalArgumentException e) {
+					e.printStackTrace();
+				} catch (InvocationTargetException e) {
+					e.printStackTrace();
+				} catch (NoSuchMethodException e) {
+					e.printStackTrace();
+				} catch (SecurityException e) {
+					e.printStackTrace();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 		ClassLoader clsLoader = Thread.currentThread().getContextClassLoader();
 		if (clsLoader == null) {
 			clsLoader = this.getClass().getClassLoader();
@@ -209,9 +232,9 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 	
 	protected MavenProjectInfo getMavenProjectInfo(MavenProject project, String subModule, Map<String, Object> keyValues) {
 		MavenProjectInfo mavenProjectInfo = getMavenProjectInfo(project, subModule);
-		keyValues.put(PluginConstants.REMOTE_REPOS, projectRepos);
-    	keyValues.put(PluginConstants.REPO_SYSTEM, repoSystem);
-    	keyValues.put(PluginConstants.REPO_SESSION, repoSession);
+//		keyValues.put(PluginConstants.REMOTE_REPOS, projectRepos);
+//    	keyValues.put(PluginConstants.REPO_SYSTEM, repoSystem);
+//    	keyValues.put(PluginConstants.REPO_SESSION, repoSession);
 		mavenProjectInfo.setKeyValues(keyValues);
 		return mavenProjectInfo;
 	}

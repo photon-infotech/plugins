@@ -43,8 +43,10 @@ import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.PlexusContainer;
 
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoProcessor;
@@ -86,14 +88,14 @@ public class PhrescoPackage extends PhrescoAbstractMojo {
      */
     protected String moduleName;
     
-    /**
-     * The current Maven session.
-     *
-     * @parameter default-value="${session}"
-     * @parameter required
-     * @readonly
-     */
-    private MavenSession mavenSession;
+	/**
+	 * The current Maven session.
+	 * 
+	 * @parameter default-value="${session}"
+	 * @parameter required
+	 * @readonly
+	 */
+	private MavenSession mavenSession;
 
     /**
      * The Maven BuildPluginManager component.
@@ -115,6 +117,18 @@ public class PhrescoPackage extends PhrescoAbstractMojo {
      * */
     private ArtifactRepository localRepository;
     
+    /**
+     * <p>We can't autowire strongly typed RepositorySystem from Aether because it may be Sonatype (Maven 3.0.x)
+     * or Eclipse (Maven 3.1.x/3.2.x) version, so we switch to service locator by autowiring entire {@link PlexusContainer}</p>
+     *
+     * <p>It's a bit of a hack but we have not choice when we want to be usable both in Maven 3.0.x and 3.1.x/3.2.x</p>
+     *
+     * @component
+     * @required
+     * @readonly
+     */
+     protected PlexusContainer container;
+    
     public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().info(baseDir.getPath());
         Configuration configuration = null;
@@ -131,7 +145,7 @@ public class PhrescoPackage extends PhrescoAbstractMojo {
         		infoFile = baseDir + File.separator + moduleName + File.separator + Constants.PACKAGE_INFO_FILE;
         	} 
         	System.out.println("INFO FILE IS    " +infoFile);
-        	PhrescoPlugin plugin = getPlugin(getDependency(infoFile, PACKAGE));
+        	PhrescoPlugin plugin = getPlugin(getDependency(infoFile, PACKAGE), mavenSession, project, container);        	
         	MojoProcessor processor = new MojoProcessor(new File(infoFile));
         	configuration = processor.getConfiguration(PACKAGE);
         	if(interactive) {
@@ -144,7 +158,9 @@ public class PhrescoPackage extends PhrescoAbstractMojo {
     		
     		Utility.writeProcessid(baseDir.getPath(), Constants.KILLPROCESS_BUILD, processId);
     		getLog().info("Writing Process Id...");
-            plugin.pack(configuration, getMavenProjectInfo(project, moduleName, mavenSession, pluginManager, localRepository));
+    		MavenProjectInfo mavenProjectInfo = getMavenProjectInfo(project, moduleName, mavenSession, pluginManager, localRepository);
+    		mavenProjectInfo.setPlexusContainer(container);
+            plugin.pack(configuration, mavenProjectInfo);
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }

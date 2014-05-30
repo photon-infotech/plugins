@@ -22,9 +22,11 @@ import java.lang.management.ManagementFactory;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.PlexusContainer;
 
 import com.photon.phresco.commons.FrameworkConstants;
 import com.photon.phresco.exception.PhrescoException;
@@ -81,6 +83,27 @@ public class PhrescoRunUnitTest extends PhrescoAbstractMojo {
      */
     protected String buildVersion;
     
+    /**
+     * <p>We can't autowire strongly typed RepositorySystem from Aether because it may be Sonatype (Maven 3.0.x)
+     * or Eclipse (Maven 3.1.x/3.2.x) version, so we switch to service locator by autowiring entire {@link PlexusContainer}</p>
+     *
+     * <p>It's a bit of a hack but we have not choice when we want to be usable both in Maven 3.0.x and 3.1.x/3.2.x</p>
+     *
+     * @component
+     * @required
+     * @readonly
+     */
+     protected PlexusContainer container;
+     
+     /**
+      * The current Maven session.
+      *
+      * @parameter default-value="${session}"
+      * @parameter required
+      * @readonly
+      */
+     private MavenSession mavenSession;
+     
     public void execute() throws MojoExecutionException, MojoFailureException {
     	try {
     		String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
@@ -115,7 +138,7 @@ public class PhrescoRunUnitTest extends PhrescoAbstractMojo {
         	MavenProjectInfo mavenProjectInfo = getMavenProjectInfo(project, moduleName);
         	mavenProjectInfo.setBuildVersion(buildVersion);
     		if (infoFile.exists() && isGoalAvailable(infoFile.getPath(), UNIT_TEST) && dependency != null) {
-				PhrescoPlugin plugin = getPlugin(dependency);
+				PhrescoPlugin plugin = getPlugin(dependency, mavenSession, project, container);
 		        plugin.runUnitTest(configuration, mavenProjectInfo);
 			} else {
 				PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());

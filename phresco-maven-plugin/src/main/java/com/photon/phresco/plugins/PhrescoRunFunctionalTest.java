@@ -21,9 +21,11 @@ import java.io.File;
 import java.lang.management.ManagementFactory;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.PlexusContainer;
 
 import com.photon.phresco.commons.model.ApplicationInfo;
 import com.photon.phresco.exception.PhrescoException;
@@ -66,7 +68,28 @@ public class PhrescoRunFunctionalTest extends PhrescoAbstractMojo implements Plu
      * @readonly
      */
     protected String moduleName;
-
+    
+    /**
+     * <p>We can't autowire strongly typed RepositorySystem from Aether because it may be Sonatype (Maven 3.0.x)
+     * or Eclipse (Maven 3.1.x/3.2.x) version, so we switch to service locator by autowiring entire {@link PlexusContainer}</p>
+     *
+     * <p>It's a bit of a hack but we have not choice when we want to be usable both in Maven 3.0.x and 3.1.x/3.2.x</p>
+     *
+     * @component
+     * @required
+     * @readonly
+     */
+     protected PlexusContainer container;
+     
+     /**
+      * The current Maven session.
+      *
+      * @parameter default-value="${session}"
+      * @parameter required
+      * @readonly
+      */
+     private MavenSession mavenSession;
+     
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
 			
@@ -110,7 +133,7 @@ public class PhrescoRunFunctionalTest extends PhrescoAbstractMojo implements Plu
 				goal = FUNCTIONAL_TEST + HYPEN + property.trim();
 			}
 			if (isGoalAvailable(infoFile, goal)&& getDependency(infoFile, goal) != null) {
-				PhrescoPlugin plugin = getPlugin(getDependency(infoFile, goal));
+				PhrescoPlugin plugin = getPlugin(getDependency(infoFile, goal), mavenSession, project, container);
 				plugin.runFunctionalTest(getConfiguration(infoFile, goal), getMavenProjectInfo(project, moduleName));
 			} else {
 				PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());

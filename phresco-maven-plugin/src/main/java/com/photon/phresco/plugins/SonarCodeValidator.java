@@ -27,9 +27,11 @@ import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.PlexusContainer;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -87,6 +89,28 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
      * @readonly
      */
     private boolean interactive;
+    
+    /**
+     * <p>We can't autowire strongly typed RepositorySystem from Aether because it may be Sonatype (Maven 3.0.x)
+     * or Eclipse (Maven 3.1.x/3.2.x) version, so we switch to service locator by autowiring entire {@link PlexusContainer}</p>
+     *
+     * <p>It's a bit of a hack but we have not choice when we want to be usable both in Maven 3.0.x and 3.1.x/3.2.x</p>
+     *
+     * @component
+     * @required
+     * @readonly
+     */
+     protected PlexusContainer container;
+     
+     /**
+      * The current Maven session.
+      *
+      * @parameter default-value="${session}"
+      * @parameter required
+      * @readonly
+      */
+     private MavenSession mavenSession;
+     
     private Configuration config;
     private String dotPhrescoDirName;
     private File dotPhrescoDir;
@@ -185,7 +209,7 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
  		getLog().info("Writing Process Id...");
  		
 		if (isGoalAvailable(infoFile, VALIDATE_CODE) && dependency != null) {
-			PhrescoPlugin plugin = getPlugin(dependency);
+			PhrescoPlugin plugin = getPlugin(dependency, mavenSession, project, container);
 			plugin.validate(config, getMavenProjectInfo(project, moduleName));
 		} else {
 			PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());

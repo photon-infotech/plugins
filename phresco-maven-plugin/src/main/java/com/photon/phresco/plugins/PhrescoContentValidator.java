@@ -19,9 +19,11 @@ package com.photon.phresco.plugins;
 
 import java.io.File;
 
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.PlexusContainer;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
@@ -51,12 +53,33 @@ public class PhrescoContentValidator extends PhrescoAbstractMojo {
      */
     protected MavenProject project;
     
+    /**
+     * <p>We can't autowire strongly typed RepositorySystem from Aether because it may be Sonatype (Maven 3.0.x)
+     * or Eclipse (Maven 3.1.x/3.2.x) version, so we switch to service locator by autowiring entire {@link PlexusContainer}</p>
+     *
+     * <p>It's a bit of a hack but we have not choice when we want to be usable both in Maven 3.0.x and 3.1.x/3.2.x</p>
+     *
+     * @component
+     * @required
+     * @readonly
+     */
+     protected PlexusContainer container;
+     
+     /**
+      * The current Maven session.
+      *
+      * @parameter default-value="${session}"
+      * @parameter required
+      * @readonly
+      */
+     private MavenSession mavenSession;
+     
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
     	try {
     		File infoFile = new File(baseDir + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONTENT_INFO_FILE);
     		if (infoFile.exists() && isGoalAvailable(infoFile.getPath(), Constants.PHASE_CONTENT_VALIDATOR) && getDependency(infoFile.getPath(), Constants.PHASE_CONTENT_VALIDATOR) != null) {
-				PhrescoPlugin plugin = getPlugin(getDependency(infoFile.getPath(), Constants.PHASE_CONTENT_VALIDATOR));
+				PhrescoPlugin plugin = getPlugin(getDependency(infoFile.getPath(), Constants.PHASE_CONTENT_VALIDATOR), mavenSession, project, container);
 				if(plugin instanceof PhrescoPlugin2) {
     				PhrescoPlugin2 plugin2 = (PhrescoPlugin2) plugin;
     				plugin2.contentValidator(getMavenProjectInfo(project));

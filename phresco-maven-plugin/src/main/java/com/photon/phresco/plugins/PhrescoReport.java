@@ -35,8 +35,10 @@ package com.photon.phresco.plugins;
 
 import java.io.*;
 
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.*;
 import org.apache.maven.project.*;
+import org.codehaus.plexus.PlexusContainer;
 
 import com.photon.phresco.exception.*;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
@@ -65,13 +67,34 @@ public class PhrescoReport extends PhrescoAbstractMojo {
      */
     protected File baseDir;
     
+    /**
+     * <p>We can't autowire strongly typed RepositorySystem from Aether because it may be Sonatype (Maven 3.0.x)
+     * or Eclipse (Maven 3.1.x/3.2.x) version, so we switch to service locator by autowiring entire {@link PlexusContainer}</p>
+     *
+     * <p>It's a bit of a hack but we have not choice when we want to be usable both in Maven 3.0.x and 3.1.x/3.2.x</p>
+     *
+     * @component
+     * @required
+     * @readonly
+     */
+     protected PlexusContainer container;
+     
+     /**
+      * The current Maven session.
+      *
+      * @parameter default-value="${session}"
+      * @parameter required
+      * @readonly
+      */
+     private MavenSession mavenSession;
+     
     public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().info("Form Phresco PhrescoCIPreBuildStep Plugin");
         getLog().info(baseDir.getPath());
         try {
         	String infoFile = baseDir + File.separator + Constants.REPORT_INFO_FILE;
         	getLog().info("Report generation started ");
-            PhrescoPlugin plugin = getPlugin(getDependency(infoFile, REPORT));
+            PhrescoPlugin plugin = getPlugin(getDependency(infoFile, REPORT), mavenSession, project, container);
             plugin.generateReport(getConfiguration(infoFile, REPORT), getMavenProjectInfo(project));
         } catch (PhrescoException e) {
             throw new MojoExecutionException(e.getMessage(), e);

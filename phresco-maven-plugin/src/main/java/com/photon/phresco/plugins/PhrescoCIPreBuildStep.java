@@ -35,10 +35,12 @@ package com.photon.phresco.plugins;
 
 import java.io.File;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
-import org.sonatype.aether.util.StringUtils;
+import org.codehaus.plexus.PlexusContainer;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
@@ -120,7 +122,26 @@ public class PhrescoCIPreBuildStep extends PhrescoAbstractMojo {
 	 */
 	private String moduleName;
 	
-	
+	 /**
+     * <p>We can't autowire strongly typed RepositorySystem from Aether because it may be Sonatype (Maven 3.0.x)
+     * or Eclipse (Maven 3.1.x/3.2.x) version, so we switch to service locator by autowiring entire {@link PlexusContainer}</p>
+     *
+     * <p>It's a bit of a hack but we have not choice when we want to be usable both in Maven 3.0.x and 3.1.x/3.2.x</p>
+     *
+     * @component
+     * @required
+     * @readonly
+     */
+     protected PlexusContainer container;
+     
+     /**
+      * The current Maven session.
+      *
+      * @parameter default-value="${session}"
+      * @parameter required
+      * @readonly
+      */
+     private MavenSession mavenSession;
     
     public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().info("Form Phresco PhrescoCIPreBuildStep Plugin");
@@ -149,7 +170,7 @@ public class PhrescoCIPreBuildStep extends PhrescoAbstractMojo {
         	}
         	Dependency dependency = getDependency(infoFile, PRE_BUILD_STEP);
         	if (dependency != null) {
-	            PhrescoPlugin plugin = getPlugin(dependency);
+	            PhrescoPlugin plugin = getPlugin(dependency, mavenSession, project, container);
 	            if(plugin instanceof CIPlugin) {
 	            	CIPlugin ciPlugin = (CIPlugin) plugin;
 	            	ciPlugin.performCIPreBuildStep(jobName, goal, phase, creationType, id, continuousDeliveryName, moduleName, getMavenProjectInfo(project));

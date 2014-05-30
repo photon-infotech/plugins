@@ -97,5 +97,16 @@
 			<artifactId>maven-scm-provider-svn-commons</artifactId>
 			<version>1.4</version>
 		</dependency>
+		<dependency>
+                <groupId>org.sonatype.aether</groupId>
+                <artifactId>aether-api</artifactId>
+                <version>1.13</version>
+            </dependency>
+            <dependency>
+            <groupId>org.sonatype.aether</groupId>
+            <artifactId>aether-util</artifactId>
+            <version>1.13</version>
+        </dependency>
+        
 	</dependencies>
 </project>

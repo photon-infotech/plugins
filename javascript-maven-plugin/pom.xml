@@ -41,6 +41,17 @@
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-core</artifactId>
+			<version>3.0</version>
+			<exclusions>
+				<exclusion>
+                        <groupId>org.sonatype.aether</groupId>
+                        <artifactId>aether-spi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.sonatype.aether</groupId>
+                        <artifactId>aether-api</artifactId>
+                    </exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- Test dependencies -->
@@ -54,7 +65,33 @@
 			<artifactId>mockito-all</artifactId>
 			<scope>test</scope>
 		</dependency>
-
+		
+		 <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-api</artifactId>
+      <version>${aetherversion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-util</artifactId>
+      <version>${aetherversion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-spi</artifactId>
+      <version>${aetherversion}</version>
+    </dependency>
+    <dependency>
+	<groupId>org.apache.maven</groupId>
+	<artifactId>maven-aether-provider</artifactId>
+	<version>3.1.0-alpha-1</version>
+	<exclusions>
+		<exclusion>
+			<groupId>org.eclipse.aether</groupId>
+			<artifactId>aether-spi</artifactId>
+		</exclusion>
+	</exclusions>
+</dependency>
 	</dependencies>
 
 	<build>
@@ -86,6 +123,7 @@
         
 	</build>
 	<properties>
+    	<aetherversion>0.9.0.M2</aetherversion>
         <siteBaseUrl>file://C:/apache-tomcat-7.0.26/webapps/ROOT/phresco-site/</siteBaseUrl>
         <tools-maven-plugin.version>1.1</tools-maven-plugin.version>
     </properties>

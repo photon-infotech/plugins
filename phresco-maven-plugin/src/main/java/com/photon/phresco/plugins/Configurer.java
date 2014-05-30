@@ -19,7 +19,6 @@ import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuilderConfiguration;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.sonatype.aether.repository.RemoteRepository;
 
 import com.photon.phresco.commons.model.ApplicationInfo;
 import com.photon.phresco.commons.model.ModuleInfo;
@@ -66,19 +65,19 @@ public class Configurer extends AbstractMavenLifecycleParticipant {
 						}
 					}
 					//Made plugin repos available in phresco-pom.xml
-					List<RemoteRepository> remotePluginRepositories = sourceProject.getRemotePluginRepositories();
-					if(CollectionUtils.isNotEmpty(remotePluginRepositories)) {
-						for (RemoteRepository remoteRepository : remotePluginRepositories) {
-							mavenProject.getRemotePluginRepositories().add(remoteRepository);
-						}
-					}
-					//Made project repos available in phresco-pom.xml
-					List<RemoteRepository> remoteProjectRepositories = sourceProject.getRemoteProjectRepositories();
-					if(CollectionUtils.isNotEmpty(remoteProjectRepositories)) {
-						for (RemoteRepository remoteRepository : remoteProjectRepositories) {
-							mavenProject.getRemoteProjectRepositories().add(remoteRepository);
-						}
-					}
+//					List<RemoteRepository> remotePluginRepositories = sourceProject.getRemotePluginRepositories();
+//					if(CollectionUtils.isNotEmpty(remotePluginRepositories)) {
+//						for (RemoteRepository remoteRepository : remotePluginRepositories) {
+//							mavenProject.getRemotePluginRepositories().add(remoteRepository);
+//						}
+//					}
+//					//Made project repos available in phresco-pom.xml
+//					List<RemoteRepository> remoteProjectRepositories = sourceProject.getRemoteProjectRepositories();
+//					if(CollectionUtils.isNotEmpty(remoteProjectRepositories)) {
+//						for (RemoteRepository remoteRepository : remoteProjectRepositories) {
+//							mavenProject.getRemoteProjectRepositories().add(remoteRepository);
+//						}
+//					}
 					List<String> modules = sourceProject.getModules();
 					if(CollectionUtils.isNotEmpty(modules)) {
 						String string = modules.toString();

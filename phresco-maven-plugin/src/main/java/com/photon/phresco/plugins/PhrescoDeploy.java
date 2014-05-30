@@ -25,9 +25,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.PlexusContainer;
 
 import com.photon.phresco.commons.FrameworkConstants;
 import com.photon.phresco.commons.model.BuildInfo;
@@ -100,28 +102,26 @@ public class PhrescoDeploy extends PhrescoAbstractMojo {
     protected String buildVersion;
     
     /**
-	 * The project's remote repositories to use for the resolution of project dependencies.
-	 * 
-	 * @parameter default-value="${project.remoteProjectRepositories}"
-	 * @readonly
-	 *//*
-    protected List<RemoteRepository> remoteRepos;
-	
-	*//**
-	 * The entry point to Aether, i.e. the component doing all the work.
-	 * 
-	 * @component
-	 *//*
-    protected RepositorySystem repoSystem;
+     * <p>We can't autowire strongly typed RepositorySystem from Aether because it may be Sonatype (Maven 3.0.x)
+     * or Eclipse (Maven 3.1.x/3.2.x) version, so we switch to service locator by autowiring entire {@link PlexusContainer}</p>
+     *
+     * <p>It's a bit of a hack but we have not choice when we want to be usable both in Maven 3.0.x and 3.1.x/3.2.x</p>
+     *
+     * @component
+     * @required
+     * @readonly
+     */
+     protected PlexusContainer container;
+     
+     /**
+      * The current Maven session.
+      *
+      * @parameter default-value="${session}"
+      * @parameter required
+      * @readonly
+      */
+     private MavenSession mavenSession;
 
-	*//**
-	 * The current repository/network configuration of Maven.
-	 * 
-	 * @parameter default-value="${repositorySystemSession}"
-	 * @readonly
-	 *//*
-    protected RepositorySystemSession repoSession;*/
-	
 	public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().info(baseDir.getPath());
         try {
@@ -170,7 +170,7 @@ public class PhrescoDeploy extends PhrescoAbstractMojo {
 					System.out.println("Error:" + e.toString());
 				}
 			}
-            PhrescoPlugin plugin = getPlugin(getDependency(infoFile, DEPLOY));
+            PhrescoPlugin plugin = getPlugin(getDependency(infoFile, DEPLOY), mavenSession, project, container);
             String processName = ManagementFactory.getRuntimeMXBean().getName();
     		String[] split = processName.split("@");
     		String processId = split[0].toString();

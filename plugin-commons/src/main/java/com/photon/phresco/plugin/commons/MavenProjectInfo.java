@@ -24,6 +24,7 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.PlexusContainer;
 
 public class MavenProjectInfo {
     
@@ -36,6 +37,7 @@ public class MavenProjectInfo {
     private ArtifactRepository localRepository;
     private Map<String, Object> keyValues;
     private String buildVersion;
+    private PlexusContainer plexusContainer;
     
 	public Map<String, Object> getKeyValues() {
 		return keyValues;
@@ -107,6 +109,14 @@ public class MavenProjectInfo {
 
 	public String getBuildVersion() {
 		return buildVersion;
+	}
+
+	public PlexusContainer getPlexusContainer() {
+		return plexusContainer;
+	}
+
+	public void setPlexusContainer(PlexusContainer plexusContainer) {
+		this.plexusContainer = plexusContainer;
 	}
     
 }

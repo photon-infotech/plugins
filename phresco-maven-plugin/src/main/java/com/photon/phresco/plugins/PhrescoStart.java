@@ -26,6 +26,7 @@ import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.PlexusContainer;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
@@ -112,6 +113,18 @@ public class PhrescoStart extends PhrescoAbstractMojo {
      */
     protected String buildVersion;
     
+    /**
+     * <p>We can't autowire strongly typed RepositorySystem from Aether because it may be Sonatype (Maven 3.0.x)
+     * or Eclipse (Maven 3.1.x/3.2.x) version, so we switch to service locator by autowiring entire {@link PlexusContainer}</p>
+     *
+     * <p>It's a bit of a hack but we have not choice when we want to be usable both in Maven 3.0.x and 3.1.x/3.2.x</p>
+     *
+     * @component
+     * @required
+     * @readonly
+     */
+     protected PlexusContainer container;
+     
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
 			String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
@@ -129,7 +142,7 @@ public class PhrescoStart extends PhrescoAbstractMojo {
 				System.out.println("RunAgainst Source Is Not Applicable For This Technology");
 				return;
 			}
-			PhrescoPlugin plugin = getPlugin(getDependency(infoFile, START));
+			PhrescoPlugin plugin = getPlugin(getDependency(infoFile, START), mavenSession, project, container);
 			Configuration configuration = getConfiguration(infoFile, START);
 			MojoProcessor processor = new MojoProcessor(new File(infoFile));
 			if(interactive) {
