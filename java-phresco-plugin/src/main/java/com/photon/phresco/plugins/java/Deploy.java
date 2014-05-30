@@ -33,11 +33,11 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
-import org.sonatype.aether.RepositorySystem;
-import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.artifact.Artifact;
-import org.sonatype.aether.repository.RemoteRepository;
-import org.sonatype.aether.util.artifact.DefaultArtifact;
+//import org.eclipse.aether.RepositorySystem;
+//import org.eclipse.aether.RepositorySystemSession;
+//import org.eclipse.aether.artifact.Artifact;
+//import org.eclipse.aether.artifact.DefaultArtifact;
+//import org.eclipse.aether.repository.RemoteRepository;
 
 import com.photon.phresco.commons.model.BuildInfo;
 import com.photon.phresco.exception.PhrescoException;
@@ -114,9 +114,9 @@ public class Deploy implements PluginConstants {
 	    	Map<String, Object> keyValues = mavenProjectInfo.getKeyValues();
 	    	String deployFromNexus = (String) keyValues.get(DEPLOY_FROM_NEXUS);
 	    	isDeployFromNexus = Boolean.valueOf(deployFromNexus);
-	    	if (isDeployFromNexus) {
-	    		downloadWarFromNexus(mavenProjectInfo);
-	    	}
+//	    	if (isDeployFromNexus) {
+//	    		downloadWarFromNexus(mavenProjectInfo);
+//	    	}
 			init();
 			initMap();
 			updateFinalName();
@@ -537,20 +537,20 @@ public class Deploy implements PluginConstants {
 		}
 	}
 	
-	private void downloadWarFromNexus(MavenProjectInfo mavenProjectInfo) throws MojoExecutionException {
-		try {
-			Map<String, Object> keyValues = mavenProjectInfo.getKeyValues();
-			pomprocessor = new PomProcessor(pomFile);
-			Artifact artifact = new DefaultArtifact(pomprocessor.getGroupId(), pomprocessor.getArtifactId(), PluginConstants.PACKAGING_TYPE_WAR, pomprocessor.getVersion());
-			List<Artifact> artifactList = Collections.singletonList(artifact);
-			List<RemoteRepository> remoteRepos = (List<RemoteRepository>) keyValues.get(REMOTE_REPOS);
-			RepositorySystem repoSystem = (RepositorySystem) keyValues.get(REPO_SYSTEM);
-			RepositorySystemSession repoSession = (RepositorySystemSession) keyValues.get(REPO_SESSION);
-			MavenPluginArtifactResolver.resolve(remoteRepos.get(0), artifactList, repoSystem, repoSession);
-		} catch (Exception e) {
-			throw new MojoExecutionException(e.getMessage(), e);
-		}
-	}
+//	private void downloadWarFromNexus(MavenProjectInfo mavenProjectInfo) throws MojoExecutionException {
+//		try {
+//			Map<String, Object> keyValues = mavenProjectInfo.getKeyValues();
+//			pomprocessor = new PomProcessor(pomFile);
+//			Artifact artifact = new DefaultArtifact(pomprocessor.getGroupId(), pomprocessor.getArtifactId(), PluginConstants.PACKAGING_TYPE_WAR, pomprocessor.getVersion());
+//			List<Artifact> artifactList = Collections.singletonList(artifact);
+//			List<RemoteRepository> remoteRepos = (List<RemoteRepository>) keyValues.get(REMOTE_REPOS);
+//			RepositorySystem repoSystem = (RepositorySystem) keyValues.get(REPO_SYSTEM);
+//			RepositorySystemSession repoSession = (RepositorySystemSession) keyValues.get(REPO_SESSION);
+//			MavenPluginArtifactResolver.resolve(remoteRepos.get(0), artifactList, repoSystem, repoSession);
+//		} catch (Exception e) {
+//			throw new MojoExecutionException(e.getMessage(), e);
+//		}
+//	}
 	
 	private StringBuilder getRepoWarFilePath () {
 		String localRepoPath = Utility.getLocalRepoPath();

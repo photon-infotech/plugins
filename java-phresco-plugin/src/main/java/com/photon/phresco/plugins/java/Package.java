@@ -51,9 +51,15 @@ import org.apache.maven.plugin.descriptor.MojoDescriptor;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
+import org.codehaus.plexus.PlexusContainer;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.codehaus.plexus.util.xml.Xpp3DomUtils;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.repository.LocalRepository;
+import org.sonatype.aether.RepositorySystemSession;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -74,6 +80,7 @@ import com.photon.phresco.plugins.model.Assembly.FileSets.FileSet.Includes;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands.MavenCommand;
+import com.photon.phresco.plugins.util.MavenSonatypeAetherResolver;
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.plugins.util.PluginPackageUtil;
 import com.photon.phresco.plugins.util.WarConfigProcessor;
@@ -84,7 +91,6 @@ import com.photon.phresco.util.Utility;
 import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.model.Build;
 import com.phresco.pom.model.Model;
-import com.phresco.pom.model.Model.Modules;
 import com.phresco.pom.util.PomProcessor;
 
 public class Package implements PluginConstants {
@@ -125,9 +131,11 @@ public class Package implements PluginConstants {
     private File dotPhrescoRoot;
     private ApplicationInfo appInfoRoot;
     private String buildVersion;
+    private PlexusContainer plexusContainer;
     
 	public void pack(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
+		plexusContainer = mavenProjectInfo.getPlexusContainer();
 		baseDir = mavenProjectInfo.getBaseDir();
         project = mavenProjectInfo.getProject();
         mavenSession = mavenProjectInfo.getMavenSession();
@@ -519,36 +527,15 @@ public class Package implements PluginConstants {
 			if(StringUtils.isEmpty(packagingSrcPOm)) {
 				packagingSrcPOm = "jar";
 			}
-			Plugin plugin = new Plugin();
-			plugin.setGroupId("org.apache.maven.plugins");
-			plugin.setArtifactId("maven-install-plugin");
-			plugin.setVersion("2.4");
-			PluginDescriptor pluginDescriptor = pluginManager.loadPlugin(plugin, project.getRemotePluginRepositories(),
-					mavenSession.getRepositorySession());
-			pluginDescriptor.setInheritedByDefault(true);
-			MojoDescriptor mojoDescriptor = pluginDescriptor.getMojo("install-file");
-			mojoDescriptor.setInheritedByDefault(true);
-			Xpp3Dom configuration = new Xpp3Dom("configuration");
-			Xpp3Dom packagingConf = new Xpp3Dom("packaging");
-			packagingConf.setValue(packagingSrcPOm);
-			configuration.addChild(packagingConf);
-			Xpp3Dom artifactId = new Xpp3Dom("artifactId");
-			artifactId.setValue(processor.getArtifactId());
-			configuration.addChild(artifactId);
-			Xpp3Dom groupId = new Xpp3Dom("groupId");
-			groupId.setValue(processor.getGroupId());
-			configuration.addChild(groupId);
-			Xpp3Dom version = new Xpp3Dom("version");
+			StringBuilder builder = new StringBuilder("mvn install:install-file ");
+			builder.append("-DgroupId=").append(processor.getGroupId()).append(" ");
+			builder.append("-DartifactId=").append(processor.getArtifactId()).append(" ");
 			String projversion = processor.getVersion();
 			if(StringUtils.isNotEmpty(buildVersion)) {
 				projversion = buildVersion;
 			}
-			version.setValue(projversion);
-			configuration.addChild(version);
-			Xpp3Dom repositoryLayout = new Xpp3Dom("repositoryLayout");
-			repositoryLayout.setValue("default");
-			configuration.addChild(repositoryLayout);
-			Xpp3Dom file = new Xpp3Dom("file");
+			builder.append("-Dversion=").append(projversion).append(" ");
+			builder.append("-Dpackaging=").append(packagingSrcPOm).append(" ");
 			String finalName = "";
 			String buildDir = "";
 			if(phrescoPom.exists()) {
@@ -576,28 +563,15 @@ public class Package implements PluginConstants {
 			if("pom".equals(packagingSrcPOm)) {
 				fileConfig = project.getProperties().getProperty("source.pom");
 			}
-			file.setValue(fileConfig);
-			configuration.addChild(file);
-			configuration = Xpp3DomUtils.mergeXpp3Dom(configuration, convertPlexusConfiguration(mojoDescriptor.getMojoConfiguration()));
-            MojoExecution exec = new MojoExecution(mojoDescriptor, configuration);
-            pluginManager.executeMojo(mavenSession, exec);
+			builder.append("-Dfile=").append("" + fileConfig);
+			String line = "";
+			BufferedReader bufferedReader = Utility.executeCommand(builder.toString(), currentDir.toString());
+			while ((line = bufferedReader.readLine()) != null) {
+				System.out.println(line); //do not use getLog() here as this line already contains the log type.
+			}
 		} catch (PhrescoPomException e) {
 			throw new PhrescoException(e);
-		} catch (PluginNotFoundException e) {
-			throw new PhrescoException(e);
-		} catch (PluginResolutionException e) {
-			throw new PhrescoException(e);
-		} catch (PluginDescriptorParsingException e) {
-			throw new PhrescoException(e);
-		} catch (InvalidPluginDescriptorException e) {
-			throw new PhrescoException(e);
-		} catch (MojoFailureException e) {
-			throw new PhrescoException(e);
-		} catch (MojoExecutionException e) {
-			throw new PhrescoException(e);
-		} catch (PluginConfigurationException e) {
-			throw new PhrescoException(e);
-		} catch (PluginManagerException e) {
+		} catch (IOException e) {
 			throw new PhrescoException(e);
 		}
 	}
