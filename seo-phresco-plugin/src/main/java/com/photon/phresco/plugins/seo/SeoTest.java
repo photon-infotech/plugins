@@ -45,10 +45,10 @@ public class SeoTest implements SeoConstants {
 					properties = config.getProperties();
 				}
 			}
-			String Scriptpath = baseDir +File.separator  + TEST_FOLDER + File.separator + SEO;
+			String scriptpath = baseDir +File.separator  + TEST_FOLDER + File.separator + SEO;
 			properties.put(HOST, url);
-			updateScriptConfig(Scriptpath, environmentName, properties);
-			runSeoTest(Scriptpath, log);
+			updateScriptConfig(scriptpath, environmentName, properties);
+			runSeoTest(scriptpath, log);
 			
 		} 
 		catch (ConfigurationException e) {
