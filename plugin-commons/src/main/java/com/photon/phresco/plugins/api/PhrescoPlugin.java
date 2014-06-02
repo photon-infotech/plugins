@@ -168,6 +168,16 @@ public interface PhrescoPlugin {
 	 */
 	
 	ExecutionStatus zapTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
+	
+	/**
+	 * @param SEO Test
+	 * @param mavenProjectInfo customized Maven Project object
+	 * @return ExecutionStatus
+	 * 
+	 * @throws PhrescoException
+	 */
+	
+	ExecutionStatus seoTest(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException;
 
 
 

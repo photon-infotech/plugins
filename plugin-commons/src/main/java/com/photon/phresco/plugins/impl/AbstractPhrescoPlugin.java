@@ -149,6 +149,14 @@ public abstract class AbstractPhrescoPlugin implements PhrescoPlugin, CIPlugin {
 		return  new DefaultExecutionStatus();
 	}
 	
+	/**
+	 * SEO-TEST
+	 */
+
+	public ExecutionStatus seoTest(Configuration configuration,
+			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		return  new DefaultExecutionStatus();
+	}
 	
 	
 
