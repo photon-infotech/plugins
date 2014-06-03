@@ -91,6 +91,7 @@ import com.photon.phresco.util.TechnologyTypes;
 import com.photon.phresco.util.Utility;
 import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.model.Plugin;
+import com.phresco.pom.model.Profile;
 import com.phresco.pom.util.PomProcessor;
 
 public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginConstants {
@@ -825,6 +826,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 
 	public ExecutionStatus validate(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+		try {
 		buildVersion = mavenProjectInfo.getBuildVersion();
 		StringBuilder sb = new StringBuilder();
 		sb.append(SONAR_COMMAND);
@@ -865,6 +867,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 		}
 		File pomFile = pluginUtils.getPomFile(dotPhrescoDir, workingDirectory);
 		String value = config.get(SONAR);
+		if(!value.equalsIgnoreCase(FUNCTIONAL)) {
 		List<Parameter> parameters = configuration.getParameters()
 		.getParameter();
 		for (Parameter parameter : parameters) {
@@ -877,9 +880,21 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 					if (parameter.getValue().equals(mavenCommand.getKey())) {
 						sb.append(STR_SPACE);
 						sb.append(mavenCommand.getValue());
+						PomProcessor pomPro = new PomProcessor(pomFile);
+						Profile profile = pomPro.getProfile(mavenCommand.getKey());
+						if(profile != null) {
+						List<Element> properties = profile.getProperties().getAny();
+						for (Element element : properties) {
+							if( element.getTagName().equalsIgnoreCase("sonar.branch")) {
+								element.setTextContent(mavenCommand.getKey() + appInfo.getId());
+							}
+						}
+						pomPro.save();
+						}
 					}
 				}
 			}
+		}
 		}
 		if (value.equals(FUNCTIONAL)) {
 			sb.delete(0, sb.length());
@@ -889,8 +904,9 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 				setPropertyJarLocation(workingDirectory.getPath(), jarLocation);
 			}
 			sb.append(SONAR_COMMAND).append(STR_SPACE).append(SKIP_TESTS)
-			.append(STR_SPACE).append("-Dsonar.branch=functional");
+			.append(STR_SPACE).append("-Dsonar.branch=functional").append(appInfo.getId());
 		}
+		
 		File workingFile = new File(workingDirectory + File.separator
 				+ pomFile.getName());
 		if (workingFile.exists() && !value.equals(FUNCTIONAL)) {
@@ -907,12 +923,13 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 				workingDirectory.getPath(), workingDirectory.getPath(),
 				"");
 		if (!status) {
-			try {
 				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
+			}
 			} catch (MojoExecutionException e) {
 				throw new PhrescoException(e);
+			} catch (PhrescoPomException e) {
+				throw new PhrescoException(e);
 			}
-		}
 		return new DefaultExecutionStatus();
 	}
 
