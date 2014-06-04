@@ -641,6 +641,7 @@ public interface PluginConstants {
 	String DOT_IPA = ".ipa";
 	String APPIUM_ENV_NAME = "Production";
 	String APPIUM_ENV_DESC = "Production Environment is used for Development purpose only";
+	String APPIUM_ENV_CONFIG_TYPE = "Appium";
 	String APPIUM_CONFIG_NAME = "Server configuration";
 	String APPIUM_CONFIG_TYPE = "server";
 	String APPIUM_MSG_PORT_IN_USE = "Port is already in use";

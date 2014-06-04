@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -31,6 +32,7 @@ import org.apache.maven.project.MavenProject;
 
 import com.photon.phresco.api.ConfigManager;
 import com.photon.phresco.commons.model.BuildInfo;
+import com.photon.phresco.configuration.ConfigReader;
 import com.photon.phresco.configuration.Environment;
 import com.photon.phresco.exception.ConfigurationException;
 import com.photon.phresco.exception.PhrescoException;
@@ -59,27 +61,17 @@ public class PhrescoAppiumPlugin implements PluginConstants {
 
 	public ExecutionStatus startAppium(Configuration configuration, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		File baseDir = mavenProjectInfo.getBaseDir();
-		
 		String subModule = "";
 		File workingDir = baseDir;
 		if (StringUtils.isNotEmpty(mavenProjectInfo.getModuleName())) {
 			subModule = mavenProjectInfo.getModuleName();
 			workingDir = new File(baseDir + File.separator + subModule);
 		}
-		
-		// Split Projects
-		MavenProject project = mavenProjectInfo.getProject();
-		String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
-		File dotPhrescoDir = baseDir;
-		if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
-			dotPhrescoDir = new File(baseDir.getParent() +  File.separatorChar + dotPhrescoDirName);
-		}
-		dotPhrescoDir = new File(dotPhrescoDir.getPath() + File.separatorChar + subModule);
-					
+		MavenProject project = mavenProjectInfo.getProject();		
 		String host = "", androidPackage = "", androidActivity = "", iosDeviceType = "", deviceId = "";
-		Integer port, buildNumber;
+		Integer port = null, buildNumber;
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
-		Properties properties = new Properties();       
+		Properties properties = new Properties();
 		
 		try {
 			// Appium Home Path
@@ -89,14 +81,16 @@ public class PhrescoAppiumPlugin implements PluginConstants {
 			    throw new PhrescoException(APPIUM_MSG_HOME_NOT_FOUND);
 			}
 			
+			Map<String, String> appiumConfig = getAppiumConfiguration(project, baseDir, subModule);
+			
 			// Host
-			host = configs.get(HOST);
+			host = appiumConfig.get(HOST);
 			properties.put(HOST, host);
 			
 			// Port
-			port = Integer.parseInt(configs.get(PORT));
+			port = Integer.parseInt(appiumConfig.get(PORT));
 			properties.put(PORT, port.toString());
-			
+						
 			// If port is already in use
 			Boolean isConnectionAlive = Utility.isConnectionAlive(HTTP, host, port);
 			if (isConnectionAlive) {
@@ -155,7 +149,7 @@ public class PhrescoAppiumPlugin implements PluginConstants {
 	        if (StringUtils.isNotEmpty(iosDeviceType)) {
 	        	if (!iosDeviceType.equals(DEVICE)) {
 		        	// App path - iOS - .app
-	        		String iosAppPath = buildInfo.getDeployLocation();
+	        		String iosAppPath = "\"" + buildInfo.getDeployLocation() + "\"";
 		        	command.append(STR_SPACE)
 			        .append(HYPHEN_APP)
 			        .append(STR_SPACE)
@@ -171,7 +165,7 @@ public class PhrescoAppiumPlugin implements PluginConstants {
 		        	}
 	        	} else {
 		        	// IPA path
-	        		String ipaPath = getIpaPath(baseDir.getPath(), subModule, buildInfo.getBuildName()); 
+	        		String ipaPath = "\"" + getIpaPath(baseDir.getPath(), subModule, buildInfo.getBuildName()) + "\""; 
 	        		command.append(STR_SPACE)
 	        		.append(HYPHEN_IPA)
 	        		.append(STR_SPACE)
@@ -186,14 +180,15 @@ public class PhrescoAppiumPlugin implements PluginConstants {
 	        	}
 	        } else {
 	        	// App path - Android - .apk	        
-		        StringBuilder appPath = new StringBuilder(workingDir.getPath())
+		        StringBuilder appPath = new StringBuilder("\"" + workingDir.getPath())
 		        .append(File.separator)
 	        	.append(DO_NOT_CHECKIN)
 	        	.append(File.separator)
 	        	.append(BUILD)
 	        	.append(File.separator)
 	        	.append(buildInfo.getBuildName())
-	        	.append(DOT_APK);
+	        	.append(DOT_APK)
+	        	.append("\"");
 	        	
 	        	command.append(STR_SPACE)
 		        .append(HYPHEN_APP)
@@ -234,6 +229,9 @@ public class PhrescoAppiumPlugin implements PluginConstants {
 		    }
 		    File logFile  = new File(logDir + Constants.SLASH + Constants.APPIUM_LOG);
 		    fos = new FileOutputStream(logFile, false);
+		    
+		    getLog().info("Command : " + command.toString());
+		    
 		    Utility.executeStreamconsumerFOS(appiumHome, command.toString(), fos);
 		} catch (ConfigurationException e) {
 			throw new PhrescoException(e);
@@ -252,8 +250,8 @@ public class PhrescoAppiumPlugin implements PluginConstants {
 				subModule = mavenProjectInfo.getModuleName();
 				workingDir = new File(baseDir + File.separator + subModule);
 			}        
-	        Map<String, String> configs = MojoUtil.getAllValues(configuration);
-	     	String portNo = configs.get(PORT);
+			Map<String, String> appiumConfig = getAppiumConfiguration(mavenProjectInfo.getProject(), baseDir, subModule);
+	     	String portNo = appiumConfig.get(PORT);
 	     	PluginUtils pluginUtils = new PluginUtils();
 	     	pluginUtils.stopAppium(portNo, workingDir);
 			log.info(APPIUM_MSG_STOPPED);
@@ -261,6 +259,28 @@ public class PhrescoAppiumPlugin implements PluginConstants {
 			throw new PhrescoException(e);
 		}
 		return new DefaultExecutionStatus();
+	}
+	
+	private Map<String, String> getAppiumConfiguration(MavenProject project, File baseDir, String subModule) throws PhrescoException {
+		Map<String, String> appiumConfiguration = new HashMap<String, String>();
+		String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+		File dotPhrescoParent = baseDir;
+		if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
+			dotPhrescoParent = new File(baseDir.getParent() +  File.separatorChar + dotPhrescoDirName);
+		}
+		dotPhrescoParent = new File(dotPhrescoParent.getPath() + File.separatorChar + subModule);
+		File dotPhrescoDir = new File(dotPhrescoParent.getPath() + File.separatorChar + DOT_PHRESCO_FOLDER);
+		File phrescoEnvConfig = new File(dotPhrescoDir.getPath() + File.separatorChar + CONFIG_FILE);
+		try {
+			ConfigReader configReader = new ConfigReader(phrescoEnvConfig);
+			String environment = configReader.getDefaultEnvName();
+			com.photon.phresco.configuration.Configuration config = configReader.getConfigurations(environment, APPIUM_ENV_CONFIG_TYPE).get(0);
+			appiumConfiguration.put(HOST, config.getProperties().getProperty(HOST));
+			appiumConfiguration.put(PORT, config.getProperties().getProperty(PORT));
+		} catch (ConfigurationException e) {
+			throw new PhrescoException(e);
+		}
+		return appiumConfiguration;
 	}
 	
 	private StringBuilder getBuildInfoPath(String rootModulePath, String subModuleName) throws PhrescoException {
