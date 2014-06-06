@@ -23,8 +23,11 @@ import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
+import org.apache.bcel.classfile.Constant;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.execution.MavenSession;
@@ -38,6 +41,7 @@ import com.google.gson.reflect.TypeToken;
 import com.photon.phresco.commons.model.ApplicationInfo;
 import com.photon.phresco.commons.model.ProjectInfo;
 import com.photon.phresco.exception.PhrescoException;
+import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.api.PhrescoPlugin;
@@ -76,13 +80,35 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
 	 * @readonly
 	 */
 	protected File baseDir;
+	
 	private File testConfigPath;
 
+    /**
+     * @parameter expression="${sonarUrl}"
+     * @readonly
+     */
+    protected String sonarUrl;
+    /**
+     * @parameter expression="${jdbcUrl}"
+     * @readonly
+     */
+    protected String jdbcUrl;
+    /**
+     * @parameter expression="${sonarUsername}"
+     * @readonly
+     */
+    protected String sonarUsername;
+    /**
+     * @parameter expression="${sonarPassword}"
+     * @readonly
+     */
+    protected String sonarPassword;
     /**
      * @parameter expression="${moduleName}"
      * @readonly
      */
     protected String moduleName = "";
+    
     
     /**
      * @parameter expression="${interactive}" required="true"
@@ -200,21 +226,50 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
 		Map<String, String> allValues = MojoUtil.getAllValues(config);
 		String mvnDependencyId = allValues.get(SRC);
         Dependency dependency = getDependency(infoFile, VALIDATE_CODE, mvnDependencyId);
-      
+     
         String processName = ManagementFactory.getRuntimeMXBean().getName();
  		String[] split = processName.split("@");
  		String processId = split[0].toString();
  		
  		Utility.writeProcessid(baseDir.getPath(), PluginConstants.CODE_VALIDATE, processId);
  		getLog().info("Writing Process Id...");
- 		
+ 	   StringBuilder constructSonarParams = constructSonarParams();
+ 	  MavenProjectInfo mavenProjectInfo = getMavenProjectInfo(project, moduleName);
+ 	  mavenProjectInfo.setSonarParams(constructSonarParams);
 		if (isGoalAvailable(infoFile, VALIDATE_CODE) && dependency != null) {
 			PhrescoPlugin plugin = getPlugin(dependency, mavenSession, project, container);
-			plugin.validate(config, getMavenProjectInfo(project, moduleName));
+			plugin.validate(config, mavenProjectInfo);
 		} else {
 			PhrescoPlugin plugin = new PhrescoBasePlugin(getLog());
-			plugin.validate(config, getMavenProjectInfo(project, moduleName));
+			plugin.validate(config, mavenProjectInfo);
 		}
+	}
+	
+	private StringBuilder constructSonarParams() {
+		StringBuilder params = new StringBuilder();
+		if(StringUtils.isNotEmpty(sonarUrl)) {
+			params.append(Constants.SPACE);
+			params.append("-Dsonar.host.url=");
+			params.append("\"" + sonarUrl + "\"");
+			params.append(Constants.SPACE);
+		}
+		if(StringUtils.isNotEmpty(jdbcUrl)) {
+			params.append("-Dsonar.jdbc.url=");
+			params.append("\"" + jdbcUrl + "\"");
+			params.append(Constants.SPACE);
+		}
+		if(StringUtils.isNotEmpty(sonarUsername)) {
+			params.append("-Dsonar.jdbc.username=");
+			params.append("\"" + sonarUsername + "\"");
+			params.append(Constants.SPACE);
+		}
+		if(StringUtils.isNotEmpty(sonarPassword)) {
+			params.append("-Dsonar.jdbc.password=");
+			params.append("\"" + sonarPassword + "\"");
+			params.append(Constants.SPACE);
+		}
+		return params;
+		
 	}
 }
 

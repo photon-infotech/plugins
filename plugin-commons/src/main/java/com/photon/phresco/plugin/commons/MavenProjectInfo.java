@@ -38,7 +38,7 @@ public class MavenProjectInfo {
     private Map<String, Object> keyValues;
     private String buildVersion;
     private PlexusContainer plexusContainer;
-    
+    private StringBuilder sonarParams;
 	public Map<String, Object> getKeyValues() {
 		return keyValues;
 	}
@@ -117,6 +117,14 @@ public class MavenProjectInfo {
 
 	public void setPlexusContainer(PlexusContainer plexusContainer) {
 		this.plexusContainer = plexusContainer;
+	}
+
+	public void setSonarParams(StringBuilder sonarParams) {
+		this.sonarParams = sonarParams;
+	}
+
+	public StringBuilder getSonarParams() {
+		return sonarParams;
 	}
     
 }
