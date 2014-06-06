@@ -7,8 +7,14 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.collection.CollectRequest;
+import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.resolution.ArtifactResult;
+import org.eclipse.aether.resolution.DependencyRequest;
+import org.eclipse.aether.util.artifact.JavaScopes;
+import org.eclipse.aether.util.filter.DependencyFilterUtils;
 
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.util.Utility;
@@ -29,21 +35,18 @@ public class MavenEclipseAetherResolver {
 	        S_LOGGER.debug("Local Repository Is" + localRepo);
 	    }
 		RemoteRepository repo =  (RemoteRepository) remoteRepo;
+		DependencyFilter classpathFlter = DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE);
         List<URL> urls = new ArrayList<URL>();
-        CollectRequest collectRequest = new CollectRequest();
-        Artifact artifact = artifacts.get(0);
-		org.eclipse.aether.graph.Dependency dependency = new org.eclipse.aether.graph.Dependency(artifact, "compile");
-		collectRequest.setRoot( dependency  );
-        collectRequest.addRepository( repo );
-        
-        org.eclipse.aether.resolution.ArtifactRequest req = new org.eclipse.aether.resolution.ArtifactRequest();
-        req.addRepository(repo);
-        req.setArtifact(artifact);
-        try {
-        	org.eclipse.aether.resolution.ArtifactResult resolveArtifact = repoSystem.resolveArtifact(repoSession, req );
-    		urls.add( resolveArtifact.getArtifact().getFile().toURI().toURL());
-        } catch(Exception e) {
-        	throw new PhrescoException(e);
+        for (Artifact artifact : artifacts) {
+	        CollectRequest collectRequest = new CollectRequest();
+	        collectRequest.setRoot( new Dependency( artifact, JavaScopes.COMPILE ) );
+	        collectRequest.addRepository( repo );
+	        DependencyRequest dependencyRequest = new DependencyRequest( collectRequest, classpathFlter );
+	        List<ArtifactResult> artifactResults =
+	        repoSystem.resolveDependencies( repoSession, dependencyRequest ).getArtifactResults();
+	        for (ArtifactResult artifactResult : artifactResults ) {
+	        	urls.add(artifactResult.getArtifact().getFile().toURI().toURL());
+	        }
         }
         URL[] urlArr = new URL[0];
         return urls.toArray(urlArr);
