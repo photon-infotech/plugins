@@ -830,6 +830,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 		buildVersion = mavenProjectInfo.getBuildVersion();
 		StringBuilder sb = new StringBuilder();
 		sb.append(SONAR_COMMAND);
+		sb = sb.append(mavenProjectInfo.getSonarParams().toString());
 		Map<String, String> config = MojoUtil.getAllValues(configuration);
 		String subModule = "";
 		MavenProject project = mavenProjectInfo.getProject();
@@ -905,6 +906,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			}
 			sb.append(SONAR_COMMAND).append(STR_SPACE).append(SKIP_TESTS)
 			.append(STR_SPACE).append("-Dsonar.branch=functional").append(appInfo.getId());
+			sb = sb.append(mavenProjectInfo.getSonarParams().toString());
 		}
 		
 		File workingFile = new File(workingDirectory + File.separator
