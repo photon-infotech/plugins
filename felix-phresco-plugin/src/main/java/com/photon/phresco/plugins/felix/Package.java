@@ -340,45 +340,27 @@ public class Package implements PluginConstants {
     		String appDirName = appInfo.getAppDirName();
 			currentDir = new File(Utility.getProjectHome() + File.separatorChar + appDirName + File.separatorChar + srcDir + File.separatorChar + module);
 		}
-		File pomFile = new File(currentDir, project.getProperties().getProperty("source.pom"));
 		try { 
+			File phrescoPom = pu.getPomFile(new File(dotPhrescoDir.getPath() + File.separatorChar + module), new File(baseDir.getPath() + File.separatorChar + module));
+			PomProcessor phrescoPomProcessor = new PomProcessor(phrescoPom);
+			File pomFile = new File(currentDir, phrescoPomProcessor.getProperty("source.pom"));
 			PomProcessor processor = new PomProcessor(pomFile);
 			String packagingSrcPOm = processor.getModel().getPackaging();
-			Plugin plugin = new Plugin();
-			plugin.setGroupId("org.apache.maven.plugins");
-			plugin.setArtifactId("maven-install-plugin");
-			plugin.setVersion("2.4");
-			PluginDescriptor pluginDescriptor = pluginManager.loadPlugin(plugin, project.getRemotePluginRepositories(),
-					mavenSession.getRepositorySession());
-			pluginDescriptor.setInheritedByDefault(true);
-			MojoDescriptor mojoDescriptor = pluginDescriptor.getMojo("install-file");
-			mojoDescriptor.setInheritedByDefault(true);
-			Xpp3Dom configuration = new Xpp3Dom("configuration");
-			Xpp3Dom packagingConf = new Xpp3Dom("packaging");
-			packagingConf.setValue(packagingSrcPOm);
-			configuration.addChild(packagingConf);
-			Xpp3Dom artifactId = new Xpp3Dom("artifactId");
-			artifactId.setValue(processor.getArtifactId());
-			configuration.addChild(artifactId);
-			Xpp3Dom groupId = new Xpp3Dom("groupId");
-			groupId.setValue(processor.getGroupId());
-			configuration.addChild(groupId);
-			Xpp3Dom version = new Xpp3Dom("version");
-			String pomVersion = processor.getVersion();
-			if(StringUtils.isNotEmpty(buildVersion) && processor.getVersion().contains("{package.version}")) {
-				pomVersion = buildVersion;
+			if(StringUtils.isEmpty(packagingSrcPOm)) {
+				packagingSrcPOm = "jar";
 			}
-			version.setValue(pomVersion);
-			configuration.addChild(version);
-			Xpp3Dom repositoryLayout = new Xpp3Dom("repositoryLayout");
-			repositoryLayout.setValue("default");
-			configuration.addChild(repositoryLayout);
-			Xpp3Dom file = new Xpp3Dom("file");
+			StringBuilder builder = new StringBuilder("mvn install:install-file ");
+			builder.append("-DgroupId=").append(processor.getGroupId()).append(" ");
+			builder.append("-DartifactId=").append(processor.getArtifactId()).append(" ");
+			String projversion = processor.getVersion();
+			if(StringUtils.isNotEmpty(buildVersion)) {
+				projversion = buildVersion;
+			}
+			builder.append("-Dversion=").append(projversion).append(" ");
+			builder.append("-Dpackaging=").append(packagingSrcPOm).append(" ");
 			String finalName = "";
 			String buildDir = "";
-			File phrescoPom = new File(baseDir.getPath() + File.separatorChar + module, project.getFile().getName());
 			if(phrescoPom.exists()) {
-				PomProcessor phrescoPomProcessor = new PomProcessor(phrescoPom);
 				finalName = phrescoPomProcessor.getFinalName();
 				if(StringUtils.isEmpty(finalName)) {
 					finalName = project.getBuild().getFinalName();
@@ -400,31 +382,18 @@ public class Package implements PluginConstants {
 			}
 			fileString.append(buildDir).append("/").append(finalName).append(".").append(packagingSrcPOm);
 			fileConfig = fileString.toString();
-			if(packagingSrcPOm.equals("pom")) {
+			if("pom".equals(packagingSrcPOm)) {
 				fileConfig = project.getProperties().getProperty("source.pom");
 			}
-			file.setValue(fileConfig);
-			configuration.addChild(file);
-			configuration = Xpp3DomUtils.mergeXpp3Dom(configuration, convertPlexusConfiguration(mojoDescriptor.getMojoConfiguration()));
-            MojoExecution exec = new MojoExecution(mojoDescriptor, configuration);
-            pluginManager.executeMojo(mavenSession, exec);
+			builder.append("-Dfile=").append("" + fileConfig);
+			String line = "";
+			BufferedReader bufferedReader = Utility.executeCommand(builder.toString(), currentDir.toString());
+			while ((line = bufferedReader.readLine()) != null) {
+				System.out.println(line); //do not use getLog() here as this line already contains the log type.
+			}
 		} catch (PhrescoPomException e) {
 			throw new PhrescoException(e);
-		} catch (PluginNotFoundException e) {
-			throw new PhrescoException(e);
-		} catch (PluginResolutionException e) {
-			throw new PhrescoException(e);
-		} catch (PluginDescriptorParsingException e) {
-			throw new PhrescoException(e);
-		} catch (InvalidPluginDescriptorException e) {
-			throw new PhrescoException(e);
-		} catch (MojoFailureException e) {
-			throw new PhrescoException(e);
-		} catch (MojoExecutionException e) {
-			throw new PhrescoException(e);
-		} catch (PluginConfigurationException e) {
-			throw new PhrescoException(e);
-		} catch (PluginManagerException e) {
+		} catch (IOException e) {
 			throw new PhrescoException(e);
 		}
 	}

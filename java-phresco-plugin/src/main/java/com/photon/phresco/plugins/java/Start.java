@@ -17,6 +17,7 @@
  */
 package com.photon.phresco.plugins.java;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -26,25 +27,11 @@ import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.plugin.BuildPluginManager;
-import org.apache.maven.plugin.InvalidPluginDescriptorException;
-import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.PluginConfigurationException;
-import org.apache.maven.plugin.PluginDescriptorParsingException;
-import org.apache.maven.plugin.PluginManagerException;
-import org.apache.maven.plugin.PluginNotFoundException;
-import org.apache.maven.plugin.PluginResolutionException;
-import org.apache.maven.plugin.descriptor.MojoDescriptor;
-import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
-import org.codehaus.plexus.util.xml.Xpp3DomUtils;
 
 import com.google.gson.Gson;
 import com.photon.phresco.commons.model.ApplicationInfo;
@@ -62,7 +49,6 @@ import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.model.Build;
 import com.phresco.pom.model.Model;
 import com.phresco.pom.util.PomProcessor;
-
 
 public class Start implements PluginConstants {
 
@@ -84,16 +70,12 @@ public class Start implements PluginConstants {
 	private File dotPhrescoDir;
 	private File srcDirectory;
 	private ApplicationInfo appInfo;
-	private MavenSession mavenSession;
-    private BuildPluginManager pluginManager;
     private String buildVersion;
 	 
 	public void start(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		this.log = log;
 		baseDir = mavenProjectInfo.getBaseDir();
 		project = mavenProjectInfo.getProject();
-		mavenSession = mavenProjectInfo.getMavenSession();
-	    pluginManager = mavenProjectInfo.getPluginManager();
 	    buildVersion = mavenProjectInfo.getBuildVersion();
 		pomFile = project.getFile();
 		pomFileName = project.getFile().getName();
@@ -153,36 +135,15 @@ public class Start implements PluginConstants {
 			if(StringUtils.isEmpty(packagingSrcPOm)) {
 				packagingSrcPOm = "jar";
 			}
-			Plugin plugin = new Plugin();
-			plugin.setGroupId("org.apache.maven.plugins");
-			plugin.setArtifactId("maven-install-plugin");
-			plugin.setVersion("2.4");
-			PluginDescriptor pluginDescriptor = pluginManager.loadPlugin(plugin, project.getRemotePluginRepositories(),
-					mavenSession.getRepositorySession());
-			pluginDescriptor.setInheritedByDefault(true);
-			MojoDescriptor mojoDescriptor = pluginDescriptor.getMojo("install-file");
-			mojoDescriptor.setInheritedByDefault(true);
-			Xpp3Dom configuration = new Xpp3Dom("configuration");
-			Xpp3Dom packagingConf = new Xpp3Dom("packaging");
-			packagingConf.setValue(packagingSrcPOm);
-			configuration.addChild(packagingConf);
-			Xpp3Dom artifactId = new Xpp3Dom("artifactId");
-			artifactId.setValue(processor.getArtifactId());
-			configuration.addChild(artifactId);
-			Xpp3Dom groupId = new Xpp3Dom("groupId");
-			groupId.setValue(processor.getGroupId());
-			configuration.addChild(groupId);
-			Xpp3Dom version = new Xpp3Dom("version");
+			StringBuilder builder = new StringBuilder("mvn install:install-file ");
+			builder.append("-DgroupId=").append(processor.getGroupId()).append(" ");
+			builder.append("-DartifactId=").append(processor.getArtifactId()).append(" ");
 			String projversion = processor.getVersion();
 			if(StringUtils.isNotEmpty(buildVersion)) {
 				projversion = buildVersion;
 			}
-			version.setValue(projversion);
-			configuration.addChild(version);
-			Xpp3Dom repositoryLayout = new Xpp3Dom("repositoryLayout");
-			repositoryLayout.setValue("default");
-			configuration.addChild(repositoryLayout);
-			Xpp3Dom file = new Xpp3Dom("file");
+			builder.append("-Dversion=").append(projversion).append(" ");
+			builder.append("-Dpackaging=").append(packagingSrcPOm).append(" ");
 			String finalName = "";
 			String buildDir = "";
 			if(phrescoPom.exists()) {
@@ -210,28 +171,15 @@ public class Start implements PluginConstants {
 			if("pom".equals(packagingSrcPOm)) {
 				fileConfig = project.getProperties().getProperty("source.pom");
 			}
-			file.setValue(pomFile.getPath());
-			configuration.addChild(file);
-			configuration = Xpp3DomUtils.mergeXpp3Dom(configuration, convertPlexusConfiguration(mojoDescriptor.getMojoConfiguration()));
-            MojoExecution exec = new MojoExecution(mojoDescriptor, configuration);
-            pluginManager.executeMojo(mavenSession, exec);
+			builder.append("-Dfile=").append("" + fileConfig);
+			String line = "";
+			BufferedReader bufferedReader = Utility.executeCommand(builder.toString(), currentDir.toString());
+			while ((line = bufferedReader.readLine()) != null) {
+				System.out.println(line); //do not use getLog() here as this line already contains the log type.
+			}
 		} catch (PhrescoPomException e) {
 			throw new PhrescoException(e);
-		} catch (PluginNotFoundException e) {
-			throw new PhrescoException(e);
-		} catch (PluginResolutionException e) {
-			throw new PhrescoException(e);
-		} catch (PluginDescriptorParsingException e) {
-			throw new PhrescoException(e);
-		} catch (InvalidPluginDescriptorException e) {
-			throw new PhrescoException(e);
-		} catch (MojoFailureException e) {
-			throw new PhrescoException(e);
-		} catch (MojoExecutionException e) {
-			throw new PhrescoException(e);
-		} catch (PluginConfigurationException e) {
-			throw new PhrescoException(e);
-		} catch (PluginManagerException e) {
+		} catch (IOException e) {
 			throw new PhrescoException(e);
 		}
 	}
@@ -333,7 +281,7 @@ public class Start implements PluginConstants {
 			StringBuilder sb = new StringBuilder();
 			sb.append(MVN_CMD);
 			sb.append(STR_SPACE);
-			sb.append(JAVA_TOMCAT_RUN);
+			sb.append("tomcat:run");
 			sb.append(STR_SPACE);
 			sb.append(SERVER_PORT);
 			sb.append(serverPort);
