@@ -355,7 +355,7 @@ public class GenerateReport implements PluginConstants {
 	}
 
 	//Consolidated report for all test
-	public void cumalitiveTestReport() throws Exception {
+	public void cumalitiveTestReport(String appId) throws Exception {
 		log.debug("Entering GenerateReport.cumalitiveTestReport()");
 		try {
 			Map<String, Object> cumulativeReportparams = new HashMap<String,Object>();
@@ -512,13 +512,13 @@ public class GenerateReport implements PluginConstants {
 						for (String sonarTechReport : sonarTechReports) {
 							if (isMultiModuleProject) {
 								if(StringUtils.isNotEmpty(moduleName)) {
-										SonarReport srcSonarReport = generateSonarReport(sonarTechReport, moduleName);
+										SonarReport srcSonarReport = generateSonarReport(sonarTechReport, moduleName, appId);
 										if(srcSonarReport != null) {
 											sonarReports.add(srcSonarReport);
 										}
 								} else {
 									for (String module : modules) {
-										SonarReport srcSonarReport = generateSonarReport(sonarTechReport, module);
+										SonarReport srcSonarReport = generateSonarReport(sonarTechReport, module, appId);
 										if(srcSonarReport != null) {
 											sonarReports.add(srcSonarReport);
 										}
@@ -526,7 +526,7 @@ public class GenerateReport implements PluginConstants {
 								}
 								
 							} else {
-								SonarReport srcSonarReport = generateSonarReport(sonarTechReport, null);
+								SonarReport srcSonarReport = generateSonarReport(sonarTechReport, null, appId);
 								if(srcSonarReport != null) {
 									sonarReports.add(srcSonarReport);
 								}
@@ -845,7 +845,7 @@ public class GenerateReport implements PluginConstants {
 		}
 	}
 
-	public SonarReport generateSonarReport(String report, String module) throws PhrescoException {
+	public SonarReport generateSonarReport(String report, String module, String appId) throws PhrescoException {
 		log.debug("Entering Method PhrescoReportGeneration.generateSonarReport()");
 		SonarReport sonarReport = null;
 		try {
@@ -878,7 +878,7 @@ public class GenerateReport implements PluginConstants {
 				sbuild.append(artifactId);
 				if (StringUtils.isNotEmpty(report) && !SONAR_SOURCE.equals(report)) {
 					sbuild.append(COLON);
-					sbuild.append(report);
+					sbuild.append(report + appId);
 				}
 
 				String artifact = sbuild.toString();
@@ -3044,7 +3044,7 @@ public class GenerateReport implements PluginConstants {
 		}
 	}
 
-	public void getCodeValidationReport(MultiModuleReports appendTestReport) throws Exception {
+	public void getCodeValidationReport(MultiModuleReports appendTestReport, String appId) throws Exception {
 		if (isSonarAvailable) {
 			//Sonar details
 			List<SonarReport> sonarReports = new ArrayList<SonarReport>();
@@ -3057,7 +3057,7 @@ public class GenerateReport implements PluginConstants {
 					}
 					sonarTechReports.add(FUNCTIONAL);
 					for (String sonarTechReport : sonarTechReports) {
-						SonarReport srcSonarReport = generateSonarReport(sonarTechReport, null);
+						SonarReport srcSonarReport = generateSonarReport(sonarTechReport, null, appId);
 						if(srcSonarReport != null) {
 							sonarReports.add(srcSonarReport);
 						}
@@ -3070,14 +3070,14 @@ public class GenerateReport implements PluginConstants {
 		}
 	}
 
-	public void getTestReport(MultiModuleReports appendTestReport) throws Exception {
+	public void getTestReport(MultiModuleReports appendTestReport, String appId) throws Exception {
 		getUnitTestReport(appendTestReport);
 		getManualTestReport(appendTestReport);
 		getFunctionalTestReport(appendTestReport);
 		getComponentTestReport(appendTestReport);
 		getPerformanceTestReport(appendTestReport);
 		getLoadTestReport(appendTestReport);
-		getCodeValidationReport(appendTestReport);
+		getCodeValidationReport(appendTestReport, appId);
 	}
 
 	public void multiModulereport(Configuration config) throws Exception {
@@ -3139,7 +3139,7 @@ public class GenerateReport implements PluginConstants {
 				multiModuleReport.setVersion(version);
 				multiModuleReport.setReportType(reportType);
 				// set report objects
-				getTestReport(multiModuleReport);
+				getTestReport(multiModuleReport, appInfo.getId());
 				// add the each application or module object here
 				multiModuleReports.add(multiModuleReport);
 			}
@@ -3373,7 +3373,7 @@ public class GenerateReport implements PluginConstants {
 
 			if ("All".equalsIgnoreCase(testType)) {
 				System.out.println("all report generation started ... "); // all report
-				cumalitiveTestReport();
+				cumalitiveTestReport(appInfo.getId());
 			} else {
 				System.out.println("indivudal report generation started ... "); // specified type report
 				generatePdfReport();
