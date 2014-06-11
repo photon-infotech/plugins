@@ -23,9 +23,11 @@ import com.android.ddmlib.InstallException;
 import com.photon.maven.plugins.android.common.AetherHelper;
 import com.photon.maven.plugins.android.common.AndroidExtension;
 import com.photon.maven.plugins.android.common.DeviceHelper;
+import com.photon.maven.plugins.android.common.EclipseAetherHelper;
 import com.photon.maven.plugins.android.config.ConfigPojo;
 import com.photon.maven.plugins.android.configuration.Ndk;
 import com.photon.maven.plugins.android.configuration.Sdk;
+import com.photon.phresco.util.Utility;
 
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.JXPathNotFoundException;
@@ -38,10 +40,12 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
+import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
+import org.codehaus.plexus.PlexusContainer;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.util.DirectoryScanner;
-import org.sonatype.aether.RepositorySystem;
-import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.repository.RemoteRepository;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.repository.LocalRepository;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -289,29 +293,6 @@ public abstract class AbstractAndroidMojo extends AbstractMojo
     protected boolean generateApk;
 
     /**
-     * The entry point to Aether, i.e. the component doing all the work.
-     *
-     * @component
-     */
-    protected RepositorySystem repoSystem;
-
-    /**
-     * The current repository/network configuration of Maven.
-     *
-     * @parameter default-value="${repositorySystemSession}"
-     * @readonly
-     */
-    protected RepositorySystemSession repoSession;
-
-    /**
-     * The project's remote repositories to use for the resolution of project dependencies.
-     *
-     * @parameter default-value="${project.remoteProjectRepositories}"
-     * @readonly
-     */
-    protected List<RemoteRepository> projectRepos;
-
-    /**
      * Generates R.java into a different package.
      *
      * @parameter expression="${android.customPackage}"
@@ -325,7 +306,19 @@ public abstract class AbstractAndroidMojo extends AbstractMojo
      * @readonly
      */
     protected MavenProjectHelper projectHelper;
-
+    
+    /**
+     * <p>We can't autowire strongly typed RepositorySystem from Aether because it may be Sonatype (Maven 3.0.x)
+     * or Eclipse (Maven 3.1.x/3.2.x) version, so we switch to service locator by autowiring entire {@link PlexusContainer}</p>
+     *
+     * <p>It's a bit of a hack but we have not choice when we want to be usable both in Maven 3.0.x and 3.1.x/3.2.x</p>
+     *
+     * @component
+     * @required
+     * @readonly
+     */
+     protected PlexusContainer container;
+     
     /**
      * <p>The Android SDK to use.</p>
      * <p>Looks like this:</p>
@@ -555,8 +548,31 @@ public abstract class AbstractAndroidMojo extends AbstractMojo
      * @throws MojoExecutionException if the artifact could not be resolved.
      */
     protected File resolveArtifactToFile( Artifact artifact ) throws MojoExecutionException
-    {
-        Artifact resolvedArtifact = AetherHelper.resolveArtifact( artifact, repoSystem, repoSession, projectRepos );
+    {	
+    	Artifact resolvedArtifact = null;
+    	if (container.hasComponent("org.sonatype.aether.RepositorySystem")) {
+    		org.sonatype.aether.RepositorySystem system;
+			try {
+				system = container.lookup(org.sonatype.aether.RepositorySystem.class);
+			} catch (ComponentLookupException e) {
+				throw new MojoExecutionException(e.getMessage());
+			}
+    		org.sonatype.aether.RepositorySystemSession repositorySession = session.getRepositorySession();
+    		List<org.sonatype.aether.repository.RemoteRepository> remoteProjectRepositories = project.getRemoteProjectRepositories();
+    		resolvedArtifact = AetherHelper.resolveArtifact( artifact, system, repositorySession, remoteProjectRepositories );
+    	} else if (container.hasComponent("org.eclipse.aether.RepositorySystem")) {
+    		org.eclipse.aether.RepositorySystem system;
+			try {
+				system = container.lookup(org.eclipse.aether.RepositorySystem.class);
+			} catch (ComponentLookupException e) {
+				throw new MojoExecutionException(e.getMessage());
+			}
+			DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
+	        LocalRepository localRepo = new LocalRepository( Utility.getLocalRepoPath());
+	        session.setLocalRepositoryManager( system.newLocalRepositoryManager( session, localRepo ) );
+	        List<?> repositories = project.getRemoteProjectRepositories();
+	        resolvedArtifact = EclipseAetherHelper.resolveArtifact(artifact, system, session, repositories);
+    	}
         final File jar = resolvedArtifact.getFile();
         if ( jar == null )
         {

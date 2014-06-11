@@ -21,19 +21,25 @@ import com.photon.maven.plugins.android.AbstractAndroidMojo;
 import com.photon.maven.plugins.android.CommandExecutor;
 import com.photon.maven.plugins.android.ExecutionException;
 import com.photon.maven.plugins.android.common.AetherHelper;
+import com.photon.maven.plugins.android.common.EclipseAetherHelper;
 import com.photon.maven.plugins.android.manifmerger.ManifestMerger;
+import com.photon.phresco.util.Utility;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.UnArchiver;
 import org.codehaus.plexus.archiver.zip.ZipUnArchiver;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.logging.console.ConsoleLogger;
 import org.codehaus.plexus.util.AbstractScanner;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.repository.LocalRepository;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -169,7 +175,6 @@ public class GenerateSourcesMojo extends AbstractAndroidMojo
         {
             return;
         }
-
         try
         {
             extractSourceDependencies();
@@ -228,9 +233,9 @@ public class GenerateSourcesMojo extends AbstractAndroidMojo
                 getLog().debug( "Detected apksources dependency " + artifact + " with file " + artifact.getFile()
                         + ". Will resolve and extract..." );
 
-                Artifact resolvedArtifact = AetherHelper
-                        .resolveArtifact( artifact, repoSystem, repoSession, projectRepos );
-
+//                Artifact resolvedArtifact = AetherHelper
+//                        .resolveArtifact( artifact, repoSystem, repoSession, projectRepos );
+                Artifact resolvedArtifact = getArtifact(artifact);
                 File apksourcesFile = resolvedArtifact.getFile();
 
                 // When the artifact is not installed in local repository, but rather part of the current reactor,
@@ -255,7 +260,35 @@ public class GenerateSourcesMojo extends AbstractAndroidMojo
         projectHelper.addResource( project, extractedDependenciesJavaResources.getAbsolutePath(), null, null );
         project.addCompileSourceRoot( extractedDependenciesJavaSources.getAbsolutePath() );
     }
-
+    
+    private Artifact getArtifact(Artifact artifact) throws MojoExecutionException {
+    	Artifact resolvedArtifact = null;
+    	if (container.hasComponent("org.sonatype.aether.RepositorySystem")) {
+    		org.sonatype.aether.RepositorySystem system;
+			try {
+				system = container.lookup(org.sonatype.aether.RepositorySystem.class);
+			} catch (ComponentLookupException e) {
+				throw new MojoExecutionException(e.getMessage());
+			}
+    		org.sonatype.aether.RepositorySystemSession repositorySession = session.getRepositorySession();
+    		List<org.sonatype.aether.repository.RemoteRepository> remoteProjectRepositories = project.getRemoteProjectRepositories();
+    		resolvedArtifact = AetherHelper.resolveArtifact( artifact, system, repositorySession, remoteProjectRepositories );
+    	} else if (container.hasComponent("org.eclipse.aether.RepositorySystem")) {
+    		org.eclipse.aether.RepositorySystem system;
+			try {
+				system = container.lookup(org.eclipse.aether.RepositorySystem.class);
+			} catch (ComponentLookupException e) {
+				throw new MojoExecutionException(e.getMessage());
+			}
+			DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
+	        LocalRepository localRepo = new LocalRepository( Utility.getLocalRepoPath());
+	        session.setLocalRepositoryManager( system.newLocalRepositoryManager( session, localRepo ) );
+	        List<?> repositories = project.getRemoteProjectRepositories();
+	        resolvedArtifact = EclipseAetherHelper.resolveArtifact(artifact, system, session, repositories);
+    	}
+    	return resolvedArtifact;
+    }
+    
     private void extractApksources( File apksourcesFile ) throws MojoExecutionException
     {
         if ( apksourcesFile.isDirectory() )
@@ -301,9 +334,9 @@ public class GenerateSourcesMojo extends AbstractAndroidMojo
     private void extractApklib( Artifact apklibArtifact ) throws MojoExecutionException
     {
 
-        final Artifact resolvedArtifact = AetherHelper
-                .resolveArtifact( apklibArtifact, repoSystem, repoSession, projectRepos );
-
+//        final Artifact resolvedArtifact = AetherHelper
+//                .resolveArtifact( apklibArtifact, repoSystem, repoSession, projectRepos );
+    	final Artifact resolvedArtifact = getArtifact(apklibArtifact);
         File apkLibFile = resolvedArtifact.getFile();
 
         // When the artifact is not installed in local repository, but rather part of the current reactor,

@@ -45,18 +45,26 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.util.AbstractScanner;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.repository.LocalRepository;
 
 import com.photon.maven.plugins.android.AbstractAndroidMojo;
 import com.photon.maven.plugins.android.AndroidSigner;
 import com.photon.maven.plugins.android.CommandExecutor;
 import com.photon.maven.plugins.android.ExecutionException;
+import com.photon.maven.plugins.android.common.AetherHelper;
+import com.photon.maven.plugins.android.common.EclipseAetherHelper;
+import com.photon.maven.plugins.android.common.EclipseAetherNativeHelper;
 import com.photon.maven.plugins.android.common.NativeHelper;
 import com.photon.maven.plugins.android.configuration.Sign;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.Utility;
 import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.util.PomProcessor;
 
@@ -651,8 +659,33 @@ public class ApkMojo extends AbstractAndroidMojo {
 
 		// Retrieve any native dependencies or attached artifacts. This may
 		// include artifacts from the ndk-build MOJO
-		NativeHelper nativeHelper = new NativeHelper(project, projectRepos, repoSession, repoSystem, artifactFactory, getLog());
-		final Set<Artifact> artifacts = nativeHelper.getNativeDependenciesArtifacts(unpackedApkLibsDirectory, true);
+		Set<Artifact> artifacts = null;
+		if (container.hasComponent("org.sonatype.aether.RepositorySystem")) {
+    		org.sonatype.aether.RepositorySystem system;
+			try {
+				system = container.lookup(org.sonatype.aether.RepositorySystem.class);
+			} catch (ComponentLookupException e) {
+				throw new MojoExecutionException(e.getMessage());
+			}
+    		org.sonatype.aether.RepositorySystemSession repositorySession = session.getRepositorySession();
+    		List<org.sonatype.aether.repository.RemoteRepository> remoteProjectRepositories = project.getRemoteProjectRepositories();
+    		NativeHelper nativeHelper = new NativeHelper(project, remoteProjectRepositories, repositorySession, system, artifactFactory, getLog());
+    		artifacts = nativeHelper.getNativeDependenciesArtifacts(unpackedApkLibsDirectory, true);
+    	} else if (container.hasComponent("org.eclipse.aether.RepositorySystem")) {
+    		org.eclipse.aether.RepositorySystem system;
+			try {
+				system = container.lookup(org.eclipse.aether.RepositorySystem.class);
+			} catch (ComponentLookupException e) {
+				throw new MojoExecutionException(e.getMessage());
+			}
+			DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
+	        LocalRepository localRepo = new LocalRepository( Utility.getLocalRepoPath());
+	        session.setLocalRepositoryManager( system.newLocalRepositoryManager( session, localRepo ) );
+	        List<?> repositories = project.getRemoteProjectRepositories();
+	        EclipseAetherNativeHelper nativeHelper = new EclipseAetherNativeHelper(project, repositories, 
+	        		session, system, artifactFactory, getLog());
+	        artifacts = nativeHelper.getNativeDependenciesArtifacts(unpackedApkLibsDirectory, true);
+    	}
 
 		final boolean hasValidBuildNativeLibrariesDirectory = nativeLibrariesOutputDirectory.exists()
 				&& (nativeLibrariesOutputDirectory.listFiles() != null && nativeLibrariesOutputDirectory.listFiles().length > 0);

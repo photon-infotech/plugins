@@ -22,22 +22,17 @@ import com.photon.maven.plugins.android.common.AndroidExtension;
 import com.photon.maven.plugins.android.common.EclipseAetherHelper;
 import com.photon.maven.plugins.android.common.JarHelper;
 import com.photon.maven.plugins.android.common.NativeHelper;
-import com.photon.phresco.util.Utility;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
-import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
-import org.codehaus.plexus.PlexusContainer;
-import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-import org.eclipse.aether.DefaultRepositorySystemSession;
-import org.eclipse.aether.repository.LocalRepository;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.repository.RemoteRepository;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,7 +47,7 @@ import java.util.jar.JarFile;
  * Various helper methods for dealing with Android Native makefiles.
  *
  */
-public class MakefileHelper
+public class EclipseAetherMakefileHelper
 {
     public static final String MAKEFILE_CAPTURE_FILE = "ANDROID_MAVEN_PLUGIN_LOCAL_C_INCLUDES_FILE";
     
@@ -86,36 +81,36 @@ public class MakefileHelper
     }
 
     private Log log;
+    private final RepositorySystem repoSystem;
+    private final RepositorySystemSession repoSession;
+    private final List<RemoteRepository> projectRepos;
     private final File unpackedApkLibsDirectory;
-    private PlexusContainer container;
-    private MavenProject project;
-    private MavenSession session;
     
     /**
      * Initialize the MakefileHelper by storing the supplied parameters to local variables.
      * @param log
-     * @param container 
-     * @param session 
-     * @param project 
      * @param repoSystem
      * @param repoSession
      * @param projectRepos
      * @param unpackedApkLibsDirectory
      */
-    public MakefileHelper( Log log, PlexusContainer container, MavenProject project, MavenSession session, File unpackedApkLibsDirectory )
+    public EclipseAetherMakefileHelper( Log log,
+                           RepositorySystem repoSystem, RepositorySystemSession repoSession, 
+                           List<RemoteRepository> projectRepos, 
+                           File unpackedApkLibsDirectory )
     {
         this.log = log;
+        this.repoSystem = repoSystem;
+        this.repoSession = repoSession;
+        this.projectRepos = projectRepos;
         this.unpackedApkLibsDirectory = unpackedApkLibsDirectory;
-        this.container = container;
-        this.project = project;
-        this.session = session;
     }
     
     /**
      * Cleans up all include directories created in the temp directory during the build.
      *
      * @param makefileHolder The holder produced by the
-     * {@link MakefileHelper#createMakefileFromArtifacts(java.io.File, java.util.Set,
+     * {@link EclipseAetherMakefileHelper#createMakefileFromArtifacts(java.io.File, java.util.Set,
      * boolean, org.sonatype.aether.RepositorySystemSession, java.util.List, org.sonatype.aether.RepositorySystem)}
      */
     public static void cleanupAfterBuild( MakefileHolder makefileHolder )
@@ -205,32 +200,8 @@ public class MakefileHelper
                         Artifact harArtifact = new DefaultArtifact( artifact.getGroupId(), artifact.getArtifactId(),
                                 artifact.getVersion(), artifact.getScope(), "har", artifact.getClassifier(),
                                 artifact.getArtifactHandler() );
-                        
-                        Artifact resolvedHarArtifact = null;
-                    	if (container.hasComponent("org.sonatype.aether.RepositorySystem")) {
-                    		org.sonatype.aether.RepositorySystem system;
-                			try {
-                				system = container.lookup(org.sonatype.aether.RepositorySystem.class);
-                			} catch (ComponentLookupException e) {
-                				throw new MojoExecutionException(e.getMessage());
-                			}
-                    		org.sonatype.aether.RepositorySystemSession repositorySession = session.getRepositorySession();
-                    		List<org.sonatype.aether.repository.RemoteRepository> remoteProjectRepositories = project.getRemoteProjectRepositories();
-                    		resolvedHarArtifact = AetherHelper.resolveArtifact( artifact, system, repositorySession, remoteProjectRepositories );
-                    	} else if (container.hasComponent("org.eclipse.aether.RepositorySystem")) {
-                    		org.eclipse.aether.RepositorySystem system;
-                			try {
-                				system = container.lookup(org.eclipse.aether.RepositorySystem.class);
-                			} catch (ComponentLookupException e) {
-                				throw new MojoExecutionException(e.getMessage());
-                			}
-                			DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
-                	        LocalRepository localRepo = new LocalRepository( Utility.getLocalRepoPath());
-                	        session.setLocalRepositoryManager( system.newLocalRepositoryManager( session, localRepo ) );
-                	        List<?> repositories = project.getRemoteProjectRepositories();
-                	        resolvedHarArtifact = EclipseAetherHelper.resolveArtifact(artifact, system, session, repositories);
-                    	}
-                    	
+                        final Artifact resolvedHarArtifact = EclipseAetherHelper
+                                .resolveArtifact( harArtifact, repoSystem, repoSession, projectRepos );
 
                         File includeDir = new File( System.getProperty( "java.io.tmpdir" ),
                                 "android_maven_plugin_native_includes" + System.currentTimeMillis() + "_"

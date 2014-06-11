@@ -19,13 +19,13 @@ package com.photon.maven.plugins.android.common;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.sonatype.aether.RepositorySystem;
-import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.repository.RemoteRepository;
-import org.sonatype.aether.resolution.ArtifactRequest;
-import org.sonatype.aether.resolution.ArtifactResolutionException;
-import org.sonatype.aether.resolution.ArtifactResult;
-import org.sonatype.aether.util.artifact.DefaultArtifact;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.eclipse.aether.resolution.ArtifactResult;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -35,7 +35,7 @@ import java.util.Set;
  * Helper class to convert between Maven and Aether beans and provide helper methods for resolving artifacts.
  *
  */
-public class AetherHelper
+public class EclipseAetherHelper
 {
 
     /**
@@ -45,7 +45,7 @@ public class AetherHelper
      * @param artifact The Maven artifact to convert
      * @return The resulting Aether artifact
      */
-    public static org.sonatype.aether.artifact.Artifact createAetherArtifact( Artifact artifact )
+    public static org.eclipse.aether.artifact.Artifact createAetherArtifact( Artifact artifact )
     {
         DefaultArtifact defaultArtifact;
         if ( artifact.getClassifier() != null )
@@ -64,7 +64,7 @@ public class AetherHelper
 
     public static Set<Artifact> resolveArtifacts( Set<Artifact> artifacts, RepositorySystem repositorySystem,
                                                   RepositorySystemSession repositorySystemSession,
-                                                  List<RemoteRepository> repositories ) throws MojoExecutionException
+                                                  Object repositories ) throws MojoExecutionException
     {
         try
         {
@@ -73,7 +73,7 @@ public class AetherHelper
 
             for ( Artifact artifact : artifacts )
             {
-                final Artifact resolvedArtifact = AetherHelper
+                final Artifact resolvedArtifact = EclipseAetherHelper
                         .resolveArtifact( artifact, repositorySystem, repositorySystemSession, repositories );
                 resolvedArtifacts.add( resolvedArtifact );
             }
@@ -87,12 +87,13 @@ public class AetherHelper
 
     public static Artifact resolveArtifact( Artifact artifact, RepositorySystem repositorySystem,
                                             RepositorySystemSession repositorySystemSession,
-                                            List<RemoteRepository> repositories ) throws MojoExecutionException
+                                            Object repos ) throws MojoExecutionException
     {
         try
-        {
+        {	
+        	List<RemoteRepository> repositories = (List<RemoteRepository>) repos;
             final ArtifactRequest artifactRequest = new ArtifactRequest();
-            org.sonatype.aether.artifact.Artifact aetherArtifact = AetherHelper.createAetherArtifact( artifact );
+            org.eclipse.aether.artifact.Artifact aetherArtifact = EclipseAetherHelper.createAetherArtifact( artifact );
             artifactRequest.setArtifact( aetherArtifact );
             artifactRequest.setRepositories( repositories );
             final ArtifactResult artifactResult = repositorySystem
