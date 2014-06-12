@@ -3263,7 +3263,7 @@ public class GenerateReport implements PluginConstants {
 
 				if ("All".equalsIgnoreCase(testType)) {
 					log.info("all report generation started ... "); // all report
-					cumalitiveTestReport();
+					cumalitiveTestReport(appInfo.getId());
 				} else {
 					log.info("indivudal report generation started ... "); // specified type report
 					generatePdfReport();
