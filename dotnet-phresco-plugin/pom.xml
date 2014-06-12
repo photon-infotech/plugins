@@ -4,13 +4,13 @@
   <parent>
         <groupId>com.photon.phresco.plugins</groupId>
         <artifactId>phresco-plugins-root</artifactId>
-        <version>3.3.1.13002-SNAPSHOT</version>
+        <version>3.3.1.13003-SNAPSHOT</version>
         <relativePath>../</relativePath>
     </parent>
     
   <groupId>com.photon.phresco.plugins</groupId>
   <artifactId>dotnet-phresco-plugin</artifactId>
-  <version>3.3.1.13002-SNAPSHOT</version>
+  <version>3.3.1.13003-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>dotnet-phresco-plugin</name>
