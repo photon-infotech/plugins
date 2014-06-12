@@ -17,24 +17,6 @@
  */
 package com.photon.maven.plugins.android.phase04processclasses;
 
-import com.photon.maven.plugins.android.AbstractAndroidMojo;
-import com.photon.maven.plugins.android.CommandExecutor;
-import com.photon.maven.plugins.android.ExecutionException;
-import com.photon.maven.plugins.android.common.AndroidExtension;
-import com.photon.maven.plugins.android.config.ConfigHandler;
-import com.photon.maven.plugins.android.config.ConfigPojo;
-import com.photon.maven.plugins.android.config.PullParameter;
-import com.photon.maven.plugins.android.configuration.Proguard;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.maven.RepositoryUtils;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.codehaus.plexus.util.FileUtils;
-import org.sonatype.aether.util.artifact.DefaultArtifact;
-import org.sonatype.aether.util.artifact.JavaScopes;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +25,23 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.codehaus.plexus.util.FileUtils;
+
+import com.photon.maven.plugins.android.AbstractAndroidMojo;
+import com.photon.maven.plugins.android.CommandExecutor;
+import com.photon.maven.plugins.android.ExecutionException;
+import com.photon.maven.plugins.android.common.AndroidExtension;
+import com.photon.maven.plugins.android.common.EclipseNativeHelper;
+import com.photon.maven.plugins.android.common.NativeHelper;
+import com.photon.maven.plugins.android.config.ConfigHandler;
+import com.photon.maven.plugins.android.config.ConfigPojo;
+import com.photon.maven.plugins.android.config.PullParameter;
+import com.photon.maven.plugins.android.configuration.Proguard;
 
 /**
  * Processes both application and dependency classes using the ProGuard byte code obfuscator,
@@ -96,7 +95,7 @@ public class ProguardMojo extends AbstractAndroidMojo
      * @parameter expression="${android.proguard.skip}"
      * @optional
      */
-    public static Boolean proguardSkip;
+    public Boolean proguardSkip;
 
     @PullParameter( defaultValue = "true" )
     private Boolean parsedSkip;
@@ -257,6 +256,7 @@ public class ProguardMojo extends AbstractAndroidMojo
 
     private List<ProGuardInput> inJars = new LinkedList<ProguardMojo.ProGuardInput>();
     private List<ProGuardInput> libraryJars = new LinkedList<ProguardMojo.ProGuardInput>();
+    private static boolean proGuardSkipProp;
 
     private static class ProGuardInput
     {
@@ -297,6 +297,7 @@ public class ProguardMojo extends AbstractAndroidMojo
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
+    	setProGuardSkipProp(proguardSkip);
         ConfigHandler configHandler = new ConfigHandler( this );
         configHandler.parseConfiguration();
 
@@ -308,7 +309,6 @@ public class ProguardMojo extends AbstractAndroidMojo
 
     private void executeProguard() throws MojoExecutionException
     {
-
         final File proguardDir = new File( project.getBuild().getDirectory(), parsedOutputDirectory );
           
         if ( ! proguardDir.exists() && ! proguardDir.mkdir() )
@@ -433,12 +433,22 @@ public class ProguardMojo extends AbstractAndroidMojo
 
     private void skipArtifact( String groupId, String artifactId, boolean shiftToLibraries )
     {
-        artifactBlacklist.add( RepositoryUtils.toArtifact( new DefaultArtifact( groupId, artifactId, null, null ) ) );
-        if ( shiftToLibraries )
-        {
-            artifactsToShift
-                    .add( RepositoryUtils.toArtifact( new DefaultArtifact( groupId, artifactId, null, null ) ) );
-        }
+    	if (container.hasComponent("org.sonatype.aether.RepositorySystem")) {
+    		artifactBlacklist.add( NativeHelper.toArtifact( groupId, artifactId ) );
+            if ( shiftToLibraries )
+            {
+                artifactsToShift
+                        .add( NativeHelper.toArtifact(groupId, artifactId) );
+            }
+    	} else if (container.hasComponent("org.eclipse.aether.RepositorySystem")) {
+    		artifactBlacklist.add( EclipseNativeHelper.toArtifact( groupId, artifactId ) );
+            if ( shiftToLibraries )
+            {
+                artifactsToShift
+                        .add( EclipseNativeHelper.toArtifact(groupId, artifactId) );
+            }
+    	}
+        
     }
 
     private boolean isBlacklistedArtifact( Artifact artifact )
@@ -542,7 +552,7 @@ public class ProguardMojo extends AbstractAndroidMojo
         // we treat any dependencies with provided scope as library JARs
         for ( Artifact artifact : project.getArtifacts() )
         {
-            if ( artifact.getScope().equals( JavaScopes.PROVIDED ) )
+            if ( artifact.getScope().equals( "provided" ) )
             {
                 if ( artifact.getArtifactId().equals( "android" ) && parsedIncludeJdkLibs )
                 {
@@ -652,5 +662,13 @@ public class ProguardMojo extends AbstractAndroidMojo
     {
         return new String[0];
     }
+
+	public static boolean isProGuardSkipProp() {
+		return proGuardSkipProp;
+	}
+
+	public static void setProGuardSkipProp(boolean proGuardSkipProp) {
+		ProguardMojo.proGuardSkipProp = proGuardSkipProp;
+	}
 
 }

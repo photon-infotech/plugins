@@ -44,8 +44,6 @@ import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.util.DirectoryScanner;
-import org.eclipse.aether.DefaultRepositorySystemSession;
-import org.eclipse.aether.repository.LocalRepository;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -567,8 +565,8 @@ public abstract class AbstractAndroidMojo extends AbstractMojo
 			} catch (ComponentLookupException e) {
 				throw new MojoExecutionException(e.getMessage());
 			}
-			DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
-	        LocalRepository localRepo = new LocalRepository( Utility.getLocalRepoPath());
+			org.eclipse.aether.DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
+	        org.eclipse.aether.repository.LocalRepository localRepo = new org.eclipse.aether.repository.LocalRepository( Utility.getLocalRepoPath());
 	        session.setLocalRepositoryManager( system.newLocalRepositoryManager( session, localRepo ) );
 	        List<?> repositories = project.getRemoteProjectRepositories();
 	        resolvedArtifact = EclipseAetherHelper.resolveArtifact(artifact, system, session, repositories);

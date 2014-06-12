@@ -24,6 +24,8 @@ import com.photon.maven.plugins.android.phase09package.ApklibMojo;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.artifact.handler.ArtifactHandler;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
@@ -443,4 +445,53 @@ public class EclipseNativeHelper {
 		// return a default ndk architecture
 		return new String[] { "armeabi" };
 	}
+	
+	public static org.apache.maven.artifact.Artifact toArtifact( String groupId, String artifactId )
+    {
+		org.eclipse.aether.artifact.Artifact artifact = new org.eclipse.aether.artifact.DefaultArtifact( groupId, artifactId, null, null );
+        if ( artifact == null )
+        {
+            return null;
+        }
+
+        ArtifactHandler handler = newHandler( artifact );
+
+        /*
+         * NOTE: From Artifact.hasClassifier(), an empty string and a null both denote "no classifier". However, some
+         * plugins only check for null, so be sure to nullify an empty classifier.
+         */
+        org.apache.maven.artifact.Artifact result =
+            new org.apache.maven.artifact.DefaultArtifact( artifact.getGroupId(), artifact.getArtifactId(),
+                                                           artifact.getVersion(), null,
+                                                           artifact.getProperty( ArtifactProperties.TYPE,
+                                                                                 artifact.getExtension() ),
+                                                           nullify( artifact.getClassifier() ), handler );
+
+        result.setFile( artifact.getFile() );
+        result.setResolved( artifact.getFile() != null );
+
+        List<String> trail = new ArrayList<String>( 1 );
+        trail.add( result.getId() );
+        result.setDependencyTrail( trail );
+
+        return result;
+    }
+	
+	public static ArtifactHandler newHandler( org.eclipse.aether.artifact.Artifact artifact )
+    {
+        String type = artifact.getProperty( ArtifactProperties.TYPE, artifact.getExtension() );
+        DefaultArtifactHandler handler = new DefaultArtifactHandler( type );
+        handler.setExtension( artifact.getExtension() );
+        handler.setLanguage( artifact.getProperty( ArtifactProperties.LANGUAGE, null ) );
+        handler.setAddedToClasspath( Boolean.parseBoolean( artifact.getProperty( ArtifactProperties.CONSTITUTES_BUILD_PATH,
+                                                                                 "" ) ) );
+        handler.setIncludesDependencies( Boolean.parseBoolean( artifact.getProperty( ArtifactProperties.INCLUDES_DEPENDENCIES,
+                                                                                     "" ) ) );
+        return handler;
+    }
+	
+	private static String nullify( String string )
+    {
+        return ( string == null || string.length() <= 0 ) ? null : string;
+    }
 }

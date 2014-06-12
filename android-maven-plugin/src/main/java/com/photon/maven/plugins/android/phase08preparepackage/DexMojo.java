@@ -175,7 +175,7 @@ public class DexMojo extends AbstractAndroidMojo
 
         getLog().debug( "Checking for existence of: " + proguardJar.toString() );
 
-        if (proguardJar.exists()&& ProguardMojo.proguardSkip == false )
+        if (proguardJar.exists()&& ProguardMojo.isProGuardSkipProp() == false )
         {
             // progurad has been run, use this jar
             getLog().debug( "Obfuscated jar exists, using that as input" );
