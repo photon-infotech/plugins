@@ -296,9 +296,11 @@ public class ProguardMojo extends AbstractAndroidMojo
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
-    {
-    	setProGuardSkipProp(proguardSkip);
-        ConfigHandler configHandler = new ConfigHandler( this );
+    {    
+        if(proguardSkip!=null){
+            setProGuardSkipProp(proguardSkip);
+        }
+       ConfigHandler configHandler = new ConfigHandler( this );
         configHandler.parseConfiguration();
 
         if ( ! parsedSkip && ! baseDir.getPath().endsWith("unit"))
