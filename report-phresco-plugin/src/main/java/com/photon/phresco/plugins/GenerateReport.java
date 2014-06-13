@@ -19,6 +19,7 @@ package com.photon.phresco.plugins;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -43,6 +44,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -138,42 +140,20 @@ import com.phresco.pom.model.Plugin;
 import com.phresco.pom.model.Profile;
 import com.phresco.pom.util.PomProcessor;
 
-public class GenerateReport implements PluginConstants {
-	private static final String MANUAL_TEST_REPORTS = "manualTestReports";
-	private static final String MULTI_MODULE_UNIT_TEST_REPORTS = "multiModuleUnitTestReports";
-	private static final String IS_MULTI_MODULE_PROJECT = "isMultiModuleProject";
-	private static final String CODE_VALIDATION_REPORT = "Code Validation Report : ";
-	private static final String SCRIPT = "script";
-	private static final String IS_CLASS_EMPTY = "isClassEmpty";
-	private static final String MODULE_NAME = "Module Name";
-	private static final String COPY_RIGHTS = "copyRights";
-	private static final String SONAR_REPORT = "sonarReport";
-	private static final String DEFAULT_COPYRIGHTS = "© 2014 Photon Interactive Pvt.Ltd";
-	private static final String PHRESCO_UNIT_TEST = "phresco.unitTest";
-	private static final String REPORTS_TYPE = "reportsDataType";
-	private static final String PROJECT_NAME = "projectName";
-	private static final String LOGO = "logo";
-	private static final String PDF_PROJECT_CODE = "projectCode";
-	private static final String MMM_DD_YYYY_HH_MMA = "ddMMMyyyy_hh.mma";
+public class GenerateReport implements PluginConstants,ReportConstants{
+	
 	private MavenProject mavenProject;
 	private File baseDir;
 	private File rootDir;
 	private Log log;
-
 	private File pomFile;
+	private String appDir = "";
 	private String pomFileName = "";
-
-	private static final String INDEX = "index";
-	private static final String HTML = "html";
-
 	private String techName = "";
 	private String projectCode = null;
-
 	private String testType = null;
-	private String rootTestType = null;
 	private String version = null;
 	private String projName = null;
-	private String appDir = "";
 	private String moduleName = "";
 	private String reportType = null;
 	private String sonarUrl = null;
@@ -187,9 +167,9 @@ public class GenerateReport implements PluginConstants {
 	private File dotPhrescoRoot;
 	private File testDir;
 	private File testDirRoot;
-	private String testDirName;
 	private String srcDirName;
-
+	private String testDirName;
+	
 	// logo and theme objects
 	private String logo = null;
 	private Map<String, String> theme = null;
@@ -199,7 +179,6 @@ public class GenerateReport implements PluginConstants {
 	private int noOfTstSuiteTests = 0;
 	private int noOfTstSuiteFailures = 0;
 	private int noOfTstSuiteErrors = 0;
-
 	private String fileName = null;
 
 	String REPORTS_JASPER  = "";
@@ -209,31 +188,31 @@ public class GenerateReport implements PluginConstants {
 	private int nodeLength;
 	
 	// custom theme color
-	private static String titleColor = "#969696"; // TitleRectLogo
-	private static String titleLabelColor = "#333333"; // TitleRectDetail
+	private static String titleColor = COLOR_TITLE; // TitleRectLogo
+	private static String titleLabelColor = COLOR_TITLE_LABEL; // TitleRectDetail
 
-	private static String headingForeColor = "#D0B48E"; // heading yellow color
-	private static String headingBackColor = "#DE522F";
+	private static String headingForeColor = COLOR_HEADING_FORE; // heading yellow color
+	private static String headingBackColor = COLOR_HEADING_BACK;
 
-	private static String headingRowBackColor = "#A7A7A7"; //HeadingRow - light color
-	private static String headingRowLabelBackColor = "#FFFFFF"; //Done
-	private static String headingRowLabelForeColor = "#333333"; //Done - font color
-	private static String headingRowTextBackColor = "#FFFFFF"; //Done
-	private static String headingRowTextForeColor = "#333333"; //Done
+	private static String headingRowBackColor = COLOR_HEADING_ROW_BACK; //HeadingRow - light color
+	private static String headingRowLabelBackColor = COLOR_HEADING_ROW_LABEL_BACK; //Done
+	private static String headingRowLabelForeColor = COLOR_HEADING_ROW_LABEL_FORE; //Done - font color
+	private static String headingRowTextBackColor = COLOR_HEADING_ROW_TEXT_BACK; //Done
+	private static String headingRowTextForeColor = COLOR_HEADING_ROW_TEXT_FORE; //Done
 
-	private static String copyRightBackColor = "#333333";
-	private static String copyRightForeColor = "#FFFFFF";
+	private static String copyRightBackColor = COLOR_COPY_RIGHT_BACK;
+	private static String copyRightForeColor = COLOR_COPY_RIGHT_FORE;
 
-	private static String copyRightPageNumberForeColor = "#FFFFFF";
-	private static String copyRightPageNumberBackColor = "#DE522F";
+	private static String copyRightPageNumberForeColor = COLOR_COPY_RIGHT_PAGE_NUMBERS_FORE;
+	private static String copyRightPageNumberBackColor = COLOR_COPY_RIGHT_PAGE_NUMBERS_BACK;
 
 	public GenerateReport() {
 		final Date currentTime = Calendar.getInstance().getTime();
-		final SimpleDateFormat yymmdd =new SimpleDateFormat(MMM_DD_YYYY_HH_MMA);
+		final SimpleDateFormat yymmdd =new SimpleDateFormat(DATE_FORMAT);
 		this.fileName = yymmdd.format(currentTime);
 	}
 
-	public void HtmlToPdfConverter(File targetHtmlIndexFile, String tempOutFileNameHTML, String tempOutFileNameIphoneSonarPDF)
+	private void HtmlToPdfConverter(File targetHtmlIndexFile, String tempOutFileNameHTML, String tempOutFileNameIphoneSonarPDF)
 	throws IOException, DocumentException, CssResolverException {
 		try {
 			com.itextpdf.text.Document document = new com.itextpdf.text.Document(PageSize.A4, 10f, 10f, 10f, 10f);
@@ -242,7 +221,7 @@ public class GenerateReport implements PluginConstants {
 			document.open();
 			Paragraph paragraph = new Paragraph();
 			String reportnameName = targetHtmlIndexFile.getParentFile().getName();
-			paragraph.add(CODE_VALIDATION_REPORT + reportnameName);
+			paragraph.add(CODE_VALIDATION_REPORT +" : "+ reportnameName);
 			document.add(paragraph);
 
 			HtmlPipelineContext htmlContext = new HtmlPipelineContext();
@@ -282,19 +261,14 @@ public class GenerateReport implements PluginConstants {
 		}
 	}
 
-	public void generatePdfReport() throws PhrescoException {
+	private void generatePdfReport() throws PhrescoException {
 		ArrayList<JmeterTypeReport> jmeterTestResults = null;
 		try {
 			// Report generation for unit and functional
 			if (UNIT.equals(testType) || FUNCTIONAL.equals(testType) || COMPONENT.equals(testType) || MANUAL.equals(testType)) {
 				//List<String> modules = PluginUtils.getProjectModules(mavenProject);
 				List<String> modules = new ArrayList<String>();
-				StringBuilder builder = new StringBuilder(baseDir.getAbsolutePath());
-				builder.append(File.separator);
-				builder.append("..");
-				builder.append(File.separator);
-				builder.append(POM_XML);
-				
+				StringBuilder builder=builderSetup(baseDir.getAbsoluteFile());				
 				File pomPath = new File(builder.toString());
 				if(pomPath.exists()) {
 					PomProcessor processor = new PomProcessor(pomPath);
@@ -355,7 +329,7 @@ public class GenerateReport implements PluginConstants {
 	}
 
 	//Consolidated report for all test
-	public void cumalitiveTestReport(String appId) throws Exception {
+	private void cumalitiveTestReport(String appId) throws Exception {
 		log.debug("Entering GenerateReport.cumalitiveTestReport()");
 		try {
 			Map<String, Object> cumulativeReportparams = new HashMap<String,Object>();
@@ -365,13 +339,8 @@ public class GenerateReport implements PluginConstants {
 
 			boolean isMultiModuleProject = false;
 			//List<String> modules = PluginUtils.getProjectModules(mavenProject);
-			
 			List<String> modules = new ArrayList<String>();
-			StringBuilder builder = new StringBuilder(baseDir.getAbsolutePath());
-			builder.append(File.separator);
-			builder.append("..");
-			builder.append(File.separator);
-			builder.append(POM_XML);
+			StringBuilder builder=builderSetup(baseDir);
 			File modulePomPath = new File(builder.toString());
 
 			if(modulePomPath.exists()) {
@@ -548,7 +517,7 @@ public class GenerateReport implements PluginConstants {
 	}
 
 	//cumulative test report generation
-	public void generateCumulativeTestReport(Map<String, Object> cumulativeReportparams) throws PhrescoException {
+	private void generateCumulativeTestReport(Map<String, Object> cumulativeReportparams) throws PhrescoException {
 		
 		log.debug("Entering Method PhrescoReportGeneration.generateCumulativeTestReport()");
 		InputStream reportStream = null;
@@ -556,10 +525,9 @@ public class GenerateReport implements PluginConstants {
 		String uuid = UUID.randomUUID().toString();
 		String outFileNamePDF = "";
 		String semiPath = File.separator + baseDir.getName() + STR_UNDERSCORE + reportType + STR_UNDERSCORE + fileName + DOT + PDF;
+		
 		try {
 			if (isClangReport) { // iphone
-				
-				
 				outFileNamePDF = Utility.getPhrescoTemp() + uuid + semiPath;
 			} else {
 				outFileNamePDF = baseDir + File.separator + "do_not_checkin" + File.separator + ARCHIVES + File.separator + CUMULATIVE + File.separator + fileName + DOT + PDF;
@@ -577,7 +545,7 @@ public class GenerateReport implements PluginConstants {
 			applyTheme(jasperPrint);
 
 			// Move table of contents to first page only for detail report
-			if ("detail".equals(reportType)) {
+			if (DETAIL.equals(reportType)) {
 				jasperPrint = moveTableOfContents(jasperPrint);
 			}
 
@@ -587,7 +555,7 @@ public class GenerateReport implements PluginConstants {
 			exporter.exportReport();
 
 			if (isClangReport) {
-				String outFinalFileNamePDF = baseDir + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + CUMULATIVE + File.separator + fileName + DOT + PDF;;
+				String outFinalFileNamePDF = baseDir + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + CUMULATIVE + File.separator + fileName + DOT + PDF;
 				new File(outFinalFileNamePDF).getParentFile().mkdirs();
 				try {
 					//check static checker analysis folder contains html 
@@ -658,8 +626,7 @@ public class GenerateReport implements PluginConstants {
 
 					JRPrintPage jrPrintPage = (JRPrintPage) tocPages.get(i);
 					// set Page number as 1 for TOC
-					String pageNoKey = "pageNo";
-					String pageCountKey = "pageCount";
+					String pageCountKey = PAGE_COUNT;
 					List<JRPrintElement> elements = jrPrintPage.getElements();
 
 					if (CollectionUtils.isNotEmpty(elements)) {
@@ -750,8 +717,8 @@ public class GenerateReport implements PluginConstants {
 
 					JRPrintPage jrPrintPage = (JRPrintPage) tocPages.get(i);
 					// set Page number as 1 for TOC
-					String pageNoKey = "pageNo";
-					String pageCountKey = "pageCount";
+					String pageNoKey = PAGE_NO;
+					String pageCountKey = PAGE_COUNT;
 					List<JRPrintElement> elements = jrPrintPage.getElements();
 
 					if (CollectionUtils.isNotEmpty(elements)) {
@@ -821,7 +788,7 @@ public class GenerateReport implements PluginConstants {
 	}
 
 	// merge pdfs
-	public void mergePdf(List<String> PDFFiles,  String outputPDFFile, String uuid) throws PhrescoException {
+	private void mergePdf(List<String> PDFFiles,  String outputPDFFile, String uuid) throws PhrescoException {
 		try {
 			// Get the byte streams from any source (maintain order)
 			List<InputStream> sourcePDFs = new ArrayList<InputStream>();//ASA-iphonehybrid_detail_Apr 09 2013 19.04.pdf
@@ -845,7 +812,7 @@ public class GenerateReport implements PluginConstants {
 		}
 	}
 
-	public SonarReport generateSonarReport(String report, String module, String appId) throws PhrescoException {
+	private SonarReport generateSonarReport(String report, String module, String appId) throws PhrescoException {
 		log.debug("Entering Method PhrescoReportGeneration.generateSonarReport()");
 		SonarReport sonarReport = null;
 		try {
@@ -878,7 +845,7 @@ public class GenerateReport implements PluginConstants {
 				sbuild.append(artifactId);
 				if (StringUtils.isNotEmpty(report) && !SONAR_SOURCE.equals(report)) {
 					sbuild.append(COLON);
-					sbuild.append(report + appId);
+					sbuild.append(report+ appId);
 				}
 
 				String artifact = sbuild.toString();
@@ -923,7 +890,7 @@ public class GenerateReport implements PluginConstants {
 	}
 
 	// Unit and functional pdf report generation
-	public void generateUnitAndFunctionalReport(SureFireReport sureFireReports)  throws PhrescoException {
+	private void generateUnitAndFunctionalReport(SureFireReport sureFireReports)  throws PhrescoException {
 		InputStream reportStream = null;
 		BufferedInputStream bufferedInputStream = null;
 		try {
@@ -989,12 +956,11 @@ public class GenerateReport implements PluginConstants {
 	}
 
 	// Unit and functional pdf report generation
-	public void generateUnitAndFunctionalReport(List<ModuleSureFireReport> moduleWiseReports)  throws PhrescoException {
+	private void generateUnitAndFunctionalReport(List<ModuleSureFireReport> moduleWiseReports)  throws PhrescoException {
 		InputStream reportStream = null;
 		BufferedInputStream bufferedInputStream = null;
 		try {
 			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + fileName + DOT + PDF;
-
 			new File(outFileNamePDF).getParentFile().mkdirs();
 			reportStream = this.getClass().getClassLoader().getResourceAsStream("PhrescoModuleSureFireReport.jasper");
 			bufferedInputStream = new BufferedInputStream(reportStream);
@@ -1039,7 +1005,7 @@ public class GenerateReport implements PluginConstants {
 	}
 
 	// performance test report
-	public void generateJmeterPerformanceLoadReport(ArrayList<JmeterTypeReport> jmeterTestResults)  throws PhrescoException {
+	private void generateJmeterPerformanceLoadReport(ArrayList<JmeterTypeReport> jmeterTestResults)  throws PhrescoException {
 		try {
 			ArrayList<JmeterTypeReport> jmeterTstResults = jmeterTestResults;
 			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + fileName + DOT + PDF;
@@ -1063,7 +1029,7 @@ public class GenerateReport implements PluginConstants {
 	}
 
 	// performance test report
-	public void generateAndroidPerformanceReport(List<AndroidPerfReport> androidPerReports)  throws PhrescoException {
+	private void generateAndroidPerformanceReport(List<AndroidPerfReport> androidPerReports)  throws PhrescoException {
 		try {
 			String outFileNamePDF = baseDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + testType + File.separator + fileName + DOT + PDF;
 
@@ -1108,7 +1074,7 @@ public class GenerateReport implements PluginConstants {
 	//		}
 	//	}
 
-	public void reportGenerate(String outFileNamePDF, String jasperFile, Map<String, Object> parameters, JRBeanCollectionDataSource dataSource) throws PhrescoException {
+	private void reportGenerate(String outFileNamePDF, String jasperFile, Map<String, Object> parameters, JRBeanCollectionDataSource dataSource) throws PhrescoException {
 		InputStream reportStream = null;
 		BufferedInputStream bufferedInputStream = null;
 		try {
@@ -1314,7 +1280,7 @@ public class GenerateReport implements PluginConstants {
 		return imgSources;
 	}
 
-	public List<AndroidPerfReport> getJmeterTestResultsForAndroid() throws Exception {
+	private List<AndroidPerfReport> getJmeterTestResultsForAndroid() throws Exception {
 		// List of performance test types
 		String performanceReportDir = testDir + mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_RPT_DIR);
 		String performanceReportExtension = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_RESULT_EXTENSION);
@@ -1359,7 +1325,7 @@ public class GenerateReport implements PluginConstants {
 		return androidPerfFilesWithDatas;
 	}
 
-	public boolean isDeviceReportAvail() throws Exception {
+	private boolean isDeviceReportAvail() throws Exception {
 		// List of performance test types
 		String performanceReportDir = testDir + mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_PERFORMANCETEST_RPT_DIR);
 		List<String> testResultFiles = getTestResultFiles(performanceReportDir);
@@ -1409,9 +1375,10 @@ public class GenerateReport implements PluginConstants {
 		String type = "";
 		Map<String, String> reportDirWithTestSuitePath = new HashMap<String, String>(); // <file
 		PomProcessor pomProcessor = new PomProcessor(mavenProject.getFile());
+		String reportFilePath = testDir.getAbsolutePath();
 		// testsuitePath,testcasePath>
 		if (UNIT.equals(testType)) {
-			String reportFilePath = baseDir.getAbsolutePath();
+			reportFilePath = baseDir.getAbsolutePath();
 //			if (StringUtils.isNotEmpty(module)) {
 //				reportFilePath = reportFilePath + File.separatorChar + module;
 //			}
@@ -1424,7 +1391,6 @@ public class GenerateReport implements PluginConstants {
 			getUnitTestXmlFilesAndXpaths(reportFilePath, reportDirWithTestSuitePath);
 		} else if (MANUAL.equals(testType)) {
 			String property = pomProcessor.getProperty(Constants.POM_PROP_KEY_MANUALTEST_RPT_DIR);
-			String reportFilePath = testDir.getAbsolutePath();
 			//String manualTestReportDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_MANUALTEST_RPT_DIR);
 			String manualTestReportDir = property;
 			String reportPath = "";
@@ -1439,7 +1405,6 @@ public class GenerateReport implements PluginConstants {
 				return sureFireReport;
 			}
 		} else if (FUNCTIONAL.equals(testType)){
-			String reportFilePath = testDir.getAbsolutePath();
 			String functionalTestDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_RPT_DIR);
 			if(StringUtils.isNotEmpty(functionalTestDir)) {
 				String functionalTestSuitePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_TESTSUITE_XPATH);
@@ -1467,7 +1432,6 @@ public class GenerateReport implements PluginConstants {
 				}
 			}
 		} else if (COMPONENT.equals(testType)) {
-			String reportFilePath = testDir.getAbsolutePath();
 			String componentTestDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_COMPONENTTEST_RPT_DIR);
 			String componentTestSuitePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_COMPONENTTEST_TESTSUITE_XPATH);
 			String componentTestCasePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_COMPONENTTEST_TESTCASE_PATH);
@@ -1863,7 +1827,7 @@ public class GenerateReport implements PluginConstants {
 		return null;
 	}
 
-	public List<TestSuite> readTestSuitesWithTestCases(String filePath)  {
+	private List<TestSuite> readTestSuitesWithTestCases(String filePath)  {
 		List<TestSuite> excels = new ArrayList<TestSuite>();
 		Iterator<Row> rowIterator = null;
 		FilenameFilter filter = null;
@@ -2821,27 +2785,27 @@ public class GenerateReport implements PluginConstants {
 		return roundThroughPut.setScale(decimal, BigDecimal.ROUND_HALF_EVEN).floatValue();
 	}
 
-	public int getNoOfTstSuiteTests() {
+	private int getNoOfTstSuiteTests() {
 		return noOfTstSuiteTests;
 	}
 
-	public void setNoOfTstSuiteTests(int noOfTstSuiteTests) {
+	private void setNoOfTstSuiteTests(int noOfTstSuiteTests) {
 		this.noOfTstSuiteTests = noOfTstSuiteTests;
 	}
 
-	public int getNoOfTstSuiteFailures() {
+	private int getNoOfTstSuiteFailures() {
 		return noOfTstSuiteFailures;
 	}
 
-	public void setNoOfTstSuiteFailures(int noOfTstSuiteFailures) {
+	private void setNoOfTstSuiteFailures(int noOfTstSuiteFailures) {
 		this.noOfTstSuiteFailures = noOfTstSuiteFailures;
 	}
 
-	public int getNoOfTstSuiteErrors() {
+	private int getNoOfTstSuiteErrors() {
 		return noOfTstSuiteErrors;
 	}
 
-	public void setNoOfTstSuiteErrors(int noOfTstSuiteErrors) {
+	private void setNoOfTstSuiteErrors(int noOfTstSuiteErrors) {
 		this.noOfTstSuiteErrors = noOfTstSuiteErrors;
 	}
 
@@ -2895,55 +2859,52 @@ public class GenerateReport implements PluginConstants {
 		}
 	}
 
-	public void setConfigurationValues(Configuration config) {
+	private void setConfigurationValues(Configuration config) {
+		
 		Map<String, String> configs = MojoUtil.getAllValues(config);
 		String reportType = configs.get(REPORT_TYPE);
 		String testType = configs.get(TEST_TYPE);
-		String sonarUrl = configs.get("sonarUrl");
+		String sonarUrl = configs.get(SONAR_URL);
 		String appVersion = mavenProject.getVersion();
-		String pdfReportName = configs.get("reportName");
-        
-		logo = configs.get("logo");
+		String pdfReportName = configs.get(REPORT_NAME);
+		logo = configs.get(LOGO);
+		
 		// Default copyrights
 		this.copyRights = DEFAULT_COPYRIGHTS;
-		String themeJson = configs.get("theme");
+		String themeJson = configs.get(THEME);
 		if (StringUtils.isNotEmpty(themeJson)) {
 			Gson gson = new Gson();
 			Type mapType = new TypeToken<Map<String, String>>() {}.getType();
 			theme = (Map<String, String>)gson.fromJson(themeJson, mapType);
 
-			if (MapUtils.isNotEmpty(theme) && StringUtils.isNotEmpty(theme.get("copyRightText"))) {
-				this.copyRights = theme.get("copyRightText");
+			if (MapUtils.isNotEmpty(theme) && StringUtils.isNotEmpty(theme.get(COPY_RIGHTS_TEXT))) {
+				this.copyRights = theme.get(COPY_RIGHTS_TEXT);
 			}
 		}
-
-		if (StringUtils.isEmpty(this.copyRights)) {
-			this.copyRights = DEFAULT_COPYRIGHTS;
-		}
-
+		
 		this.testType = testType;
-		this.rootTestType = testType;
 		this.reportType = reportType;
-		this.techName = configs.get("technologyName");
+		this.techName = configs.get(TECHNOLOGY_NAME);
 		this.version = appVersion;
 		this.sonarUrl = sonarUrl;
 		this.pdfReportName = pdfReportName;
 	}
 
-	public void setAppinfoConfigValues(ApplicationInfo appInfo) {
+	private void setAppinfoConfigValues(ApplicationInfo appInfo) {
 		this.appDir = appInfo.getAppDirName();
 		this.projectCode = appInfo.getName();
 	}
 
-	public void setReportFileName() {
+	private void setReportFileName() {
 		if (StringUtils.isEmpty(pdfReportName)) {
 			if (testType.equals("All")) {
 				this.fileName = baseDir.getName() + STR_UNDERSCORE + this.reportType + STR_UNDERSCORE + fileName;
+				
 			} else {
 				this.fileName = testType + STR_UNDERSCORE + this.reportType + STR_UNDERSCORE + fileName; // time
 			}
 		} else {
-			this.fileName = pdfReportName + STR_UNDERSCORE + this.reportType;
+			this.fileName = pdfReportName + STR_UNDERSCORE + this.reportType + STR_UNDERSCORE + fileName; // Report name is given
 		}
 	}
 
@@ -2954,8 +2915,7 @@ public class GenerateReport implements PluginConstants {
 		}
 	}
 	
-	public void isSonarAvailable(){
-		
+	private void isSonarAvailable(){
 		if (StringUtils.isNotEmpty(sonarUrl)) {
 			isSonarAvailable = true;
 		}
@@ -3085,7 +3045,7 @@ public class GenerateReport implements PluginConstants {
 
 		List<String> modules = null;
 
-		String rootPomFile = mavenProject.getProperties().getProperty("source.pom");
+		String rootPomFile = mavenProject.getProperties().getProperty(SOURCE_POM);
 		if (StringUtils.isNotEmpty(rootPomFile)) {
 			modules = getMultiModules(modules, rootPomFile);
 		} else {
@@ -3106,7 +3066,7 @@ public class GenerateReport implements PluginConstants {
 
 		MultiModuleReports rootModuleReport = new MultiModuleReports();
 		rootModuleReport.setIsRootModule(true);
-		rootModuleReport.setApplicationLabel("Application Name :");
+		rootModuleReport.setApplicationLabel(APPL_NAME);
 
 		rootModuleReport.setIsClangReport(isClangReport);
 		rootModuleReport.setProjectName(projName);
@@ -3130,7 +3090,7 @@ public class GenerateReport implements PluginConstants {
 				isSonarAvailable(); // checking isSonar available or not 
 				MultiModuleReports multiModuleReport = new MultiModuleReports();
 				multiModuleReport.setIsRootModule(false);
-				multiModuleReport.setApplicationLabel("Module Name :");
+				multiModuleReport.setApplicationLabel(MODULE_NAME + " : ");
 
 				multiModuleReport.setProjectName(projName);
 				multiModuleReport.setApplicationName(projectCode);
@@ -3165,7 +3125,7 @@ public class GenerateReport implements PluginConstants {
 	}
 
 	// Generate the pdf report with all modules
-	public void generateMultiModuleReport(List<MultiModuleReports> multiModuleReports, Map<String, Object> reportParams) throws PhrescoException {
+	private void generateMultiModuleReport(List<MultiModuleReports> multiModuleReports, Map<String, Object> reportParams) throws PhrescoException {
 		String outFileNamePDF = rootDir.getAbsolutePath() + File.separator + DO_NOT_CHECKIN_FOLDER + File.separator + ARCHIVES + File.separator + CUMULATIVE + File.separator + fileName + DOT + PDF;
 		new File(outFileNamePDF).getParentFile().mkdirs();
 
@@ -3212,54 +3172,47 @@ public class GenerateReport implements PluginConstants {
 			}
 		}
 	}
+	
+	// Construct directory method 
+	private File constructDir(String directoryName, File baseDir) {
+		if (StringUtils.isNotEmpty(directoryName)) {
+			return new File(baseDir.getParent() + File.separator
+					+ directoryName);
+		}
+		return baseDir;
+	}
 
 	public void generate(Configuration config, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		try {
 			this.log = log;
 			baseDir = mavenProjectInfo.getBaseDir();
 			mavenProject = mavenProjectInfo.getProject();
-			if (StringUtils.isNotEmpty(mavenProjectInfo.getModuleName())) {
-				moduleName = mavenProjectInfo.getModuleName();
-			}
+			String projectModuleName=mavenProjectInfo.getModuleName();
+			moduleName = projectModuleName;
 			rootDir = mavenProjectInfo.getBaseDir();
+			
 			String dotPhrescoDirName = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
 			srcDirName = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_SRC_DIR);
 			testDirName = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_TEST_DIR);
-			dotPhrescoDir = baseDir;
-			if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
-				dotPhrescoDir = new File(baseDir.getParent() + File.separator + dotPhrescoDirName);
-			}
-			dotPhrescoRoot = dotPhrescoDir;
-			srcDirectory = baseDir;
-			if (StringUtils.isNotEmpty(srcDirName)) {
-				srcDirectory = new File(baseDir.getParent() + File.separator + srcDirName);
-			}
-			srcRootDir = srcDirectory;
-			testDir = baseDir;
-			if (StringUtils.isNotEmpty(testDirName)) {
-				testDir = new File(baseDir.getParent() + File.separator + testDirName);
-			}
-			testDirRoot = testDir;
+			dotPhrescoDir=constructDir(dotPhrescoDirName, baseDir);
+			srcDirectory=constructDir(srcDirName, baseDir);
+			testDir=constructDir(testDirName, baseDir);
+			
 			// set pdf basic config values
 			setConfigurationValues(config);
-
-			if (StringUtils.isEmpty(this.reportType)) {
-				throw new PhrescoException("Report type is empty ");
-			}
-
-			if (StringUtils.isEmpty(testType)) {
-				throw new PhrescoException("Test Type is empty ");
-			}
+			
 			// Report generation part
 			if (isMultiModuleProject() && StringUtils.isEmpty(moduleName) && "All".equalsIgnoreCase(testType)) {
+				System.out.println(" Multi module project ");
 				multiModulereport(config);
-			} else {
+			}
+			else {
 				setMavenProject(rootDir, moduleName);
 				ApplicationInfo appInfo = getApplicationInfo();
 				setAppinfoConfigValues(appInfo);
 				setReportFileName();
 				isClangReport();
-				isSonarAvailable(); // checking isSonar available or not 
+				isSonarAvailable(); // checking isSonar available or not
 
 				if ("All".equalsIgnoreCase(testType)) {
 					log.info("all report generation started ... "); // all report
@@ -3268,6 +3221,7 @@ public class GenerateReport implements PluginConstants {
 					log.info("indivudal report generation started ... "); // specified type report
 					generatePdfReport();
 				}
+				
 				log.info("Report generation completed ... ");
 			}
 		} catch (Exception e) {
@@ -3276,7 +3230,7 @@ public class GenerateReport implements PluginConstants {
 	}
 
 	private ApplicationInfo getApplicationInfo() throws MojoExecutionException, IOException {
-		// get projects plugin info file path
+		// get projects plugin info file path+
 		File projectInfo = new File(dotPhrescoDir, DOT_PHRESCO_FOLDER + File.separator + PROJECT_INFO_FILE);
 		if (!projectInfo.exists()) {
 			throw new MojoExecutionException("Project info file is not found in jenkins workspace dir " + baseDir.getCanonicalPath());
@@ -3466,49 +3420,49 @@ public class GenerateReport implements PluginConstants {
 
 		JRStyle[] styleList = jasperPrint.getStyles();
 		for (int j = 0; j < styleList.length; j++) {
-			if (styleList[j].getName().endsWith("TitleRectLogo")) {
+			if (styleList[j].getName().endsWith(JASPER_TITLE_RECT_LOGO)) {
 				styleList[j].setBackcolor(userTitleColor);
 				jasperPrint.addStyle(styleList[j], true);
-			} else if (styleList[j].getName().endsWith("TitleRectDetail")) {
+			} else if (styleList[j].getName().endsWith(JASPER_TITLE_RECT_DETAIL)) {
 				styleList[j].setForecolor(userTitleLabelColor);
 				JRPen linePen = styleList[j].getLinePen();
 				linePen.setLineColor(userTitleColor);
 				linePen.setLineWidth(1);
 				jasperPrint.addStyle(styleList[j], true);
-			} else if (styleList[j].getName().endsWith("TitleLabel")) {
+			} else if (styleList[j].getName().endsWith(JASPER_TITLE_LABEL)) {
 				styleList[j].setForecolor(userTitleLabelColor);
 				jasperPrint.addStyle(styleList[j], true);
-			} else if (styleList[j].getName().endsWith("TitleLabelValue")) {
+			} else if (styleList[j].getName().endsWith(JASPER_TITLE_LABEL_VALUE)) {
 				styleList[j].setForecolor(userTitleLabelColor);
 				jasperPrint.addStyle(styleList[j], true);
-			}  else if (styleList[j].getName().endsWith("Heading")) {
+			}  else if (styleList[j].getName().endsWith(JASPER_HEADING)) {
 				styleList[j].setForecolor(userHeadingForeColor);
 				styleList[j].setBackcolor(userHeadingBackColor);
 				jasperPrint.addStyle(styleList[j], true);
-			}  else if (styleList[j].getName().endsWith("CopyRight")) {
+			}  else if (styleList[j].getName().endsWith(JASPER_COPY_RIGHT)) {
 				styleList[j].setForecolor(userCopyRightForeColor);
 				styleList[j].setBackcolor(userCopyRightBackColor);
 				jasperPrint.addStyle(styleList[j], true);
-			}  else if (styleList[j].getName().endsWith("CopyRightPageNo")) {
+			}  else if (styleList[j].getName().endsWith(JASPER_COPY_RIGHT_PAGE_NO)) {
 				styleList[j].setForecolor(userCopyRightPageNumberForeColor);
 				styleList[j].setBackcolor(userCopyRightPageNumberBackColor);
 				jasperPrint.addStyle(styleList[j], true);
-			}  else if (styleList[j].getName().endsWith("HeadingRow")) {
+			}  else if (styleList[j].getName().endsWith(JASPER_HEADING_ROW)) {
 				styleList[j].setBackcolor(userHeadingRowBackColor);
 				jasperPrint.addStyle(styleList[j], true);
-			}  else if (styleList[j].getName().endsWith("HeadingRowLabel")) {
+			}  else if (styleList[j].getName().endsWith(JASPER_HEADING_ROW_LABEL)) {
 				styleList[j].setForecolor(userHeadingRowLabelForeColor);
 				styleList[j].setBackcolor(userHeadingRowLabelBackColor);
 				jasperPrint.addStyle(styleList[j], true);
-			}  else if (styleList[j].getName().endsWith("HeadingRowLabelValue")) {
+			}  else if (styleList[j].getName().endsWith(JASPER_HEADING_ROW_LABEL_VALUE)) {
 				styleList[j].setForecolor(userHeadingRowTextForeColor);
 				styleList[j].setBackcolor(userHeadingRowTextBackColor);
 				jasperPrint.addStyle(styleList[j], true);
 				// table related styles
-			}  else if (styleList[j].getName().endsWith("table_CH")) {
+			}  else if (styleList[j].getName().endsWith(JASPER_TABLE_CH)) {
 				styleList[j].setBackcolor(userHeadingRowBackColor);
 				jasperPrint.addStyle(styleList[j], true);
-			}  else if (styleList[j].getName().endsWith("table_CH_Label")) {
+			}  else if (styleList[j].getName().endsWith(JASPER_TABLE_CH_LABEL)) {
 				styleList[j].setForecolor(userHeadingRowLabelForeColor);
 				styleList[j].setBackcolor(userHeadingRowLabelBackColor);
 				jasperPrint.addStyle(styleList[j], true);
@@ -3543,6 +3497,18 @@ public class GenerateReport implements PluginConstants {
 
 	public void setNodeLength(int nodeLength) {
 		this.nodeLength = nodeLength;
+	}
+	
+	// builderSetup
+	private StringBuilder builderSetup(File baseDir)
+	{
+		
+		StringBuilder builder = new StringBuilder(baseDir.getAbsolutePath());
+		builder.append(File.separator);
+		builder.append("..");
+		builder.append(File.separator);
+		builder.append(POM_XML);
+		return builder;
 	}
 }
 

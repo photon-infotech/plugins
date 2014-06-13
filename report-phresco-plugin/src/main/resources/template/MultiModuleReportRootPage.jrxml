@@ -170,7 +170,7 @@
 					<textElement verticalAlignment="Middle">
 						<font fontName="Times New Roman" size="11" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+					<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH-mm").format(new java.util.Date())]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement style="PCRTitleLabelValue" x="290" y="69" width="257" height="20"/>
@@ -223,7 +223,7 @@
 					<textElement verticalAlignment="Middle">
 						<font fontName="Times New Roman" size="11" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+					<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH-mm").format(new java.util.Date())]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement style="PCRTitleLabelValue" x="132" y="29" width="257" height="20" forecolor="#FFFFFF"/>
