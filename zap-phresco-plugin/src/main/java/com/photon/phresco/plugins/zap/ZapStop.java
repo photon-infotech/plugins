@@ -14,21 +14,16 @@ import com.sun.jersey.api.client.WebResource;
 public class ZapStop implements ZapConstants {
 	private File baseDir;
 
-	public void zapStop(Log log, String basedir, String environmentName, String protocol, String host, String port) throws PhrescoException {
+	public void zapStop(Log log, String basedir, String environmentName, String zapUrl) throws PhrescoException {
 		baseDir = new File(basedir);
-		stopDaemonProcess(baseDir.getPath(), protocol, host, port, log);
+		stopDaemonProcess(baseDir.getPath(), zapUrl, log);
 	}
 
-	private static void stopDaemonProcess(String baseDir, String protocol, String host, String port, Log log) throws PhrescoException {
+	private static void stopDaemonProcess(String baseDir, String zapUrl, Log log) throws PhrescoException {
 		ClientResponse clientResponse = null;
 		try {
 			StringBuffer url = new StringBuffer();
-			url.append(protocol);
-			url.append(COLON);
-			url.append(DOUBLE_SLASH);
-			url.append(host);
-			url.append(COLON);
-			url.append(port);
+			url.append(zapUrl);
 			url.append(SLASH);
 			url.append(XML);
 			url.append(SLASH);

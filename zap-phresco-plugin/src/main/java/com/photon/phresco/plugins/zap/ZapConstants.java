@@ -14,8 +14,8 @@ public interface ZapConstants {
 	String PORT = "port";
 	String ZAPDIR = "zapDir";
 	String RECURSE = "recurse";
-	String TRUE = "true";
 	String INSCOPE_ONLY= "inScopeOnly";
+	String TRUE = "true";
 	String NO = "no";
 	String ASCAN = "ascan";
 	String SCAN = "scan";
@@ -48,7 +48,7 @@ public interface ZapConstants {
 	String OTHERS = "OTHER";
 	String CORE = "core";
 	String OTHER = "other";
-	String REPORT = "xmlreport/?";
+	String REPORT = "xmlreport/";
 	String TYPE = "type";
 	String HEAD = "HEAD";
 	String SERVER_ERROR = "server not started";
@@ -63,4 +63,12 @@ public interface ZapConstants {
     String MAVEN_PARAMETER = "-D";
     String ANT_RUN = "antrun:run";
     String START_ZAP_TARGET = "-Dtarget.name=startZapDaemon";
+    String HEAD_REVISION = "HEAD";
+    String ZAP_WINDOWS_BATCH_COMMAND = "zap.bat";
+    String ZAP_MAC_BATCH_COMMAND = "sh zap.sh";
+    String NEW_SESSION = "New Session";
+    String SPIDER_COMPLETED = "Spider scanning complete: true";
+    String ACTIVE_SCAN_COMPLETED = "scanner completed";
+    String ZAP_NOT_STARTED_IN_REMOTE = "Zap Not started in Remote";
+    String REMOTE = "remote";
 }

@@ -3,12 +3,16 @@ package com.photon.phresco.plugins.zap;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.maven.plugin.logging.Log;
+import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.Commandline;
 
 import com.photon.phresco.configuration.ConfigReader;
@@ -17,9 +21,9 @@ import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.util.MojoUtil;
-import com.photon.phresco.util.Utility;
+import com.photon.phresco.util.Constants;
 
-public class ZapStart implements ZapConstants{
+public class ZapStart implements ZapConstants { 
 	private File baseDir;
 	private String environmentName;
 	private String zapDirectory;
@@ -27,14 +31,14 @@ public class ZapStart implements ZapConstants{
 	private String protocol;
 	private String host;
 	private String url;
-	private String type;
+	private boolean isRemote;
 
 	public void start(Configuration configuration, MavenProjectInfo mavenProjectInfo, Log log) throws PhrescoException {
 		baseDir = mavenProjectInfo.getBaseDir();
 		Map<String, String> configs = MojoUtil.getAllValues(configuration);
 		environmentName = configs.get(ENVIRONMENT_NAME);
-		type =  configs.get(TYPE);
 		url =  configs.get(URL);
+		isRemote = Boolean.parseBoolean(configs.get(REMOTE));
 		File configPath = new File(baseDir + File.separator + DOT_PHRESCO_FOLDER + File.separator  + CONFIG_FILE);
 		if (!configPath.exists()) {
 			throw new PhrescoException(CONFIG_FILE_NOT_FOUND_ERROR);
@@ -50,11 +54,24 @@ public class ZapStart implements ZapConstants{
 					protocol = (String) properties.get(PROTOCOL);
 					host = (String) properties.get(HOST);
 					port = (String) properties.get(ZAP_PORT);
-					validateZapDirectory(zapDirectory);
-					startDaemonProcess(baseDir.getPath(), port, zapDirectory, url, type, log);
+					String zapUrl = protocol + COLON + DOUBLE_SLASH + host + COLON + port;
+					if (!isRemote) {
+						validateZapDirectory(zapDirectory);
+						startDaemonProcess(baseDir.getPath(),zapUrl , zapDirectory, url,log);
+					} else {
+						boolean checkIfUrlExists = checkIfUrlExists(zapUrl);
+						ZapAnalysis  analysis = new ZapAnalysis();
+						if (checkIfUrlExists) {
+							analysis.spiderScan(log, baseDir.getPath(), environmentName, zapUrl, SPIDER, url);
+							analysis.activeScan(log, baseDir.getPath(), environmentName, zapUrl, ASCAN, url, isRemote);
+							analysis.generateReport(baseDir.getPath(), environmentName, zapUrl, isRemote, log);
+						} else {
+							log.info(ZAP_NOT_STARTED_IN_REMOTE);
+						}
+					}
 				}
 			}
-				
+
 		} catch (ConfigurationException e) {
 			throw new PhrescoException(e);
 		}
@@ -71,49 +88,41 @@ public class ZapStart implements ZapConstants{
 			throw new PhrescoException(e);
 		}
 	}
-	
-	private void startDaemonProcess(String path, String port, String zapDirectory, String url, String type, Log log) throws PhrescoException {
+
+	private void startDaemonProcess(String path, String zapUrl, String zapDirectory, String url, Log log) throws PhrescoException {
 		BufferedReader reader = null;
-		String workingDir = path;
-		StringBuilder builder = new StringBuilder();
-		builder.append(MAVEN);
-		builder.append(SPACE);
-		builder.append(ANT_RUN);
-		builder.append(SPACE);
-		builder.append(START_ZAP_TARGET);
-		builder.append(SPACE);
-		builder.append(HYPEN_F);
-		builder.append(SPACE);
-		builder.append(PHRESCO_POM);
-		builder.append(SPACE);
-		builder.append(MAVEN_PARAMETER);
-		builder.append(ZAPDIR);
-		builder.append(EQUAL);
-		builder.append('"');
-		builder.append(zapDirectory);
-		builder.append('"');
-		builder.append(SPACE);
-		builder.append(MAVEN_PARAMETER);
-		builder.append(ZAP_PORT);
-		builder.append(EQUAL);
-		builder.append(port);
-		builder.append(SPACE);
-		builder.append(ZAP_PROFILE);
-		log.info(builder.toString());
-		Commandline commandline = new Commandline(builder.toString());
-		commandline.setWorkingDirectory(path);
+		String command = "";
+		if (System.getProperty(Constants.OS_NAME).startsWith(Constants.WINDOWS_PLATFORM)) {
+			command = ZAP_WINDOWS_BATCH_COMMAND;
+		} else  {
+			command = ZAP_MAC_BATCH_COMMAND;
+		} 
+		Commandline commandline = new Commandline(command);
+		commandline.setWorkingDirectory(zapDirectory);
 		try {
 			String line;
-			reader = Utility.executeCommand(builder.toString(), workingDir);
+			Process execute = commandline.execute();
+			InputStream inputStream = execute.getInputStream();
+			reader = new BufferedReader(new InputStreamReader(inputStream));
+			ZapAnalysis  analysis = new ZapAnalysis();
 			while ((line = reader.readLine()) != null) {
 				log.info(line);
-				if (line.contains("BUILD SUCCESS")) {
-					log.info("Zap Started");	
-					ZapAnalysis  analysis = new ZapAnalysis();
-					analysis.attack(log, baseDir.getPath(), environmentName, protocol, host, port, type, url);
+				if (line.contains(NEW_SESSION)) {
+					analysis.spiderScan(log, baseDir.getPath(), environmentName, zapUrl, SPIDER, url);
+				}
+				if (line.contains(SPIDER_COMPLETED)) {
+					analysis.activeScan(log, baseDir.getPath(), environmentName, zapUrl, ASCAN, url, isRemote);
+				}
+				if (line.contains(ACTIVE_SCAN_COMPLETED)) {
+					Thread.sleep(3000);
+					analysis.generateReport(baseDir.getPath(), environmentName, zapUrl, isRemote, log);
 				}
 			}
 		} catch (IOException e) {
+			throw new PhrescoException(e);
+		} catch (CommandLineException e) {
+			throw new PhrescoException(e);
+		} catch (InterruptedException e) {
 			throw new PhrescoException(e);
 		} finally {
 			if (reader != null) {
@@ -126,5 +135,70 @@ public class ZapStart implements ZapConstants{
 		}
 	}
 
+	public static boolean checkIfUrlExists(String targetUrl) {
+		HttpURLConnection httpUrlConn = null;
+		try {
+			httpUrlConn = (HttpURLConnection) new java.net.URL(targetUrl).openConnection();
+			httpUrlConn.setRequestMethod(HEAD_REVISION);
+			httpUrlConn.setConnectTimeout(30000);
+			httpUrlConn.setReadTimeout(30000);
+			return (httpUrlConn.getResponseCode() == HttpURLConnection.HTTP_OK);
+		} catch (Exception e) {
+			return false;
+		} finally {
+			httpUrlConn.disconnect();
+		}
+	}
+
+	/*	public static void main(String[] args) {
+		 Runtime runtime;
+		try {
+			runtime = Runtime.getRuntime();
+			String command = "netstat -a -o | find " +  "\"15100\"" ;
+			System.out.println("Line = " + command);
+			Process process = runtime.exec(command);
+			System.out.println("Process = " + process);
+			InputStream inputStream = process.getInputStream();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+			System.out.println("reader = " + reader);
+			System.out.println("reader Line = " + reader.readLine());
+			String line;
+			while ((line = reader.readLine()) != null) {
+				System.out.println(line);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}*/
+
+
+	/* public static void main(String[] args) throws Exception {
+		    URL mac = new URL("http://172.16.22.65:15100/");
+		    BufferedReader in = new BufferedReader(
+		                      new InputStreamReader(mac.openStream()));
+
+		    String inputLine;
+		    while ((inputLine = in.readLine()) != null)
+		        System.out.println(inputLine);
+
+		    in.close();
+	 }*/
+
+	public static void main(String[] args) {
+		try {
+			String command = "top -n1 -b -p " +  "\"5476\"";
+			Process p = Runtime.getRuntime().exec(command);
+			InputStream in = p.getInputStream();
+			BufferedReader reader = new BufferedReader(
+					new InputStreamReader(in));
+			String inputLine;
+			while ((inputLine = reader.readLine()) != null)
+				System.out.println(inputLine);
+
+			in.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 }
