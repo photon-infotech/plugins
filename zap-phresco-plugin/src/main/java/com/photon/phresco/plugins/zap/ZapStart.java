@@ -114,7 +114,7 @@ public class ZapStart implements ZapConstants {
 					analysis.activeScan(log, baseDir.getPath(), environmentName, zapUrl, ASCAN, url, isRemote);
 				}
 				if (line.contains(ACTIVE_SCAN_COMPLETED)) {
-					Thread.sleep(3000);
+					Thread.sleep(6000);
 					analysis.generateReport(baseDir.getPath(), environmentName, zapUrl, isRemote, log);
 				}
 			}
