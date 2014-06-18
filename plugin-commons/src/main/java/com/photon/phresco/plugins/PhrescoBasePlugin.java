@@ -827,6 +827,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 	public ExecutionStatus validate(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		try {
+		Profile profile = null;
 		buildVersion = mavenProjectInfo.getBuildVersion();
 		StringBuilder sb = new StringBuilder();
 		sb.append(SONAR_COMMAND);
@@ -882,7 +883,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 						sb.append(STR_SPACE);
 						sb.append(mavenCommand.getValue());
 						PomProcessor pomPro = new PomProcessor(pomFile);
-						Profile profile = pomPro.getProfile(mavenCommand.getKey());
+						profile = pomPro.getProfile(mavenCommand.getKey());
 						if(profile != null) {
 						List<Element> properties = profile.getProperties().getAny();
 						for (Element element : properties) {
@@ -895,6 +896,10 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 					}
 				}
 			}
+		}
+		
+		if(profile == null) {
+			sb.append(STR_SPACE).append("-Dsonar.branch=").append(value).append(appInfo.getId());
 		}
 		}
 		if (value.equals(FUNCTIONAL)) {
