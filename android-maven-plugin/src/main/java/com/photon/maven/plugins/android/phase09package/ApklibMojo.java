@@ -20,8 +20,14 @@ package com.photon.maven.plugins.android.phase09package;
 import com.photon.maven.plugins.android.AbstractAndroidMojo;
 import com.photon.maven.plugins.android.CommandExecutor;
 import com.photon.maven.plugins.android.ExecutionException;
+//import com.photon.maven.plugins.android.common.NativeHelper;
+import com.photon.maven.plugins.android.common.AetherHelper;
+import com.photon.maven.plugins.android.common.EclipseAetherHelper;
+import com.photon.maven.plugins.android.common.EclipseAetherNativeHelper;
 import com.photon.maven.plugins.android.common.NativeHelper;
 import com.photon.maven.plugins.android.config.PullParameter;
+import com.photon.phresco.framework.actions.Sonar;
+import com.photon.phresco.util.Utility;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -29,9 +35,11 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
 import org.codehaus.plexus.archiver.util.DefaultFileSet;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -187,10 +195,15 @@ public class ApklibMojo extends AbstractAndroidMojo
                 getLog().info( nativeLibrariesDirectory 
                         + " does not exist, looking for libraries in target directory." );
                 // Add native libraries built and attached in this build
-                String[] ndkArchitectures = NativeHelper.getNdkArchitectures( ndkClassifier,
-                                                                              ndkArchitecture,
-                                                                              applicationMakefile,
-                                                                              project.getBasedir() );
+                String[] ndkArchitectures = null;
+                if (container.hasComponent("org.sonatype.aether.RepositorySystem")) {
+                	 ndkArchitectures = NativeHelper.getNdkArchitectures( ndkClassifier, ndkArchitecture, applicationMakefile,
+                             project.getBasedir() );
+            	} else if (container.hasComponent("org.eclipse.aether.RepositorySystem")) {
+            		 ndkArchitectures = EclipseAetherNativeHelper.getNdkArchitectures( ndkClassifier, ndkArchitecture,
+                             applicationMakefile,
+                             project.getBasedir() );
+            	}
                 for ( String ndkArchitecture : ndkArchitectures )
                 {
                     final File ndkLibsDirectory = new File( ndkOutputDirectory, ndkArchitecture );
