@@ -45,6 +45,7 @@
 		<module>atg-phresco-plugin</module>
 		<module>cpp-phresco-plugin</module>
 		<module>whitehat-cpp-plugin</module>
+		<module>seo-phresco-plugin</module>
   </modules>
     <build>
         <directory>do_not_checkin/target</directory>
