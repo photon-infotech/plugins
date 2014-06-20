@@ -41,9 +41,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -70,8 +70,8 @@ import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.codehaus.plexus.util.cli.Commandline;
 import org.codehaus.plexus.util.cli.StreamConsumer;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ListTagCommand;
 import org.eclipse.jgit.api.ListBranchCommand.ListMode;
+import org.eclipse.jgit.api.ListTagCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
 import org.tmatesoft.svn.core.SVNDirEntry;
@@ -99,7 +99,6 @@ import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.photon.phresco.api.ConfigManager;
-
 import com.photon.phresco.commons.FrameworkConstants;
 import com.photon.phresco.commons.model.ApplicationInfo;
 import com.photon.phresco.commons.model.BuildInfo;
@@ -117,6 +116,8 @@ import com.photon.phresco.framework.model.Headers;
 import com.photon.phresco.framework.model.Parameters;
 import com.photon.phresco.impl.ConfigManagerImpl;
 import com.photon.phresco.plugins.filter.FileListFilter;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
+import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter.MavenCommands.MavenCommand;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.HubConfiguration;
 import com.photon.phresco.util.NodeConfiguration;
@@ -1756,5 +1757,35 @@ public class PluginUtils {
 				return (line);
 			}
 			return (line);
+		}
+		
+		public static  String getSonarBranchName(List<Parameter> parameters) {
+			String branchName = "";
+			boolean techExcist = isTechnologyExists(parameters);
+			for (Parameter parameter : parameters) {
+				if(techExcist && parameter.getName().getValue().get(0).getValue().equals("Technology")) {
+					if(parameter.getMavenCommands() != null) {
+						List<MavenCommand> mavenCommands = parameter.getMavenCommands().getMavenCommand();
+						for (MavenCommand mvnCommand : mavenCommands) {
+							if (parameter.getValue().equals(mvnCommand.getKey())) {
+								branchName = parameter.getValue();
+								break;
+							}
+						}
+					}
+				} else if(parameter.getName().getValue().get(0).getValue().equals("Validate Against") && !techExcist) {
+					branchName = parameter.getValue();
+				}
+			}
+			return branchName;
+		}
+
+		private static boolean isTechnologyExists(List<Parameter> parameters) {
+			for (Parameter parameter : parameters) {
+				if(parameter.getName().getValue().get(0).getValue().equals("Technology")) {
+					return true;
+				}
+			}
+			return false;
 		}
 	}

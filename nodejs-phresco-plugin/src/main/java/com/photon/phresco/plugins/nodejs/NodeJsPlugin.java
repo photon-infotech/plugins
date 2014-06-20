@@ -27,9 +27,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
-import org.w3c.dom.Element;
 
-import com.photon.phresco.commons.FrameworkConstants;
 import com.photon.phresco.commons.model.ApplicationInfo;
 import com.photon.phresco.exception.PhrescoException;
 import com.photon.phresco.plugin.commons.MavenProjectInfo;
@@ -43,9 +41,7 @@ import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Para
 import com.photon.phresco.plugins.util.MojoUtil;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
-import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.model.Profile;
-import com.phresco.pom.util.PomProcessor;
 
 public class NodeJsPlugin extends PhrescoBasePlugin {
 
@@ -119,32 +115,23 @@ public class NodeJsPlugin extends PhrescoBasePlugin {
 		append("-Dskip=").
 		append(skipTest);
 		List<Parameter> parameters = configuration.getParameters().getParameter();
-		for (Parameter parameter : parameters) {
-			if (parameter.getPluginParameter() != null && parameter.getPluginParameter().equals(PLUGIN_PARAMETER) && parameter.getMavenCommands() != null) {
-				List<MavenCommand> mavenCommands = parameter.getMavenCommands().getMavenCommand();
-				for (MavenCommand mavenCommand : mavenCommands) {
-					if (parameter.getValue().equals(mavenCommand.getKey())) {
-						sb.append(STR_SPACE);
-						sb.append(mavenCommand.getValue());
-						PomProcessor pomPro = new PomProcessor(pomFile);
-						profile = pomPro.getProfile(mavenCommand.getKey());
-						if(profile != null) {
-						List<Element> properties = profile.getProperties().getAny();
-						for (Element element : properties) {
-							if( element.getTagName().equalsIgnoreCase("sonar.branch")) {
-								element.setTextContent(mavenCommand.getKey() + appInfo.getId());
-							}
+		String branchName = PluginUtils.getSonarBranchName(parameters);
+		if(StringUtils.isNotEmpty(branchName)) {
+			sb.append(STR_SPACE).append("-Dsonar.branch=").append(branchName).append(appInfo.getId());
+		}
+			for (Parameter parameter : parameters) {
+				if (parameter.getPluginParameter() != null
+						&& parameter.getPluginParameter().equals(PLUGIN_PARAMETER)&& parameter.getMavenCommands() != null) {
+					List<MavenCommand> mavenCommands = parameter.getMavenCommands().getMavenCommand();
+					for (MavenCommand mavenCommand : mavenCommands) {
+						if (parameter.getValue().equals(mavenCommand.getKey())) {
+							sb.append(STR_SPACE);
+							sb.append(mavenCommand.getValue());
 						}
-						pomPro.save();
-						}
-					} 
-				}
+					}
+				} 
 			}
-		}
-		if(profile == null) {
-			sb.append(STR_SPACE).append("-Dsonar.branch=").append(value).append(appInfo.getId());
-		}
-		
+
 		sb = sb.append(mavenProjectInfo.getSonarParams().toString());
 		if(value.equals(FUNCTIONAL)) {
 			sb.delete(0, sb.length());
@@ -161,8 +148,6 @@ public class NodeJsPlugin extends PhrescoBasePlugin {
 				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
 		}
 			} catch (MojoExecutionException e) {
-				throw new PhrescoException(e);
-			} catch (PhrescoPomException e) {
 				throw new PhrescoException(e);
 			}
 		return new DefaultExecutionStatus();

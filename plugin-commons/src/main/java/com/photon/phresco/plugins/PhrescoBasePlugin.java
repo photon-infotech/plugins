@@ -870,38 +870,25 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 		File pomFile = pluginUtils.getPomFile(dotPhrescoDir, workingDirectory);
 		String value = config.get(SONAR);
 		if(!value.equalsIgnoreCase(FUNCTIONAL)) {
-		List<Parameter> parameters = configuration.getParameters()
-		.getParameter();
+		List<Parameter> parameters = configuration.getParameters().getParameter();
+		String branchName = PluginUtils.getSonarBranchName(parameters);
+		if(StringUtils.isNotEmpty(branchName)) {
+			sb.append(STR_SPACE).append("-Dsonar.branch=").append(branchName).append(appInfo.getId());
+		}
 		for (Parameter parameter : parameters) {
 			if (parameter.getPluginParameter() != null
 					&& parameter.getPluginParameter().equals(PLUGIN_PARAMETER)
 					&& parameter.getMavenCommands() != null) {
-				List<MavenCommand> mavenCommands = parameter.getMavenCommands()
-				.getMavenCommand();
+				List<MavenCommand> mavenCommands = parameter.getMavenCommands().getMavenCommand();
 				for (MavenCommand mavenCommand : mavenCommands) {
 					if (parameter.getValue().equals(mavenCommand.getKey())) {
 						sb.append(STR_SPACE);
 						sb.append(mavenCommand.getValue());
-						PomProcessor pomPro = new PomProcessor(pomFile);
-						profile = pomPro.getProfile(mavenCommand.getKey());
-						if(profile != null) {
-						List<Element> properties = profile.getProperties().getAny();
-						for (Element element : properties) {
-							if( element.getTagName().equalsIgnoreCase("sonar.branch")) {
-								element.setTextContent(mavenCommand.getKey() + appInfo.getId());
-							}
-						}
-						pomPro.save();
-						}
 					}
 				}
 			}
-		}
-		
-		if(profile == null) {
-			sb.append(STR_SPACE).append("-Dsonar.branch=").append(value).append(appInfo.getId());
-		}
-		}
+		}	
+	}
 		if (value.equals(FUNCTIONAL)) {
 			sb.delete(0, sb.length());
 			workingDirectory = new File(funTestDir.getPath()
@@ -933,8 +920,6 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 				throw new MojoExecutionException(Constants.MOJO_ERROR_MESSAGE);
 			}
 			} catch (MojoExecutionException e) {
-				throw new PhrescoException(e);
-			} catch (PhrescoPomException e) {
 				throw new PhrescoException(e);
 			}
 		return new DefaultExecutionStatus();
