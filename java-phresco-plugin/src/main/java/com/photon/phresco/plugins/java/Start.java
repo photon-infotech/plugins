@@ -281,9 +281,9 @@ public class Start implements PluginConstants {
 			StringBuilder sb = new StringBuilder();
 			sb.append(MVN_CMD);
 			sb.append(STR_SPACE);
-			sb.append("tomcat:run");
+			sb.append("mvn org.apache.tomcat.maven:tomcat7-maven-plugin:2.0:run");
 			sb.append(STR_SPACE);
-			sb.append(SERVER_PORT);
+			sb.append("-Dmaven.tomcat.port=");
 			sb.append(serverPort);
 			sb.append(STR_SPACE);
 			sb.append(SERVER_ENV);
