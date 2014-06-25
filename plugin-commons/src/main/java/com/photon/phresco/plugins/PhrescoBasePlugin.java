@@ -827,7 +827,6 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 	public ExecutionStatus validate(Configuration configuration,
 			MavenProjectInfo mavenProjectInfo) throws PhrescoException {
 		try {
-		Profile profile = null;
 		buildVersion = mavenProjectInfo.getBuildVersion();
 		StringBuilder sb = new StringBuilder();
 		sb.append(SONAR_COMMAND);
@@ -848,6 +847,8 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 		if (StringUtils.isNotEmpty(dotPhrescoDirName)) {
 			dotPhrescoDir = new File(baseDir.getParent() + File.separator
 					+ dotPhrescoDirName + File.separatorChar + subModule);
+		} else if(StringUtils.isNotEmpty(subModule)) {
+			dotPhrescoDir = new File(dotPhrescoDir.getPath() + File.separatorChar + subModule);
 		}
 		String jarLocation = getJarLocation(workingDirectory.getPath());
 		String funTestDirName = project.getProperties().getProperty(
