@@ -554,10 +554,7 @@ public class Package implements PluginConstants {
 			}
 			String fileConfig = "";
 			StringBuilder fileString = new StringBuilder();
-			if(StringUtils.isNotEmpty(module)) {
-				fileString.append(module);
-				fileString.append("/");
-			}
+						
 			fileString.append(buildDir).append("/").append(finalName).append(".").append(packagingSrcPOm);
 			fileConfig = fileString.toString();
 			if("pom".equals(packagingSrcPOm)) {
