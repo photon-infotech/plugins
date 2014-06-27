@@ -487,7 +487,16 @@ public abstract class PhrescoAbstractMojo extends AbstractMojo {
 		
 		try {
 			if(parameter.getType().equalsIgnoreCase("Boolean") & ! parameter.getKey().equalsIgnoreCase("showSettings")) {
-				
+				if(value.getValue().equalsIgnoreCase("ZipAlign") || value.getValue().equalsIgnoreCase("Signing")){
+					String Dependencyvalue=parameter.getDependency();
+					if(StringUtils.isNotEmpty(Dependencyvalue))	{
+						String[] Dependencyvalues=Dependencyvalue.split(",");
+						for(String depvalue:Dependencyvalues)	{
+							excludedependency.add(depvalue.toLowerCase());
+						}
+					}
+					return "";
+				}
 				System.out.println("Enter Value For " + value.getValue() + " (Y/N)");
 				String readValue = br.readLine();
 				paramValue = String.valueOf(true);
