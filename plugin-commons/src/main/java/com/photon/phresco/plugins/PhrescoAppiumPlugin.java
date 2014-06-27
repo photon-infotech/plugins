@@ -154,7 +154,7 @@ public class PhrescoAppiumPlugin implements PluginConstants {
 			        .append(HYPHEN_APP)
 			        .append(STR_SPACE)
 		        	.append(iosAppPath);
-		        	properties.put(APP_PATH, iosAppPath);
+		        	properties.put(APP_PATH, iosAppPath.substring(1, iosAppPath.length()-1));
 
 		        	if (iosDeviceType.equals(IPHONE_SIMULATOR)) {
 			        	command.append(STR_SPACE)
@@ -170,7 +170,7 @@ public class PhrescoAppiumPlugin implements PluginConstants {
 	        		.append(HYPHEN_IPA)
 	        		.append(STR_SPACE)
 	        		.append(ipaPath);
-	        		properties.put(APP_PATH, ipaPath);
+	        		properties.put(APP_PATH, ipaPath.substring(1, ipaPath.length()-1));
 	        		
 	        		// UDID
 	        		command.append(STR_SPACE)
@@ -194,7 +194,7 @@ public class PhrescoAppiumPlugin implements PluginConstants {
 		        .append(HYPHEN_APP)
 		        .append(STR_SPACE)
 	        	.append(appPath.toString());
-	        	properties.put(APP_PATH, appPath.toString());
+	        	properties.put(APP_PATH, appPath.toString().substring(1, appPath.toString().length()-1));
 	        	
 		        // Android Package
 		        if (!androidPackage.isEmpty()) {
