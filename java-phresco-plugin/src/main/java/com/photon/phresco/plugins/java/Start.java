@@ -286,6 +286,9 @@ public class Start implements PluginConstants {
 			sb.append("-Dmaven.tomcat.port=");
 			sb.append(serverPort);
 			sb.append(STR_SPACE);
+			sb.append("-Dmaven.tomcat.path=");
+			sb.append(serverContext);
+			sb.append(STR_SPACE);
 			sb.append(SERVER_ENV);
 			sb.append(environmentName);
 			sb.append(STR_SPACE);
