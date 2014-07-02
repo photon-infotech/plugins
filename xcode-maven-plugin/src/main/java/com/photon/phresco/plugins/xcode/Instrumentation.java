@@ -44,6 +44,7 @@ import com.photon.phresco.commons.model.*;
 import com.photon.phresco.plugin.commons.*;
 import com.photon.phresco.plugins.xcode.utils.*;
 import com.photon.phresco.util.Constants;
+import com.photon.phresco.util.Utility;
 
 /**
  * APP instrumentation
@@ -108,7 +109,7 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 	private String plistResult;
 	
 	/**
-	 * @parameter expression="${script.name}" default-value="do_not_checkin/functional.xml"
+	 * @parameter expression="${script.name}" default-value="/functional.xml"
 	 */
 	public String xmlResult;
 	
@@ -133,7 +134,6 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 	 */
 	private static XMLPropertyListConfiguration config;
 	private File buildInfoFile;
-	
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		getLog().info("Instrumentation command" + command);
@@ -405,13 +405,24 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 			Transformer trans = transfac.newTransformer();
 			trans.setOutputProperty(OutputKeys.INDENT, YES);
 
-//			File file = new File("/Users/kaleeswaran/Notes/XCOde-Plist/DRIssue.xml");
-			getLog().info("functional xml file generated ... ");
-			File file = new File(project.getBasedir().getAbsolutePath()+File.separator+xmlResult);
-			Writer bw = new BufferedWriter(new FileWriter(file));
-			StreamResult result = new StreamResult(bw);
-			DOMSource source = new DOMSource(doc);
-			trans.transform(source, result);
+			String rootModulePath = Utility.getProjectHome()+File.separator+ project.getBasedir().getName();
+			ProjectInfo projectInfo = Utility.getProjectInfo(rootModulePath, "");
+            File testFolderLocation = Utility.getTestFolderLocation(projectInfo, rootModulePath, "");
+            String functionalTestReportDir = Utility.getPomProcessor(rootModulePath, "").getPropertyValue(
+                    Constants.POM_PROP_KEY_FUNCTEST_RPT_DIR);
+            if (functionalTestReportDir.contains(PROJECT_BASEDIR)) {
+                functionalTestReportDir = functionalTestReportDir.replace(PROJECT_BASEDIR, testFolderLocation.getPath());
+            }
+            File donotcheckin = new File(functionalTestReportDir);
+            File file = new File(functionalTestReportDir + xmlResult);
+            if(!donotcheckin.exists()) {
+            	donotcheckin.mkdirs();
+            }
+            Writer bw = new BufferedWriter(new FileWriter(file));
+            StreamResult result = new StreamResult(bw);
+            DOMSource source = new DOMSource(doc);
+            trans.transform(source, result);
+            
 
 		} catch (Exception e) {
 //			getLog().error(e.getLocalizedMessage());
