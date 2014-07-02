@@ -117,7 +117,7 @@ public class UpdateBuildInfoMojo extends AbstractAndroidMojo {
 			       rootPomFile = new File(baseDir.getParentFile().getPath()+File.separator +PluginConstants.POM_XML);
 			  }else{
 				   String rootDir = baseDir.getParentFile().getParentFile().getParentFile().getPath();
-				   SplitedSourceDirName = rootDir.substring(rootDir.lastIndexOf("\\")+1);
+				   SplitedSourceDirName = rootDir.substring(rootDir.lastIndexOf(File.separator)+1);
 				   rootPomFile = new File(baseDir.getParentFile().getParentFile().getParentFile().getPath()+File.separator
 						  +SplitedSourceDirName+File.separator+PluginConstants.POM_XML);
 		      }
