@@ -131,8 +131,8 @@ public class Package implements PluginConstants {
 			PluginUtils.checkForConfigurations(new File(dotPhrescoDir), environmentName);
 			
 			if (TechnologyTypes.ANDROID_HYBRID.equals(techId)) {
-				writeConfigJson(mavenProjectInfo, new File(dotPhrescoDir), environmentName);
-			}	
+				writeConfigJson(mavenProjectInfo, new File(dotPhrescoDir), environmentName ,dotPhrescoDirName);
+			}
 			
 			Boolean isZipAlign = Boolean.valueOf(zipAlign);
 			log.info("isZipAlign . " +isZipAlign);
@@ -241,16 +241,17 @@ public class Package implements PluginConstants {
 		}
 	}
 
-	private void writeConfigJson(MavenProjectInfo mavenProjectInfo, File dotPhrecoDir,  String environmentName) throws PhrescoException {
+	private void writeConfigJson(MavenProjectInfo mavenProjectInfo, File dotPhrecoDir,  String environmentName ,String dotPhrescoDirName) throws PhrescoException {
 		PluginUtils pu = new PluginUtils();
 		String customerId = pu.readCustomerId(dotPhrecoDir);
-		File configFile = new File(new File(baseDir).getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE);
+		File configFile = new File(dotPhrecoDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE);
 		File settingsFile = new File(Utility.getProjectHome()+ customerId + PluginConstants.SETTINGS_FILE);
 		FileWriter fstream = null;
 		BufferedWriter out = null;
 		try {
 			Environment obtainedEnv = null;
 			ConfigManager configManager = null;
+			String rootModulePath = null;
 
 			if (settingsFile.exists()) {
 				configManager = PhrescoFrameworkFactory.getConfigManager(settingsFile);
@@ -264,7 +265,12 @@ public class Package implements PluginConstants {
 			if (obtainedEnv != null) {
 				Gson gson = new Gson();
 				String envJson = gson.toJson(obtainedEnv);
-				PomProcessor pomProcessor = Utility.getPomProcessor(mavenProjectInfo.getBaseDir().getPath(), moduleName);
+				if(dotPhrescoDirName!=null){
+					rootModulePath = mavenProjectInfo.getBaseDir().getParent();
+				}else{
+					rootModulePath = mavenProjectInfo.getBaseDir().getPath();
+				}
+				PomProcessor pomProcessor = Utility.getPomProcessor(rootModulePath, moduleName);
 				String configJsonPath = pomProcessor.getProperty(Constants.POM_PROP_KEY_CONFIG_JSON_PATH);
 				if (StringUtils.isNotEmpty(configJsonPath)) {
 					StringBuilder path = new StringBuilder(mavenProjectInfo.getBaseDir().getPath());
