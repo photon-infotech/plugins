@@ -171,7 +171,7 @@ public class Start implements PluginConstants {
 			if("pom".equals(packagingSrcPOm)) {
 				fileConfig = project.getProperties().getProperty("source.pom");
 			}
-			builder.append("-Dfile=").append("" + fileConfig);
+			builder.append("-Dfile=").append("" + pomFile.getPath());
 			String line = "";
 			BufferedReader bufferedReader = Utility.executeCommand(builder.toString(), currentDir.toString());
 			while ((line = bufferedReader.readLine()) != null) {
@@ -281,12 +281,15 @@ public class Start implements PluginConstants {
 			StringBuilder sb = new StringBuilder();
 			sb.append(MVN_CMD);
 			sb.append(STR_SPACE);
-			sb.append("org.apache.tomcat.maven:tomcat7-maven-plugin:2.0:run");
+			sb.append("clean org.apache.tomcat.maven:tomcat7-maven-plugin:2.1:run");
 			sb.append(STR_SPACE);
 			sb.append("-Dmaven.tomcat.port=");
 			sb.append(serverPort);
 			sb.append(STR_SPACE);
 			sb.append("-Dmaven.tomcat.path=");
+			if(!serverContext.startsWith("/")) {
+				sb.append("/");
+			}
 			sb.append(serverContext);
 			sb.append(STR_SPACE);
 			sb.append(SERVER_ENV);
