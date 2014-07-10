@@ -144,6 +144,8 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 	private static final String PATH_TXT = "path.txt";
 
 	private static final String DO_NOT_CHECKIN_BUILD = "/do_not_checkin/build";
+	
+	private static final String SIMULATOR = "simulator";
 
 	/**
 	 * Location of the xcodebuild executable.
@@ -205,6 +207,16 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 	 * @parameter expression="${sdk}" default-value="iphonesimulator5.0"
 	 */
 	private String sdk;
+	
+	/**
+	 * @parameter expression="${iosDeviceType}" default-value="iPhone Retina (4-inch)"
+	 */
+	private String iosDeviceType;
+	
+	/**
+	 * @parameter expression="${deviceId}"
+	 */
+	private String deviceId;
 	
 	/**
 	 * @parameter 
@@ -564,7 +576,11 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 		
 		
 		if (StringUtils.isNotBlank(sdkVersion.trim()) && isXcodeLatestVersion && (isLogicalTest || isApplicationTest)) {
-			commands.add("-destination OS=" + sdkVersion.trim() + ",name=" + "\"" + "iPhone Retina (4-inch)" + "\"");
+			if (sdk.contains(SIMULATOR)) {
+				commands.add("-destination OS=" + sdkVersion.trim() + ",name=" + "\"" + iosDeviceType + "\"");
+			} else {
+				commands.add("-destination platform=iOS,id=" + "\"" + deviceId + "\"");
+			}
 		} else if (StringUtils.isNotBlank(configuration)) {
 			commands.add(CONFIGURATION);
 			commands.add(configuration);
