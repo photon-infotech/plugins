@@ -41,6 +41,8 @@ public class UnitTest implements PluginConstants {
 		Map<String, String> configs = MojoUtil.getAllValues(config);
 		String sdk = configs.get(SDK);
 		String target = configs.get(TARGET);
+		String iosDeviceType = configs.get(IOS_DEVICE_TYPE);
+		String deviceId = configs.get(DEVICE_ID);
         if (StringUtils.isNotEmpty(target)) {
         	target = target.replace(STR_SPACE, SHELL_SPACE);
         }
@@ -67,6 +69,16 @@ public class UnitTest implements PluginConstants {
 		if (StringUtils.isNotEmpty(target)) {
 			sb.append(STR_SPACE);
 			sb.append(HYPHEN_D + TARGET_NAME + EQUAL + target);
+		}
+
+		if (StringUtils.isNotEmpty(iosDeviceType)) {
+			sb.append(STR_SPACE);
+			sb.append(HYPHEN_D + IOS_DEVICE_TYPE + EQUAL + "\"" + iosDeviceType + "\"");
+		}
+		
+		if (StringUtils.isNotEmpty(deviceId)) {
+			sb.append(STR_SPACE);
+			sb.append(HYPHEN_D + DEVICE_ID + EQUAL + "\"" + deviceId + "\"");
 		}
 		
 		if (StringUtils.isNotEmpty(unitTestType)) {
