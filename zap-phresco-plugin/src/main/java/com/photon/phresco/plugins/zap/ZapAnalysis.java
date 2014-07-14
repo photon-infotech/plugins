@@ -116,7 +116,7 @@ public class ZapAnalysis implements ZapConstants{
 			File reportDir =  new File(reportPath.toString());
 			File reportFile = new File(reportDir + File.separator + REPORT_FILE);
 			if (!reportDir.exists()) {
-				reportDir.mkdir();
+				reportDir.mkdirs();
 			}
 			if (reportFile.exists()) {
 				reportFile.delete();
