@@ -244,7 +244,7 @@ public class Package implements PluginConstants {
 	private void writeConfigJson(MavenProjectInfo mavenProjectInfo, File dotPhrecoDir,  String environmentName, String dotPhrescoDirName) throws PhrescoException {
 		PluginUtils pu = new PluginUtils();
 		String customerId = pu.readCustomerId(dotPhrecoDir);
-		File configFile = new File(new File(baseDir).getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE);
+		File configFile = new File(dotPhrecoDir.getPath() + File.separator + Constants.DOT_PHRESCO_FOLDER + File.separator + Constants.CONFIGURATION_INFO_FILE);
 		File settingsFile = new File(Utility.getProjectHome()+ customerId + PluginConstants.SETTINGS_FILE);
 		FileWriter fstream = null;
 		BufferedWriter out = null;
