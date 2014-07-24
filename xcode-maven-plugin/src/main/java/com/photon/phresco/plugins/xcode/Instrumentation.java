@@ -405,7 +405,15 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 			Transformer trans = transfac.newTransformer();
 			trans.setOutputProperty(OutputKeys.INDENT, YES);
 
-			String rootModulePath = Utility.getProjectHome()+File.separator+ project.getBasedir().getName();
+			String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_TEST_DIR);
+			
+			String rootModulePath = "";
+			if (StringUtils.isNotEmpty(dotPhrescoDirName) && dotPhrescoDirName != null) {
+				rootModulePath = project.getBasedir().getParent();
+			} else {
+				rootModulePath = project.getBasedir().getAbsolutePath();
+			}
+			
 			ProjectInfo projectInfo = Utility.getProjectInfo(rootModulePath, "");
             File testFolderLocation = Utility.getTestFolderLocation(projectInfo, rootModulePath, "");
             String functionalTestReportDir = Utility.getPomProcessor(rootModulePath, "").getPropertyValue(
