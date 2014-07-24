@@ -271,7 +271,8 @@ public class Package implements PluginConstants {
 					rootModulePath = mavenProjectInfo.getBaseDir().getPath();
 				}
 				
-				PomProcessor pomProcessor = Utility.getPomProcessor(rootModulePath, moduleName);
+				File pomFile = pu.getPomFile(new File(dotPhrescoDir), new File(baseDir));
+				PomProcessor pomProcessor = new PomProcessor(pomFile);
 				String configJsonPath = pomProcessor.getProperty(Constants.POM_PROP_KEY_CONFIG_JSON_PATH);
 				if (StringUtils.isNotEmpty(configJsonPath)) {
 					StringBuilder path = new StringBuilder(mavenProjectInfo.getBaseDir().getPath());
