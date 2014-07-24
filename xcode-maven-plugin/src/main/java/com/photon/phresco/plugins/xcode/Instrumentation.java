@@ -45,6 +45,7 @@ import com.photon.phresco.plugin.commons.*;
 import com.photon.phresco.plugins.xcode.utils.*;
 import com.photon.phresco.util.Constants;
 import com.photon.phresco.util.Utility;
+import com.phresco.pom.util.PomProcessor;
 
 /**
  * APP instrumentation
@@ -405,19 +406,26 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 			Transformer trans = transfac.newTransformer();
 			trans.setOutputProperty(OutputKeys.INDENT, YES);
 
-			String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_TEST_DIR);
+			String dotPhrescoDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_PHRESCO_DIR);
+			String testDirName = project.getProperties().getProperty(Constants.POM_PROP_KEY_SPLIT_TEST_DIR);
 			
-			String rootModulePath = "";
-			if (StringUtils.isNotEmpty(dotPhrescoDirName) && dotPhrescoDirName != null) {
+			String rootModulePath = null;
+			File testFolderLocation = null, dotPhrescoDir = null;
+			
+			if (StringUtils.isNotEmpty(testDirName) && testDirName != null) {
 				rootModulePath = project.getBasedir().getParent();
+				dotPhrescoDir = new File(rootModulePath + File.separator + dotPhrescoDirName);
+				testFolderLocation = new File(rootModulePath + File.separator + testDirName);
 			} else {
 				rootModulePath = project.getBasedir().getAbsolutePath();
+				dotPhrescoDir = new File(rootModulePath);
+				testFolderLocation = new File(rootModulePath);
 			}
+		
+			File pomFile = new PluginUtils().getPomFile(dotPhrescoDir, project.getBasedir());
+			PomProcessor pomProcessor = new PomProcessor(pomFile);
 			
-			ProjectInfo projectInfo = Utility.getProjectInfo(rootModulePath, "");
-            File testFolderLocation = Utility.getTestFolderLocation(projectInfo, rootModulePath, "");
-            String functionalTestReportDir = Utility.getPomProcessor(rootModulePath, "").getPropertyValue(
-                    Constants.POM_PROP_KEY_FUNCTEST_RPT_DIR);
+            String functionalTestReportDir = pomProcessor.getPropertyValue(Constants.POM_PROP_KEY_FUNCTEST_RPT_DIR);
             if (functionalTestReportDir.contains(PROJECT_BASEDIR)) {
                 functionalTestReportDir = functionalTestReportDir.replace(PROJECT_BASEDIR, testFolderLocation.getPath());
             }
