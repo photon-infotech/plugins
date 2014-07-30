@@ -35,17 +35,17 @@
 			<frame>
 				<reportElement x="0" y="0" width="555" height="81"/>
 				<rectangle radius="10">
-					<reportElement style="PMSFRHeadingRow" x="1" y="10" width="552" height="20"/>
+					<reportElement style="PMSFRHeadingRow" x="1" y="0" width="552" height="20"/>
 				</rectangle>
 				<textField>
-					<reportElement style="PMSFRHeadingRowLabelValue" x="232" y="10" width="88" height="20"/>
+					<reportElement style="PMSFRHeadingRowLabelValue" x="232" y="0" width="88" height="20" forecolor="#F0F0F0"/>
 					<textElement verticalAlignment="Middle">
 						<font fontName="Times New Roman" size="11" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{moduleOrTechLabel} +" :"]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement style="PMSFRHeadingRowLabelValue" x="324" y="10" width="229" height="20"/>
+					<reportElement style="PMSFRHeadingRowLabelValue" x="324" y="0" width="229" height="20" forecolor="#F0F0F0"/>
 					<textElement verticalAlignment="Middle">
 						<font fontName="Times New Roman" size="11" isBold="true"/>
 					</textElement>
@@ -66,7 +66,7 @@
 					<subreportExpression><![CDATA["PhrescoModuleUnitCumulativeSummaryReport.jasper"]]></subreportExpression>
 				</subreport>
 				<textField>
-					<reportElement style="PMSFRTitleLabel" x="18" y="10" width="214" height="20" forecolor="#333333"/>
+					<reportElement style="PMSFRTitleLabel" x="18" y="0" width="214" height="20" forecolor="#FFFFFF"/>
 					<textElement verticalAlignment="Middle">
 						<font fontName="Times New Roman" size="11" isBold="true"/>
 					</textElement>

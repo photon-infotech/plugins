@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="MultiModuleAllUnitTestRootReport" pageWidth="555" pageHeight="802" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" scriptletClass="com.photon.phresco.plugins.Scriptlet">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="org.apache.commons.collections.CollectionUtils"/>
+	<style name="UCRTitle"/>
+	<style name="UCRTitleRect"/>
+	<style name="UCRTitleRectLogo"/>
+	<style name="UCRTitleRectDetail"/>
+	<style name="UCRTitleLabel"/>
+	<style name="UCRTitleLabelValue"/>
+	<style name="UCRHeading"/>
+	<style name="UCRHeadingLabel"/>
+	<style name="UCRHeadingLabelValue"/>
+	<parameter name="testType" class="java.lang.String"/>
+	<parameter name="isClassEmpty" class="java.lang.Boolean"/>
+	<parameter name="testTypeLabel" class="java.lang.String"/>
+	<parameter name="reportsDataType" class="java.lang.String"/>
+	<parameter name="HeadingsCollection" class="java.util.Collection"/>
+	<parameter name="masterPageNo" class="java.lang.Integer"/>
+	<field name="testSuites" class="java.util.List"/>
+	<field name="allTestSuites" class="java.util.List"/>
+	<field name="jsAllTestSuites" class="java.util.List"/>
+	<field name="jsTestSuites" class="java.util.List"/>
+	<variable name="count" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[$V{count} + new Integer(1)]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="2" splitType="Stretch">
+			<line>
+				<reportElement x="1" y="1" width="1" height="1">
+					<printWhenExpression><![CDATA[$P{REPORT_SCRIPTLET}.updateHeadingMapTOC("2", $P{testTypeLabel} ,$P{masterPageNo})]]></printWhenExpression>
+				</reportElement>
+			</line>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="27" splitType="Stretch">
+			<frame>
+				<reportElement style="UCRHeading" mode="Opaque" x="0" y="3" width="555" height="24"/>
+				<textField>
+					<reportElement x="8" y="1" width="270" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Times New Roman" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{testTypeLabel}]]></textFieldExpression>
+					<anchorNameExpression><![CDATA[$P{testTypeLabel} + $P{masterPageNo}]]></anchorNameExpression>
+				</textField>
+			</frame>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="66" splitType="Stretch">
+			<frame>
+				<reportElement x="0" y="0" width="555" height="66" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[!$F{jsAllTestSuites}.isEmpty()]]></printWhenExpression>
+				</reportElement>
+				<subreport>
+					<reportElement x="0" y="0" width="555" height="65" isRemoveLineWhenBlank="true"/>
+					<subreportParameter name="testType">
+						<subreportParameterExpression><![CDATA[$P{testType}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="jsAllTestSuites">
+						<subreportParameterExpression><![CDATA[$F{jsAllTestSuites}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="isClassEmpty">
+						<subreportParameterExpression><![CDATA[$P{isClassEmpty}]]></subreportParameterExpression>
+					</subreportParameter>
+					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.JREmptyDataSource()]]></dataSourceExpression>
+					<subreportExpression><![CDATA["PhrescoSureFireJSReport_subreport1.jasper"]]></subreportExpression>
+				</subreport>
+			</frame>
+		</band>
+		<band height="66">
+			<frame>
+				<reportElement x="0" y="0" width="555" height="66" isRemoveLineWhenBlank="true"/>
+				<subreport>
+					<reportElement x="0" y="0" width="555" height="65"/>
+					<subreportParameter name="testType">
+						<subreportParameterExpression><![CDATA[$P{testType}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="isClassEmpty">
+						<subreportParameterExpression><![CDATA[$P{isClassEmpty}]]></subreportParameterExpression>
+					</subreportParameter>
+					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{jsTestSuites})]]></dataSourceExpression>
+					<subreportExpression><![CDATA["MultiModuleUnitTestSureFireDetailReport.jasper"]]></subreportExpression>
+				</subreport>
+			</frame>
+		</band>
+		<band height="66">
+			<frame>
+				<reportElement x="0" y="0" width="555" height="66" isRemoveLineWhenBlank="true"/>
+				<subreport>
+					<reportElement x="0" y="0" width="555" height="66"/>
+					<subreportParameter name="testType">
+						<subreportParameterExpression><![CDATA[$P{testType}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="isClassEmpty">
+						<subreportParameterExpression><![CDATA[$P{isClassEmpty}]]></subreportParameterExpression>
+					</subreportParameter>
+					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{jsTestSuites})]]></dataSourceExpression>
+					<subreportExpression><![CDATA["PhrescoSureFireDetailReport1.jasper"]]></subreportExpression>
+				</subreport>
+			</frame>
+		</band>
+	</detail>
+</jasperReport>

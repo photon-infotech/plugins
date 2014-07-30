@@ -142,15 +142,22 @@
 					<imageExpression><![CDATA[$P{logoBase64Img}]]></imageExpression>
 				</image>
 			</frame>
-			<rectangle>
-				<reportElement style="PMSFRTitleRectLogo" x="0" y="128" width="555" height="20"/>
+			<rectangle radius="10">
+				<reportElement style="PMSFRHeadingRow" x="1" y="130" width="554" height="20"/>
 			</rectangle>
 			<textField>
-				<reportElement x="4" y="128" width="309" height="20" forecolor="#FFFFFF"/>
-				<textElement>
-					<font fontName="Times New Roman" size="16" isBold="true"/>
+				<reportElement style="PMSFRHeadingRowLabelValue" x="18" y="130" width="86" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="11" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{testType}.toUpperCase() + " TEST REPORT"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{moduleOrTechLabel} + ":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="PMSFRHeadingRowLabelValue" x="104" y="130" width="443" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{moduleOrTechName}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -161,23 +168,6 @@
 		<band height="127">
 			<frame>
 				<reportElement x="0" y="0" width="555" height="124"/>
-				<rectangle radius="10">
-					<reportElement style="PMSFRHeadingRow" x="1" y="10" width="554" height="20"/>
-				</rectangle>
-				<textField>
-					<reportElement style="PMSFRHeadingRowLabelValue" x="18" y="10" width="86" height="20"/>
-					<textElement verticalAlignment="Middle">
-						<font fontName="Times New Roman" size="11" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{moduleOrTechLabel} + ":"]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement style="PMSFRHeadingRowLabelValue" x="104" y="10" width="443" height="20"/>
-					<textElement verticalAlignment="Middle">
-						<font fontName="Times New Roman" size="11" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{moduleOrTechName}]]></textFieldExpression>
-				</textField>
 				<subreport>
 					<reportElement x="2" y="35" width="551" height="89"/>
 					<subreportParameter name="testType">
@@ -189,6 +179,16 @@
 					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{sureFireReport})]]></dataSourceExpression>
 					<subreportExpression><![CDATA["PhrescoModuleUnitTestReport.jasper"]]></subreportExpression>
 				</subreport>
+				<rectangle>
+					<reportElement style="PMSFRTitleRectLogo" x="0" y="15" width="555" height="20"/>
+				</rectangle>
+				<textField>
+					<reportElement x="4" y="15" width="309" height="20" forecolor="#FFFFFF"/>
+					<textElement>
+						<font fontName="Times New Roman" size="16" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{testType}.toUpperCase() + " TEST REPORT"]]></textFieldExpression>
+				</textField>
 			</frame>
 		</band>
 	</detail>
