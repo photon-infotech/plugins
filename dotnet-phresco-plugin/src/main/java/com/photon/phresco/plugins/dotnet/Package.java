@@ -137,6 +137,7 @@ public class Package implements PluginConstants {
 					}
 				}
 			}
+			
 			String[] list = srcDir.list(new CsFileNameFilter());
 			StringBuilder sb = new StringBuilder();
 			sb.append(MS_BUILD);
@@ -151,11 +152,13 @@ public class Package implements PluginConstants {
 			sb.append(WP_STR_SEMICOLON);
 			sb.append(DEPLOY_TARGET);
 			sb.append(WP_STR_SEMICOLON);
-			sb.append(DEPLOY_TEMP_DIR);
+//			PomProcessor processor = new PomProcessor(new File(baseDir+ File.separator + POM_XML));
+//			String tempDir = "_PackageTempDir=" +processor.getPropertyValue("phresco.deploy.temp.dir");
+			sb.append("_PackageTempDir=" + targetDir.getPath());
 			sb.append(STR_SPACE);
 			sb.append(builder.toString());
 			
-		log.info("executeMSBuildCmd() : " + sb.toString());
+			log.info("executeMSBuildCmd() : " + sb.toString());
 		
 //			sb.append("/p:Configuration=Release;DeployOnBuild=true;DeployTarget=Package;_PackageTempDir=..\\..\\..\\do_not_checkin\\target");
 			String line = null;
@@ -171,6 +174,7 @@ public class Package implements PluginConstants {
 			}
 		} catch (IOException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
+		 
 		} finally {
 			Utility.closeStream(in);
 		}
