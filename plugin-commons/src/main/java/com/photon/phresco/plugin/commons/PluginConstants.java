@@ -491,6 +491,7 @@ public interface PluginConstants {
      String LOAD_TEST_REPORTS 			= "loadTestReports";
      String FUNCTIONAL_TEST_REPORTS 	= "functionalTestReports";
      String COMPONENT_TEST_REPORTS 	    = "componentTestReports";
+     String INTEGRATION_TEST_REPORTS    = "integrationTestReports";
      String UNIT_TEST_REPORTS 			= "unitTestReports";
      String FUNCTIONAL_SURE_FIRE_REPORTS = "functionalSureFireReports";
      String MANUAL_SURE_FIRE_REPORTS     = "manualSureFireReports";

@@ -51,21 +51,21 @@
 					<reportElement style="PMSFRHeadingRow" x="1" y="10" width="552" height="20"/>
 				</rectangle>
 				<textField>
-					<reportElement style="PMSFRHeadingRowLabelValue" x="232" y="10" width="88" height="20" forecolor="#333333"/>
+					<reportElement style="PMSFRHeadingRowLabelValue" x="232" y="10" width="88" height="20" forecolor="#FFFFFF"/>
 					<textElement verticalAlignment="Middle">
 						<font fontName="Times New Roman" size="11" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{moduleOrTechLabel} +" :"]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement style="PMSFRHeadingRowLabelValue" x="324" y="10" width="229" height="20" forecolor="#333333"/>
+					<reportElement style="PMSFRHeadingRowLabelValue" x="324" y="10" width="229" height="20" forecolor="#FFFFFF"/>
 					<textElement verticalAlignment="Middle">
 						<font fontName="Times New Roman" size="11" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{moduleOrTechName}]]></textFieldExpression>
 				</textField>
 				<subreport>
-					<reportElement x="1" y="31" width="553" height="89"/>
+					<reportElement x="0" y="31" width="553" height="89"/>
 					<subreportParameter name="testType">
 						<subreportParameterExpression><![CDATA[$P{testType}]]></subreportParameterExpression>
 					</subreportParameter>
@@ -79,7 +79,7 @@
 					<subreportExpression><![CDATA["PhrescoModuleUnitCumulativeReport.jasper"]]></subreportExpression>
 				</subreport>
 				<textField>
-					<reportElement x="18" y="10" width="214" height="20" forecolor="#333333"/>
+					<reportElement x="18" y="10" width="214" height="20" forecolor="#FFFFFF"/>
 					<textElement verticalAlignment="Middle">
 						<font fontName="Times New Roman" size="11" isBold="true"/>
 					</textElement>

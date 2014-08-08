@@ -252,11 +252,11 @@
 					<subreportParameter name="testType">
 						<subreportParameterExpression><![CDATA["unit"]]></subreportParameterExpression>
 					</subreportParameter>
-					<subreportParameter name="masterPageNo">
-						<subreportParameterExpression><![CDATA[$V{PAGE_NUMBER}]]></subreportParameterExpression>
-					</subreportParameter>
 					<subreportParameter name="HeadingsCollection">
 						<subreportParameterExpression><![CDATA[$V{HeadingsCollection}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="masterPageNo">
+						<subreportParameterExpression><![CDATA[$V{PAGE_NUMBER}]]></subreportParameterExpression>
 					</subreportParameter>
 					<subreportParameter name="reportsDataType">
 						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
@@ -268,7 +268,7 @@
 						<subreportParameterExpression><![CDATA[$F{isClassEmpty}]]></subreportParameterExpression>
 					</subreportParameter>
 					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource(java.util.Collections.singleton($F{unitTestReport}))]]></dataSourceExpression>
-					<subreportExpression><![CDATA["MultiModuleUnitTestRootReport.jasper"]]></subreportExpression>
+					<subreportExpression><![CDATA["MultiModuleAllUnitTestRootReport.jasper"]]></subreportExpression>
 				</subreport>
 			</frame>
 		</band>
@@ -283,11 +283,11 @@
 					<subreportParameter name="testType">
 						<subreportParameterExpression><![CDATA["functional"]]></subreportParameterExpression>
 					</subreportParameter>
-					<subreportParameter name="masterPageNo">
-						<subreportParameterExpression><![CDATA[$V{PAGE_NUMBER}]]></subreportParameterExpression>
-					</subreportParameter>
 					<subreportParameter name="HeadingsCollection">
 						<subreportParameterExpression><![CDATA[$V{HeadingsCollection}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="masterPageNo">
+						<subreportParameterExpression><![CDATA[$V{PAGE_NUMBER}]]></subreportParameterExpression>
 					</subreportParameter>
 					<subreportParameter name="reportsDataType">
 						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>

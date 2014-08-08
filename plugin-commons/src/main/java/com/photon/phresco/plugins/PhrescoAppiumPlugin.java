@@ -167,7 +167,7 @@ public class PhrescoAppiumPlugin implements PluginConstants {
 		        	// IPA path
 	        		String ipaPath = "\"" + getIpaPath(baseDir.getPath(), subModule, buildInfo.getBuildName()) + "\""; 
 	        		command.append(STR_SPACE)
-	        		.append(HYPHEN_IPA)
+	        		.append(HYPHEN_APP)
 	        		.append(STR_SPACE)
 	        		.append(ipaPath);
 	        		properties.put(APP_PATH, ipaPath.substring(1, ipaPath.length()-1));

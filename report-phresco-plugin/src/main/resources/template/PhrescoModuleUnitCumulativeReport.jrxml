@@ -17,6 +17,8 @@
 	<parameter name="isClassEmpty" class="java.lang.Boolean"/>
 	<field name="testSuites" class="java.util.List"/>
 	<field name="allTestSuites" class="java.util.List"/>
+	<field name="jsAllTestSuites" class="java.util.List"/>
+	<field name="jsTestSuites" class="java.util.List"/>
 	<variable name="count" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[$V{count} + new Integer(1)]]></variableExpression>
 		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
@@ -28,7 +30,7 @@
 		<band height="202">
 			<frame>
 				<reportElement x="0" y="5" width="555" height="197" isRemoveLineWhenBlank="true">
-					<printWhenExpression><![CDATA[!$F{testSuites}.isEmpty()]]></printWhenExpression>
+					<printWhenExpression><![CDATA[!$F{jsAllTestSuites}.isEmpty()]]></printWhenExpression>
 				</reportElement>
 				<subreport>
 					<reportElement x="0" y="0" width="555" height="197" isRemoveLineWhenBlank="true">
@@ -43,8 +45,8 @@
 					<subreportParameter name="isClassEmpty">
 						<subreportParameterExpression><![CDATA[$P{isClassEmpty}]]></subreportParameterExpression>
 					</subreportParameter>
-					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{testSuites})]]></dataSourceExpression>
-					<subreportExpression><![CDATA["PhrescoSureFireDetailReport.jasper"]]></subreportExpression>
+					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{jsTestSuites})]]></dataSourceExpression>
+					<subreportExpression><![CDATA["PhrescoSureFireDetailJSReport.jasper"]]></subreportExpression>
 				</subreport>
 			</frame>
 		</band>
