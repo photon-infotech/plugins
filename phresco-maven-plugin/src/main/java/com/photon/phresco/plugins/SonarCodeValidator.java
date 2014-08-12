@@ -23,11 +23,8 @@ import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
-import org.apache.bcel.classfile.Constant;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.execution.MavenSession;
@@ -212,6 +209,24 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
 					} 
 				}
 
+			/*
+			 * For .NET projects - Clean and Build before CodeValidation
+			 */
+			String techGroupId = applicationInfo.getTechInfo().getTechGroupId();
+			if (techId.equals(TechnologyTypes.DOT_NET) || techGroupId.equals("Dot Net")) {
+				File srcDir = new File(project.getBuild().getSourceDirectory());
+				String slnFile = srcDir.list(new SlnFileNameFilter())[0];
+				
+				getLog().info("Performing cleanup tasks");
+				
+				// Clean
+				String command = "devenv \"" + slnFile + "\" /Clean";
+				Utility.executeStreamconsumer(command, srcDir.getAbsolutePath(), baseDir.getAbsolutePath(), "");
+				
+				// Build
+				command = "devenv \"" + slnFile + "\" /Build";
+				Utility.executeStreamconsumer(command, srcDir.getAbsolutePath(), baseDir.getAbsolutePath(), "");
+			}
 
 			pluginValidate(infoFile);
 		} catch (FileNotFoundException e) {
@@ -276,5 +291,11 @@ public class SonarCodeValidator extends PhrescoAbstractMojo implements PluginCon
 class JarFileNameFilter implements FilenameFilter {
 	public boolean accept(File dir, String name) {
 		return name.endsWith(".jar");
+	}
+}
+
+class SlnFileNameFilter implements FilenameFilter {
+	public boolean accept(File dir, String name) {
+		return name.endsWith(PluginConstants.WP_SLN);
 	}
 }
