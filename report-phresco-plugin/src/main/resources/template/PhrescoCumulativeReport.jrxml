@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="PhrescoXmlReport" pageWidth="595" pageHeight="842" whenNoDataType="BlankPage" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" scriptletClass="com.photon.phresco.plugins.Scriptlet">
 	<property name="ireport.zoom" value="1.100000000000001"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.y" value="482"/>
 	<import value="org.apache.commons.codec.binary.Base64"/>
 	<style name="PCRTitle"/>
 	<style name="PCRTitleRect"/>
@@ -43,6 +43,7 @@
 		<defaultValueExpression><![CDATA["/Users/kaleeswaran/work/photon-infotech/2.2/plugins/report-phresco-plugin/src/main/resources/"]]></defaultValueExpression>
 	</parameter>
 	<parameter name="manualTestReports" class="java.util.Collection"/>
+	<parameter name="integrationTestReports" class="java.util.Collection"/>
 	<variable name="isShowGraphs" class="java.lang.Boolean">
 		<variableExpression><![CDATA[Boolean.TRUE]]></variableExpression>
 		<initialValueExpression><![CDATA[Boolean.TRUE]]></initialValueExpression>
@@ -283,17 +284,20 @@ $P{componentTestReports} != null || $P{functionalTestReports} != null || !$P{per
 					<subreportParameter name="reportsDataType">
 						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
 					</subreportParameter>
-					<subreportParameter name="componentTestReports">
-						<subreportParameterExpression><![CDATA[$P{componentTestReports}]]></subreportParameterExpression>
-					</subreportParameter>
 					<subreportParameter name="loadTestReports">
 						<subreportParameterExpression><![CDATA[$P{loadTestReports}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="componentTestReports">
+						<subreportParameterExpression><![CDATA[$P{componentTestReports}]]></subreportParameterExpression>
 					</subreportParameter>
 					<subreportParameter name="projectName">
 						<subreportParameterExpression><![CDATA[$P{projectName}]]></subreportParameterExpression>
 					</subreportParameter>
 					<subreportParameter name="techName">
 						<subreportParameterExpression><![CDATA[$P{techName}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="integrationTestReports">
+						<subreportParameterExpression><![CDATA[$P{integrationTestReports}]]></subreportParameterExpression>
 					</subreportParameter>
 					<subreportParameter name="isClassEmpty">
 						<subreportParameterExpression><![CDATA[$P{isClassEmpty}]]></subreportParameterExpression>
@@ -447,6 +451,34 @@ $P{componentTestReports} != null || $P{functionalTestReports} != null || !$P{per
 			</frame>
 		</band>
 		<band height="50">
+			<printWhenExpression><![CDATA[!$P{integrationTestReports}.isEmpty()]]></printWhenExpression>
+			<frame>
+				<reportElement x="0" y="0" width="555" height="50"/>
+				<subreport>
+					<reportElement x="0" y="0" width="555" height="50">
+						<printWhenExpression><![CDATA[$P{reportsDataType}.equals("detail")]]></printWhenExpression>
+					</reportElement>
+					<subreportParameter name="testType">
+						<subreportParameterExpression><![CDATA["integration"]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="masterPageNo">
+						<subreportParameterExpression><![CDATA[$V{PAGE_NUMBER}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="headingsMap">
+						<subreportParameterExpression><![CDATA[$V{headingsMap}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="reportsDataType">
+						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="isClassEmpty">
+						<subreportParameterExpression><![CDATA[$P{isClassEmpty}]]></subreportParameterExpression>
+					</subreportParameter>
+					<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{integrationTestReports})]]></dataSourceExpression>
+					<subreportExpression><![CDATA["PhrescoIntegrationCumulativeReport.jasper"]]></subreportExpression>
+				</subreport>
+			</frame>
+		</band>
+		<band height="50">
 			<printWhenExpression><![CDATA[!$P{performanceSpecialHandle}.booleanValue()]]></printWhenExpression>
 			<frame>
 				<reportElement x="0" y="0" width="555" height="50" isRemoveLineWhenBlank="true"/>
@@ -536,11 +568,9 @@ $P{componentTestReports} != null || $P{functionalTestReports} != null || !$P{per
 			</frame>
 		</band>
 		<band height="59">
-			<printWhenExpression><![CDATA[!((($P{unitTestReports} == null ? Boolean.FALSE : Boolean.TRUE) || (($P{multiModuleUnitTestReports} == null ? Boolean.FALSE : Boolean.TRUE) && !$P{multiModuleUnitTestReports}.isEmpty()) ) ||
-$P{componentTestReports} != null || $P{functionalTestReports} != null || !$P{performanceTestReports}.isEmpty() || !$P{loadTestReports}.isEmpty() ||
-!$P{sonarReport}.isEmpty())]]></printWhenExpression>
+			<printWhenExpression><![CDATA[!((($P{unitTestReports} == null ? Boolean.FALSE : Boolean.TRUE) || (($P{multiModuleUnitTestReports} == null ? Boolean.FALSE : Boolean.TRUE) && !$P{multiModuleUnitTestReports}.isEmpty()) ) || $P{componentTestReports} != null || $P{functionalTestReports} != null || !$P{performanceTestReports}.isEmpty() || !$P{loadTestReports}.isEmpty() || !$P{sonarReport}.isEmpty())]]></printWhenExpression>
 			<staticText>
-				<reportElement key="NoDataKey" style="PCRTitleLabel" x="55" y="14" width="410" height="24"/>
+				<reportElement key="NoDataKey" style="PCRTitleLabel" x="55" y="15" width="410" height="24"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="Times New Roman" size="18" isBold="true"/>
 				</textElement>
@@ -548,7 +578,7 @@ $P{componentTestReports} != null || $P{functionalTestReports} != null || !$P{per
 			</staticText>
 		</band>
 		<band height="60">
-			<printWhenExpression><![CDATA[((($P{unitTestReports} == null ? Boolean.FALSE : Boolean.TRUE) || (($P{multiModuleUnitTestReports} == null ? Boolean.FALSE : Boolean.TRUE) && !$P{multiModuleUnitTestReports}.isEmpty()) ) || $P{componentTestReports} != null || $P{functionalTestReports} != null || !$P{performanceTestReports}.isEmpty() || !$P{loadTestReports}.isEmpty() || !$P{manualTestReports}.isEmpty() || !$P{sonarReport}.isEmpty())]]></printWhenExpression>
+			<printWhenExpression><![CDATA[((($P{unitTestReports} == null ? Boolean.FALSE : Boolean.TRUE) || (($P{multiModuleUnitTestReports} == null ? Boolean.FALSE : Boolean.TRUE) && !$P{multiModuleUnitTestReports}.isEmpty()) ) || $P{componentTestReports} != null || $P{functionalTestReports} != null || !$P{performanceTestReports}.isEmpty() || !$P{loadTestReports}.isEmpty() || !$P{manualTestReports}.isEmpty() || !$P{sonarReport}.isEmpty() || !$P{integrationTestReports}.isEmpty())]]></printWhenExpression>
 			<frame>
 				<reportElement positionType="Float" x="0" y="1" width="555" height="59" isRemoveLineWhenBlank="true">
 					<printWhenExpression><![CDATA[$P{reportsDataType}.equals("detail")]]></printWhenExpression>
@@ -594,26 +624,29 @@ $P{componentTestReports} != null || $P{functionalTestReports} != null || !$P{per
 					<subreportParameter name="performanceTestReports">
 						<subreportParameterExpression><![CDATA[$P{performanceTestReports}]]></subreportParameterExpression>
 					</subreportParameter>
-					<subreportParameter name="multiModuleUnitTestReports">
-						<subreportParameterExpression><![CDATA[$P{multiModuleUnitTestReports}]]></subreportParameterExpression>
-					</subreportParameter>
 					<subreportParameter name="headingsMap">
 						<subreportParameterExpression><![CDATA[$V{headingsMap}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="multiModuleUnitTestReports">
+						<subreportParameterExpression><![CDATA[$P{multiModuleUnitTestReports}]]></subreportParameterExpression>
 					</subreportParameter>
 					<subreportParameter name="reportsDataType">
 						<subreportParameterExpression><![CDATA[$P{reportsDataType}]]></subreportParameterExpression>
 					</subreportParameter>
-					<subreportParameter name="loadTestReports">
-						<subreportParameterExpression><![CDATA[$P{loadTestReports}]]></subreportParameterExpression>
-					</subreportParameter>
 					<subreportParameter name="componentTestReports">
 						<subreportParameterExpression><![CDATA[$P{componentTestReports}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="loadTestReports">
+						<subreportParameterExpression><![CDATA[$P{loadTestReports}]]></subreportParameterExpression>
 					</subreportParameter>
 					<subreportParameter name="projectName">
 						<subreportParameterExpression><![CDATA[$P{projectName}]]></subreportParameterExpression>
 					</subreportParameter>
 					<subreportParameter name="techName">
 						<subreportParameterExpression><![CDATA[$P{techName}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="integrationTestReports">
+						<subreportParameterExpression><![CDATA[$P{integrationTestReports}]]></subreportParameterExpression>
 					</subreportParameter>
 					<subreportParameter name="isClassEmpty">
 						<subreportParameterExpression><![CDATA[$P{isClassEmpty}]]></subreportParameterExpression>

@@ -140,7 +140,7 @@ import com.phresco.pom.model.Plugin;
 import com.phresco.pom.model.Profile;
 import com.phresco.pom.util.PomProcessor;
 
-public class GenerateReport implements PluginConstants,ReportConstants{
+public class GenerateReport implements PluginConstants, ReportConstants{
 	
 	private MavenProject mavenProject;
 	private File baseDir;
@@ -265,7 +265,7 @@ public class GenerateReport implements PluginConstants,ReportConstants{
 		ArrayList<JmeterTypeReport> jmeterTestResults = null;
 		try {
 			// Report generation for unit and functional
-			if (UNIT.equals(testType) || FUNCTIONAL.equals(testType) || COMPONENT.equals(testType) || MANUAL.equals(testType)) {
+			if (UNIT.equals(testType) || FUNCTIONAL.equals(testType) || COMPONENT.equals(testType) || MANUAL.equals(testType) || INTEGRATION.equals(testType)) {
 				//List<String> modules = PluginUtils.getProjectModules(mavenProject);
 				List<String> modules = new ArrayList<String>();
 				StringBuilder builder=builderSetup(baseDir.getAbsoluteFile());				
@@ -289,8 +289,11 @@ public class GenerateReport implements PluginConstants,ReportConstants{
 							ModuleSureFireReport msr = new ModuleSureFireReport();
 							SureFireReport sureFireReports = sureFireReports(module);
 
-							List<TestSuite> testSuites = sureFireReports.getTestSuites();
-							if (CollectionUtils.isNotEmpty(testSuites)) {
+							List<TestSuite> testSuitesUnit = sureFireReports.getTestSuites();
+							List<AllTestSuite> allTestSuitesUnit = sureFireReports.getAllTestSuites();
+							List<TestSuite> jsTestSuitesUnit = sureFireReports.getJsTestSuites();
+							List<AllTestSuite> jsAllTestSuitesUnit = sureFireReports.getJsAllTestSuites();
+							if (CollectionUtils.isNotEmpty(testSuitesUnit) || CollectionUtils.isNotEmpty(allTestSuitesUnit) || CollectionUtils.isNotEmpty(jsTestSuitesUnit)||CollectionUtils.isNotEmpty(jsAllTestSuitesUnit)) {
 								msr.setModuleOrTechName(module);
 								msr.setModuleOrTechLabel(MODULE_NAME);
 								msr.setSureFireReport(Arrays.asList(sureFireReports));
@@ -354,6 +357,7 @@ public class GenerateReport implements PluginConstants,ReportConstants{
 			}
 			//crisp and detail view report generation
 			ModuleSureFireReport msr = null;
+			List<SureFireReport> moduleSureFireReports = new ArrayList<SureFireReport>();
 			if (isMultiModuleProject) {
 				// multi module project....
 				List<ModuleSureFireReport> moduleWiseReports = new ArrayList<ModuleSureFireReport>();
@@ -362,8 +366,11 @@ public class GenerateReport implements PluginConstants,ReportConstants{
 						msr = new ModuleSureFireReport();
 						SureFireReport sureFireReports = sureFireReports(module);
 
-						List<TestSuite> testSuites = sureFireReports.getTestSuites();
-						if (CollectionUtils.isNotEmpty(testSuites)) {
+						List<TestSuite> testSuitesUnit = sureFireReports.getTestSuites();
+						List<AllTestSuite> allTestSuitesUnit = sureFireReports.getAllTestSuites();
+						List<TestSuite> jsTestSuitesUnit = sureFireReports.getJsTestSuites();
+						List<AllTestSuite> jsAllTestSuitesUnit = sureFireReports.getJsAllTestSuites();
+						if (CollectionUtils.isNotEmpty(testSuitesUnit) || CollectionUtils.isNotEmpty(allTestSuitesUnit) || CollectionUtils.isNotEmpty(jsTestSuitesUnit) || CollectionUtils.isNotEmpty(jsAllTestSuitesUnit)) {
 							msr.setModuleOrTechName(module);
 							msr.setModuleOrTechLabel(MODULE_NAME);
 							msr.setSureFireReport(Arrays.asList(sureFireReports));
@@ -371,6 +378,7 @@ public class GenerateReport implements PluginConstants,ReportConstants{
 						}
 					}
 				}
+				cumulativeReportparams.put(UNIT_TEST_REPORTS, moduleSureFireReports);
 				cumulativeReportparams.put(IS_MULTI_MODULE_PROJECT, true);
 				cumulativeReportparams.put(MULTI_MODULE_UNIT_TEST_REPORTS, moduleWiseReports);
 			} else {
@@ -387,6 +395,10 @@ public class GenerateReport implements PluginConstants,ReportConstants{
 				if (CollectionUtils.isNotEmpty(allTestSuitesUnit) || CollectionUtils.isNotEmpty(testSuitesUnit) || CollectionUtils.isNotEmpty(jsTestSuitesUnit) || CollectionUtils.isNotEmpty(jsAllTestSuitesUnit)) {
 					cumulativeReportparams.put(UNIT_TEST_REPORTS, Arrays.asList(unitTestSureFireReports));
 				}
+				else
+				{
+					cumulativeReportparams.put(UNIT_TEST_REPORTS, moduleSureFireReports);
+				}
 			}
 
 			testType = MANUAL;
@@ -397,6 +409,8 @@ public class GenerateReport implements PluginConstants,ReportConstants{
 			if (CollectionUtils.isNotEmpty(testSuitesManual) || CollectionUtils.isNotEmpty(allTestSuitesManual)) {
 				cumulativeReportparams.put(MANUAL_TEST_REPORTS, Arrays.asList(manualSureFireReports));
 			}
+
+
 
 			testType = FUNCTIONAL;
 			boolean isClassEmpty = true;
@@ -426,7 +440,15 @@ public class GenerateReport implements PluginConstants,ReportConstants{
 			if (CollectionUtils.isNotEmpty(testSuitesComponent) || CollectionUtils.isNotEmpty(allTestSuitesComponent)) {
 				cumulativeReportparams.put(COMPONENT_TEST_REPORTS, Arrays.asList(componentSureFireReports));
 			}
-
+			
+			testType = INTEGRATION;
+			SureFireReport integrationTestSureFireReports = sureFireReports(null);
+			List<TestSuite> testSuitesIntegration = integrationTestSureFireReports.getTestSuites();
+			List<AllTestSuite> allTestSuitesIntegration = integrationTestSureFireReports.getAllTestSuites();
+			if (CollectionUtils.isNotEmpty(testSuitesIntegration) || CollectionUtils.isNotEmpty(allTestSuitesIntegration)) {
+				cumulativeReportparams.put(INTEGRATION_TEST_REPORTS, Arrays.asList(manualSureFireReports));
+			}
+			
 
 			testType = PERFORMACE;
 			//performance details
@@ -515,6 +537,10 @@ public class GenerateReport implements PluginConstants,ReportConstants{
 			throw new PhrescoException(e);
 		}
 	}
+
+
+
+
 
 	//cumulative test report generation
 	private void generateCumulativeTestReport(Map<String, Object> cumulativeReportparams) throws PhrescoException {
@@ -846,6 +872,11 @@ public class GenerateReport implements PluginConstants,ReportConstants{
 				if (StringUtils.isNotEmpty(report) && !SONAR_SOURCE.equals(report)) {
 					sbuild.append(COLON);
 					sbuild.append(report+ appId);
+				}
+				else
+				{
+					sbuild.append(COLON);
+					sbuild.append(SONAR_SRC + appId);
 				}
 
 				String artifact = sbuild.toString();
@@ -1371,24 +1402,26 @@ public class GenerateReport implements PluginConstants,ReportConstants{
 	}
 
 	// unit and functional test report
-	public SureFireReport sureFireReports(String module) throws Exception {
-		String type = "";
-		Map<String, String> reportDirWithTestSuitePath = new HashMap<String, String>(); // <file
-		PomProcessor pomProcessor = new PomProcessor(mavenProject.getFile());
-		String reportFilePath = testDir.getAbsolutePath();
-		// testsuitePath,testcasePath>
-		if (UNIT.equals(testType)) {
-			reportFilePath = baseDir.getAbsolutePath();
-//			if (StringUtils.isNotEmpty(module)) {
-//				reportFilePath = reportFilePath + File.separatorChar + module;
-//			}
-			String unitTestDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_DIR);
-			if (StringUtils.isNotEmpty(testDirName) && StringUtils.isNotEmpty(unitTestDir)) {
-				reportFilePath = testDir.getPath();
-			} else if (StringUtils.isNotEmpty(srcDirName) && StringUtils.isNotEmpty(unitTestDir)) {
-				reportFilePath = srcDirectory.getPath();
-			}
-			getUnitTestXmlFilesAndXpaths(reportFilePath, reportDirWithTestSuitePath);
+
+		
+		public SureFireReport sureFireReports(String module) throws Exception {
+			String type = "";
+			Map<String, String> reportDirWithTestSuitePath = new HashMap<String, String>(); // <file
+			PomProcessor pomProcessor = new PomProcessor(mavenProject.getFile());
+			String reportFilePath = testDir.getAbsolutePath();
+			// testsuitePath,testcasePath>
+			if (UNIT.equals(testType)) {
+				reportFilePath = baseDir.getAbsolutePath();
+	//			if (StringUtils.isNotEmpty(module)) {
+	//				reportFilePath = reportFilePath + File.separatorChar + module;
+	//			}
+				String unitTestDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_UNITTEST_DIR);
+				if (StringUtils.isNotEmpty(testDirName) && StringUtils.isNotEmpty(unitTestDir)) {
+					reportFilePath = testDir.getPath();
+				} else if (StringUtils.isNotEmpty(srcDirName) && StringUtils.isNotEmpty(unitTestDir)) {
+					reportFilePath = srcDirectory.getPath();
+				}
+				getUnitTestXmlFilesAndXpaths(reportFilePath, reportDirWithTestSuitePath);
 		} else if (MANUAL.equals(testType)) {
 			String property = pomProcessor.getProperty(Constants.POM_PROP_KEY_MANUALTEST_RPT_DIR);
 			//String manualTestReportDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_MANUALTEST_RPT_DIR);
@@ -1404,7 +1437,7 @@ public class GenerateReport implements PluginConstants,ReportConstants{
 				sureFireReport.setTestSuites(testSuites);
 				return sureFireReport;
 			}
-		} else if (FUNCTIONAL.equals(testType)){
+		} else if (FUNCTIONAL.equals(testType)) {
 			String functionalTestDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_RPT_DIR);
 			if(StringUtils.isNotEmpty(functionalTestDir)) {
 				String functionalTestSuitePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_FUNCTEST_TESTSUITE_XPATH);
@@ -1432,7 +1465,8 @@ public class GenerateReport implements PluginConstants,ReportConstants{
 				}
 			}
 		} else if (COMPONENT.equals(testType)) {
-			String componentTestDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_COMPONENTTEST_RPT_DIR);
+			//String componentTestDir = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_COMPONENTTEST_RPT_DIR);
+			String componentTestDir = pomProcessor.getProperty(Constants.POM_PROP_KEY_COMPONENTTEST_RPT_DIR);
 			String componentTestSuitePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_COMPONENTTEST_TESTSUITE_XPATH);
 			String componentTestCasePath = mavenProject.getProperties().getProperty(Constants.POM_PROP_KEY_COMPONENTTEST_TESTCASE_PATH);
 			String reportPath = "";
@@ -1442,6 +1476,20 @@ public class GenerateReport implements PluginConstants,ReportConstants{
 			List<File> testResultFiles = getTestResultFilesAsList(reportPath);
 			for (File testResultFile : testResultFiles) {
 				reportDirWithTestSuitePath.put(testResultFile.getPath(), componentTestSuitePath + "," + componentTestCasePath);
+			}
+		} else if (INTEGRATION.equals(testType)) {
+			StringBuilder integrationTestPOM = new StringBuilder(baseDir.getAbsolutePath());
+			integrationTestPOM.append("-integrationtest");
+			String reportPath = integrationTestPOM.toString();
+			integrationTestPOM.append(File.separator);
+			integrationTestPOM.append(POM_XML);
+			File pomPath = new File(integrationTestPOM.toString());
+			if(pomPath.exists())
+			{
+				PomProcessor integPomProcess = new PomProcessor(pomPath.getAbsoluteFile());
+				String testPath = integPomProcess.getProperty(Constants.POM_PROP_KEY_INTGRATIONTEST_RPT_DIR);
+				String integrationTestDir = reportPath + testPath;
+				getIntegrationTestXmlFilesAndXpaths(integrationTestDir, reportDirWithTestSuitePath, pomPath);
 			}
 		}
 
@@ -2120,6 +2168,17 @@ public class GenerateReport implements PluginConstants,ReportConstants{
 		}
 	}
 
+private void getIntegrationTestXmlFilesAndXpaths(String reportPath,
+			Map<String, String> reportDirWithTestSuitePath, File integrationTestPath) throws PhrescoException, PhrescoPomException{
+		PomProcessor getIntegTestPom = new PomProcessor(integrationTestPath.getAbsoluteFile());
+		String integrationTestSuitePath = getIntegTestPom.getProperty(Constants.POM_PROP_KEY_INTEGRATIONTEST_TESTSUITE_XPATH);
+		String integrationTestCasePath = getIntegTestPom.getProperty(Constants.POM_PROP_KEY_INTEGRATIONTEST_TESTCASE_PATH);
+		List<File> testResultFiles = getTestResultFilesAsList(reportPath);
+		for (File testResultFile : testResultFiles) {
+			reportDirWithTestSuitePath.put(testResultFile.getPath(), integrationTestSuitePath + "," + integrationTestCasePath);
+		}
+	}
+
 	private List<TestSuite> getTestSuite(Document doc) throws TransformerException, PhrescoException {
 		try {
 			String testSuitePath = null;
@@ -2761,6 +2820,8 @@ public class GenerateReport implements PluginConstants,ReportConstants{
 			}
 		}
 		return testResultFileNames;
+
+
 	}
 
 	public static Map<String, String> getDeviceNames(Document document)  throws Exception {
@@ -2927,7 +2988,10 @@ public class GenerateReport implements PluginConstants,ReportConstants{
 
 		List<TestSuite> testSuitesUnit = unitTestSureFireReports.getTestSuites();
 		List<AllTestSuite> allTestSuitesUnit = unitTestSureFireReports.getAllTestSuites();
-		if (CollectionUtils.isNotEmpty(allTestSuitesUnit) || CollectionUtils.isNotEmpty(testSuitesUnit)) {
+List<TestSuite> jsTestSuitesUnit = unitTestSureFireReports.getJsTestSuites();
+		List<AllTestSuite> allJsTestSuitesUnit = unitTestSureFireReports.getJsAllTestSuites();
+		
+		if (CollectionUtils.isNotEmpty(allTestSuitesUnit) || CollectionUtils.isNotEmpty(testSuitesUnit) || CollectionUtils.isNotEmpty(jsTestSuitesUnit) || CollectionUtils.isNotEmpty(allJsTestSuitesUnit)) {
 			appendTestReport.setUnitTestReport(unitTestSureFireReports);
 		}
 	}
@@ -3481,6 +3545,7 @@ public class GenerateReport implements PluginConstants,ReportConstants{
 
 	public void setSetFailureTestCases(int setFailureTestCases) {
 		this.setFailureTestCases = setFailureTestCases;
+
 	}
 
 	public int getErrorTestCases() {
@@ -3493,6 +3558,7 @@ public class GenerateReport implements PluginConstants,ReportConstants{
 
 	public int getNodeLength() {
 		return nodeLength;
+
 	}
 
 	public void setNodeLength(int nodeLength) {
