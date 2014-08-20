@@ -33,6 +33,7 @@ public interface ReportConstants {
 	String SOURCE_POM="source.pom";
 	String APPL_NAME="Application Name :";
 	String TECHNOLOGY_NAME="technologyName";
+	String SONAR_SRC="src";
 	
 	// Color Constants
 	String COLOR_TITLE="#969696";
