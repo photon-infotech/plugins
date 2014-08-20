@@ -451,7 +451,7 @@ $P{componentTestReports} != null || $P{functionalTestReports} != null || !$P{per
 			</frame>
 		</band>
 		<band height="50">
-			<printWhenExpression><![CDATA[!$P{performanceSpecialHandle}.booleanValue()]]></printWhenExpression>
+			<printWhenExpression><![CDATA[!$P{integrationTestReports}.isEmpty()]]></printWhenExpression>
 			<frame>
 				<reportElement x="0" y="0" width="555" height="50"/>
 				<subreport>
