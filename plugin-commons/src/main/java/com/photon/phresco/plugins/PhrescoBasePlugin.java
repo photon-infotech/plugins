@@ -323,14 +323,12 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			
 
 			//to Run cucumber
-			// Move this to a Utility method
 			if (StringUtils.isNotEmpty((seleniumToolType))
 					&& seleniumToolType.equals(CUCUMBER)) {
 				if (repDirName.contains(PROJECT_BASDIR)) {
 					repDirName = repDirName.replace(PROJECT_BASDIR, baseDir.getPath());
 				}
 				
-				// Read from constans java
 				String mainClass=configValues.get(MAINCLASS);
 				String runMode = configValues.get(RUNMODE);
 				String runEnviroment = configValues.get(ENVIROIMENT);
@@ -339,13 +337,9 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 				String targetOperatingSystem=configValues.get(TARGETOPERATINGSYSTEM);
 				String scenarioTags=configValues.get(SCENARIOTAGS);
 				StringBuilder builder = new StringBuilder();
-				// Pick DmainClass from configuration
 				builder.append(TEST_COMMAND +" -DmainClass="+mainClass+" -DrunMode="+runMode+" -DrunEnviroment="+runEnviroment+" -DvdiName="+vdiName+" -DbreakPoint="+breakPoint+" -DtargetOperatingSystem="+targetOperatingSystem+" -DscenarioTags="+scenarioTags+"");
 				Utility.executeStreamconsumer(builder.toString(), funTestDir+ File.separator + functionalTestDir, project.getBasedir().getPath(), "");
-				// This code generates the cucumber report
-				// CucumberReportGenerator
 				CucumberReportGenerator cu=new CucumberReportGenerator();
-				// generateReport 
 				cu.generateReport(funTestDir+functionalTestDir+ File.separator +TARGET,repDirName);
 				return new DefaultExecutionStatus();
 			}
