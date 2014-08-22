@@ -1649,7 +1649,34 @@ public class PluginUtils {
 			throw new PhrescoException(e);
 		}
 	}
-	
+	public Document xmlParser(Document xmlDocument,DocumentBuilder builder,Element testSuite,String testsErrors,String testsFailed,String testsTotal,String testsSkipped,float duration,String testSuiteName){
+
+		Attr testSuiteErrors = xmlDocument.createAttribute(PluginConstants.ATTR_ERRORS);
+		testSuiteErrors.setValue(testsErrors);
+		testSuite.setAttributeNode(testSuiteErrors);
+
+		Attr testSuiteFailures = xmlDocument.createAttribute(PluginConstants.ATTR_FAILURES );
+		testSuiteFailures.setValue(testsFailed);
+		testSuite.setAttributeNode(testSuiteFailures);
+
+		Attr testSuiteTests = xmlDocument.createAttribute(PluginConstants.ATTR_TESTS);
+		testSuiteTests.setValue(testsTotal);
+		testSuite.setAttributeNode(testSuiteTests);
+
+		Attr testSuiteSkipped = xmlDocument.createAttribute(PluginConstants.SKIPED);
+		testSuiteSkipped.setValue(testsSkipped);
+		testSuite.setAttributeNode(testSuiteSkipped);
+
+		Attr testSuiteTime = xmlDocument.createAttribute(PluginConstants.ATTR_TIME);
+		testSuiteTime.setValue("" + duration);
+		testSuite.setAttributeNode(testSuiteTime);
+
+		Attr testSuiteNameAttr = xmlDocument.createAttribute(PluginConstants.NAME);
+		testSuiteNameAttr.setValue(testSuiteName);
+		testSuite.setAttributeNode(testSuiteNameAttr);
+		return xmlDocument;
+		
+	}
 	public List<String> getSvnData(String url, String type, String username, String password) throws PhrescoException {
 		try {
 			if (url.endsWith(FrameworkConstants.TRUNK) || url.endsWith(FrameworkConstants.TRUNK + FrameworkConstants.FORWARD_SLASH)) {

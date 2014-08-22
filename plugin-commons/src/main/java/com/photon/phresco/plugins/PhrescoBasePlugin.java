@@ -80,6 +80,7 @@ import com.photon.phresco.plugin.commons.PluginConstants;
 import com.photon.phresco.plugin.commons.PluginUtils;
 import com.photon.phresco.plugins.api.ExecutionStatus;
 import com.photon.phresco.plugins.impl.AbstractPhrescoPlugin;
+import com.photon.phresco.plugins.impl.CucumberReportGenerator;
 import com.photon.phresco.plugins.impl.DefaultExecutionStatus;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration;
 import com.photon.phresco.plugins.model.Mojos.Mojo.Configuration.Parameters.Parameter;
@@ -91,7 +92,6 @@ import com.photon.phresco.util.TechnologyTypes;
 import com.photon.phresco.util.Utility;
 import com.phresco.pom.exception.PhrescoPomException;
 import com.phresco.pom.model.Plugin;
-import com.phresco.pom.model.Profile;
 import com.phresco.pom.util.PomProcessor;
 
 public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginConstants {
@@ -270,6 +270,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 				dotPhrescoDir = new File(dotPhrescoDir.getParentFile()
 						.getPath() + File.separatorChar + subModule + File.separatorChar + dotPhrescoDirName);
 			}
+			
 //			dotPhrescoDir = new File(dotPhrescoDir.getPath()
 //					+ File.separatorChar + subModule);
 			File pomFile = pluginUtils.getPomFile(dotPhrescoDir,
@@ -279,7 +280,10 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			String appDirName = appInfo.getAppDirName();
 			Map<String, String> configValues = MojoUtil
 			.getAllValues(configuration);
+			String seleniumToolType = processor
+					.getProperty(Constants.POM_PROP_KEY_FUNCTEST_SELENIUM_TOOL);
 			String environmentName = configValues.get(ENVIRONMENT_NAME);
+			
 			String testAgainst = configValues.get(TEST_AGAINST);
 			String functionalTestDir = processor
 			.getProperty(Constants.POM_PROP_KEY_FUNCTEST_DIR);
@@ -287,6 +291,8 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			.getProperty(Constants.POM_PROP_KEY_SPLIT_TEST_DIR);
 			String srcDirName = processor
 			.getProperty(Constants.POM_PROP_KEY_SPLIT_SRC_DIR);
+			String repDirName = processor
+					.getProperty(Constants.POM_PROP_KEY_FUNCTEST_RPT_DIR);
 			File funTestDir = workingDirectory;
 			if (StringUtils.isNotEmpty(funTestDirName)) {
 				funTestDir = new File(Utility.getProjectHome()
@@ -300,6 +306,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 			if (StringUtils.isEmpty(functionalTestDir)) {
 				functionalTestDir = "";
 			}
+			
 			String jarLocation = "";
 			if (BUILD.equals(testAgainst)) {
 				environmentName = configValues.get(ENVIRONMENT_NAME);
@@ -313,6 +320,37 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 				setPropertyJarLocation(
 						funTestDir.getPath() + functionalTestDir, jarLocation);
 			}
+			
+
+			//to Run cucumber
+			// Move this to a Utility method
+			if (StringUtils.isNotEmpty((seleniumToolType))
+					&& seleniumToolType.equals(CUCUMBER)) {
+				if (repDirName.contains(PROJECT_BASDIR)) {
+					repDirName = repDirName.replace(PROJECT_BASDIR, baseDir.getPath());
+				}
+				
+				// Read from constans java
+				String mainClass=configValues.get(MAINCLASS);
+				String runMode = configValues.get(RUNMODE);
+				String runEnviroment = configValues.get(ENVIROIMENT);
+				String vdiName=configValues.get(VDINAME);
+				String breakPoint=configValues.get(BREAKPOINT);
+				String targetOperatingSystem=configValues.get(TARGETOPERATINGSYSTEM);
+				String scenarioTags=configValues.get(SCENARIOTAGS);
+				StringBuilder builder = new StringBuilder();
+				// Pick DmainClass from configuration
+				builder.append(TEST_COMMAND +" -DmainClass="+mainClass+" -DrunMode="+runMode+" -DrunEnviroment="+runEnviroment+" -DvdiName="+vdiName+" -DbreakPoint="+breakPoint+" -DtargetOperatingSystem="+targetOperatingSystem+" -DscenarioTags="+scenarioTags+"");
+				Utility.executeStreamconsumer(builder.toString(), funTestDir+ File.separator + functionalTestDir, project.getBasedir().getPath(), "");
+				// This code generates the cucumber report
+				// CucumberReportGenerator
+				CucumberReportGenerator cu=new CucumberReportGenerator();
+				// generateReport 
+				cu.generateReport(funTestDir+functionalTestDir+ File.separator +TARGET,repDirName);
+				return new DefaultExecutionStatus();
+			}
+			
+			
 			String browserValue = configValues.get(BROWSER);
 			String resolutionValue = configValues.get(RESOLUTION);
 			String resultConfigFileDir = processor
@@ -323,8 +361,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 				adaptTestConfig(resultConfigXml, environmentName, browserValue,
 						resolutionValue, workingDirectory.getPath());
 			}
-			String seleniumToolType = processor
-			.getProperty(Constants.POM_PROP_KEY_FUNCTEST_SELENIUM_TOOL);
+			
 			if (StringUtils.isNotEmpty((seleniumToolType))
 					&& seleniumToolType.equals(CAPYBARA)) {
 				StringBuilder builder = new StringBuilder();
@@ -334,6 +371,7 @@ public class PhrescoBasePlugin extends AbstractPhrescoPlugin implements PluginCo
 						.getBasedir().getPath(), "");
 				return new DefaultExecutionStatus();
 			}
+			
 			generateMavenCommand(mavenProjectInfo, funTestDir
 					+ functionalTestDir, FUNCTIONAL);
 		} catch (Exception e) {

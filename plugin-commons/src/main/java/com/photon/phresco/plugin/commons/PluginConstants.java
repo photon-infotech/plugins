@@ -323,6 +323,26 @@ public interface PluginConstants {
 	 String REPORT				= "report";
 	 String UNIT_TEST_REPORT	= "UnitTest.xml";
 	 
+	// Variables related to Cucumber Parsing json file process
+	String TAGS 				 = "tags";
+	String STEPS 				 = "steps";
+	String ELEMENTS			 	 = "elements";
+	String RESULT 				 = "result";
+	String STATUS 				 = "status";
+	String KEYWORD 				 = "keyword";
+	String ERRORMESSAGE 		 = "error_message";
+	String SCENERIOFAILURE 		 = "ScenerioFailure";
+	String CUCUMBER 			 = "Java/Selenium";
+	String RUNMODE 				 = "RunMode";
+	String ENVIROIMENT 			 = "Environment";
+	String VDINAME 				 = "vdiName";
+	String BREAKPOINT 			 = "BreakPoint";
+	String TARGETOPERATINGSYSTEM = "TargetOperatingSystem";
+	String SCENARIOTAGS 		 = "scenarioTags";
+	String PROJECT_BASDIR 		 = "project.basedir";
+	String MAINCLASS			 = "mainClass";
+	String JSON                  = "json";
+	 
 	 // Variables related to Windows Phone 7 deploy process
 	 // wptools.exe -target:emulator -xap:WindowsPhoneApplication1.xap -install
 	 String WP7_WPTOOLS_PATH			= "wptools.exe ";
