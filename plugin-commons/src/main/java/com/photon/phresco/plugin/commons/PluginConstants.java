@@ -333,11 +333,11 @@ public interface PluginConstants {
 	String ERRORMESSAGE 		 = "error_message";
 	String SCENERIOFAILURE 		 = "ScenerioFailure";
 	String CUCUMBER 			 = "Java/Selenium";
-	String RUNMODE 				 = "RunMode";
-	String ENVIROIMENT 			 = "Environment";
+	String RUNMODE 				 = "runMode";
+	String ENVIROIMENT 			 = "environment";
 	String VDINAME 				 = "vdiName";
-	String BREAKPOINT 			 = "BreakPoint";
-	String TARGETOPERATINGSYSTEM = "TargetOperatingSystem";
+	String BREAKPOINT 			 = "breakPoint";
+	String TARGETOPERATINGSYSTEM = "targetOperatingSystem";
 	String SCENARIOTAGS 		 = "scenarioTags";
 	String PROJECT_BASDIR 		 = "project.basedir";
 	String MAINCLASS			 = "mainClass";
