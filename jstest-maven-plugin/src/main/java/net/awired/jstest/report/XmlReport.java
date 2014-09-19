@@ -59,7 +59,7 @@ public class XmlReport implements Report {
     }
 
     @Override
-    public void reportGlobal(RunResults runResults) {
+    public void reportGlobal(RunResults runResults, String runnerTypeName) {
         RunResult aggregatedResult = runResults.buildAggregatedResult();
         for (SuiteResult suiteResult : aggregatedResult.getSuiteResults()) {
             reportSuite(suiteResult, reportDir);

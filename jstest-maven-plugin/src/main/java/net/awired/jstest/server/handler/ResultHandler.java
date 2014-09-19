@@ -169,11 +169,11 @@ public class ResultHandler {
     /**
      * @return true on success, false on timeout
      */
-    public boolean waitAllResult(long timeoutNoActions, long poolWait) {
+    public boolean waitAllResult(long timeoutNoActions, long poolWait, String runnerTypeName) {
         lastAction = new Date().getTime();
         while (lastAction + timeoutNoActions > new Date().getTime()) {
             if (runResults.isFullyFinished()) {
-                report.reportGlobal(runResults);
+                report.reportGlobal(runResults, runnerTypeName);
                 return true;
             }
             try {

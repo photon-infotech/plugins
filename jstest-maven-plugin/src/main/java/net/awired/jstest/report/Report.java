@@ -29,6 +29,6 @@ public interface Report {
 
     void reportRun(RunResult runResult);
 
-    void reportGlobal(RunResults runResults);
+    void reportGlobal(RunResults runResults, String runnerTypeName);
 
 }

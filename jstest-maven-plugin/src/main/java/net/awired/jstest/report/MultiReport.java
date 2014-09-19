@@ -46,9 +46,9 @@ public class MultiReport implements Report {
     }
 
     @Override
-    public void reportGlobal(RunResults runResults) {
-        outputReport.reportGlobal(runResults);
-        xmlReport.reportGlobal(runResults);
+    public void reportGlobal(RunResults runResults, String runnerTypeName) {
+        outputReport.reportGlobal(runResults, runnerTypeName);
+        xmlReport.reportGlobal(runResults, runnerTypeName);
     }
 
 }

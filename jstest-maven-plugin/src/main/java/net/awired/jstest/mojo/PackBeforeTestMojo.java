@@ -61,7 +61,7 @@ public class PackBeforeTestMojo extends AbstractJsTestMojo {
             // let browsers detect that server is back
             Thread.sleep(7000);
 
-            if (!resultHandler.waitAllResult(10000, 1000)) {
+            if (!resultHandler.waitAllResult(10000, 1000, buildAmdRunnerType().name())) {
                 throw new MojoFailureException("Do not receive all test results from clients");
             }
 

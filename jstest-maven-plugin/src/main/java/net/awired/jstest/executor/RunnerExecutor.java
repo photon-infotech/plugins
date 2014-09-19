@@ -104,6 +104,10 @@ public class RunnerExecutor implements Executor {
         
     }
     
+    public void setReportDir(File reportDir) {
+    	
+    }
+    
     public void setLog(Log log) {
 		this.log = log;
 	}

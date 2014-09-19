@@ -21,18 +21,22 @@ public class PhantomJsExecutor implements Executor, TestPluginConstants {
 
 	private static final String RUN_QUNIT_JS = "/run-qunit.js";
     private static final String RUN_JASMINE_JS = "/run-jasmine.js";
+    private static final String RUN_JASMINE_2_JS = "/run-jasmine2.js";
     private static String JS_ENGINE = "";
     private static final String RUNNER_RESOURCE = "runnerResource";
     private StringBuilder CMD = new StringBuilder("phantomjs "); 
     private Process process = null;
     private File targetSrcDir = null;
+    private File reportDir = null;
     private Log log = null;
 
     public PhantomJsExecutor(String runnerType) {
     	
     	 if (JASMINE.equalsIgnoreCase(runnerType)) {
      		JS_ENGINE = RUN_JASMINE_JS;
-     	} else  {
+     	} else if (JASMINE2.equalsIgnoreCase(runnerType)) {
+     		JS_ENGINE = RUN_JASMINE_2_JS;
+     	} else {
     		JS_ENGINE = RUN_QUNIT_JS;
     	} 
     }
@@ -42,6 +46,9 @@ public class PhantomJsExecutor implements Executor, TestPluginConstants {
         
         CMD.append("\""+targetSrcDir.getCanonicalPath() + JS_ENGINE+"\" ");
         CMD.append(runnerUrl+"?emulator=true");
+        if (JS_ENGINE.equalsIgnoreCase(RUN_JASMINE_2_JS)) {
+        	CMD.append(" \"" + reportDir.getCanonicalPath() + "\"");
+        }
         log.info("Running PhantomJsExecutor");
         log.info("command " + CMD);
         
@@ -83,6 +90,10 @@ public class PhantomJsExecutor implements Executor, TestPluginConstants {
 
     public void setTargetSrcDir(File targetSourceDirectory) {
         this.targetSrcDir = targetSourceDirectory;
+    }
+    
+    public void setReportDir(File reportDir) {
+        this.reportDir = reportDir;
     }
 
     private void copyTestRunner(String url) throws Exception {
