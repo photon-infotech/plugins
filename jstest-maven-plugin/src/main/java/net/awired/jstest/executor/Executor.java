@@ -12,6 +12,8 @@ public interface Executor {
 
     void setTargetSrcDir(File targetSourceDirectory);
     
+    void setReportDir(File reportDir);
+    
     void setLog(Log log);
 
 }

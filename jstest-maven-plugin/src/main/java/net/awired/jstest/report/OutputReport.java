@@ -19,13 +19,17 @@ package net.awired.jstest.report;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
+
+import net.awired.jstest.common.TestPluginConstants;
 import net.awired.jstest.result.RunResult;
 import net.awired.jstest.result.RunResults;
 import net.awired.jstest.result.SuiteResult;
+
 import org.apache.maven.plugin.logging.Log;
+
 import com.google.common.base.Preconditions;
 
-public class OutputReport implements Report {
+public class OutputReport implements Report, TestPluginConstants {
 
     private static final String HEADER = "\n" //
             + "-------------------------------------------------------\n" //
@@ -77,36 +81,41 @@ public class OutputReport implements Report {
     }
 
     @Override
-    public void reportGlobal(RunResults runResults) {
+    public void reportGlobal(RunResults runResults, String runnerTypeName) {
         StringBuilder builder = new StringBuilder();
         boolean firstParsed = false;
-        builder.append("\nResults :\n\n");
 
-        for (RunResult result : runResults.values()) {
-            if (!firstParsed) {
-                builder.append("Run: ");
-                builder.append(result.findTests());
-                builder.append(", Failures: ");
-                builder.append(result.findFailures());
-                builder.append(", Errors: ");
-                builder.append(result.findErrors());
-                builder.append(", Skipped: ");
-                builder.append(result.findSkipped());
-                builder.append(", Time elapsed: ");
-                builder.append(result.getDuration());
-                builder.append("ms");
-                if (result.getCoverageResult() != null) {
-                    builder.append(", Coverage for executed source scripts: ");
-                    builder.append(coverageFormat.format(result.getCoverageResult().findCoveragePercent()));
-                    builder.append('%');
+        if (JASMINE2.equalsIgnoreCase(runnerTypeName)) {
+        	builder.append("[INFO] For coverage, check with sonar");
+        } else {
+        	builder.append("\nResults :\n\n");
+        	for (RunResult result : runResults.values()) {
+                if (!firstParsed) {
+                    builder.append("Run: ");
+                    builder.append(result.findTests());
+                    builder.append(", Failures: ");
+                    builder.append(result.findFailures());
+                    builder.append(", Errors: ");
+                    builder.append(result.findErrors());
+                    builder.append(", Skipped: ");
+                    builder.append(result.findSkipped());
+                    builder.append(", Time elapsed: ");
+                    builder.append(result.getDuration());
+                    builder.append("ms");
+                    if (result.getCoverageResult() != null) {
+                        builder.append(", Coverage for executed source scripts: ");
+                        builder.append(coverageFormat.format(result.getCoverageResult().findCoveragePercent()));
+                        builder.append('%');
+                    }
+                    builder.append(", Agent: ");
+                    builder.append(result.userAgentToString());
+                    builder.append("\n");
+    				builder.append("[INFO] For total coverage check with sonar");
+                    builder.append("\n");
                 }
-                builder.append(", Agent: ");
-                builder.append(result.userAgentToString());
-                builder.append("\n");
-				builder.append("[INFO] For total coverage check with sonar");
-                builder.append("\n");
             }
         }
+                
         out.println(builder);
     }
 

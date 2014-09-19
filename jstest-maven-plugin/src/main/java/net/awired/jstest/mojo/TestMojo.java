@@ -62,6 +62,7 @@ public class TestMojo extends AbstractJsTestMojo implements TestPluginConstants 
         	runnerTypesList.add(REQUIREJS);
 //        	runnerTypesList.add(ALMOND);
         	runnerTypesList.add(JASMINE);
+        	runnerTypesList.add(JASMINE2);
 			String testSourceDir = buildTestResourceDirectory().getDirectory().getPath();
         	File testSourcedir = new File(testSourceDir);
         
@@ -97,12 +98,13 @@ public class TestMojo extends AbstractJsTestMojo implements TestPluginConstants 
             	}
                 executor.setLog(getLog());
                 executor.setTargetSrcDir(getTargetSourceDirectory());
+                executor.setReportDir(getPreparedReportDir());
                 executor.execute("http://localhost:" + getDevPort() + "/");
             }
 
             // let browsers detect that server is back
             Thread.sleep(7000);
-            if (!resultHandler.waitAllResult(10000, 1000)) {
+            if (!resultHandler.waitAllResult(10000, 1000, buildAmdRunnerType.name())) {
                 throw new MojoFailureException(DO_NOT_RECEIVE_ALL_TEST_RESULTS_FROM_CLIENTS);
             }
 

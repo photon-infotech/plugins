@@ -5,6 +5,7 @@ public interface TestPluginConstants {
 	String PHANTOMJS = "PHANTOMJS";
 	String HTML_UNIT = "HTML_UNIT";
 	String JASMINE = "JASMINE";
+	String JASMINE2 = "JASMINE2";
 	String REQUIREJS = "REQUIREJS";
 	String ALMOND = "ALMOND";
 	String USEYUI = "USEYUI";

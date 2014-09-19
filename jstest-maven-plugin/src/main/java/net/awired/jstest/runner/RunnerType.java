@@ -30,6 +30,7 @@ import net.awired.jstest.runner.impl.UseYUIRunner;
 public enum RunnerType {
     DEFAULT(DefaultRunner.class, "/runnerTemplate/defaultRunner.tpl"), //
     JASMINE(JasmineRunner.class, "/runnerTemplate/defaultRunner.tpl"), //
+    JASMINE2(JasmineRunner.class, "/runnerTemplate/defaultRunner.tpl"), //
     REQUIREJS(RequireJsRunner.class, "/runnerTemplate/requireJsRunner.tpl", "require.js"), //
     ALMOND(AlmondRunner.class, "/runnerTemplate/almondRunner.tpl", "almond.js"), //
     CURL(CurlRunner.class, "/runnerTemplate/curlRunner.tpl", "curl.js"), //

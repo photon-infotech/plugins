@@ -20,6 +20,7 @@ package net.awired.jstest.runner;
 
 public enum TestType {
 	JASMINE("jasmineManager.js", "jasmine.js", "jasmine-html.js", "jasmine.css"), //
+	JASMINE2("jasmine2Manager.js", "jasmine.js", "jasmine-html.js", "jasmine.css"), //
 	QUNIT("qunitManager.js", "qunit.js", "qunit.css"), //
 	YUITEST("yuiTestManager.js", "lib/yui/build/yui/yui-min.js", ""),
 	;
