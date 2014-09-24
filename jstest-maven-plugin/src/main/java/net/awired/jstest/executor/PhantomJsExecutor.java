@@ -47,7 +47,9 @@ public class PhantomJsExecutor implements Executor, TestPluginConstants {
         CMD.append("\""+targetSrcDir.getCanonicalPath() + JS_ENGINE+"\" ");
         CMD.append(runnerUrl+"?emulator=true");
         if (JS_ENGINE.equalsIgnoreCase(RUN_JASMINE_2_JS)) {
-        	CMD.append(" \"" + reportDir.getCanonicalPath() + "\"");
+			String reportPath = reportDir.getCanonicalPath();
+			reportPath = reportPath.replace(File.separator,"/");
+        	CMD.append(" \"" + reportPath + "\"");
         }
         log.info("Running PhantomJsExecutor");
         log.info("command " + CMD);
