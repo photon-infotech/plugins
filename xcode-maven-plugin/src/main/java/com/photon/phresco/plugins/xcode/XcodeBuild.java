@@ -538,7 +538,7 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 		Boolean isApplicationTest = applicationTest ? true : false;
 			
 		String executeCreateCmdForXcode = executeCreateCmdForXcode();
-		boolean isXcodeLatestVersion = isXcodeLatestVersion(executeCreateCmdForXcode, "5.0");
+		boolean isXcodeLatestVersion = isXcodeLatestVersion(executeCreateCmdForXcode, "6.0");
 		String sdkVersion = getSDKVersion(sdk);
 
 		ProcessBuilder pb = new ProcessBuilder(BIN_SH, C);
@@ -560,7 +560,7 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 		
 		if (StringUtils.isNotBlank(xcodeTarget)) {
 			// latest version xcode logical test command changes
-			if (isXcodeLatestVersion && (isLogicalTest || isApplicationTest)) {
+			if ((isLogicalTest || isApplicationTest)) {
 				commands.add(SCHEME);
 			} else {
 				// same for other operations
@@ -575,28 +575,45 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 		}
 		
 		
-		if (StringUtils.isNotBlank(sdkVersion.trim()) && isXcodeLatestVersion && (isLogicalTest || isApplicationTest)) {
-			if (sdk.contains(SIMULATOR)) {
-				commands.add("-destination OS=" + sdkVersion.trim() + ",name=" + "\"" + iosDeviceType + "\"");
-			} else {
-				commands.add("-destination platform=iOS,id=" + "\"" + deviceId + "\"");
-			}
-		} else if (StringUtils.isNotBlank(configuration)) {
+		 if (StringUtils.isNotBlank(sdkVersion.trim()) && (isLogicalTest || isApplicationTest)) {
+			 
+			 if (!sdk.contains(SIMULATOR)){
+				 // for device
+				 commands.add("-destination platform=iOS,id=" + "\"" + deviceId + "\"");
+			 }
+			 else{
+				 //for simulator
+				 if(isXcodeLatestVersion && sdk.contains("7.0")){
+					 //for xcode 6 simultor 7.0.3
+					 commands.add("-destination OS=" + sdkVersion.trim()+".3"+ ",name=" + "\"" + iosDeviceType + "\"");
+				 }
+				 else if(isXcodeLatestVersion && sdk.contains("8.0")) {
+					//for xcode 6 simultor 8.0
+
+					 commands.add("-destination OS=" + sdkVersion.trim()+ ",name=" + "\"" + iosDeviceType + "\"");
+				 }
+				 else{
+					 //for xcode 5
+					 commands.add("-destination OS=" + sdkVersion.trim()+ ",name=" + "\"" + iosDeviceType + "\"");
+				 }
+			 }
+
+         }else if(StringUtils.isNotBlank(configuration)) {
 			commands.add(CONFIGURATION);
 			commands.add(configuration);
 		}
 		
 		// if it is unit test, we have to set TEST_AFTER_BUILD=YES in build settings
-		 if (unittest && !isXcodeLatestVersion) {
-			commands.add(TEST_AFTER_BUILD_YES);
-		 }
+//		 if (unittest && !isXcodeLatestVersion) {
+//			commands.add(TEST_AFTER_BUILD_YES);
+//		 }
 		
 		// if it is unit test and application test, we need to pass this command
-		 if (unittest && applicationTest && !isXcodeLatestVersion) {
-		 	commands.add(RUN_UNIT_TEST_WITH_IOS_SIM_YES);
-		 }
+//		 if (unittest && applicationTest && !isXcodeLatestVersion) {
+//		 	commands.add(RUN_UNIT_TEST_WITH_IOS_SIM_YES);
+//		 }
 		
-		if (StringUtils.isNotBlank(sdk) && !projectType.equals(MAC) && ((isXcodeLatestVersion && !isLogicalTest && !isApplicationTest) || !isXcodeLatestVersion)) {
+		if (StringUtils.isNotBlank(sdk) && !projectType.equals(MAC) && ((!isLogicalTest && !isApplicationTest))) {
 			commands.add(SDK);
 			commands.add(sdk);
 		}
@@ -612,12 +629,12 @@ public class XcodeBuild extends AbstractMojo implements PluginConstants {
 		
 		getLog().info("Unit test triggered from UI " + applicationTest);
 		// if the user selects , logical test, we need to add clean test... for other test nothing will be added except target.
-		if ((isLogicalTest && !isXcodeLatestVersion)) {
-			getLog().info("Unit test for logical test triggered ");
-			commands.add(CMD_CLEAN);
-		}
+//		if ((isLogicalTest && !isXcodeLatestVersion)) {
+//			getLog().info("Unit test for logical test triggered ");
+//			commands.add(CMD_CLEAN);
+//		}
 		
-		if (isXcodeLatestVersion && (isLogicalTest || isApplicationTest)) {
+		if ((isLogicalTest || isApplicationTest)) {
 			commands.add(CMD_TEST);
 		} else {
 			commands.add(CMD_BUILD);
