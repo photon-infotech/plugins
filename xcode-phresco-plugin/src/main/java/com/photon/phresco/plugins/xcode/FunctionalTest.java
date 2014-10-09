@@ -70,7 +70,7 @@ public class FunctionalTest implements PluginConstants {
 		sb.append(STR_SPACE);
 		sb.append(HYPHEN_D + BUILD_NUMBER + EQUAL + buildNumber);
 		
-		if (StringUtils.isNotEmpty(deviceId)) {
+		if (StringUtils.isNotEmpty(deviceId) && deviceId.equalsIgnoreCase("device")) {
 			sb.append(STR_SPACE);
 			sb.append(HYPHEN_D + DEVICE_ID + EQUAL + deviceId);
 		}
