@@ -37,7 +37,7 @@ public class UnitTest implements PluginConstants {
 
 	private static final String TEST = "test";
 
-	public void unitTest(Configuration config, MavenProjectInfo mavenProjectInfo) throws PhrescoException {
+	public void unitTest(Configuration config, MavenProjectInfo mavenProjectInfo) throws PhrescoException{
 		Map<String, String> configs = MojoUtil.getAllValues(config);
 		String sdk = configs.get(SDK);
 		String target = configs.get(TARGET);
@@ -70,15 +70,20 @@ public class UnitTest implements PluginConstants {
 			sb.append(STR_SPACE);
 			sb.append(HYPHEN_D + TARGET_NAME + EQUAL + target);
 		}
-		
+
 		if (StringUtils.isNotEmpty(iosDeviceType)) {
 			sb.append(STR_SPACE);
 			sb.append(HYPHEN_D + IOS_DEVICE_TYPE + EQUAL + "\"" + iosDeviceType + "\"");
 		}
-		
-		if (StringUtils.isNotEmpty(deviceId)) {
+		  
+		if( iosDeviceType.equalsIgnoreCase("device")){
+           if (StringUtils.isNotEmpty(deviceId) && !deviceId.equalsIgnoreCase("null"))  {
 			sb.append(STR_SPACE);
 			sb.append(HYPHEN_D + DEVICE_ID + EQUAL + "\"" + deviceId + "\"");
+		   }else {
+	        
+			throw new PhrescoException("Please Provide The DeviceId ....!");
+		  }
 		}
 		
 		if (StringUtils.isNotEmpty(unitTestType)) {
