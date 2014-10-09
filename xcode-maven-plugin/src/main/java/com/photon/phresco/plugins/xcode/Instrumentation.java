@@ -37,6 +37,7 @@ import org.apache.commons.io.*;
 import org.apache.commons.lang.*;
 import org.apache.maven.plugin.*;
 import org.apache.maven.project.*;
+import org.codehaus.plexus.util.cli.Commandline;
 import org.w3c.dom.*;
 import org.w3c.dom.Element;
 
@@ -133,25 +134,44 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 	/**
 	 * @parameter 
 	 */
+	public Boolean isXcode6;
 	private static XMLPropertyListConfiguration config;
 	private File buildInfoFile;
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		getLog().info("Instrumentation command" + command);
 		try {
-			List<String> traceTemplates = new ArrayList<String>(4);
-			traceTemplates.add("/Developer/Platforms/iPhoneOS.platform/Developer/Library/Instruments/PlugIns/AutomationInstrument.bundle/Contents/Resources/Automation.tracetemplate");
-			traceTemplates.add("/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/Instruments/PlugIns/AutomationInstrument.bundle/Contents/Resources/Automation.tracetemplate");
-			traceTemplates.add("/Applications/Xcode.app/Contents/Applications/Instruments.app/Contents/PlugIns/AutomationInstrument.bundle/Contents/Resources/Automation.tracetemplate");
+//			List<String> traceTemplates = new ArrayList<String>(4);
+//			traceTemplates.add("/Developer/Platforms/iPhoneOS.platform/Developer/Library/Instruments/PlugIns/AutomationInstrument.bundle/Contents/Resources/Automation.tracetemplate");
+//			traceTemplates.add("/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/Instruments/PlugIns/AutomationInstrument.bundle/Contents/Resources/Automation.tracetemplate");
+//			traceTemplates.add("/Applications/Xcode.app/Contents/Applications/Instruments.app/Contents/PlugIns/AutomationInstrument.bundle/Contents/Resources/Automation.tracetemplate");
+//			
+//			for (String traceTemplate : traceTemplates) {
+//				File traceTemplateFile = new File(traceTemplate);
+//				if (traceTemplateFile.isFile()) {
+//					getLog().info("Template found at " + traceTemplate);
+//					template = traceTemplate;
+//				}
+//			}
 			
-			for (String traceTemplate : traceTemplates) {
-				File traceTemplateFile = new File(traceTemplate);
-				if (traceTemplateFile.isFile()) {
-					getLog().info("Template found at " + traceTemplate);
-					template = traceTemplate;
-				}
-			}
-			
+			 isXcode6 = isXcode6(currentXcodeVersion() , "6.0");
+	           if(isXcode6){
+	        	   template ="/Applications/Xcode.app/Contents/Applications/Instruments.app/Contents/PlugIns/AutomationInstrument.xrplugin/Contents/Resources/Automation.tracetemplate";
+	           }else{
+	        	   Commandline cl = new Commandline("instruments -s");
+	               cl.setWorkingDirectory("/");
+	               Process p = cl.execute();
+	               BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+	               
+	               String line = null;
+	               String templeteforline = null;
+	               while ((line = reader.readLine()) != null) {
+	               	if (line.trim().contains("Automation.tracetemplate")){ 
+	               		template = line;
+	                   }
+	               }
+	            }
+			            
 			if (StringUtils.isEmpty(template)) {
 				throw new MojoExecutionException("Template not found");
 			}
@@ -197,15 +217,22 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 		} catch (IOException e) {
 			getLog().error(e);
 		}
-			
 			Runnable runnable = new Runnable() {
 				public void run() {
 					ProcessBuilder pb = new ProcessBuilder(command);
 					//device takes the highest priority
+					pb.command().add("-w");
 					if(StringUtils.isNotEmpty(deviceid)) {
-						pb.command().add("-w");
+						//pb.command().add("-w");
 						pb.command().add(deviceid);
-					}
+					}else{
+						if(isXcode6){
+							pb.command().add("iPhone 5s (8.0 Simulator)");
+						}
+						else{
+							pb.command().add("iPhone Retina (4-inch) - Simulator - iOS 7.1");
+						}
+					}					
 					pb.command().add("-t");
 					pb.command().add(template);
 
@@ -273,8 +300,39 @@ public class Instrumentation extends AbstractXcodeMojo implements PluginConstant
 			getLog().info("Plist path ... " + project.getBasedir().getAbsolutePath()+File.separator+plistResult);
 			generateXMLReport(project.getBasedir().getAbsolutePath()+File.separator+plistResult);
 	}
+	private boolean isXcode6(String str1, String str2) {
+		String[] vals1 = str1.split("\\.");
+		String[] vals2 = str2.split("\\.");
+		int i=0;
+		while(i<vals1.length&&i<vals2.length&&vals1[i].equals(vals2[i])) {
+		  i++;
+		}
 
-			
+		if (i<vals1.length&&i<vals2.length) {
+		    int diff = Integer.valueOf(vals1[i]).compareTo(Integer.valueOf(vals2[i]));
+		    return diff<0?false:diff==0?true:true;
+		}
+
+		return vals1.length<vals2.length?false:vals1.length==vals2.length?true:true;
+	}
+	private String currentXcodeVersion() throws IOException  
+	{
+		String version = "";
+		ProcessBuilder pb = new ProcessBuilder( "/bin/sh", "-c" ,"xcodebuild -version");
+		pb.redirectErrorStream(true);
+		pb.directory(new File("/"));
+		Process process = pb.start();
+		InputStream is = process.getInputStream();
+	    InputStreamReader isr = new InputStreamReader(is);
+	    BufferedReader br = new BufferedReader(isr);
+	    String line;
+	    while ((line = br.readLine()) != null) {
+	      String[] splited = line.split("\\s");
+	    	  version = splited[1];
+	      break;
+	    }
+		return version;
+	}	
 
 	private void preparePlistResult() throws MojoExecutionException {
 		try {
